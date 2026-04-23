@@ -12,10 +12,14 @@
 
 import type { FormState } from '../types/form';
 import type { VenousSegmentFindings, VenousSegmentFinding } from '../components/studies/venous-le/config';
-import { generateNarrative, type NarrativeOutput } from '../components/studies/venous-le/narrativeGenerator';
+import {
+  generateNarrative,
+  type NarrativeOutput,
+  type NarrativeKeyEntry,
+} from '../components/studies/venous-le/narrativeGenerator';
 
 export { generateNarrative };
-export type { NarrativeOutput };
+export type { NarrativeOutput, NarrativeKeyEntry };
 
 const EMPTY_NARRATIVE: NarrativeOutput = Object.freeze({
   rightFindings: '',
@@ -24,6 +28,9 @@ const EMPTY_NARRATIVE: NarrativeOutput = Object.freeze({
   rightFindingsKeys: [],
   leftFindingsKeys: [],
   conclusionsKeys: [],
+  rightFindingsEntries: [],
+  leftFindingsEntries: [],
+  conclusionsEntries: [],
 });
 
 /**
@@ -64,4 +71,72 @@ export function narrativeFromFindings(
   findings: Readonly<Record<string, VenousSegmentFinding | undefined>>
 ): NarrativeOutput {
   return generateNarrative(findings as VenousSegmentFindings);
+}
+
+// ============================================================================
+// Localized narrative
+// ============================================================================
+
+/**
+ * Minimal `t()` shape the localized builder needs.
+ *
+ * Our TranslationContext exposes `t(key, paramsOrDefault)` where the second
+ * argument is either a params object or a fallback string. For the narrative
+ * pipeline we always pass params, so a single overload is enough here.
+ */
+export type TranslateFn = (
+  key: string,
+  paramsOrDefault?: Record<string, unknown> | string,
+) => string;
+
+export interface LocalizedNarrative {
+  readonly rightFindings: string;
+  readonly leftFindings: string;
+  readonly conclusions: ReadonlyArray<string>;
+}
+
+function resolveEntry(entry: NarrativeKeyEntry, t: TranslateFn): string {
+  const params = entry.params;
+  if (!params) {
+    return t(entry.key);
+  }
+  // The `vein` param ships as a translation key (`venousLE.segments.<base>`).
+  // Resolve it first so sentence templates can interpolate a localized vein
+  // name rather than a raw key.
+  const resolved: Record<string, string | number> = {};
+  for (const [paramKey, value] of Object.entries(params)) {
+    if (paramKey === 'vein' && typeof value === 'string') {
+      resolved[paramKey] = t(value);
+    } else if (paramKey === 'side' && typeof value === 'string') {
+      resolved[paramKey] = t(`venousLE.sides.${value}`);
+    } else {
+      resolved[paramKey] = value;
+    }
+  }
+  return t(entry.key, resolved);
+}
+
+/**
+ * Build a fully-localized narrative by running each parametrized key entry
+ * through `t()` with resolved `{vein}` / `{side}` placeholders.
+ *
+ * The English `narrativeFromFormState` helper remains for back-compat; this
+ * helper is the preferred entry point for any UI or PDF path that should
+ * flip language with the active `t` function.
+ */
+export function buildLocalizedNarrative(
+  findings: VenousSegmentFindings,
+  t: TranslateFn,
+): LocalizedNarrative {
+  const base = generateNarrative(findings);
+
+  const rightSentences = base.rightFindingsEntries.map((e) => resolveEntry(e, t));
+  const leftSentences = base.leftFindingsEntries.map((e) => resolveEntry(e, t));
+  const conclusions = base.conclusionsEntries.map((e) => resolveEntry(e, t));
+
+  return {
+    rightFindings: rightSentences.join(' '),
+    leftFindings: leftSentences.join(' '),
+    conclusions,
+  };
 }

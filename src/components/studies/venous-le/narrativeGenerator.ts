@@ -3,8 +3,9 @@
  *
  * Given a map of per-segment findings, produce a radiology-style English
  * findings narrative (one paragraph per side) + a conclusions list. Each
- * emitted sentence also has a paired i18n *key* so the UI can translate
- * the same output via `t()` — the caller renders whichever suits them.
+ * emitted sentence also has a paired i18n *key entry* (`NarrativeKeyEntry`)
+ * so the UI can translate the same output via `t(key, params)` — the
+ * caller renders whichever suits them.
  *
  * Phrasing follows the reporting style common to the Corestudycast group:
  *   - "Normal compressibility of the deep veins in the right lower extremity."
@@ -26,6 +27,19 @@ import { VENOUS_LE_SEGMENTS, hasPathologicalReflux, isDeepSegment } from './conf
 // Public surface
 // ============================================================================
 
+/**
+ * A single translation-ready sentence record.
+ *
+ * `key` is a `venousLE.*` dot-path the caller runs through `t()`.
+ * `params` carries interpolation values. `vein` is stored as a *key*
+ * (`venousLE.segments.<base>`) so the caller can translate the vein name
+ * before interpolating.
+ */
+export interface NarrativeKeyEntry {
+  readonly key: string;
+  readonly params?: Readonly<Record<string, string | number>>;
+}
+
 export interface NarrativeOutput {
   /** English narrative prose for the right side (empty if no findings). */
   readonly rightFindings: string;
@@ -33,12 +47,18 @@ export interface NarrativeOutput {
   readonly leftFindings: string;
   /** Bullet-style English conclusions across both sides. */
   readonly conclusions: ReadonlyArray<string>;
-  /** Translation-ready template keys for each right-side sentence. */
+  /** Translation-ready template keys for each right-side sentence (legacy — bare keys). */
   readonly rightFindingsKeys: ReadonlyArray<string>;
-  /** Translation-ready template keys for each left-side sentence. */
+  /** Translation-ready template keys for each left-side sentence (legacy — bare keys). */
   readonly leftFindingsKeys: ReadonlyArray<string>;
-  /** Translation-ready template keys for each conclusion bullet. */
+  /** Translation-ready template keys for each conclusion bullet (legacy — bare keys). */
   readonly conclusionsKeys: ReadonlyArray<string>;
+  /** Translation-ready key + params for each right-side sentence. */
+  readonly rightFindingsEntries: ReadonlyArray<NarrativeKeyEntry>;
+  /** Translation-ready key + params for each left-side sentence. */
+  readonly leftFindingsEntries: ReadonlyArray<NarrativeKeyEntry>;
+  /** Translation-ready key + params for each conclusion bullet. */
+  readonly conclusionsEntries: ReadonlyArray<NarrativeKeyEntry>;
 }
 
 export function generateNarrative(findings: VenousSegmentFindings): NarrativeOutput {
@@ -47,6 +67,10 @@ export function generateNarrative(findings: VenousSegmentFindings): NarrativeOut
 
   const conclusions: string[] = [...right.conclusions, ...left.conclusions];
   const conclusionsKeys: string[] = [...right.conclusionsKeys, ...left.conclusionsKeys];
+  const conclusionsEntries: NarrativeKeyEntry[] = [
+    ...right.conclusionsEntries,
+    ...left.conclusionsEntries,
+  ];
 
   return {
     rightFindings: right.prose,
@@ -55,7 +79,15 @@ export function generateNarrative(findings: VenousSegmentFindings): NarrativeOut
     leftFindingsKeys: left.proseKeys,
     conclusions,
     conclusionsKeys,
+    rightFindingsEntries: right.proseEntries,
+    leftFindingsEntries: left.proseEntries,
+    conclusionsEntries,
   };
+}
+
+/** Build the `venousLE.segments.<base>` translation key for a segment base. */
+export function segmentDisplayKey(segment: VenousLESegmentBase): string {
+  return `venousLE.segments.${segment}`;
 }
 
 // ============================================================================
@@ -67,8 +99,10 @@ type Side = 'left' | 'right';
 interface SideNarrativeParts {
   readonly prose: string;
   readonly proseKeys: ReadonlyArray<string>;
+  readonly proseEntries: ReadonlyArray<NarrativeKeyEntry>;
   readonly conclusions: ReadonlyArray<string>;
   readonly conclusionsKeys: ReadonlyArray<string>;
+  readonly conclusionsEntries: ReadonlyArray<NarrativeKeyEntry>;
 }
 
 interface ClassifiedSegments {
@@ -98,15 +132,24 @@ function buildSideNarrative(
     classified.inconclusive.length > 0;
 
   if (!hasAny) {
-    return { prose: '', proseKeys: [], conclusions: [], conclusionsKeys: [] };
+    return {
+      prose: '',
+      proseKeys: [],
+      proseEntries: [],
+      conclusions: [],
+      conclusionsKeys: [],
+      conclusionsEntries: [],
+    };
   }
 
   const sentences: string[] = [];
   const sentenceKeys: string[] = [];
+  const sentenceEntries: NarrativeKeyEntry[] = [];
   const conclusions: string[] = [];
   const conclusionsKeys: string[] = [];
+  const conclusionsEntries: NarrativeKeyEntry[] = [];
 
-  const sideLabel = side === 'right' ? 'right' : 'left';
+  const sideLabel: 'right' | 'left' = side;
 
   // (a) Normal compressibility of deep veins — summarize if any deep segments are normal.
   if (classified.normalDeep.length > 0) {
@@ -114,6 +157,9 @@ function buildSideNarrative(
       `Normal compressibility of the deep veins in the ${sideLabel} lower extremity.`
     );
     sentenceKeys.push(`venousLE.narrative.normalCompressibilityDeep.${side}`);
+    sentenceEntries.push({
+      key: `venousLE.narrative.normalCompressibilityDeep.${side}`,
+    });
 
     // Normal spontaneous phasic augmented flow — emit only when at least one deep
     // segment shows all three (spontaneity/phasicity/augmentation) as normal.
@@ -122,6 +168,9 @@ function buildSideNarrative(
         `Normal spontaneous phasic augmented flow in the ${sideLabel} lower extremity.`
       );
       sentenceKeys.push(`venousLE.narrative.normalFlowDeep.${side}`);
+      sentenceEntries.push({
+        key: `venousLE.narrative.normalFlowDeep.${side}`,
+      });
     }
   }
 
@@ -130,8 +179,24 @@ function buildSideNarrative(
     const vein = segmentDisplay(segment);
     sentences.push(`Marked reflux noted in the ${vein} (${ms} ms).`);
     sentenceKeys.push(`venousLE.narrative.refluxNoted.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.refluxNoted',
+      params: {
+        vein: segmentDisplayKey(segment),
+        ms,
+        side,
+      },
+    });
     conclusions.push(`Pathological reflux in the ${sideLabel} ${vein} (${ms} ms).`);
     conclusionsKeys.push(`venousLE.conclusion.reflux.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.reflux',
+      params: {
+        vein: segmentDisplayKey(segment),
+        ms,
+        side,
+      },
+    });
   }
 
   // (c) Non-compressible / partial — flag acute DVT / chronic post-thrombotic.
@@ -141,8 +206,16 @@ function buildSideNarrative(
       `Non-compressible segment suggestive of acute DVT in the ${vein}.`
     );
     sentenceKeys.push(`venousLE.narrative.nonCompressible.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.nonCompressible',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
     conclusions.push(`Acute DVT suspected in the ${sideLabel} ${vein}.`);
     conclusionsKeys.push(`venousLE.conclusion.acuteDvt.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.acuteDvt',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
   }
   for (const segment of classified.partialCompressibility) {
     const vein = segmentDisplay(segment);
@@ -150,10 +223,18 @@ function buildSideNarrative(
       `Partial compressibility noted in the ${vein}, consistent with chronic post-thrombotic changes.`
     );
     sentenceKeys.push(`venousLE.narrative.partialCompressibility.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.partialCompressibility',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
     conclusions.push(
       `Chronic post-thrombotic changes in the ${sideLabel} ${vein}.`
     );
     conclusionsKeys.push(`venousLE.conclusion.chronicPostThrombotic.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.chronicPostThrombotic',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
   }
 
   // Thrombosis axis — only emit if it isn't already captured by compressibility.
@@ -162,8 +243,16 @@ function buildSideNarrative(
     const vein = segmentDisplay(segment);
     sentences.push(`Acute thrombus visualized within the ${vein}.`);
     sentenceKeys.push(`venousLE.narrative.acuteThrombus.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.acuteThrombus',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
     conclusions.push(`Acute DVT in the ${sideLabel} ${vein}.`);
     conclusionsKeys.push(`venousLE.conclusion.acuteDvt.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.acuteDvt',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
   }
   for (const segment of classified.chronicThrombosis) {
     if (classified.partialCompressibility.includes(segment)) continue;
@@ -172,10 +261,18 @@ function buildSideNarrative(
       `Echogenic, adherent thrombus noted in the ${vein}, consistent with chronic post-thrombotic changes.`
     );
     sentenceKeys.push(`venousLE.narrative.chronicThrombus.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.chronicThrombus',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
     conclusions.push(
       `Chronic post-thrombotic changes in the ${sideLabel} ${vein}.`
     );
     conclusionsKeys.push(`venousLE.conclusion.chronicPostThrombotic.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.chronicPostThrombotic',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
   }
 
   // (d) Inconclusive — flag as a study limitation.
@@ -183,17 +280,27 @@ function buildSideNarrative(
     const vein = segmentDisplay(segment);
     sentences.push(`Study limited — inconclusive compressibility of the ${vein}.`);
     sentenceKeys.push(`venousLE.narrative.inconclusive.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.inconclusive',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
     conclusions.push(
       `Study limitation: inconclusive assessment of the ${sideLabel} ${vein}.`
     );
     conclusionsKeys.push(`venousLE.conclusion.inconclusive.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.inconclusive',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
   }
 
   return {
     prose: sentences.join(' '),
     proseKeys: sentenceKeys,
+    proseEntries: sentenceEntries,
     conclusions,
     conclusionsKeys,
+    conclusionsEntries,
   };
 }
 

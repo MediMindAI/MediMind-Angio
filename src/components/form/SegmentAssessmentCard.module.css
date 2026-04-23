@@ -1,4 +1,4 @@
-/* RecommendationsBlock — editable clinician recommendations */
+/* SegmentAssessmentCard — unified categorical + numeric shell */
 
 .card {
   background: var(--emr-bg-card);
@@ -9,7 +9,7 @@
 }
 
 .head {
-  padding: 14px 20px;
+  padding: 16px 20px;
   background: var(--emr-gradient-section-header);
   color: #ffffff;
   border-bottom: 0;
@@ -58,84 +58,70 @@
   color: rgba(255, 255, 255, 0.85);
   margin: 2px 0 0 0;
   font-weight: 400;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   position: relative;
   z-index: 1;
 }
 
+.tabsWrap {
+  padding: 12px 20px 0 20px;
+  background: var(--emr-bg-hover);
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.toolbar {
+  padding: 10px 20px;
+  background: var(--emr-bg-hover);
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.toolbarInner {
+  align-items: center;
+}
+
+.toolbarGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.toolbarDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--emr-border-color);
+  margin: 2px 4px;
+  min-height: 24px;
+}
+
 .body {
-  padding: 16px 20px;
+  padding: 8px 20px 16px 20px;
+}
+
+.tableCol {
+  min-width: 0;
+  /* Row heights inside each child are set to min-height: 48px so rows
+     align when placed side-by-side. */
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 768px) {
   .head {
     padding: 12px 16px;
   }
-  .body {
-    padding: 14px;
+  .tabsWrap {
+    padding: 10px 12px 0 12px;
   }
-}
-
-.empty {
-  padding: 24px;
-  text-align: center;
-  color: var(--emr-text-tertiary);
-  font-size: var(--emr-font-sm);
-  background: var(--emr-bg-hover);
-  border: 1px dashed var(--emr-border-color);
-  border-radius: var(--emr-border-radius-lg);
-}
-
-.item {
-  padding: 14px 16px;
-  background: var(--emr-bg-hover);
-  border: 1px solid var(--emr-border-color);
-  border-radius: var(--emr-border-radius-lg);
-  transition: border-color 0.2s ease;
-}
-
-.item:hover {
-  border-color: var(--emr-border-secondary);
-}
-
-.itemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.itemIndex {
-  font-family: var(--emr-font-mono);
-  font-size: var(--emr-font-xs);
-  font-weight: var(--emr-font-bold);
-  color: var(--emr-secondary);
-  background: var(--emr-secondary-alpha-10);
-  padding: 3px 8px;
-  border-radius: var(--emr-border-radius-sm);
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-.itemBody {
-  display: grid;
-  grid-template-columns: 1fr 180px;
-  gap: 12px;
-  align-items: start;
-}
-
-.itemTextarea {
-  min-width: 0;
-}
-
-.itemPriority {
-  min-width: 0;
-}
-
-@media (max-width: 768px) {
-  .itemBody {
-    grid-template-columns: 1fr;
+  .toolbar {
+    padding: 8px 12px;
+  }
+  .body {
+    padding: 8px 12px 12px 12px;
+  }
+  .toolbarDivider {
+    display: none;
   }
 }

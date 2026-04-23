@@ -41,6 +41,20 @@ export async function registerFontsAsync(): Promise<void> {
     fonts: [
       { src: '/fonts/NotoSansGeorgian-Regular.ttf', fontWeight: 'normal' },
       { src: '/fonts/NotoSansGeorgian-Bold.ttf', fontWeight: 'bold' },
+      // Defensive italic aliases — Noto Sans Georgian doesn't ship italic
+      // cuts, but @react-pdf throws hard if any style requests italic and
+      // no italic variant is registered. Map italic requests back onto the
+      // upright TTFs so the renderer gets a usable glyph source regardless.
+      {
+        src: '/fonts/NotoSansGeorgian-Regular.ttf',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+      },
+      {
+        src: '/fonts/NotoSansGeorgian-Bold.ttf',
+        fontWeight: 'bold',
+        fontStyle: 'italic',
+      },
     ],
   });
 

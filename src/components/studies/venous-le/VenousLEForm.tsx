@@ -29,15 +29,18 @@
 import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { Box, Grid, SimpleGrid, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { AnatomyView, AnatomyLegend } from '../../anatomy';
 import type { Competency, SegmentId } from '../../../types/anatomy';
 import type { CeapClassification } from '../../../types/ceap';
 import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from '../../../types/form';
 import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
+import { ConfirmDialog } from '../../common';
 import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
-import { SegmentTable, type SegmentTableView } from '../../form/SegmentTable';
-import { ReflexTimeTable } from '../../form/ReflexTimeTable';
+import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
+import { type SegmentTableView } from '../../form/SegmentTable';
 import { ImpressionBlock } from '../../form/ImpressionBlock';
 import { CEAPPicker } from '../../form/CEAPPicker';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
@@ -51,6 +54,19 @@ import {
   type VenousSegmentFinding,
   type VenousSegmentFindings,
 } from './config';
+import type { VenousLETemplate } from './templates';
+import {
+  loadCustomTemplates,
+  loadRecentTemplateIds,
+  pushRecentTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
+  type CustomTemplate,
+} from '../../../services/customTemplatesService';
+import {
+  SaveTemplateDialog,
+  type SaveTemplatePayload,
+} from '../../form/SaveTemplateDialog';
 import classes from './VenousLEForm.module.css';
 
 // ============================================================================
@@ -118,6 +134,16 @@ type Action =
   | { type: 'SET_ALL_NORMAL'; scope: 'left' | 'right' | 'bilateral' }
   | { type: 'CLEAR_ALL'; scope: 'left' | 'right' | 'bilateral' }
   | { type: 'COPY_SIDE'; from: 'left' | 'right' }
+  | {
+      type: 'APPLY_TEMPLATE';
+      findings: VenousSegmentFindings;
+      view: SegmentTableView;
+      ceap: CeapClassification | undefined;
+      recommendations: ReadonlyArray<Recommendation>;
+      impression: string;
+      sonographerComments: string;
+    }
+  | { type: 'RESET' }
   | { type: 'HYDRATE'; value: VenousFormStateV1 };
 
 function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
@@ -213,6 +239,47 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       }
       return { ...state, findings: nextFindings as VenousSegmentFindings };
     }
+    case 'APPLY_TEMPLATE': {
+      // Clone findings so the template's interior objects aren't shared with
+      // the reducer's state tree (prevents accidental mutation traps).
+      const clonedFindings: Record<string, VenousSegmentFinding> = {};
+      for (const [k, v] of Object.entries(action.findings)) {
+        if (v) clonedFindings[k] = { ...v };
+      }
+      return {
+        ...state,
+        findings: clonedFindings as VenousSegmentFindings,
+        view: action.view,
+        ceap: action.ceap,
+        recommendations: action.recommendations.map((r) => ({ ...r })),
+        // Seed the canonical impression from the template and mark it as
+        // user-edited so the auto-regen in ImpressionBlock doesn't clobber it.
+        impression: action.impression,
+        impressionEdited: action.impression.length > 0,
+        // Only overwrite sonographer comments if the template supplies one.
+        sonographerComments:
+          action.sonographerComments.length > 0
+            ? action.sonographerComments
+            : state.sonographerComments,
+      };
+    }
+    case 'RESET':
+      // Return a fresh shallow clone of INITIAL_STATE so template-like
+      // shared object references (e.g. cptCode) don't leak across resets.
+      // Explicitly clear impression + sonographerComments + clinicianComments
+      // so no stale template prose survives a "New case" click.
+      return {
+        ...INITIAL_STATE,
+        header: { ...INITIAL_STATE.header },
+        findings: {},
+        recommendations: [],
+        impression: '',
+        impressionEdited: false,
+        sonographerComments: '',
+        clinicianComments: '',
+        ceap: undefined,
+        view: 'right',
+      };
     default: {
       const _exhaustive: never = action;
       return _exhaustive;
@@ -361,10 +428,32 @@ const CommentsBlock = memo(function CommentsBlock({
 // Main component
 // ============================================================================
 
+type AnyTemplate = VenousLETemplate | CustomTemplate;
+
+function isBuiltInTemplate(tpl: AnyTemplate): tpl is VenousLETemplate {
+  return 'nameFallback' in tpl;
+}
+
 export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const { t } = useTranslation();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [highlightId, setHighlightId] = useState<VenousLEFullSegmentId | null>(null);
+  /** Template awaiting confirmation (set when user picks one on a non-empty form). */
+  const [pendingTemplate, setPendingTemplate] = useState<AnyTemplate | null>(null);
+  /** "Start new case?" confirm modal open state. */
+  const [newCaseOpen, setNewCaseOpen] = useState<boolean>(false);
+  /** Save-as-template modal open state. */
+  const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
+  /** Custom template pending delete-confirm. */
+  const [pendingDeleteCustomId, setPendingDeleteCustomId] = useState<string | null>(null);
+  /** Custom templates loaded from localStorage. */
+  const [customTemplates, setCustomTemplates] = useState<ReadonlyArray<CustomTemplate>>(
+    () => loadCustomTemplates(),
+  );
+  /** Recently-used template IDs (MRU-first). */
+  const [recentTemplateIds, setRecentTemplateIds] = useState<ReadonlyArray<string>>(
+    () => loadRecentTemplateIds(),
+  );
 
   // Hydrate from draft on mount (one-shot).
   useEffect(() => {
@@ -375,11 +464,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   }, []);
 
   // Auto-save.
-  const { lastSavedAt, hasUnsavedChanges, saveNow } = useAutoSave<VenousFormStateV1>(
-    STUDY_ID,
-    state,
-    { debounceMs: 1500 },
-  );
+  const { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft: clearAutoSaveDraft } =
+    useAutoSave<VenousFormStateV1>(STUDY_ID, state, { debounceMs: 1500 });
 
   // Derived anatomy segment map (memoized — only recomputes when findings change).
   const competencyMap = useMemo(() => competencyMapFromFindings(state.findings), [state.findings]);
@@ -461,14 +547,202 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
     }
   }, []);
 
+  // ---- Template apply flow ----
+
+  /** True when the form has enough data that applying a template would overwrite work. */
+  const hasFormContent = useMemo(() => {
+    return (
+      Object.keys(state.findings).length > 0 ||
+      state.ceap !== undefined ||
+      state.recommendations.length > 0 ||
+      state.impression.trim().length > 0 ||
+      state.sonographerComments.trim().length > 0 ||
+      state.clinicianComments.trim().length > 0
+    );
+  }, [
+    state.findings,
+    state.ceap,
+    state.recommendations,
+    state.impression,
+    state.sonographerComments,
+    state.clinicianComments,
+  ]);
+
+  const applyTemplate = useCallback(
+    (template: AnyTemplate) => {
+      // Resolve localized prose for the template. Built-ins use key + fallback;
+      // custom templates store literal strings (saved in the user's language).
+      const impression = isBuiltInTemplate(template)
+        ? t(template.impressionKey, template.impressionFallback)
+        : (template.impression ?? '');
+      const sonographerComments = isBuiltInTemplate(template)
+        ? template.sonographerCommentsKey
+          ? t(template.sonographerCommentsKey, template.sonographerCommentsFallback ?? '')
+          : ''
+        : (template.sonographerComments ?? '');
+      const recommendations: ReadonlyArray<Recommendation> = template.recommendations
+        ? template.recommendations.map((r) => ({ ...r }))
+        : [];
+
+      dispatch({
+        type: 'APPLY_TEMPLATE',
+        findings: template.findings,
+        view: template.scope,
+        ceap: template.ceap,
+        recommendations,
+        impression,
+        sonographerComments,
+      });
+      // Reset anatomy highlight — rows may no longer exist for the old id.
+      setHighlightId(null);
+
+      // Push to recently-used queue + refresh state from storage.
+      pushRecentTemplate(template.id);
+      setRecentTemplateIds(loadRecentTemplateIds());
+
+      const name = isBuiltInTemplate(template)
+        ? t(template.nameKey, template.nameFallback)
+        : template.name;
+      notifications.show({
+        title: t('venousLE.templates.appliedToast.title', 'Template applied'),
+        message: t('venousLE.templates.appliedToast.message', { name }),
+        color: 'teal',
+        autoClose: 2500,
+      });
+    },
+    [t],
+  );
+
+  const handleTemplatePick = useCallback(
+    (template: AnyTemplate) => {
+      if (hasFormContent) {
+        setPendingTemplate(template);
+        return;
+      }
+      applyTemplate(template);
+    },
+    [hasFormContent, applyTemplate],
+  );
+
+  const handleTemplateConfirm = useCallback(() => {
+    if (pendingTemplate) {
+      applyTemplate(pendingTemplate);
+    }
+    setPendingTemplate(null);
+  }, [pendingTemplate, applyTemplate]);
+
+  const handleTemplateCancel = useCallback(() => {
+    setPendingTemplate(null);
+  }, []);
+
+  // ---- Save current as template flow ----
+
+  const handleOpenSaveDialog = useCallback(() => {
+    setSaveDialogOpen(true);
+  }, []);
+
+  const handleCloseSaveDialog = useCallback(() => {
+    setSaveDialogOpen(false);
+  }, []);
+
+  const handleSaveTemplateSubmit = useCallback(
+    (payload: SaveTemplatePayload) => {
+      const saved = saveCustomTemplate({
+        name: payload.name,
+        description: payload.description,
+        kind: payload.kind,
+        scope: state.view,
+        findings: state.findings,
+        ceap: state.ceap,
+        recommendations: state.recommendations,
+        impression: state.impression,
+        sonographerComments: state.sonographerComments,
+      });
+      setCustomTemplates(loadCustomTemplates());
+      setSaveDialogOpen(false);
+      notifications.show({
+        title: t('venousLE.templates.save.successToast.title', 'Template saved'),
+        message: t(
+          'venousLE.templates.save.successToast.message',
+          { name: saved.name },
+        ),
+        color: 'teal',
+        autoClose: 2500,
+      });
+    },
+    [
+      state.view,
+      state.findings,
+      state.ceap,
+      state.recommendations,
+      state.impression,
+      state.sonographerComments,
+      t,
+    ],
+  );
+
+  // ---- Delete custom template flow ----
+
+  const handleRequestDeleteCustom = useCallback((id: string) => {
+    setPendingDeleteCustomId(id);
+  }, []);
+
+  const handleCancelDeleteCustom = useCallback(() => {
+    setPendingDeleteCustomId(null);
+  }, []);
+
+  const handleConfirmDeleteCustom = useCallback(() => {
+    if (!pendingDeleteCustomId) return;
+    deleteCustomTemplate(pendingDeleteCustomId);
+    setCustomTemplates(loadCustomTemplates());
+    setPendingDeleteCustomId(null);
+    notifications.show({
+      title: t('venousLE.templates.delete.successToast.title', 'Template deleted'),
+      message: t(
+        'venousLE.templates.delete.successToast.message',
+        'The template has been removed from your library.',
+      ),
+      color: 'teal',
+      autoClose: 2500,
+    });
+  }, [pendingDeleteCustomId, t]);
+
+  // ---- New case flow ----
+
+  const handleNewCaseRequest = useCallback(() => {
+    setNewCaseOpen(true);
+  }, []);
+
+  const handleNewCaseConfirm = useCallback(() => {
+    dispatch({ type: 'RESET' });
+    clearAutoSaveDraft();
+    setHighlightId(null);
+    setNewCaseOpen(false);
+    notifications.show({
+      title: t('venousLE.actions.newCaseToastTitle', 'New case started'),
+      message: t(
+        'venousLE.actions.newCaseToastMessage',
+        'The form has been cleared.',
+      ),
+      color: 'teal',
+      autoClose: 2500,
+    });
+  }, [clearAutoSaveDraft, t]);
+
+  const handleNewCaseCancel = useCallback(() => {
+    setNewCaseOpen(false);
+  }, []);
+
   // Keyboard shortcuts (mirrored to tooltip hints):
-  //   ⌘N / Ctrl+N → All Normal  (for the current tab's scope)
-  //   ⌘D / Ctrl+D → Duplicate right side → left side
-  //   ⌘S / Ctrl+S → Save draft (explicitly preventDefault to block browser "Save Page As")
+  //   ⌘N / Ctrl+N  → All Normal for the current tab's scope
+  //   ⌘D / Ctrl+D  → Duplicate right side → left side
+  //   ⌘S / Ctrl+S  → Save draft (explicitly preventDefault to block browser "Save Page As")
+  //   ⌘⇧N         → Open "Start new case?" confirm modal
   useHotkeys([
     ['mod+N', () => handleSetAllNormal(), { preventDefault: true }],
     ['mod+D', () => handleCopySide('right'), { preventDefault: true }],
     ['mod+S', () => saveNow(), { preventDefault: true }],
+    ['mod+shift+N', () => handleNewCaseRequest(), { preventDefault: true }],
   ]);
 
   // Project to FormState for FHIR/PDF.
@@ -489,82 +763,91 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   return (
     <div className={classes.page}>
       <div className={classes.crumbs}>
+        <div className={classes.crumbsLeft}>
+          <button
+            type="button"
+            className={classes.backButton}
+            onClick={handleBack}
+            aria-label={t('venousLE.actions.backToStudies')}
+          >
+            ← {t('venousLE.actions.backToStudies')}
+          </button>
+          <Text className={classes.crumbsTitle}>{t('venousLE.title')}</Text>
+        </div>
         <button
           type="button"
-          className={classes.backButton}
-          onClick={handleBack}
-          aria-label={t('venousLE.actions.backToStudies')}
+          className={classes.newCaseButton}
+          onClick={handleNewCaseRequest}
+          aria-label={t('venousLE.actions.newCase', '+ New case')}
+          data-testid="new-case-button"
         >
-          ← {t('venousLE.actions.backToStudies')}
+          <IconPlus size={14} stroke={2.25} />
+          <span>{t('venousLE.actions.newCase', '+ New case')}</span>
         </button>
-        <Text className={classes.crumbsTitle}>{t('venousLE.title')}</Text>
       </div>
 
       <div className={classes.container}>
         <Stack gap="md">
           <StudyHeader value={state.header} onChange={handleHeader} />
 
-          <Grid gutter={{ base: 'sm', lg: 'md' }}>
-            <Grid.Col span={{ base: 12, lg: 5 }}>
-              <Box className={classes.anatomyCard}>
-                <Box className={classes.anatomyHead}>
-                  <Text className={classes.anatomyTitle}>
-                    {t('venousLE.anatomy.title')}
+          <SegmentAssessmentCard
+            view={state.view}
+            onViewChange={handleView}
+            findings={state.findings}
+            onFindingChange={handleFinding}
+            highlightId={highlightId}
+            onHighlight={handleRowHighlight}
+            onSetAllNormal={handleSetAllNormal}
+            onClearAll={handleClearAll}
+            onCopySide={handleCopySide}
+            onApplyTemplate={handleTemplatePick}
+            onSaveCurrentAsTemplate={handleOpenSaveDialog}
+            customTemplates={customTemplates}
+            recentTemplateIds={recentTemplateIds}
+            onDeleteCustomTemplate={handleRequestDeleteCustom}
+          />
+
+          <Box className={classes.anatomyCard}>
+            <Box className={classes.anatomyHead}>
+              <Text className={classes.anatomyTitle}>
+                {t('venousLE.anatomy.title')}
+              </Text>
+              <Text className={classes.anatomySubtitle}>
+                {t('venousLE.anatomy.subtitle')}
+              </Text>
+            </Box>
+            <div className={classes.anatomyBody}>
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                <Stack gap={4} align="center">
+                  <Text className={classes.anatomyViewLabel}>
+                    {t('anatomy.view.le-anterior', 'Anterior view')}
                   </Text>
-                  <Text className={classes.anatomySubtitle}>
-                    {t('venousLE.anatomy.subtitle')}
+                  <AnatomyView
+                    view="le-anterior"
+                    segments={competencyMap}
+                    size="md"
+                    onSegmentClick={handleAnatomySegmentClick}
+                    highlightId={anatomyHighlight}
+                  />
+                </Stack>
+                <Stack gap={4} align="center">
+                  <Text className={classes.anatomyViewLabel}>
+                    {t('anatomy.view.le-posterior', 'Posterior view')}
                   </Text>
-                </Box>
-                <div className={classes.anatomyBody}>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                    <Stack gap={4} align="center">
-                      <Text className={classes.anatomyViewLabel}>
-                        {t('anatomy.view.le-anterior', 'Anterior view')}
-                      </Text>
-                      <AnatomyView
-                        view="le-anterior"
-                        segments={competencyMap}
-                        size="md"
-                        onSegmentClick={handleAnatomySegmentClick}
-                        highlightId={anatomyHighlight}
-                      />
-                    </Stack>
-                    <Stack gap={4} align="center">
-                      <Text className={classes.anatomyViewLabel}>
-                        {t('anatomy.view.le-posterior', 'Posterior view')}
-                      </Text>
-                      <AnatomyView
-                        view="le-posterior"
-                        segments={competencyMap}
-                        size="md"
-                        onSegmentClick={handleAnatomySegmentClick}
-                        highlightId={anatomyHighlight}
-                      />
-                    </Stack>
-                  </SimpleGrid>
-                  <Box className={classes.anatomyLegend}>
-                    <AnatomyLegend />
-                  </Box>
-                </div>
+                  <AnatomyView
+                    view="le-posterior"
+                    segments={competencyMap}
+                    size="md"
+                    onSegmentClick={handleAnatomySegmentClick}
+                    highlightId={anatomyHighlight}
+                  />
+                </Stack>
+              </SimpleGrid>
+              <Box className={classes.anatomyLegend}>
+                <AnatomyLegend />
               </Box>
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, lg: 7 }}>
-              <SegmentTable
-                view={state.view}
-                onViewChange={handleView}
-                findings={state.findings}
-                onFindingChange={handleFinding}
-                highlightId={highlightId}
-                onHighlight={handleRowHighlight}
-                onSetAllNormal={handleSetAllNormal}
-                onClearAll={handleClearAll}
-                onCopySide={handleCopySide}
-              />
-            </Grid.Col>
-          </Grid>
-
-          <ReflexTimeTable findings={state.findings} onFindingChange={handleFinding} />
+            </div>
+          </Box>
 
           <ImpressionBlock
             findings={state.findings}
@@ -593,6 +876,54 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
         hasUnsavedChanges={hasUnsavedChanges}
         onSaveDraft={saveNow}
         baseFilename={baseFilename}
+      />
+
+      <ConfirmDialog
+        opened={pendingTemplate !== null}
+        onClose={handleTemplateCancel}
+        title={t('venousLE.actions.applyTemplateConfirmTitle', 'Apply template?')}
+        message={t(
+          'venousLE.actions.applyTemplateConfirmBody',
+          'This will replace current findings, CEAP, recommendations, impression, and sonographer comments.',
+        )}
+        confirmLabel={t('venousLE.actions.applyTemplate', 'Apply template')}
+        cancelLabel={t('venousLE.actions.cancel', 'Cancel')}
+        onConfirm={handleTemplateConfirm}
+      />
+
+      <ConfirmDialog
+        opened={newCaseOpen}
+        onClose={handleNewCaseCancel}
+        title={t('venousLE.actions.newCaseConfirmTitle', 'Start a new case?')}
+        message={t(
+          'venousLE.actions.newCaseConfirmBody',
+          'This will erase all current data. Unsaved changes will be lost.',
+        )}
+        confirmLabel={t('venousLE.actions.newCaseConfirm', 'Discard & start new')}
+        cancelLabel={t('venousLE.actions.cancel', 'Cancel')}
+        onConfirm={handleNewCaseConfirm}
+        destructive
+      />
+
+      <SaveTemplateDialog
+        opened={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        onSubmit={handleSaveTemplateSubmit}
+      />
+
+      <ConfirmDialog
+        opened={pendingDeleteCustomId !== null}
+        onClose={handleCancelDeleteCustom}
+        title={t('venousLE.templates.delete.confirmTitle', 'Delete template?')}
+        message={t(
+          'venousLE.templates.delete.confirmBody',
+          'This template will be removed from your library. This cannot be undone.',
+        )}
+        confirmLabel={t('venousLE.templates.delete.confirm', 'Delete')}
+        cancelLabel={t('venousLE.actions.cancel', 'Cancel')}
+        onConfirm={handleConfirmDeleteCustom}
+        destructive
+        zIndex={1250}
       />
     </div>
   );

@@ -85,7 +85,15 @@ export interface StudyNarrative {
 /** One structured recommendation entry. */
 export interface Recommendation {
   readonly id: string;
+  /**
+   * Persisted English fallback text — always present. When `textKey` is set,
+   * the UI localizes by looking up `textKey` with `text` as the fallback so
+   * unresolved keys never surface raw. User edits clear `textKey` and write
+   * the new value to `text`.
+   */
   readonly text: string;
+  /** Optional translation key for localization of template-seeded recs. */
+  readonly textKey?: string;
   /** Optional priority: e.g. 'routine' | 'urgent' | 'stat'. */
   readonly priority?: 'routine' | 'urgent' | 'stat';
   /** Optional follow-up interval (e.g. "6 months"). */

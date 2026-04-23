@@ -17,7 +17,7 @@ import { Box, Group, Text } from '@mantine/core';
 import { IconFileAnalytics, IconRefresh } from '@tabler/icons-react';
 import { EMRTextarea } from '../shared/EMRFormFields';
 import { EMRButton, EMRBadge } from '../common';
-import { narrativeFromFindings } from '../../services/narrativeService';
+import { buildLocalizedNarrative } from '../../services/narrativeService';
 import type { VenousSegmentFindings } from '../studies/venous-le/config';
 import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './ImpressionBlock.module.css';
@@ -66,9 +66,9 @@ export const ImpressionBlock = memo(function ImpressionBlock({
   const leftHeading = t('venousLE.narrativeSections.leftFindings', 'Left lower extremity — findings');
   const conclusionsHeading = t('venousLE.narrativeSections.conclusions', 'Conclusions');
 
-  // Compute fresh narrative whenever findings change.
+  // Compute fresh narrative whenever findings change — localized via active `t`.
   const autoText = useMemo(() => {
-    const narrative = narrativeFromFindings(findings);
+    const narrative = buildLocalizedNarrative(findings, t);
     return composeAutoImpression(
       narrative.rightFindings,
       narrative.leftFindings,
@@ -77,7 +77,7 @@ export const ImpressionBlock = memo(function ImpressionBlock({
       leftHeading,
       conclusionsHeading,
     );
-  }, [findings, rightHeading, leftHeading, conclusionsHeading]);
+  }, [findings, t, rightHeading, leftHeading, conclusionsHeading]);
 
   // Auto-fill: if the user has not edited, keep value synced with auto.
   const lastAutoRef = useRef<string>(autoText);

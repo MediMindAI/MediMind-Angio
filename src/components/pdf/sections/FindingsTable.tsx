@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
   emptyMessage: {
     fontSize: PDF_FONT_SIZES.footnote,
     color: PDF_THEME.textMuted,
-    fontStyle: 'italic',
     paddingVertical: 4,
     paddingHorizontal: 6,
   },

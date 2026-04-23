@@ -115,8 +115,8 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
                   <Box className={classes.itemTextarea}>
                     <EMRTextarea
                       placeholder={t('venousLE.recommendations.placeholder')}
-                      value={r.text}
-                      onChange={(v) => update(r.id, { text: v })}
+                      value={r.textKey ? t(r.textKey, r.text) : r.text}
+                      onChange={(v) => update(r.id, { text: v, textKey: undefined })}
                       minRows={2}
                       maxRows={6}
                       autosize

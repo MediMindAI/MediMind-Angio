@@ -66,6 +66,13 @@ export interface UseAutoSaveResult {
   readonly hasUnsavedChanges: boolean;
   /** Force-save immediately (bypasses the debounce) and clear the dirty flag. */
   readonly saveNow: () => void;
+  /**
+   * Remove the persisted draft for this study and reset the in-hook
+   * lastSaved/dirty state. Use when the caller intentionally starts a
+   * brand-new case — otherwise the hook would immediately re-persist the
+   * empty/reset state on the next state tick, which is fine.
+   */
+  readonly clearDraft: () => void;
 }
 
 export function useAutoSave<T>(
@@ -132,5 +139,19 @@ export function useAutoSave<T>(
     }
   }, []);
 
-  return { lastSavedAt, hasUnsavedChanges, saveNow };
+  const clearDraftNow = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    clearDraft(studyIdRef.current);
+    setLastSavedAt(null);
+    setHasUnsavedChanges(false);
+    // Suppress the next auto-save tick triggered by the RESET state change
+    // — the caller just cleared on purpose; re-saving immediately would
+    // defeat the intent.
+    firstRunRef.current = true;
+  }, []);
+
+  return { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft: clearDraftNow };
 }

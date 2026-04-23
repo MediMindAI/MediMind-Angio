@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { TranslationProvider } from './contexts/TranslationContext';
 import { mantineTheme, cssVariablesResolver, createAppColorSchemeManager } from './styles/mantineTheme';
@@ -56,6 +57,7 @@ export default function App() {
     >
       <ThemeProvider>
         <TranslationProvider>
+          <Notifications position="top-right" zIndex={2000} />
           {renderRoute(route)}
           <VersionFooter />
         </TranslationProvider>

@@ -1,0 +1,26 @@
+/* ConfirmDialog — small confirmation modal */
+
+.content {
+  border-radius: var(--emr-border-radius-xl);
+  border: 1px solid var(--emr-border-color);
+  box-shadow: var(--emr-shadow-lg);
+}
+
+.body {
+  padding: 20px 22px 18px 22px;
+  background: var(--emr-bg-card);
+}
+
+.title {
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  line-height: 1.3;
+}
+
+.message {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  line-height: 1.5;
+}

@@ -136,6 +136,12 @@ export interface SegmentTableProps {
   readonly onClearAll: () => void;
   /** Copy findings from one side to the other. */
   readonly onCopySide: (from: 'left' | 'right') => void;
+  /**
+   * When true, render only the column header + rows (no outer card/header/
+   * tabs/toolbar) — the parent is expected to supply those chrome elements.
+   * Defaults to false for back-compat with standalone usages.
+   */
+  readonly headless?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -334,6 +340,7 @@ export const SegmentTable = memo(function SegmentTable({
   onSetAllNormal,
   onClearAll,
   onCopySide,
+  headless = false,
 }: SegmentTableProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -396,6 +403,67 @@ export const SegmentTable = memo(function SegmentTable({
     }
     return out;
   }, [t, view]);
+
+  // Headless mode: render only the table grid. The parent is expected to
+  // supply the outer card shell + header + tabs + toolbar. This powers the
+  // unified Segmental Assessment card which stitches this table together
+  // with the numeric ReflexTimeTable.
+  if (headless) {
+    return (
+      <div
+        className={`${classes.tableWrap} ${classes.tableWrapHeadless}`}
+        role="table"
+        aria-label={t('venousLE.segmentTable.title')}
+      >
+        <div className={classes.headRow} role="row">
+          <div
+            className={`${classes.cell} ${classes.segmentCell} ${classes.headCell}`}
+            role="columnheader"
+          >
+            {t('venousLE.segmentTable.segment')}
+          </div>
+          {paramTitles.map((title, i) => (
+            <div
+              key={PARAMS[i]?.id ?? i}
+              className={`${classes.cell} ${classes.paramCell} ${classes.headCell}`}
+              role="columnheader"
+              data-param={PARAMS[i]?.id}
+            >
+              {title}
+            </div>
+          ))}
+          <div
+            className={`${classes.cell} ${classes.paramCell} ${classes.headCell}`}
+            role="columnheader"
+            data-param="competencyOverride"
+          >
+            {competencyLabel}
+          </div>
+        </div>
+
+        {rows.map((r) => (
+          <SegmentRow
+            key={r.fullId}
+            fullId={r.fullId}
+            base={r.base}
+            side={r.side}
+            fullLabel={r.fullLabel}
+            shortLabel={r.shortLabel}
+            finding={findings[r.fullId]}
+            paramTitles={paramTitles}
+            paramValueLabels={paramValueLabels}
+            paramTooltips={paramTooltips}
+            competencyOptions={competencyOptions}
+            competencyLabel={competencyLabel}
+            competencyTooltip={competencyTooltip}
+            highlighted={highlightId === r.fullId}
+            onFindingChange={onFindingChange}
+            onHighlight={onHighlight}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <section className={classes.card} aria-labelledby="segment-table-title">

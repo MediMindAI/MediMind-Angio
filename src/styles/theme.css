@@ -157,7 +157,7 @@
   --emr-gradient-success: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
   --emr-gradient-warning: linear-gradient(135deg, #dd6b20 0%, #ed8936 100%);
   --emr-gradient-error: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
-  --emr-gradient-section-header: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+  --emr-gradient-section-header: linear-gradient(135deg, #1a365d 0%, #2b6cb0 55%, #3182ce 100%);
   --emr-gradient-submenu: linear-gradient(90deg, #2b6cb0 0%, #3182ce 50%, #3182ce 100%);
 
   /* Subtle gradients for card backgrounds */
@@ -251,7 +251,7 @@
   --emr-text-primary: #f1f5f9;
   --emr-text-secondary: #cbd5e1;
   --emr-text-tertiary: #94a3b8;
-  --emr-text-inverse: #0f172a;
+  --emr-text-inverse: #ffffff;
 
   /* Surface backgrounds — slate family */
   --emr-bg-page: #0f172a;

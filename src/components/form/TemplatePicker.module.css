@@ -1,0 +1,7 @@
+/* TemplatePicker — button trigger for the TemplateGallery modal. */
+
+.triggerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

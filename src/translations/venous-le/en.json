@@ -218,7 +218,56 @@
       "sonographerComments": "Sonographer comments",
       "sonographerCommentsHelp": "Technical notes from the sonographer who performed the study (scanner settings, difficult segments, patient tolerance).",
       "clinicianComments": "Clinician impression",
-      "clinicianCommentsHelp": "Interpreting physician supplemental comments — distinct from the auto-generated impression."
+      "clinicianCommentsHelp": "Interpreting physician supplemental comments — distinct from the auto-generated impression.",
+      "normalCompressibilityDeep": {
+        "right": "Normal compressibility of the deep veins in the right lower extremity.",
+        "left": "Normal compressibility of the deep veins in the left lower extremity."
+      },
+      "normalFlowDeep": {
+        "right": "Normal spontaneous phasic augmented flow in the right lower extremity.",
+        "left": "Normal spontaneous phasic augmented flow in the left lower extremity."
+      },
+      "refluxNoted": "Marked reflux noted in the {vein} ({ms} ms).",
+      "nonCompressible": "Non-compressible segment suggestive of acute DVT in the {vein}.",
+      "partialCompressibility": "Partial compressibility noted in the {vein}, consistent with chronic post-thrombotic changes.",
+      "acuteThrombus": "Acute thrombus visualized within the {vein}.",
+      "chronicThrombus": "Echogenic, adherent thrombus noted in the {vein}, consistent with chronic post-thrombotic changes.",
+      "inconclusive": "Study limited — inconclusive compressibility of the {vein}."
+    },
+    "conclusion": {
+      "reflux": "Pathological reflux in the {side} {vein} ({ms} ms).",
+      "acuteDvt": "Acute DVT suspected in the {side} {vein}.",
+      "chronicPostThrombotic": "Chronic post-thrombotic changes in the {side} {vein}.",
+      "inconclusive": "Study limitation: inconclusive assessment of the {side} {vein}."
+    },
+    "segments": {
+      "cfv": "common femoral vein",
+      "eiv": "external iliac vein",
+      "fv-prox": "femoral vein, proximal",
+      "fv-mid": "femoral vein, mid",
+      "fv-dist": "femoral vein, distal",
+      "pfv": "profunda femoral vein",
+      "gsv-ak": "great saphenous vein, above knee",
+      "gsv-prox-calf": "great saphenous vein, proximal calf",
+      "gsv-mid-calf": "great saphenous vein, mid calf",
+      "gsv-dist-calf": "great saphenous vein, distal calf",
+      "pop-ak": "popliteal vein, above knee",
+      "pop-fossa": "popliteal vein, fossa",
+      "pop-bk": "popliteal vein, below knee",
+      "ptv": "posterior tibial vein",
+      "per": "peroneal vein",
+      "ssv": "small saphenous vein",
+      "gastroc": "gastrocnemius vein",
+      "soleal": "soleal vein",
+      "sfj": "saphenofemoral junction",
+      "spj": "saphenopopliteal junction"
+    },
+    "studyHeader": {
+      "title": "Study Data",
+      "toggleExpand": "Expand study data",
+      "toggleCollapse": "Collapse study data",
+      "summaryPatient": "Patient",
+      "summaryDate": "Study date"
     },
     "compressibility": {
       "normal": "Normal",
@@ -294,11 +343,176 @@
       "previewPDF": "Preview PDF",
       "downloadPDF": "Download PDF",
       "exportJSON": "Export FHIR JSON",
-      "backToStudies": "Back to studies"
+      "backToStudies": "Back to studies",
+      "newCase": "+ New case",
+      "newCaseConfirmTitle": "Start a new case?",
+      "newCaseConfirmBody": "This will erase all current findings, CEAP, recommendations, and narrative. Unsaved changes will be lost.",
+      "newCaseConfirm": "Discard & start new",
+      "newCaseToastTitle": "New case started",
+      "newCaseToastMessage": "The form has been cleared.",
+      "cancel": "Cancel",
+      "applyTemplateConfirmTitle": "Apply template?",
+      "applyTemplateConfirmBody": "This will replace current findings, CEAP, and recommendations.",
+      "applyTemplate": "Apply template"
     },
     "anatomy": {
       "title": "Anatomy diagram",
       "subtitle": "Updates live as findings change"
+    },
+    "assessment": {
+      "title": "Segmental Assessment",
+      "subtitle": "Categorical findings and numeric measurements per segment"
+    },
+    "templates": {
+      "menuLabel": "Templates",
+      "recentGroup": "Recently used",
+      "customGroup": "My templates",
+      "saveAction": "+ Save current as template",
+      "saveActionHint": "Snapshot findings, CEAP, impression & comments for reuse.",
+      "appliedToast": {
+        "title": "Template applied",
+        "message": "Applied: {name}"
+      },
+      "kind": {
+        "normal": "Normal",
+        "acute": "Acute DVT",
+        "chronic": "Chronic",
+        "postProcedure": "Post-procedure"
+      },
+      "gallery": {
+        "title": "Templates",
+        "subtitle": "Pick a pre-built case or save your own.",
+        "searchPlaceholder": "Search templates…",
+        "categoryAll": "All",
+        "categoriesLabel": "Categories",
+        "cardApply": "Apply",
+        "cardDelete": "Delete",
+        "customTag": "My template",
+        "emptyNoMatchTitle": "No templates match your search",
+        "emptyNoMatch": "No templates match \"{query}\" — try a different search term.",
+        "emptyMineTitle": "No saved templates yet",
+        "emptyMine": "You haven't saved any templates yet. Fill in a case and click + Save current as template below.",
+        "emptyRecentTitle": "Nothing here yet",
+        "emptyRecent": "Templates you apply will appear here for quick access.",
+        "emptyGeneric": "No templates in this category.",
+        "severity": {
+          "routine": "Routine",
+          "critical": "Critical",
+          "urgent": "Urgent",
+          "informational": "Informational"
+        },
+        "scope": {
+          "right": "Right",
+          "left": "Left",
+          "bilateral": "Bilateral"
+        }
+      },
+      "normalBilateral": {
+        "name": "Normal bilateral study",
+        "description": "DVT rule-out confirmed normal on both legs.",
+        "impression": "Bilateral lower-extremity venous duplex examination is within normal limits. All deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+      },
+      "normalRight": {
+        "name": "Normal right only",
+        "description": "Unilateral right-leg study, all segments normal.",
+        "impression": "Right lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+      },
+      "normalLeft": {
+        "name": "Normal left only",
+        "description": "Unilateral left-leg study, all segments normal.",
+        "impression": "Left lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+      },
+      "acuteDvtRightFemoropopliteal": {
+        "name": "Acute DVT — right femoropopliteal",
+        "description": "Occlusive thrombus from right CFV through popliteal.",
+        "impression": "Acute occlusive deep vein thrombosis involving the right common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
+      },
+      "acuteDvtLeftFemoropopliteal": {
+        "name": "Acute DVT — left femoropopliteal",
+        "description": "Occlusive thrombus from left CFV through popliteal.",
+        "impression": "Acute occlusive deep vein thrombosis involving the left common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
+      },
+      "acuteDvtLeftIliofemoral": {
+        "name": "Acute iliofemoral DVT — left",
+        "description": "Extensive thrombus from left EIV through mid-FV; May-Thurner workup.",
+        "impression": "Acute iliofemoral deep vein thrombosis. Non-compressible segments with absent phasicity and augmentation extending from the external iliac vein through the mid-femoral vein of the left lower extremity. Markedly dilated venous calipers. Distribution raises suspicion for May-Thurner syndrome — recommend cross-sectional imaging of the iliac venous outflow. Distal femoral, popliteal, and calf veins are patent."
+      },
+      "acuteDvtRightCalf": {
+        "name": "Isolated calf DVT — right",
+        "description": "Right PTV + peroneal + gastroc + soleal acute thrombosis.",
+        "impression": "Acute isolated calf deep vein thrombosis involving the right posterior tibial and peroneal veins, with extension into the gastrocnemius and soleal muscular venous branches. Proximal deep venous system (common femoral, femoral, popliteal) is fully patent. Superficial venous system is patent."
+      },
+      "svtGsvRight": {
+        "name": "SVT — GSV right (acute)",
+        "description": "Acute superficial thrombophlebitis of right GSV — SFJ-proximity check.",
+        "impression": "Acute superficial venous thrombophlebitis of the right great saphenous vein, involving the above-knee and proximal calf segments. Non-compressible superficial thrombus extending toward the saphenofemoral junction — document distance from SFJ for management decision. Deep venous system is patent; no evidence of deep extension."
+      },
+      "chronicPostThromboticRight": {
+        "name": "Post-thrombotic — right",
+        "description": "Partial compressibility with chronic changes in right deep system. CEAP C3.",
+        "impression": "Chronic post-thrombotic changes of the right femoral venous system. Non-dilated, partially compressible segments with echogenic adherent thrombus remnants and reduced spontaneous phasicity. Findings consistent with prior deep vein thrombosis, now chronic. Secondary deep venous insufficiency with combined reflux and obstructive physiology. CEAP C3s Es Ad Pr,o."
+      },
+      "chronicGsvRefluxBilateral": {
+        "name": "GSV reflux — bilateral (CEAP C2)",
+        "description": "Bilateral great saphenous reflux with incompetent SFJ.",
+        "impression": "Bilateral primary superficial venous reflux involving the great saphenous vein (above-knee and proximal calf segments) and the saphenofemoral junctions. Reflux duration exceeds 1000 ms in all involved segments. Deep venous system is patent with normal compressibility and no evidence of deep reflux. CEAP C2 Ep As Pr — varicose veins of primary etiology, superficial anatomic distribution, reflux pathophysiology."
+      },
+      "chronicSsvRefluxRight": {
+        "name": "SSV reflux — right (CEAP C2)",
+        "description": "Right small saphenous reflux with incompetent SPJ.",
+        "impression": "Primary superficial venous reflux involving the right small saphenous vein and saphenopopliteal junction. Reflux duration exceeds 500 ms in the SSV, consistent with pathological reflux distributed along the posterior calf. Deep venous system is patent with normal compressibility and no evidence of deep reflux. CEAP C2 Ep As Pr."
+      },
+      "postAblationGsvRight": {
+        "name": "GSV post-ablation — right",
+        "description": "Right GSV segments marked ablated post-EVLA/RFA.",
+        "impression": "Status post endovenous ablation of the right great saphenous vein. Ablated GSV segments from above-knee through distal calf demonstrate no flow, consistent with successful occlusion. Saphenofemoral junction stump is patent. Deep venous system is patent with normal compressibility and flow. Small saphenous vein is patent."
+      },
+      "recommendations": {
+        "acuteDvtRightFemoropopliteal": "Initiate therapeutic anticoagulation per CHEST 2021 guidelines (DOAC first-line in absence of contraindications). Confirm hospital bridge if applicable. Repeat venous duplex at 3 months to assess resolution and residual thrombus.",
+        "acuteDvtLeftFemoropopliteal": "Initiate therapeutic anticoagulation per CHEST 2021 guidelines (DOAC first-line in absence of contraindications). Confirm hospital bridge if applicable. Repeat venous duplex at 3 months to assess resolution and residual thrombus.",
+        "acuteDvtLeftIliofemoral": "Urgent vascular surgery consultation. Consider catheter-directed thrombolysis or pharmacomechanical thrombectomy for acute iliofemoral DVT per ATTRACT subgroup analysis. Screen for May-Thurner syndrome with CT or MR venography. IVC filter if anticoagulation contraindicated. Initiate therapeutic anticoagulation immediately.",
+        "acuteDvtRightCalf": "Per CHEST 2021 isolated distal (calf) DVT guidance: in a patient with severe symptoms or risk factors for proximal extension, initiate therapeutic anticoagulation for 3 months. Otherwise consider serial duplex surveillance at 1–2 weeks to rule out proximal extension. Evaluate for underlying provocative factors.",
+        "svtGsvRight": "If thrombus extends within 3 cm of the saphenofemoral junction, treat as DVT-equivalent with therapeutic anticoagulation. If > 3 cm from SFJ, prophylactic fondaparinux 2.5 mg daily × 45 days per SURPRISE trial. NSAIDs for symptom relief. Ambulation encouraged. Follow-up duplex in 7–10 days to confirm no deep extension.",
+        "chronicPostThromboticRight": "Graduated elastic compression stockings (30–40 mmHg) daily for post-thrombotic syndrome management. Evaluate for venous ulceration at follow-up. Consider venography or IVUS if stenting of iliac outflow is being considered per ESVS 2022.",
+        "chronicGsvRefluxBilateral": "Endovenous ablation (EVLA or RFA) is indicated for symptomatic GSV reflux per ESVS 2022 (Level Ia evidence). Ambulatory phlebectomy for tributary varicosities. Compression therapy (class II, 20–30 mmHg) as bridge therapy.",
+        "chronicSsvRefluxRight": "Endovenous ablation of the small saphenous vein is appropriate for symptomatic SSV reflux per ESVS 2022. Careful pre-operative mapping of the SPJ and saphenopopliteal anatomy to reduce risk of sural nerve injury. Compression therapy as bridge to definitive treatment.",
+        "postAblationGsvRight": "Continue compression therapy (class II) × 2 weeks post-procedure. Return-to-duplex in 1 month to confirm durable occlusion and exclude endovenous heat-induced thrombosis (EHIT) classes II–IV per Kabnick classification."
+      },
+      "sonographerProtocol": {
+        "dvtRuleOut": "Bilateral venous duplex protocol per IAC standards. Compression evaluation every 2 cm from common femoral through tibial and peroneal veins. Colour and spectral Doppler assessment of spontaneity, phasicity, and augmentation. Patient supine with reverse Trendelenburg tilt.",
+        "iliofemoralDvt": "Iliofemoral DVT protocol: extended proximal imaging through the common femoral into the external and common iliac veins. Documented compressibility, spectral Doppler respiratory phasicity, and caliper measurements from iliac through mid-femoral segments. Contralateral screening for May-Thurner pattern.",
+        "calfDvt": "Calf-targeted DVT protocol with transverse compression of paired tibial and peroneal veins every 1–2 cm, plus gastrocnemius and soleal muscular branches. Colour Doppler augmentation applied to confirm patency where compression is technically limited.",
+        "chronicReflux": "Chronic venous insufficiency protocol: reverse Trendelenburg / standing position for reflux. Distal manual augmentation or pneumatic cuff release. Reflux duration measured at SFJ, SPJ, and mid-segments per ESVS 2022 — pathological threshold > 500 ms superficial / > 1000 ms deep.",
+        "acuteSvt": "Acute superficial venous thrombophlebitis protocol: B-mode measurement of thrombus extent along the great saphenous vein, with specific documentation of the distance from the most proximal thrombus to the saphenofemoral junction. Deep venous system screened in full to rule out extension.",
+        "postAblation": "Post-endovenous-ablation follow-up protocol. Assessment of ablated GSV segments for occlusion (absent flow, echogenic lumen). SFJ stump inspected for endovenous heat-induced thrombosis (EHIT) per Kabnick classification. Deep venous system screened for thrombus extension."
+      },
+      "save": {
+        "title": "Save as template",
+        "subtitle": "Save the current form state as a reusable template for this device.",
+        "nameLabel": "Template name",
+        "namePlaceholder": "e.g. Post-op EHIT II — my lab",
+        "nameRequired": "Name is required.",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Short description so you can recognize this template later (optional).",
+        "kindLabel": "Template kind",
+        "submit": "Save template",
+        "cancel": "Cancel",
+        "hint": "The template captures findings, CEAP, recommendations, impression, and sonographer comments. No patient data is stored.",
+        "successToast": {
+          "title": "Template saved",
+          "message": "Saved: {name}"
+        }
+      },
+      "delete": {
+        "confirmTitle": "Delete template?",
+        "confirmBody": "This template will be removed from your library. This cannot be undone.",
+        "confirm": "Delete",
+        "ariaLabel": "Delete template",
+        "successToast": {
+          "title": "Template deleted",
+          "message": "The template has been removed from your library."
+        }
+      }
     }
   }
 }

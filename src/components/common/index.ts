@@ -33,3 +33,6 @@ export type { EMRAlertProps, EMRAlertVariant } from './EMRAlert';
 
 export { EMRCollapsibleSection } from './EMRCollapsibleSection';
 export type { EMRCollapsibleSectionProps } from './EMRCollapsibleSection';
+
+export { ConfirmDialog } from './ConfirmDialog';
+export type { ConfirmDialogProps } from './ConfirmDialog';

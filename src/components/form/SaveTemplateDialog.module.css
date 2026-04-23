@@ -1,0 +1,13 @@
+/* SaveTemplateDialog — modal for saving current form state as a custom template */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-normal);
+}

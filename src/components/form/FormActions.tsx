@@ -22,6 +22,8 @@ import { useTranslation } from '../../contexts/TranslationContext';
 import type { FormState } from '../../types/form';
 import { downloadFhirBundle } from '../../services/fhirBuilder';
 import { buildReportLabels } from '../pdf/buildReportLabels';
+import { buildLocalizedNarrative } from '../../services/narrativeService';
+import type { VenousSegmentFindings } from '../studies/venous-le/config';
 import classes from './FormActions.module.css';
 
 export interface FormActionsProps {
@@ -76,6 +78,7 @@ export const FormActions = memo(function FormActions({
 
     // Resolve anatomy SVGs for venous forms before rendering.
     let anatomy: Parameters<typeof ReportDocument>[0]['anatomy'];
+    let localized: ReturnType<typeof buildLocalizedNarrative> | undefined;
     if (isVenousForm(form)) {
       const findings: Record<
         string,
@@ -94,6 +97,15 @@ export const FormActions = memo(function FormActions({
         loadAnatomyForPdf('le-posterior', findings),
       ]);
       anatomy = { anterior, posterior };
+
+      // Build localized narrative for the PDF from the full findings map the
+      // form stashes on `parameters.segmentFindings`.
+      const rawFindings = form.parameters['segmentFindings'];
+      const narrativeFindings: VenousSegmentFindings =
+        rawFindings && typeof rawFindings === 'object'
+          ? (rawFindings as unknown as VenousSegmentFindings)
+          : {};
+      localized = buildLocalizedNarrative(narrativeFindings, t);
     } else {
       anatomy = { anterior: null, posterior: null };
     }
@@ -103,6 +115,9 @@ export const FormActions = memo(function FormActions({
         form={form}
         labels={labels}
         anatomy={anatomy}
+        rightFindings={localized?.rightFindings}
+        leftFindings={localized?.leftFindings}
+        conclusions={localized?.conclusions}
         generatedAt={new Date().toISOString()}
       />
     ).toBlob();
