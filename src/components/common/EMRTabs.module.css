@@ -1,0 +1,311 @@
+/**
+ * EMRTabs Styles - Premium Design
+ */
+
+/* ============================================================================
+   Root Container
+   ============================================================================ */
+
+.root {
+  width: 100%;
+}
+
+/* ============================================================================
+   Tab List - Glass Container
+   ============================================================================ */
+
+.list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: var(--emr-bg-hover);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 14px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.list[data-grow="true"] {
+  display: flex;
+  width: 100%;
+}
+
+.list[data-grow="true"] .tab {
+  flex: 1;
+  justify-content: center;
+}
+
+/* ============================================================================
+   Tab Button - Modern Card Style
+   ============================================================================ */
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  flex-shrink: 0;
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+.tab:hover:not(.tab--disabled) {
+  color: var(--emr-text-primary);
+  background: var(--emr-bg-hover);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--emr-primary);
+  outline-offset: 2px;
+}
+
+.tab[data-grow="true"] {
+  flex: 1;
+}
+
+/* ============================================================================
+   Active State - Theme Blue Gradient Glow
+   ============================================================================ */
+
+.tab--active {
+  color: var(--emr-text-white) !important;
+  background: var(--emr-gradient-primary) !important;
+  border: 1px solid transparent;
+  box-shadow:
+    0 2px 8px var(--emr-secondary-alpha-30),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tab--active .tabLabel {
+  font-weight: var(--emr-font-semibold);
+}
+
+.tab--active svg {
+  filter: drop-shadow(0 0 4px var(--emr-secondary-alpha-50));
+}
+
+/* Disabled State */
+.tab--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Tab Label */
+.tabLabel {
+  line-height: var(--emr-line-height-tight);
+}
+
+/* Tab Icon Styling */
+.tab svg {
+  opacity: 0.7;
+  transition: all 0.25s ease;
+}
+
+.tab:hover:not(.tab--disabled) svg {
+  opacity: 0.9;
+}
+
+.tab--active svg {
+  opacity: 1;
+}
+
+/* Tab Badge */
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 7px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  background: var(--emr-gradient-primary);
+  color: var(--emr-text-white);
+  border-radius: 10px;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px var(--emr-secondary-alpha-30);
+}
+
+/* ============================================================================
+   Indicator - Hidden for card style (active state handles it)
+   ============================================================================ */
+
+.indicator {
+  display: none;
+}
+
+/* ============================================================================
+   Default Variant (Card Style)
+   ============================================================================ */
+
+.tab--default {
+  /* Uses the base card styling above */
+}
+
+/* ============================================================================
+   Pills Variant - Compact Gradient Pills
+   ============================================================================ */
+
+.tab--pills {
+  border-radius: 20px;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.tab--pills.tab--active {
+  background: var(--emr-gradient-primary) !important;
+  border: none;
+  box-shadow:
+    0 4px 15px var(--emr-secondary-alpha-30),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   Outline Variant - Subtle Border Style
+   ============================================================================ */
+
+.tab--outline {
+  border: 1px solid transparent;
+}
+
+.tab--outline:hover:not(.tab--disabled):not(.tab--active) {
+  border-color: var(--emr-white-alpha-10);
+  background: var(--emr-white-alpha-05);
+}
+
+.tab--outline.tab--active {
+  border-color: var(--emr-secondary-alpha-50);
+  background: var(--emr-secondary-alpha-10) !important;
+  box-shadow:
+    0 0 15px var(--emr-secondary-alpha-15),
+    inset 0 1px 0 var(--emr-white-alpha-05);
+}
+
+/* ============================================================================
+   Panel - Smooth Fade In
+   ============================================================================ */
+
+.panel {
+  animation: panelFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Size Variants
+   ============================================================================ */
+
+.tab[style*="height: 36px"] {
+  padding: 0 14px;
+  font-size: var(--emr-font-sm);
+  gap: 6px;
+}
+
+.tab[style*="height: 42px"] {
+  padding: 0 18px;
+  font-size: var(--emr-font-base);
+  gap: 8px;
+}
+
+.tab[style*="height: 48px"] {
+  padding: 0 22px;
+  font-size: var(--emr-font-md);
+  gap: 10px;
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .list {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .tab {
+    padding: 0 12px !important;
+    font-size: var(--emr-font-sm) !important;
+    border-radius: 8px;
+  }
+
+  .tabBadge {
+    min-width: 18px;
+    height: 18px;
+    font-size: calc(var(--emr-font-xs) - 1px);
+    padding: 0 5px;
+    margin-left: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab {
+    padding: 0 10px !important;
+  }
+
+  .tab svg + .tabLabel {
+    display: none;
+  }
+
+  .tab:not(:has(svg)) .tabLabel {
+    display: block;
+  }
+
+  .tabBadge {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   Hover Animation Enhancement
+   ============================================================================ */
+
+.tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    circle at center,
+    var(--emr-white-alpha-10) 0%,
+    transparent 70%
+  );
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.tab:hover:not(.tab--disabled)::before {
+  opacity: 1;
+}
+
+.tab--active::before {
+  display: none;
+}

@@ -1,0 +1,144 @@
+/* EMRButton variant styles with pseudo-selectors */
+
+.primaryButton {
+  background: var(--emr-gradient-primary);
+  border: none;
+  color: var(--emr-text-white);
+  box-shadow: 0 2px 4px var(--emr-secondary-alpha-20), 0 4px 12px var(--emr-secondary-alpha-15), inset 0 1px 0 var(--emr-white-alpha-10);
+}
+
+.primaryButton:hover:not(:disabled) {
+  box-shadow: 0 4px 8px var(--emr-secondary-alpha-30), 0 8px 16px var(--emr-secondary-alpha-20), inset 0 1px 0 var(--emr-white-alpha-10);
+  filter: brightness(1.05);
+}
+
+.primaryButton:active:not(:disabled) {
+  box-shadow: 0 1px 2px var(--emr-secondary-alpha-20), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.primaryButton:focus-visible {
+  outline: none;
+  box-shadow: 0 2px 4px var(--emr-secondary-alpha-20), 0 4px 12px var(--emr-secondary-alpha-15), 0 0 0 3px var(--emr-accent-alpha-20);
+}
+
+.primaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: var(--emr-gradient-primary);
+}
+
+.secondaryButton {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  color: var(--emr-text-primary);
+  box-shadow: var(--emr-shadow-sm);
+  position: relative;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--emr-bg-hover);
+  border-color: var(--emr-border-focus);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.secondaryButton:active:not(:disabled) {
+  background: var(--emr-bg-hover);
+  filter: brightness(0.95);
+}
+
+.secondaryButton:focus-visible {
+  outline: none;
+  box-shadow: var(--emr-shadow-sm), 0 0 0 3px var(--emr-accent-alpha-20);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  background: var(--emr-error);
+  border: none;
+  color: var(--emr-text-white);
+  box-shadow: var(--emr-shadow-error);
+}
+
+.dangerButton:hover:not(:disabled) {
+  box-shadow: var(--emr-shadow-error), var(--emr-shadow-md);
+  filter: brightness(1.1);
+}
+
+.dangerButton:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.dangerButton:focus-visible {
+  outline: none;
+  box-shadow: var(--emr-shadow-error), 0 0 0 3px var(--emr-error-alpha-20);
+}
+
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ghostButton {
+  background: transparent;
+  border: none;
+  color: var(--emr-text-secondary);
+}
+
+.ghostButton:hover:not(:disabled) {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.ghostButton:active:not(:disabled) {
+  background: var(--emr-accent-alpha-10);
+}
+
+.ghostButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emr-accent-alpha-20);
+}
+
+.ghostButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  On-gradient variant                                                        */
+/*                                                                             */
+/*  White-background button meant to sit on a dark/gradient bar. Gives the    */
+/*  same look without the Mantine label height clipping bug — EMRButton        */
+/*  always sets label overflow visible.                                        */
+/* -------------------------------------------------------------------------- */
+.onGradientButton {
+  background-color: var(--emr-bg-card);
+  color: var(--emr-primary);
+  border: 1px solid var(--emr-border-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.onGradientButton:hover:not(:disabled) {
+  background-color: var(--emr-bg-hover);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.02);
+}
+
+.onGradientButton:active:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.onGradientButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emr-white-alpha-20);
+}
+
+.onGradientButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

@@ -1,0 +1,149 @@
+/* EMRCollapsibleSection - Unified Blue Theme Styling */
+
+/* Container */
+.section {
+  border-radius: var(--emr-border-radius-lg);
+  overflow: hidden;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.section:hover {
+  border-color: var(--emr-border-focus);
+  box-shadow: var(--emr-shadow-md);
+}
+
+/* Section Header - Unified Blue Gradient */
+.sectionHeader {
+  background: var(--emr-gradient-section-header);
+  color: var(--emr-text-inverse);
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--emr-space-2);
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: var(--emr-shadow-section-header);
+}
+
+.sectionHeader:hover {
+  filter: brightness(1.08);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.sectionHeader:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 2px;
+}
+
+/* Soft variant */
+.sectionHeaderSoft {
+  background: var(--emr-bg-card);
+  color: var(--emr-text-primary);
+  border-bottom: 1px solid var(--emr-border-color);
+  box-shadow: none;
+}
+
+.sectionHeaderSoft:hover {
+  background: var(--emr-bg-hover);
+  filter: none;
+  box-shadow: none;
+}
+
+.sectionHeaderSoft .chevronIcon,
+.sectionHeaderSoft .sectionIcon {
+  color: var(--emr-primary);
+  opacity: 1;
+}
+
+.sectionHeaderSoft .sectionTitle {
+  color: var(--emr-text-primary);
+}
+
+.sectionHeaderSoft .sectionSubtitle {
+  color: var(--emr-text-secondary);
+  opacity: 1;
+}
+
+/* Chevron icon with rotation animation */
+.chevronIcon {
+  transition: transform 0.25s ease;
+  color: var(--emr-text-inverse);
+  opacity: 0.9;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chevronIcon.open {
+  transform: rotate(90deg);
+}
+
+/* Section icon styling */
+.sectionIcon {
+  color: var(--emr-text-inverse);
+  opacity: 0.95;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Section title */
+.sectionTitle {
+  color: var(--emr-text-inverse);
+  font-weight: var(--emr-font-semibold);
+  font-size: var(--emr-font-md);
+  letter-spacing: var(--emr-letter-spacing-tight);
+}
+
+/* Section subtitle */
+.sectionSubtitle {
+  color: var(--emr-text-inverse);
+  font-weight: var(--emr-font-normal);
+  font-size: var(--emr-font-xs);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Section content */
+.sectionContent {
+  padding: var(--emr-space-5);
+  background: var(--emr-bg-card);
+}
+
+/* ==================== MOBILE RESPONSIVENESS ==================== */
+@media (max-width: 768px) {
+  .sectionHeader {
+    padding: 10px 12px;
+  }
+
+  .sectionContent {
+    padding: var(--emr-space-4);
+  }
+
+  .sectionTitle {
+    font-size: var(--emr-font-sm);
+  }
+
+  .sectionSubtitle {
+    font-size: var(--emr-font-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionHeader {
+    padding: 8px 10px;
+  }
+
+  .sectionContent {
+    padding: var(--emr-space-2);
+  }
+
+  .sectionSubtitle {
+    display: none;
+  }
+}

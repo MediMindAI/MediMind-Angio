@@ -1,0 +1,535 @@
+{
+  "version": "0.1.0",
+  "views": {
+    "le-anterior": {
+      "viewBox": "0 0 600 900",
+      "segments": [
+        {
+          "id": "eiv-right",
+          "bbox": [
+            194,
+            54,
+            32,
+            47
+          ],
+          "label": "External iliac vein (right)"
+        },
+        {
+          "id": "cfv-right",
+          "bbox": [
+            194,
+            89,
+            12,
+            82
+          ],
+          "label": "Common femoral vein (right)"
+        },
+        {
+          "id": "sfj-right",
+          "bbox": [
+            194,
+            114,
+            42,
+            17
+          ],
+          "label": "Saphenofemoral junction (right)"
+        },
+        {
+          "id": "pfv-right",
+          "bbox": [
+            169,
+            159,
+            37,
+            87
+          ],
+          "label": "Profunda (deep femoral) vein (right)"
+        },
+        {
+          "id": "fv-prox-right",
+          "bbox": [
+            194,
+            159,
+            12,
+            87
+          ],
+          "label": "Femoral vein (proximal) (right)"
+        },
+        {
+          "id": "fv-mid-right",
+          "bbox": [
+            194,
+            234,
+            12,
+            102
+          ],
+          "label": "Femoral vein (mid) (right)"
+        },
+        {
+          "id": "fv-dist-right",
+          "bbox": [
+            194,
+            324,
+            12,
+            87
+          ],
+          "label": "Femoral vein (distal) (right)"
+        },
+        {
+          "id": "pop-ak-right",
+          "bbox": [
+            194,
+            399,
+            12,
+            47
+          ],
+          "label": "Popliteal vein (above knee) (right)"
+        },
+        {
+          "id": "pop-bk-right",
+          "bbox": [
+            194,
+            434,
+            12,
+            62
+          ],
+          "label": "Popliteal vein (below knee) (right)"
+        },
+        {
+          "id": "ptv-right",
+          "bbox": [
+            194,
+            484,
+            26,
+            342
+          ],
+          "label": "Posterior tibial vein (right)"
+        },
+        {
+          "id": "per-right",
+          "bbox": [
+            180,
+            484,
+            26,
+            322
+          ],
+          "label": "Peroneal vein (right)"
+        },
+        {
+          "id": "gsv-ak-right",
+          "bbox": [
+            224,
+            124,
+            42,
+            312
+          ],
+          "label": "Great saphenous vein (above knee) (right)"
+        },
+        {
+          "id": "gsv-prox-calf-right",
+          "bbox": [
+            238,
+            424,
+            14,
+            147
+          ],
+          "label": "Great saphenous vein (proximal calf) (right)"
+        },
+        {
+          "id": "gsv-mid-calf-right",
+          "bbox": [
+            230,
+            559,
+            22,
+            132
+          ],
+          "label": "Great saphenous vein (mid calf) (right)"
+        },
+        {
+          "id": "gsv-dist-calf-right",
+          "bbox": [
+            216,
+            679,
+            26,
+            157
+          ],
+          "label": "Great saphenous vein (distal calf) (right)"
+        },
+        {
+          "id": "eiv-left",
+          "bbox": [
+            374,
+            54,
+            32,
+            47
+          ],
+          "label": "External iliac vein (left)"
+        },
+        {
+          "id": "cfv-left",
+          "bbox": [
+            394,
+            89,
+            12,
+            82
+          ],
+          "label": "Common femoral vein (left)"
+        },
+        {
+          "id": "sfj-left",
+          "bbox": [
+            364,
+            114,
+            42,
+            17
+          ],
+          "label": "Saphenofemoral junction (left)"
+        },
+        {
+          "id": "pfv-left",
+          "bbox": [
+            394,
+            159,
+            37,
+            87
+          ],
+          "label": "Profunda (deep femoral) vein (left)"
+        },
+        {
+          "id": "fv-prox-left",
+          "bbox": [
+            394,
+            159,
+            12,
+            87
+          ],
+          "label": "Femoral vein (proximal) (left)"
+        },
+        {
+          "id": "fv-mid-left",
+          "bbox": [
+            394,
+            234,
+            12,
+            102
+          ],
+          "label": "Femoral vein (mid) (left)"
+        },
+        {
+          "id": "fv-dist-left",
+          "bbox": [
+            394,
+            324,
+            12,
+            87
+          ],
+          "label": "Femoral vein (distal) (left)"
+        },
+        {
+          "id": "pop-ak-left",
+          "bbox": [
+            394,
+            399,
+            12,
+            47
+          ],
+          "label": "Popliteal vein (above knee) (left)"
+        },
+        {
+          "id": "pop-bk-left",
+          "bbox": [
+            394,
+            434,
+            12,
+            62
+          ],
+          "label": "Popliteal vein (below knee) (left)"
+        },
+        {
+          "id": "ptv-left",
+          "bbox": [
+            380,
+            484,
+            26,
+            342
+          ],
+          "label": "Posterior tibial vein (left)"
+        },
+        {
+          "id": "per-left",
+          "bbox": [
+            394,
+            484,
+            26,
+            322
+          ],
+          "label": "Peroneal vein (left)"
+        },
+        {
+          "id": "gsv-ak-left",
+          "bbox": [
+            334,
+            124,
+            42,
+            312
+          ],
+          "label": "Great saphenous vein (above knee) (left)"
+        },
+        {
+          "id": "gsv-prox-calf-left",
+          "bbox": [
+            348,
+            424,
+            14,
+            147
+          ],
+          "label": "Great saphenous vein (proximal calf) (left)"
+        },
+        {
+          "id": "gsv-mid-calf-left",
+          "bbox": [
+            348,
+            559,
+            22,
+            132
+          ],
+          "label": "Great saphenous vein (mid calf) (left)"
+        },
+        {
+          "id": "gsv-dist-calf-left",
+          "bbox": [
+            358,
+            679,
+            26,
+            157
+          ],
+          "label": "Great saphenous vein (distal calf) (left)"
+        }
+      ]
+    },
+    "le-posterior": {
+      "viewBox": "0 0 600 900",
+      "segments": [
+        {
+          "id": "pop-ak-right",
+          "bbox": [
+            194,
+            399,
+            12,
+            42
+          ],
+          "label": "Popliteal vein (above knee) (right)"
+        },
+        {
+          "id": "pop-fossa-right",
+          "bbox": [
+            184,
+            426,
+            32,
+            28
+          ],
+          "label": "Popliteal vein (fossa) (right)"
+        },
+        {
+          "id": "pop-bk-right",
+          "bbox": [
+            194,
+            439,
+            12,
+            57
+          ],
+          "label": "Popliteal vein (below knee) (right)"
+        },
+        {
+          "id": "spj-right",
+          "bbox": [
+            176,
+            428,
+            30,
+            28
+          ],
+          "label": "Saphenopopliteal junction (right)"
+        },
+        {
+          "id": "ssv-right",
+          "bbox": [
+            176,
+            444,
+            25,
+            372
+          ],
+          "label": "Small saphenous vein (right)"
+        },
+        {
+          "id": "gastroc-right",
+          "bbox": [
+            176,
+            454,
+            18,
+            102
+          ],
+          "label": "Gastrocnemius vein (right)"
+        },
+        {
+          "id": "soleal-right",
+          "bbox": [
+            200,
+            462,
+            18,
+            199
+          ],
+          "label": "Soleal vein (right)"
+        },
+        {
+          "id": "ptv-right",
+          "bbox": [
+            198,
+            484,
+            26,
+            342
+          ],
+          "label": "Posterior tibial vein (right)"
+        },
+        {
+          "id": "per-right",
+          "bbox": [
+            176,
+            484,
+            26,
+            322
+          ],
+          "label": "Peroneal vein (right)"
+        },
+        {
+          "id": "gsv-mid-calf-right",
+          "bbox": [
+            220,
+            514,
+            16,
+            157
+          ],
+          "label": "Great saphenous vein (mid calf) (right)"
+        },
+        {
+          "id": "gsv-dist-calf-right",
+          "bbox": [
+            210,
+            659,
+            22,
+            177
+          ],
+          "label": "Great saphenous vein (distal calf) (right)"
+        },
+        {
+          "id": "pop-ak-left",
+          "bbox": [
+            394,
+            399,
+            12,
+            42
+          ],
+          "label": "Popliteal vein (above knee) (left)"
+        },
+        {
+          "id": "pop-fossa-left",
+          "bbox": [
+            384,
+            426,
+            32,
+            28
+          ],
+          "label": "Popliteal vein (fossa) (left)"
+        },
+        {
+          "id": "pop-bk-left",
+          "bbox": [
+            394,
+            439,
+            12,
+            57
+          ],
+          "label": "Popliteal vein (below knee) (left)"
+        },
+        {
+          "id": "spj-left",
+          "bbox": [
+            394,
+            428,
+            30,
+            28
+          ],
+          "label": "Saphenopopliteal junction (left)"
+        },
+        {
+          "id": "ssv-left",
+          "bbox": [
+            399,
+            444,
+            25,
+            372
+          ],
+          "label": "Small saphenous vein (left)"
+        },
+        {
+          "id": "gastroc-left",
+          "bbox": [
+            406,
+            454,
+            18,
+            102
+          ],
+          "label": "Gastrocnemius vein (left)"
+        },
+        {
+          "id": "soleal-left",
+          "bbox": [
+            382,
+            462,
+            18,
+            199
+          ],
+          "label": "Soleal vein (left)"
+        },
+        {
+          "id": "ptv-left",
+          "bbox": [
+            376,
+            484,
+            26,
+            342
+          ],
+          "label": "Posterior tibial vein (left)"
+        },
+        {
+          "id": "per-left",
+          "bbox": [
+            398,
+            484,
+            26,
+            322
+          ],
+          "label": "Peroneal vein (left)"
+        },
+        {
+          "id": "gsv-mid-calf-left",
+          "bbox": [
+            364,
+            514,
+            16,
+            157
+          ],
+          "label": "Great saphenous vein (mid calf) (left)"
+        },
+        {
+          "id": "gsv-dist-calf-left",
+          "bbox": [
+            368,
+            659,
+            22,
+            177
+          ],
+          "label": "Great saphenous vein (distal calf) (left)"
+        }
+      ]
+    }
+  }
+}
