@@ -1,0 +1,50 @@
+{
+  "ceap": {
+    "title": "CEAP Classification (2020)",
+    "subtitle": "Clinical classification for chronic venous disease",
+    "c": {
+      "label": "Clinical (C)",
+      "0": "C0 — No visible or palpable signs of venous disease",
+      "1": "C1 — Telangiectasies or reticular veins",
+      "2": "C2 — Varicose veins",
+      "2r": "C2r — Recurrent varicose veins",
+      "3": "C3 — Edema",
+      "4": "C4 — Skin / subcutaneous changes",
+      "4a": "C4a — Pigmentation or eczema",
+      "4b": "C4b — Lipodermatosclerosis or atrophie blanche",
+      "4c": "C4c — Corona phlebectatica",
+      "5": "C5 — Healed venous ulcer",
+      "6": "C6 — Active venous ulcer",
+      "6r": "C6r — Recurrent active venous ulcer"
+    },
+    "e": {
+      "label": "Etiology (E)",
+      "c": "Ec — Congenital",
+      "p": "Ep — Primary",
+      "s": "Es — Secondary (post-thrombotic or other)",
+      "si": "Esi — Secondary, intravenous",
+      "se": "Ese — Secondary, extravenous",
+      "n": "En — No cause identified"
+    },
+    "a": {
+      "label": "Anatomy (A)",
+      "s": "As — Superficial veins",
+      "p": "Ap — Perforating veins",
+      "d": "Ad — Deep veins",
+      "n": "An — No anatomical location identified"
+    },
+    "p": {
+      "label": "Pathophysiology (P)",
+      "r": "Pr — Reflux",
+      "o": "Po — Obstruction",
+      "rO": "Pr,o — Reflux and obstruction",
+      "n": "Pn — No pathophysiology identified"
+    },
+    "modifier": {
+      "r": "Recurrent",
+      "s": "Symptomatic",
+      "a": "Asymptomatic",
+      "n": "No modifier"
+    }
+  }
+}

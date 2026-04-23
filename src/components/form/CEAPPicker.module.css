@@ -1,0 +1,37 @@
+/* CEAPPicker — collapsible classification axes */
+
+.body {
+  padding: 8px 0;
+}
+
+.axis {
+  padding: 14px 16px;
+  background: var(--emr-bg-hover);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  height: 100%;
+}
+
+.axisTitle {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  margin-bottom: 10px;
+}
+
+.previewLabel {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-inverse);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 575px) {
+  .axis {
+    padding: 12px;
+  }
+}

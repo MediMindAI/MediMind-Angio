@@ -1,15 +1,30 @@
-# Phase 1 Logic Layer — MediMind Angio
+# MediMind Angio — Phase 1 PDF Report (FULL)
+
+Corestudycast-style bilateral venous LE duplex report.
+
+## Plan
+- Write a lightweight SVG→@react-pdf converter that reuses `public/anatomy/*.svg` with fetch (browser) / readFile (node).
+- Use `metadata.json` for segment labels + bbox (where needed for callouts).
+- ReportDocument is a dispatcher; Phase 1 implements the venous LE variants.
+- Every section is a small, focused file in `src/components/pdf/sections/`.
+- PDFGenerator becomes async-aware (loads the SVGs before rendering).
+- Add a `scripts/test-pdf.ts` that mock-renders a full report and saves to `/tmp/sample-report.pdf`.
 
 ## Tasks
-- [ ] 1. Create `src/components/studies/venous-le/narrativeGenerator.ts` — auto-generate findings prose + i18n keys
-- [ ] 2. Create `src/services/narrativeService.ts` — re-export wrapper + `narrativeFromFormState(form: FormState)` helper
-- [ ] 3. Create `src/services/ceapService.ts` — CEAP 2020 formatting, descriptions, FHIR component emission
-- [ ] 4. Create `src/services/fhirBuilder.ts` — `buildFhirBundle(form: FormState): Bundle` + `downloadFhirBundle(...)`
-- [ ] 5. Create `src/hooks/useAutoSave.ts` — localStorage autosave hook with 2s debounce + `loadDraft`/`clearDraft`
-- [ ] 6. Create `src/translations/venous-le/{ka,en,ru}.json` — segment labels, params, enum values, help text
-- [ ] 7. Create `src/translations/ceap/{ka,en,ru}.json` — CEAP 2020 descriptions + modifiers
-- [ ] 8. Create `scripts/validate-sample-bundle.ts` — builds sample bundle, validates refs + required fields
-- [ ] 9. Add npm script `"validate:fhir": "tsx scripts/validate-sample-bundle.ts"` (replace placeholder if needed)
-- [ ] 10. Run `npx tsc -p tsconfig.json --noEmit` — must pass clean
-- [ ] 11. Run `npx vite build` — must pass clean
-- [ ] 12. Run `npm run validate:fhir` — must exit 0
+- [x] 1. Add SVG→PDF converter: `src/components/pdf/anatomyToPdfSvg.ts`
+- [x] 2. Add styles module: `src/components/pdf/styles.ts` (shared StyleSheet helpers)
+- [x] 3. Add `src/components/pdf/sections/HeaderSection.tsx`
+- [x] 4. Add `src/components/pdf/sections/PatientBlock.tsx`
+- [x] 5. Add `src/components/pdf/sections/DiagramSection.tsx`
+- [x] 6. Add `src/components/pdf/sections/FindingsTable.tsx`
+- [x] 7. Add `src/components/pdf/sections/NarrativeSection.tsx`
+- [x] 8. Add `src/components/pdf/sections/CEAPSection.tsx`
+- [x] 9. Add `src/components/pdf/sections/RecommendationsSection.tsx`
+- [x] 10. Add `src/components/pdf/sections/FooterSection.tsx`
+- [x] 11. Rewrite `src/components/pdf/ReportDocument.tsx`
+- [x] 12. Update `src/components/pdf/PDFGenerator.tsx` (pre-load anatomy svgs, pass `form`/`org`/`preliminary`)
+- [x] 13. Add `scripts/test-pdf.ts` + generate sample PDF preview PNG
+- [x] 14. Typecheck + build + sample render
+
+## Summary
+All 14 tasks completed successfully. Implementation details in the conversation.

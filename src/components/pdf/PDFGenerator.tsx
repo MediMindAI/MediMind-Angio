@@ -1,42 +1,66 @@
 /**
- * PDFGenerator — button that lazy-loads @react-pdf, generates a PDF blob,
- * and triggers a browser download.
+ * PDFGenerator — button that lazy-loads @react-pdf, pre-loads anatomy
+ * SVG payloads, generates a PDF blob, and triggers a browser download.
  *
  * Lazy loading strategy:
  *   - @react-pdf/renderer is heavy (~250 KB min). We dynamic-import it
  *     only when the user actually clicks the button, so the main bundle
  *     stays lean.
- *   - The `ReportDocument` component is co-imported in the same dynamic
- *     chunk so both land in Vite's `pdf` manualChunk (see vite.config.ts).
+ *   - The `ReportDocument` component + anatomy helpers are co-imported in
+ *     the same dynamic chunk so everything lands together in Vite's `pdf`
+ *     manualChunk (see vite.config.ts).
  *
- * The button itself uses Mantine UI. Keeping it a plain `Button` for
- * Phase 0 — the real version will be an EMRButton once we port the
- * component library.
+ * We also resolve any async data the document needs (anatomy SVGs) BEFORE
+ * rendering, because @react-pdf's render pipeline is synchronous once
+ * mounted. Anything that needs `await` must happen here.
  */
 
 import { useCallback, useState, type ReactElement } from 'react';
 import { Button } from '@mantine/core';
+import type { FormState } from '../../types/form';
+import type { ReportLabels, ReportOrg, ReportAnatomy } from './ReportDocument';
+import { isVenousForm } from '../../types/form';
 
 export interface PDFGeneratorProps {
   /** Filename for the downloaded PDF. Extension (.pdf) is added if missing. */
   readonly filename: string;
-  /** i18n-ready label bag passed through to the PDF document. */
-  readonly labels: Readonly<Record<string, string>>;
-  /** Opaque payload forwarded to the document renderer. */
-  readonly data: unknown;
+  /** Pre-translated label bag (the PDF layer doesn't share React context). */
+  readonly labels: ReportLabels;
+  /** The form state to render. */
+  readonly form: FormState;
+  /** Organization header info. */
+  readonly org?: ReportOrg;
+  /** Render a "PRELIMINARY" watermark for draft reports. */
+  readonly preliminary?: boolean;
+  /** Optional caller-supplied anatomy overrides (skips loader). */
+  readonly anatomyOverride?: ReportAnatomy;
+  /** Optional caller-supplied pre-formatted per-side findings. */
+  readonly rightFindings?: string;
+  readonly leftFindings?: string;
+  readonly conclusions?: ReadonlyArray<string>;
+  /** Button label. */
+  readonly buttonLabel?: string;
 }
 
-/**
- * Sanitize a candidate filename — strip path separators, trim whitespace,
- * ensure `.pdf` suffix. Keeps Unicode (Georgian) as-is since browsers
- * handle UTF-8 in Content-Disposition for blob URLs.
- */
 function normalizeFilename(raw: string): string {
   const stripped = raw.replace(/[\\/:*?"<>|]/g, '_').trim() || 'report';
   return stripped.toLowerCase().endsWith('.pdf') ? stripped : `${stripped}.pdf`;
 }
 
-export function PDFGenerator({ filename, labels, data }: PDFGeneratorProps): ReactElement {
+export function PDFGenerator(props: PDFGeneratorProps): ReactElement {
+  const {
+    filename,
+    labels,
+    form,
+    org,
+    preliminary,
+    anatomyOverride,
+    rightFindings,
+    leftFindings,
+    conclusions,
+    buttonLabel,
+  } = props;
+
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,16 +70,50 @@ export function PDFGenerator({ filename, labels, data }: PDFGeneratorProps): Rea
     let objectUrl: string | null = null;
     try {
       // Lazy-load the heavy deps together so they share a chunk.
-      const [{ pdf }, { ReportDocument }, { registerFontsAsync }] = await Promise.all([
+      const [
+        { pdf },
+        { ReportDocument },
+        { registerFontsAsync },
+        anatomyMod,
+      ] = await Promise.all([
         import('@react-pdf/renderer'),
         import('./ReportDocument'),
         import('../../services/fontService'),
+        import('./anatomyToPdfSvg'),
       ]);
 
-      // Register Georgian fonts before we render anything.
       await registerFontsAsync();
 
-      const blob = await pdf(<ReportDocument labels={labels} data={data} />).toBlob();
+      // --- Resolve anatomy SVG payloads (venous only) ---
+      let anatomy: ReportAnatomy;
+      if (anatomyOverride) {
+        anatomy = anatomyOverride;
+      } else if (isVenousForm(form)) {
+        const findings = deriveInlineFindings(form);
+        const [anterior, posterior] = await Promise.all([
+          anatomyMod.loadAnatomyForPdf('le-anterior', findings),
+          anatomyMod.loadAnatomyForPdf('le-posterior', findings),
+        ]);
+        anatomy = { anterior, posterior };
+      } else {
+        anatomy = { anterior: null, posterior: null };
+      }
+
+      const generatedAt = new Date().toISOString();
+
+      const blob = await pdf(
+        <ReportDocument
+          form={form}
+          labels={labels}
+          org={org}
+          preliminary={preliminary}
+          anatomy={anatomy}
+          rightFindings={rightFindings}
+          leftFindings={leftFindings}
+          conclusions={conclusions}
+          generatedAt={generatedAt}
+        />
+      ).toBlob();
 
       const resolvedName = normalizeFilename(filename);
       objectUrl = URL.createObjectURL(blob);
@@ -72,9 +130,7 @@ export function PDFGenerator({ filename, labels, data }: PDFGeneratorProps): Rea
       // eslint-disable-next-line no-console
       console.error('[PDFGenerator] Failed to generate PDF:', err);
     } finally {
-      // Free the object URL — browsers GC eventually but explicit is better.
       if (objectUrl !== null) {
-        // Defer revocation until after the download dialog opens.
         setTimeout(() => {
           if (objectUrl !== null) {
             URL.revokeObjectURL(objectUrl);
@@ -83,12 +139,22 @@ export function PDFGenerator({ filename, labels, data }: PDFGeneratorProps): Rea
       }
       setGenerating(false);
     }
-  }, [filename, labels, data]);
+  }, [
+    filename,
+    labels,
+    form,
+    org,
+    preliminary,
+    anatomyOverride,
+    rightFindings,
+    leftFindings,
+    conclusions,
+  ]);
 
   return (
     <div>
       <Button onClick={handleGenerate} loading={generating} disabled={generating}>
-        {generating ? 'Generating PDF…' : 'Generate PDF'}
+        {generating ? 'Generating PDF…' : (buttonLabel ?? 'Download PDF')}
       </Button>
       {error !== null && (
         <div
@@ -104,4 +170,52 @@ export function PDFGenerator({ filename, labels, data }: PDFGeneratorProps): Rea
       )}
     </div>
   );
+}
+
+/**
+ * Inline copy of the `deriveVenousFindings` shape used by ReportDocument,
+ * so we can feed the anatomy converter the same data the table uses.
+ * Kept local to avoid circular imports between PDFGenerator + ReportDocument.
+ */
+function deriveInlineFindings(form: FormState): Record<
+  string,
+  {
+    refluxDurationMs?: number;
+    apDiameterMm?: number;
+    depthMm?: number;
+    compressibility?: 'normal' | 'partial' | 'non-compressible' | 'inconclusive';
+    thrombosis?: 'none' | 'acute' | 'chronic' | 'indeterminate';
+  }
+> {
+  if (!isVenousForm(form)) return {};
+  const out: Record<
+    string,
+    {
+      refluxDurationMs?: number;
+      apDiameterMm?: number;
+      depthMm?: number;
+      compressibility?: 'normal' | 'partial' | 'non-compressible' | 'inconclusive';
+      thrombosis?: 'none' | 'acute' | 'chronic' | 'indeterminate';
+    }
+  > = {};
+  for (const seg of form.segments) {
+    if (seg.side !== 'left' && seg.side !== 'right') continue;
+    const key = `${seg.segmentId}-${seg.side}`;
+    const entry: {
+      refluxDurationMs?: number;
+      apDiameterMm?: number;
+      depthMm?: number;
+      compressibility?: 'normal' | 'partial' | 'non-compressible' | 'inconclusive';
+      thrombosis?: 'none' | 'acute' | 'chronic' | 'indeterminate';
+    } = {};
+    if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
+    if (typeof seg.diameterMm === 'number') entry.apDiameterMm = seg.diameterMm;
+    // Use the derived competency from SegmentState as a compressibility hint
+    // so the anatomy diagram still colors even if the form hasn't stored
+    // the raw categorical yet.
+    if (seg.competency === 'incompetent') entry.compressibility = 'non-compressible';
+    else if (seg.competency === 'inconclusive') entry.compressibility = 'inconclusive';
+    out[key] = entry;
+  }
+  return out;
 }

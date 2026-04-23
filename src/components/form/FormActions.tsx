@@ -1,0 +1,216 @@
+// SPDX-License-Identifier: Apache-2.0
+/**
+ * FormActions — sticky bottom action bar.
+ *
+ * Left: last-saved indicator.
+ * Right: Save draft · Preview PDF · Download PDF · Export FHIR JSON.
+ *
+ * Download PDF uses the existing `@react-pdf/renderer` pipeline via the
+ * lazy-import pattern from PDFGenerator. Export JSON uses `downloadFhirBundle`.
+ */
+
+import { memo, useCallback, useState } from 'react';
+import { Group, Text } from '@mantine/core';
+import {
+  IconCode,
+  IconDeviceFloppy,
+  IconDownload,
+  IconEye,
+} from '@tabler/icons-react';
+import { EMRButton } from '../common';
+import { useTranslation } from '../../contexts/TranslationContext';
+import type { FormState } from '../../types/form';
+import { downloadFhirBundle } from '../../services/fhirBuilder';
+import { buildReportLabels } from '../pdf/buildReportLabels';
+import classes from './FormActions.module.css';
+
+export interface FormActionsProps {
+  readonly form: FormState;
+  readonly lastSavedAt: Date | null;
+  readonly hasUnsavedChanges: boolean;
+  readonly onSaveDraft: () => void;
+  /** The filename used for both PDF and JSON exports. */
+  readonly baseFilename: string;
+}
+
+/** Format a Date as HH:MM:SS. */
+function formatTime(d: Date): string {
+  return d.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
+export const FormActions = memo(function FormActions({
+  form,
+  lastSavedAt,
+  hasUnsavedChanges,
+  onSaveDraft,
+  baseFilename,
+}: FormActionsProps): React.ReactElement {
+  const { t } = useTranslation();
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfPreviewing, setPdfPreviewing] = useState(false);
+
+  const handleSaveDraft = useCallback(() => {
+    onSaveDraft();
+  }, [onSaveDraft]);
+
+  const renderPdfBlob = useCallback(async (): Promise<Blob> => {
+    const [
+      { pdf },
+      { ReportDocument },
+      { registerFontsAsync },
+      { loadAnatomyForPdf },
+      { isVenousForm },
+    ] = await Promise.all([
+      import('@react-pdf/renderer'),
+      import('../pdf/ReportDocument'),
+      import('../../services/fontService'),
+      import('../pdf/anatomyToPdfSvg'),
+      import('../../types/form'),
+    ]);
+    await registerFontsAsync();
+    const labels = buildReportLabels(t);
+
+    // Resolve anatomy SVGs for venous forms before rendering.
+    let anatomy: Parameters<typeof ReportDocument>[0]['anatomy'];
+    if (isVenousForm(form)) {
+      const findings: Record<
+        string,
+        { refluxDurationMs?: number; apDiameterMm?: number }
+      > = {};
+      for (const seg of form.segments) {
+        if (seg.side !== 'left' && seg.side !== 'right') continue;
+        const key = `${seg.segmentId}-${seg.side}`;
+        findings[key] = {
+          refluxDurationMs: seg.refluxDurationMs,
+          apDiameterMm: seg.diameterMm,
+        };
+      }
+      const [anterior, posterior] = await Promise.all([
+        loadAnatomyForPdf('le-anterior', findings),
+        loadAnatomyForPdf('le-posterior', findings),
+      ]);
+      anatomy = { anterior, posterior };
+    } else {
+      anatomy = { anterior: null, posterior: null };
+    }
+
+    return pdf(
+      <ReportDocument
+        form={form}
+        labels={labels}
+        anatomy={anatomy}
+        generatedAt={new Date().toISOString()}
+      />
+    ).toBlob();
+  }, [form, t]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    setPdfLoading(true);
+    try {
+      const blob = await renderPdfBlob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `${baseFilename}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[FormActions] PDF download failed', err);
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [renderPdfBlob, baseFilename]);
+
+  const handlePreviewPdf = useCallback(async () => {
+    setPdfPreviewing(true);
+    try {
+      const blob = await renderPdfBlob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      // Revoke a bit later so the new tab has time to pull the blob.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[FormActions] PDF preview failed', err);
+    } finally {
+      setPdfPreviewing(false);
+    }
+  }, [renderPdfBlob]);
+
+  const handleExportJson = useCallback(() => {
+    try {
+      downloadFhirBundle(form, `${baseFilename}.json`);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[FormActions] JSON export failed', err);
+    }
+  }, [form, baseFilename]);
+
+  const savedText = lastSavedAt
+    ? `${t('venousLE.actions.lastSaved')} ${formatTime(lastSavedAt)}`
+    : t('venousLE.actions.neverSaved');
+
+  return (
+    <div className={`${classes.bar} no-print`} role="region" aria-label="Actions">
+      <div className={classes.inner}>
+        <div className={classes.status}>
+          <span className={`${classes.dot} ${hasUnsavedChanges ? classes.dotDirty : classes.dotClean}`} aria-hidden />
+          <Text className={classes.statusText}>{savedText}</Text>
+        </div>
+
+        <Group gap="xs" wrap="wrap" className={classes.buttons}>
+          <EMRButton
+            variant="secondary"
+            size="sm"
+            icon={IconDeviceFloppy}
+            onClick={handleSaveDraft}
+            data-testid="save-draft"
+          >
+            {t('venousLE.actions.saveDraft')}
+          </EMRButton>
+
+          <EMRButton
+            variant="subtle"
+            size="sm"
+            icon={IconEye}
+            onClick={handlePreviewPdf}
+            loading={pdfPreviewing}
+            data-testid="preview-pdf"
+          >
+            {t('venousLE.actions.previewPDF')}
+          </EMRButton>
+
+          <EMRButton
+            variant="primary"
+            size="sm"
+            icon={IconDownload}
+            onClick={handleDownloadPdf}
+            loading={pdfLoading}
+            data-testid="download-pdf"
+          >
+            {t('venousLE.actions.downloadPDF')}
+          </EMRButton>
+
+          <EMRButton
+            variant="ghost"
+            size="sm"
+            icon={IconCode}
+            onClick={handleExportJson}
+            data-testid="export-json"
+          >
+            {t('venousLE.actions.exportJSON')}
+          </EMRButton>
+        </Group>
+      </div>
+    </div>
+  );
+});
+
+export default FormActions;

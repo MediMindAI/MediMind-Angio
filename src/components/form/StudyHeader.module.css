@@ -1,0 +1,65 @@
+/* StudyHeader — identity card above the study form */
+
+.card {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--emr-shadow-md);
+  border-color: var(--emr-border-secondary);
+}
+
+.head {
+  padding: 16px 20px;
+  background: var(--emr-gradient-section-header);
+  color: var(--emr-text-inverse);
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-white-alpha-20);
+  color: var(--emr-text-inverse);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-inverse);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.body {
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .head {
+    padding: 12px 16px;
+  }
+  .body {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 575px) {
+  .body {
+    padding: 14px;
+  }
+}

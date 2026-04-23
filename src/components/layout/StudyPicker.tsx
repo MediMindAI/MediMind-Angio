@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { memo, useCallback, useMemo, useState, type MouseEvent } from 'react';
+import { memo, useCallback, useMemo, type MouseEvent } from 'react';
 import {
   IconActivity,
   IconArrowRight,
@@ -10,7 +10,6 @@ import {
   IconStethoscope,
   IconWaveSawTool,
 } from '@tabler/icons-react';
-import { EMRAlert } from '../common/EMRAlert';
 import { EMRBadge } from '../common/EMRBadge';
 import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './StudyPicker.module.css';
@@ -42,7 +41,6 @@ const STUDIES: ReadonlyArray<StudyDefinition> = [
  */
 export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   const { t } = useTranslation();
-  const [notice, setNotice] = useState<string | null>(null);
 
   const cards = useMemo(() => STUDIES, []);
 
@@ -54,21 +52,16 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
     e.currentTarget.style.setProperty('--pointer-y', `${y}%`);
   }, []);
 
-  const handleStartStudy = useCallback(
-    (studyKey: string) => {
-      // Phase 0: log + show a gentle alert. Phase 1 will wire this to the
-      // Venous-LE form renderer.
-      // eslint-disable-next-line no-console
-      console.info('[StudyPicker] start study:', studyKey);
-      setNotice(
-        t(
-          'studyPicker.phase1Notice',
-          'The Lower Extremity Venous Duplex form renders next. Ship date: Phase 1.',
-        ),
-      );
-    },
-    [t],
-  );
+  const handleStartStudy = useCallback((studyKey: string) => {
+    // Phase 1: route to /venous-le when the bilateral venous LE card is clicked.
+    if (studyKey === 'venousLE') {
+      window.location.pathname = '/venous-le';
+      return;
+    }
+    // Other study types will be wired in Phase 2..5.
+    // eslint-disable-next-line no-console
+    console.info('[StudyPicker] start study (not yet available):', studyKey);
+  }, []);
 
   return (
     <div className={classes.backdrop}>
@@ -82,20 +75,6 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
           <h1 className={classes.title}>{t('studyPicker.title')}</h1>
           <p className={classes.subtitle}>{t('studyPicker.subtitle')}</p>
         </header>
-
-        {/* Alert — shown after clicking the Phase 1 card */}
-        {notice && (
-          <div style={{ marginBottom: 24 }}>
-            <EMRAlert
-              variant="info"
-              withCloseButton
-              onClose={() => setNotice(null)}
-              data-testid="phase1-notice"
-            >
-              {notice}
-            </EMRAlert>
-          </div>
-        )}
 
         {/* Study card grid */}
         <div

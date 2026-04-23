@@ -1,152 +1,268 @@
 /**
- * ReportDocument — Phase 0 smoke-test PDF.
+ * ReportDocument — the entry point for all PDF reports.
  *
- * This is intentionally tiny; its purpose is to prove two things end-to-end:
+ * Dispatches on `form.studyType` to the right layout. Phase 1 ships the
+ * bilateral / left / right venous LE variants; other study types fall back
+ * to a simpler template that still prints header + patient + narrative +
+ * recommendations so the download button works even for in-progress
+ * studies outside venous LE.
  *
- *   1. The NotoSansGeorgian font is registered and renders Georgian glyphs
- *      (U+10A0..U+10FF) correctly in the exported PDF.
- *   2. @react-pdf's `<Svg>` primitive works — colored rectangles and
- *      circles render, which is what the real anatomy diagrams will use.
- *
- * If either check fails visually, the upstream font or SVG pipeline is
- * broken and subsequent feature work will cascade-fail. Keep this
- * smoke-test file alive in the tree until Phase 1 replaces it with the
- * full report renderer.
+ * IMPORTANT: @react-pdf/renderer does NOT share a React context tree with
+ * the host app (it runs under its own reconciler). Translation must be
+ * pre-resolved before ReportDocument mounts. The `labels` prop carries
+ * every string the document needs, already translated by the caller.
  */
-
 import type { ReactElement } from 'react';
-import { Document, Page, Text, View, StyleSheet, Svg, Rect, Circle } from '@react-pdf/renderer';
-import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from './pdfTheme';
+import { Document, Page, View } from '@react-pdf/renderer';
+import { baseStyles } from './styles';
+import { PDF_LAYOUT } from './pdfTheme';
+import { HeaderSection, PreliminaryWatermark } from './sections/HeaderSection';
+import { PatientBlock } from './sections/PatientBlock';
+import type { PatientBlockLabels } from './sections/PatientBlock';
+import { DiagramSection } from './sections/DiagramSection';
+import type { DiagramSectionLabels } from './sections/DiagramSection';
+import { FindingsTable } from './sections/FindingsTable';
+import type { FindingsTableLabels } from './sections/FindingsTable';
+import { NarrativeSection } from './sections/NarrativeSection';
+import type { NarrativeSectionLabels } from './sections/NarrativeSection';
+import { CEAPSection } from './sections/CEAPSection';
+import type { CEAPSectionLabels } from './sections/CEAPSection';
+import { RecommendationsSection } from './sections/RecommendationsSection';
+import type { RecommendationsSectionLabels } from './sections/RecommendationsSection';
+import { FooterSection } from './sections/FooterSection';
+import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
+import type { FormState } from '../../types/form';
+import { isVenousForm } from '../../types/form';
+import type { VenousSegmentFindings, VenousLESegmentBase } from '../studies/venous-le/config';
+
+// ---------------------------------------------------------------------------
+// Label bundle — every user-facing string the PDF needs.
+// ---------------------------------------------------------------------------
+
+export interface ReportLabels {
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly issueDateLabel?: string;
+  readonly preliminary: string;
+  readonly patient: PatientBlockLabels;
+  readonly diagram: DiagramSectionLabels;
+  readonly findings: FindingsTableLabels;
+  readonly narrative: NarrativeSectionLabels;
+  readonly ceap: CEAPSectionLabels;
+  readonly recommendations: RecommendationsSectionLabels;
+  readonly footer: {
+    readonly pageLabelTemplate: string;
+  };
+}
+
+export interface ReportOrg {
+  readonly name: string;
+  readonly address?: string;
+  readonly logoUrl?: string;
+}
+
+export interface ReportAnatomy {
+  readonly anterior: AnatomyToPdfResult | null;
+  readonly posterior: AnatomyToPdfResult | null;
+}
 
 export interface ReportDocumentProps {
-  /** i18n-ready label bag; smoke-test ignores keys and uses hardcoded strings. */
-  readonly labels?: Readonly<Record<string, string>>;
-  /** Opaque payload — smoke-test ignores data; the real renderer will consume it. */
+  readonly form: FormState;
+  readonly labels: ReportLabels;
+  readonly org?: ReportOrg;
+  readonly preliminary?: boolean;
+  /** Pre-loaded anatomy SVG data, used on venous-le variants. */
+  readonly anatomy?: ReportAnatomy;
+  /** Optional pre-generated per-side prose blocks. */
+  readonly rightFindings?: string;
+  readonly leftFindings?: string;
+  /** Optional bullet-list of conclusions (Impression mirror). */
+  readonly conclusions?: ReadonlyArray<string>;
+  /** ISO timestamp for footer + header. Defaults to form.header.studyDate. */
+  readonly generatedAt?: string;
+  // The smoke-test/legacy callers sometimes pass `data` — we accept it as an
+  // opaque pass-through so the PDFGenerator's existing type doesn't break.
   readonly data?: unknown;
 }
 
 // ---------------------------------------------------------------------------
-// Styles (kept co-located so the smoke test file is fully self-contained)
+// Helpers
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
-  page: {
-    backgroundColor: PDF_THEME.background,
-    paddingTop: 40,
-    paddingBottom: 40,
-    paddingLeft: 40,
-    paddingRight: 40,
-    fontFamily: PDF_FONT_FAMILY,
-    color: PDF_THEME.text,
-    fontSize: PDF_FONT_SIZES.body,
-  },
-  header: {
-    marginBottom: 24,
-    borderBottomWidth: 2,
-    borderBottomColor: PDF_THEME.primary,
-    borderBottomStyle: 'solid',
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: PDF_FONT_SIZES.title,
-    fontWeight: 'bold',
-    color: PDF_THEME.primary,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: PDF_FONT_SIZES.label,
-    color: PDF_THEME.textMuted,
-  },
-  section: {
-    marginBottom: 16,
-  },
-  sectionHeading: {
-    fontSize: PDF_FONT_SIZES.heading,
-    fontWeight: 'bold',
-    color: PDF_THEME.secondary,
-    marginBottom: 6,
-  },
-  paragraph: {
-    fontSize: PDF_FONT_SIZES.body,
-    lineHeight: 1.5,
-    marginBottom: 6,
-  },
-  svgWrapper: {
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 40,
-    right: 40,
-    textAlign: 'center',
-    fontSize: PDF_FONT_SIZES.footnote,
-    color: PDF_THEME.textMuted,
-    borderTopWidth: 1,
-    borderTopColor: PDF_THEME.border,
-    borderTopStyle: 'solid',
-    paddingTop: 6,
-  },
-});
+/**
+ * Extract the venous findings from the form's segment array into the shape
+ * `FindingsTable` expects. Phase 1 reads `refluxDurationMs`, `apDiameterMm`,
+ * and `depthMm` from `SegmentState` but the on-screen form persists them on
+ * `parameters` too; we read both just to be safe.
+ *
+ * IMPORTANT: the segment base comes from the full segment id (e.g.
+ * "gsv-ak-left" → base "gsv-ak", side "left").
+ */
+function deriveVenousFindings(form: FormState): VenousSegmentFindings {
+  if (!isVenousForm(form)) return {};
+  const out: Partial<Record<`${VenousLESegmentBase}-left` | `${VenousLESegmentBase}-right`, {
+    readonly refluxDurationMs?: number;
+    readonly apDiameterMm?: number;
+    readonly depthMm?: number;
+  }>> = {};
+
+  for (const seg of form.segments) {
+    const side = seg.side;
+    if (side !== 'left' && side !== 'right') continue;
+    const segmentId = seg.segmentId;
+    // segmentId in SegmentState is just the base; combine with side.
+    const key = `${segmentId}-${side}` as `${VenousLESegmentBase}-${'left' | 'right'}`;
+    const entry: {
+      refluxDurationMs?: number;
+      apDiameterMm?: number;
+      depthMm?: number;
+    } = {};
+    if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
+    if (typeof seg.diameterMm === 'number') entry.apDiameterMm = seg.diameterMm;
+    // depth lives on `parameters` keyed by `depth-<fullId>` in Phase 1 forms.
+    const depthKey = `depth-${key}`;
+    const depthVal = form.parameters[depthKey];
+    if (typeof depthVal === 'number') entry.depthMm = depthVal;
+    if (Object.keys(entry).length > 0) out[key] = entry;
+  }
+
+  return out;
+}
+
+function formatDate(iso: string | undefined): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toISOString().slice(0, 10);
+}
+
+function formatDateTime(iso: string | undefined): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  // YYYY-MM-DD HH:MM (local). Stable across timezones when ISO includes a Z.
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 
 // ---------------------------------------------------------------------------
-// Component
+// Document
 // ---------------------------------------------------------------------------
 
-export function ReportDocument(_props: ReportDocumentProps): ReactElement {
+export function ReportDocument(props: ReportDocumentProps): ReactElement {
+  const {
+    form,
+    labels,
+    org,
+    preliminary,
+    anatomy,
+    rightFindings,
+    leftFindings,
+    conclusions,
+    generatedAt,
+  } = props;
+
+  const issueDate = formatDate(generatedAt ?? form.header.studyDate);
+  const footerTimestamp = formatDateTime(generatedAt ?? new Date().toISOString());
+
+  const findings = deriveVenousFindings(form);
+  const isVenous = isVenousForm(form);
+
+  const pageWidth = `${PDF_LAYOUT.contentWidthPt}pt`;
+
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>MediMind Angio — Phase 0 Smoke Test</Text>
-          <Text style={styles.subtitle}>Font &amp; SVG pipeline verification</Text>
-        </View>
+    <Document
+      title={labels.title}
+      author={org?.name}
+      subject={form.header.patientId ?? ''}
+      language="ka"
+    >
+      {/* ------------- Page 1 — Header · Patient · Diagram · Findings ---------- */}
+      <Page size="A4" style={baseStyles.page}>
+        {preliminary ? <PreliminaryWatermark label={labels.preliminary} /> : null}
 
-        {/* Georgian font test */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeading}>Georgian font check</Text>
-          <Text style={styles.paragraph}>ანგიოლოგიური კვლევის ანგარიში</Text>
-          <Text style={styles.paragraph}>
-            (If the line above renders as glyphs rather than boxes, NotoSansGeorgian is registered correctly.)
-          </Text>
-        </View>
+        <HeaderSection
+          title={labels.title}
+          subtitle={labels.subtitle ?? ''}
+          issueDate={issueDate}
+          orgName={org?.name ?? ''}
+        />
 
-        {/* SVG primitive test */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeading}>SVG primitive check</Text>
-          <View style={styles.svgWrapper}>
-            <Svg width={200} height={120} viewBox="0 0 200 120">
-              {/* Rounded outer frame */}
-              <Rect
-                x={2}
-                y={2}
-                width={196}
-                height={116}
-                rx={8}
-                ry={8}
-                fill={PDF_THEME.primary}
-                stroke={PDF_THEME.secondary}
-                strokeWidth={2}
+        <PatientBlock header={form.header} labels={labels.patient} />
+
+        {isVenous ? (
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              width: pageWidth,
+            }}
+          >
+            <View
+              style={{
+                width: '45%',
+                paddingRight: 4,
+              }}
+            >
+              <DiagramSection
+                anterior={anatomy?.anterior ?? null}
+                posterior={anatomy?.posterior ?? null}
+                labels={labels.diagram}
+                viewWidthPt={110}
               />
-              {/* Inner circle to verify circle primitive */}
-              <Circle cx={100} cy={60} r={38} fill={PDF_THEME.accent} stroke="#ffffff" strokeWidth={3} />
-              {/* Small accent dot */}
-              <Circle cx={100} cy={60} r={8} fill="#ffffff" />
-            </Svg>
+            </View>
+            <View style={{ width: '55%', paddingLeft: 4 }}>
+              <FindingsTable findings={findings} labels={labels.findings} />
+            </View>
           </View>
-          <Text style={styles.paragraph}>
-            If a deep-navy rounded rectangle with a bright-blue circle inside is visible, @react-pdf SVG primitives
-            are working.
-          </Text>
-        </View>
+        ) : (
+          <FindingsTable findings={findings} labels={labels.findings} />
+        )}
 
-        {/* Footer */}
-        <Text style={styles.footer} fixed>
-          Page 1 of 1
-        </Text>
+        <FooterSection
+          orgName={org?.name ?? ''}
+          orgAddress={org?.address ?? ''}
+          timestamp={footerTimestamp}
+          pageLabelTemplate={labels.footer.pageLabelTemplate}
+        />
+      </Page>
+
+      {/* ------------- Page 2 — Narrative · CEAP · Recommendations ------------- */}
+      <Page size="A4" style={baseStyles.page}>
+        {preliminary ? <PreliminaryWatermark label={labels.preliminary} /> : null}
+
+        <HeaderSection
+          title={labels.title}
+          subtitle={labels.subtitle ?? ''}
+          issueDate={issueDate}
+          orgName={org?.name ?? ''}
+        />
+
+        <NarrativeSection
+          narrative={form.narrative}
+          labels={labels.narrative}
+          rightFindings={rightFindings ?? ''}
+          leftFindings={leftFindings ?? ''}
+          conclusions={conclusions ?? []}
+        />
+
+        {form.ceap ? <CEAPSection ceap={form.ceap} labels={labels.ceap} /> : null}
+
+        <RecommendationsSection
+          recommendations={form.recommendations}
+          labels={labels.recommendations}
+        />
+
+        <FooterSection
+          orgName={org?.name ?? ''}
+          orgAddress={org?.address ?? ''}
+          timestamp={footerTimestamp}
+          pageLabelTemplate={labels.footer.pageLabelTemplate}
+        />
       </Page>
     </Document>
   );
 }
+
+export default ReportDocument;

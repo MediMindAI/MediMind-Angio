@@ -1,0 +1,87 @@
+/* FormActions — sticky bottom bar */
+
+.bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--emr-z-sticky);
+  background: var(--emr-bg-card);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid var(--emr-border-color);
+  box-shadow: 0 -4px 16px -8px var(--emr-shadow-color);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .inner {
+    padding: 10px 12px;
+  }
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.dotClean {
+  background: var(--emr-success);
+  box-shadow: 0 0 0 3px var(--emr-success-alpha-20);
+}
+
+.dotDirty {
+  background: var(--emr-warning);
+  box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.25);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.statusText {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  font-family: var(--emr-font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+@media print {
+  .bar {
+    display: none !important;
+  }
+}

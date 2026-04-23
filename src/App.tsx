@@ -5,22 +5,43 @@ import { mantineTheme, cssVariablesResolver, createAppColorSchemeManager } from 
 import { STORAGE_KEYS } from './constants/storage-keys';
 import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
+import { VenousLEForm } from './components/studies/venous-le/VenousLEForm';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
 const initialColorScheme = colorSchemeManager.get('auto');
 
 /**
- * Very lightweight route switch -- the frontend-designer agent will replace
- * this with a real router later. For now, visiting `/demo/anatomy` renders
- * the AnatomyDemo smoke-test page; everything else renders the AppShell.
+ * Very lightweight route switch — we add the Phase-1 Venous LE form here.
+ * The frontend-designer agent will replace this with a real router later.
+ *
+ * Routes:
+ *   /venous-le          → VenousLEForm (Phase 1)
+ *   /studies/venous-le  → alias of the above
+ *   /demo/anatomy       → AnatomyDemo smoke test
+ *   (anything else)     → AppShell landing page
  */
-function currentRoute(): 'anatomy-demo' | 'shell' {
+type Route = 'anatomy-demo' | 'venous-le' | 'shell';
+
+function currentRoute(): Route {
   if (typeof window === 'undefined') return 'shell';
-  const path = window.location.pathname;
-  if (path.endsWith('/demo/anatomy') || path.endsWith('/demo/anatomy/')) {
-    return 'anatomy-demo';
+  const path = window.location.pathname.replace(/\/+$/, '');
+  if (path.endsWith('/demo/anatomy')) return 'anatomy-demo';
+  if (path.endsWith('/venous-le') || path.endsWith('/studies/venous-le')) {
+    return 'venous-le';
   }
   return 'shell';
+}
+
+function renderRoute(route: Route): React.ReactElement {
+  switch (route) {
+    case 'anatomy-demo':
+      return <AnatomyDemo />;
+    case 'venous-le':
+      return <VenousLEForm />;
+    case 'shell':
+    default:
+      return <AppShell />;
+  }
 }
 
 export default function App() {
@@ -33,9 +54,7 @@ export default function App() {
       defaultColorScheme={initialColorScheme}
     >
       <ThemeProvider>
-        <TranslationProvider>
-          {route === 'anatomy-demo' ? <AnatomyDemo /> : <AppShell />}
-        </TranslationProvider>
+        <TranslationProvider>{renderRoute(route)}</TranslationProvider>
       </ThemeProvider>
     </MantineProvider>
   );

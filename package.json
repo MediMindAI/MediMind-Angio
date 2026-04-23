@@ -20,7 +20,7 @@
     "anatomy:verify": "tsx scripts/verify-anatomy.ts",
     "anatomy:all": "npm run anatomy:fetch && npm run anatomy:tag && npm run anatomy:verify",
     "i18n:check": "tsx scripts/check-i18n.ts",
-    "validate:fhir": "tsx scripts/validate-fhir.ts"
+    "validate:fhir": "tsx scripts/validate-sample-bundle.ts"
   },
   "dependencies": {
     "@mantine/core": "8.3.6",
