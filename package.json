@@ -1,0 +1,58 @@
+{
+  "name": "medimind-angio",
+  "version": "0.1.0",
+  "description": "Production-grade angiology reporting system — standalone web app, FHIR-native, ported from MediMind design patterns.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "preview": "vite preview --port 3001",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint 'src/**/*.{ts,tsx}' 'scripts/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' 'scripts/**/*.ts' --fix",
+    "anatomy:fetch": "tsx scripts/fetch-anatomy.ts",
+    "anatomy:tag": "tsx scripts/tag-anatomy.ts",
+    "anatomy:verify": "tsx scripts/verify-anatomy.ts",
+    "anatomy:all": "npm run anatomy:fetch && npm run anatomy:tag && npm run anatomy:verify",
+    "i18n:check": "tsx scripts/check-i18n.ts",
+    "validate:fhir": "tsx scripts/validate-fhir.ts"
+  },
+  "dependencies": {
+    "@mantine/core": "8.3.6",
+    "@mantine/dates": "8.3.6",
+    "@mantine/form": "8.3.6",
+    "@mantine/hooks": "8.3.6",
+    "@mantine/notifications": "8.3.6",
+    "@react-pdf/renderer": "^4.3.1",
+    "@tabler/icons-react": "3.35.0",
+    "dayjs": "^1.11.13",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-router": "7.9.5",
+    "react-router-dom": "7.9.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
+    "@vitejs/plugin-react": "5.1.0",
+    "@xmldom/xmldom": "^0.9.6",
+    "css-select": "^5.1.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "postcss": "8.5.6",
+    "postcss-preset-mantine": "1.18.0",
+    "tsx": "^4.19.2",
+    "typescript": "5.8.3",
+    "vite": "7.1.12",
+    "xpath": "^0.0.34"
+  }
+}

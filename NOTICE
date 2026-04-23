@@ -1,0 +1,64 @@
+MediMind Angio — Third-Party Attributions
+==========================================
+
+This project includes third-party assets and patterns. Each is listed here
+with its license and source.
+
+─────────────────────────────────────────────────────────────────────────
+Anatomical Illustrations (under public/anatomy/)
+─────────────────────────────────────────────────────────────────────────
+
+Derived from two sources:
+
+1. Wikimedia Commons — "Venous system" SVG files
+   Source:   https://commons.wikimedia.org/wiki/File:Venous_system_en.svg
+   License:  Creative Commons Attribution-ShareAlike 3.0 Unported
+             (CC BY-SA 3.0) or equivalent free-use terms per file.
+   Modifications: Path IDs renamed to canonical angiology segment IDs
+                  (cfv-left, gsv-ak-right, etc.) by scripts/tag-anatomy.ts.
+
+2. Servier Medical Art — SMART
+   Source:   https://smart.servier.com/
+   License:  Creative Commons Attribution 4.0 International (CC BY 4.0)
+   Modifications: PPTX vector shapes extracted via LibreOffice CLI,
+                  split into per-view SVGs, path IDs renamed.
+
+Derivative anatomical SVGs in this repository are released under
+CC BY 4.0 with attribution to the above original authors.
+
+─────────────────────────────────────────────────────────────────────────
+Design Patterns (src/components, src/styles, src/contexts)
+─────────────────────────────────────────────────────────────────────────
+
+Design-system patterns (EMRButton, EMRModal, EMRFormFields, theme.css
+variables, TranslationContext, ThemeContext) are ported from the MediMind
+EMR monorepo (proprietary), with permission, for use in this standalone
+application. Public APIs are kept identical to enable future integration
+back into MediMind.
+
+─────────────────────────────────────────────────────────────────────────
+Fonts (public/fonts/)
+─────────────────────────────────────────────────────────────────────────
+
+Noto Sans Georgian
+   Source:   https://fonts.google.com/noto/specimen/Noto+Sans+Georgian
+   License:  SIL Open Font License, Version 1.1
+             https://scripts.sil.org/OFL
+
+─────────────────────────────────────────────────────────────────────────
+Clinical Standards
+─────────────────────────────────────────────────────────────────────────
+
+Segment nomenclature, parameter definitions, and reflux thresholds follow:
+
+- IAC Vascular Testing Standards (Intersocietal Accreditation Commission)
+- SVU Professional Performance Guidelines: Lower Extremity Venous Duplex
+  (Society for Vascular Ultrasound)
+- AIUM/ACR/SPR/SRU Practice Parameter for Peripheral Venous Ultrasound
+- CEAP 2020 classification (Journal of Vascular Surgery: Venous and
+  Lymphatic Disorders)
+- ESVS 2022 Clinical Practice Guidelines on Venous Thrombosis
+  (European Society for Vascular Surgery)
+
+LOINC codes (Regenstrief Institute) and SNOMED CT codes (SNOMED
+International) used as references are property of their respective owners.

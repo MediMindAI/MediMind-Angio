@@ -1,0 +1,77 @@
+{
+  "app": {
+    "title": "MediMind Angio",
+    "subtitle": "ანგიოლოგიური კვლევის ანგარიში",
+    "tagline": "FHIR-R4 სტანდარტზე დაფუძნებული სტრუქტურული ფორმა"
+  },
+  "language": {
+    "label": "ენა",
+    "ka": "ქართული",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "theme": {
+    "label": "რეჟიმი",
+    "light": "ნათელი",
+    "dark": "ბნელი",
+    "system": "სისტემური",
+    "toggle": "რეჟიმის გადართვა"
+  },
+  "studyPicker": {
+    "title": "აირჩიეთ კვლევის ტიპი",
+    "subtitle": "ხელმისაწვდომი ანგიოლოგიური კვლევები",
+    "phase1Badge": "ხელმისაწვდომი",
+    "comingSoon": "მალე",
+    "startStudy": "კვლევის დაწყება"
+  },
+  "studies": {
+    "venousLE": {
+      "title": "ქვედა კიდურების ვენების დუპლექსი",
+      "short": "ვენური LE",
+      "description": "ორმხრივი რეფლუქსი + DVT შეფასება"
+    },
+    "abdominalVenous": {
+      "title": "მუცლისა და მენჯის ვენები",
+      "short": "მუცელი/მენჯი",
+      "description": "IVC · თირკმლის ვენები · ილიაკული"
+    },
+    "arterialLE": {
+      "title": "ქვედა კიდურების არტერიული დუპლექსი",
+      "short": "არტერიული LE",
+      "description": "ABI + სეგმენტური წნევა"
+    },
+    "carotid": {
+      "title": "კაროტიდული დუპლექსი",
+      "short": "კაროტიდი",
+      "description": "ორმხრივი კაროტიდი + ვერტებრალური"
+    },
+    "dialysisAortic": {
+      "title": "დიალიზის წვდომა / აორტა",
+      "short": "AVF / AAA",
+      "description": "AVF მონიტორინგი + აორტის სკრინინგი"
+    }
+  },
+  "common": {
+    "cancel": "გაუქმება",
+    "save": "შენახვა",
+    "submit": "გაგზავნა",
+    "loading": "იტვირთება...",
+    "error": "შეცდომა",
+    "retry": "გამეორება",
+    "back": "უკან",
+    "next": "შემდეგი",
+    "close": "დახურვა",
+    "yes": "დიახ",
+    "no": "არა",
+    "saveDraft": "დრაფტის შენახვა",
+    "downloadPDF": "PDF-ის ჩამოტვირთვა",
+    "previewPDF": "PDF-ის გადახედვა",
+    "exportJSON": "JSON-ის ექსპორტი"
+  },
+  "competency": {
+    "normal": "ნორმალური",
+    "ablated": "აბლირებული",
+    "incompetent": "არაკომპეტენტური",
+    "inconclusive": "ვერ დადგინდა"
+  }
+}

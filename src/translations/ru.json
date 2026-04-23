@@ -1,0 +1,77 @@
+{
+  "app": {
+    "title": "MediMind Angio",
+    "subtitle": "Ангиологическое исследование",
+    "tagline": "Структурированный отчёт на FHIR R4"
+  },
+  "language": {
+    "label": "Язык",
+    "ka": "ქართული",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "theme": {
+    "label": "Тема",
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Системная",
+    "toggle": "Переключить тему"
+  },
+  "studyPicker": {
+    "title": "Выберите тип исследования",
+    "subtitle": "Доступные ангиологические исследования",
+    "phase1Badge": "Доступно",
+    "comingSoon": "Скоро",
+    "startStudy": "Начать"
+  },
+  "studies": {
+    "venousLE": {
+      "title": "Дуплекс вен нижних конечностей",
+      "short": "Вены НК",
+      "description": "Двусторонний рефлюкс + ТГВ"
+    },
+    "abdominalVenous": {
+      "title": "Абдоминально-тазовые вены",
+      "short": "Живот/Таз",
+      "description": "НПВ · почечные · подвздошные"
+    },
+    "arterialLE": {
+      "title": "Дуплекс артерий нижних конечностей",
+      "short": "Артерии НК",
+      "description": "ЛПИ + сегментарное давление"
+    },
+    "carotid": {
+      "title": "Дуплекс сонных артерий",
+      "short": "Каротид",
+      "description": "Сонные + позвоночные"
+    },
+    "dialysisAortic": {
+      "title": "Диализный доступ / Аорта",
+      "short": "AVF / ААА",
+      "description": "Мониторинг AVF + скрининг ААА"
+    }
+  },
+  "common": {
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "submit": "Отправить",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "retry": "Повторить",
+    "back": "Назад",
+    "next": "Далее",
+    "close": "Закрыть",
+    "yes": "Да",
+    "no": "Нет",
+    "saveDraft": "Сохранить черновик",
+    "downloadPDF": "Скачать PDF",
+    "previewPDF": "Предпросмотр PDF",
+    "exportJSON": "Экспорт FHIR JSON"
+  },
+  "competency": {
+    "normal": "Норма",
+    "ablated": "Аблировано",
+    "incompetent": "Несостоятельность",
+    "inconclusive": "Неопределённо"
+  }
+}

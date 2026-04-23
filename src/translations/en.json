@@ -1,0 +1,77 @@
+{
+  "app": {
+    "title": "MediMind Angio",
+    "subtitle": "Angiology Study Report",
+    "tagline": "FHIR R4 structured reporting"
+  },
+  "language": {
+    "label": "Language",
+    "ka": "ქართული",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "toggle": "Toggle theme"
+  },
+  "studyPicker": {
+    "title": "Select Study Type",
+    "subtitle": "Available angiology studies",
+    "phase1Badge": "Available",
+    "comingSoon": "Coming soon",
+    "startStudy": "Start study"
+  },
+  "studies": {
+    "venousLE": {
+      "title": "Lower Extremity Venous Duplex",
+      "short": "Venous LE",
+      "description": "Bilateral reflux + DVT assessment"
+    },
+    "abdominalVenous": {
+      "title": "Abdominal-Pelvic Venous",
+      "short": "Abdomen/Pelvis",
+      "description": "IVC · renal veins · iliacs"
+    },
+    "arterialLE": {
+      "title": "Lower Extremity Arterial Duplex",
+      "short": "Arterial LE",
+      "description": "ABI + segmental pressures"
+    },
+    "carotid": {
+      "title": "Carotid Duplex",
+      "short": "Carotid",
+      "description": "Bilateral carotid + vertebral"
+    },
+    "dialysisAortic": {
+      "title": "Dialysis Access / Aortic",
+      "short": "AVF / AAA",
+      "description": "AVF surveillance + AAA screen"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "saveDraft": "Save draft",
+    "downloadPDF": "Download PDF",
+    "previewPDF": "Preview PDF",
+    "exportJSON": "Export FHIR JSON"
+  },
+  "competency": {
+    "normal": "Normal",
+    "ablated": "Ablated",
+    "incompetent": "Incompetent",
+    "inconclusive": "Inconclusive"
+  }
+}

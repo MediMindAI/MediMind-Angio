@@ -1,0 +1,74 @@
+/**
+ * Print styles — force light theme for printed PDFs/hardcopy.
+ *
+ * Mirrors MediMind's @media print block. Any `.no-print` elements are
+ * hidden (buttons, toolbars, etc.). Dark mode variables are overridden
+ * back to light values so printed reports aren't black on black.
+ */
+
+@media print {
+  /* Force light theme regardless of user's preference */
+  :root,
+  :root[data-mantine-color-scheme='dark'],
+  :root[data-mantine-color-scheme='light'] {
+    --emr-primary: #1a365d;
+    --emr-secondary: #2b6cb0;
+    --emr-accent: #3182ce;
+
+    --emr-text-primary: #1f2937;
+    --emr-text-secondary: #6b7280;
+    --emr-text-inverse: #ffffff;
+
+    --emr-bg-page: #ffffff;
+    --emr-bg-card: #ffffff;
+    --emr-bg-modal: #ffffff;
+    --emr-bg-input: #ffffff;
+    --emr-bg-hover: #ffffff;
+
+    --emr-border-color: #e5e7eb;
+    --emr-border-default: #e5e7eb;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure anatomy diagram prints in vector color */
+  .anatomy-view svg {
+    max-width: 100%;
+    height: auto;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Corestudycast-style print header */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 10mm;
+  }
+
+  .print-header h1 {
+    font-size: 18pt;
+    margin: 0 0 4mm 0;
+    color: #1a365d;
+  }
+
+  .print-header .print-date {
+    font-size: 10pt;
+    color: #6b7280;
+  }
+
+  /* Page breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+}

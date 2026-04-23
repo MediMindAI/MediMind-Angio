@@ -1,0 +1,331 @@
+/**
+ * MediMind Angio Theme — CSS Custom Properties
+ *
+ * Ported subset of MediMind's EMR theme.css (1066 variables → ~250).
+ * The five brand blues, all semantic colors, surfaces, typography scale,
+ * shadows, gradients, and border radii survive the port. Everything the
+ * MediMind-integration path needs keeps its `--emr-*` name so style code
+ * copy-pastes over cleanly.
+ *
+ * Dark mode is triggered by `data-mantine-color-scheme="dark"` on :root,
+ * set automatically by our custom color-scheme-manager (see mantineTheme.ts).
+ */
+
+:root {
+  /* ==================== CORE COLORS ==================== */
+  --emr-primary: #1a365d;
+  --emr-secondary: #2b6cb0;
+  --emr-accent: #3182ce;
+  --emr-light-accent: #bee3f8;
+
+  /* ==================== ALPHA VARIANTS ==================== */
+  --emr-primary-alpha-04: rgba(26, 54, 93, 0.04);
+  --emr-primary-alpha-08: rgba(26, 54, 93, 0.08);
+  --emr-primary-alpha-12: rgba(26, 54, 93, 0.12);
+  --emr-primary-alpha-20: rgba(26, 54, 93, 0.2);
+  --emr-primary-alpha-40: rgba(26, 54, 93, 0.4);
+
+  --emr-secondary-alpha-04: rgba(43, 108, 176, 0.04);
+  --emr-secondary-alpha-08: rgba(43, 108, 176, 0.08);
+  --emr-secondary-alpha-10: rgba(43, 108, 176, 0.1);
+  --emr-secondary-alpha-15: rgba(43, 108, 176, 0.15);
+  --emr-secondary-alpha-20: rgba(43, 108, 176, 0.2);
+  --emr-secondary-alpha-30: rgba(43, 108, 176, 0.3);
+  --emr-secondary-alpha-50: rgba(43, 108, 176, 0.5);
+
+  --emr-accent-alpha-08: rgba(49, 130, 206, 0.08);
+  --emr-accent-alpha-10: rgba(49, 130, 206, 0.1);
+  --emr-accent-alpha-15: rgba(49, 130, 206, 0.15);
+  --emr-accent-alpha-20: rgba(49, 130, 206, 0.2);
+  --emr-accent-alpha-30: rgba(49, 130, 206, 0.3);
+
+  --emr-white-alpha-05: rgba(255, 255, 255, 0.05);
+  --emr-white-alpha-10: rgba(255, 255, 255, 0.1);
+  --emr-white-alpha-20: rgba(255, 255, 255, 0.2);
+  --emr-white-alpha-50: rgba(255, 255, 255, 0.5);
+  --emr-white-alpha-85: rgba(255, 255, 255, 0.85);
+  --emr-white-alpha-95: rgba(255, 255, 255, 0.95);
+
+  /* ==================== GRAY SCALE ==================== */
+  --emr-gray-50: #f9fafb;
+  --emr-gray-100: #f3f4f6;
+  --emr-gray-200: #e5e7eb;
+  --emr-gray-300: #d1d5db;
+  --emr-gray-400: #9ca3af;
+  --emr-gray-500: #6b7280;
+  --emr-gray-600: #4b5563;
+  --emr-gray-700: #374151;
+  --emr-gray-800: #1f2937;
+  --emr-gray-900: #111827;
+
+  /* ==================== TEXT COLORS ==================== */
+  --emr-text-primary: #1f2937;
+  --emr-text-secondary: #6b7280;
+  --emr-text-tertiary: #9ca3af;
+  --emr-text-inverse: #ffffff;
+  --emr-text-inverse-secondary: rgba(255, 255, 255, 0.8);
+  --emr-text-white: #ffffff;
+
+  /* ==================== SURFACE BACKGROUNDS ==================== */
+  --emr-bg-page: #ffffff;
+  --emr-bg-card: #ffffff;
+  --emr-bg-modal: #ffffff;
+  --emr-bg-input: #ffffff;
+  --emr-bg-hover: #f7fafc;
+  --emr-bg-section-header: #f8f9fa;
+  --emr-overlay-bg: rgba(0, 0, 0, 0.5);
+
+  /* Glass surfaces for modal headers and cards */
+  --emr-glass-bg: rgba(255, 255, 255, 0.1);
+  --emr-glass-border: rgba(255, 255, 255, 0.2);
+
+  /* ==================== SEMANTIC COLORS ==================== */
+  --emr-success: #38a169;
+  --emr-success-light: #48bb78;
+  --emr-success-lighter: #c6f6d5;
+  --emr-success-text: #276749;
+  --emr-success-bg: rgba(56, 161, 105, 0.08);
+  --emr-success-border: rgba(56, 161, 105, 0.2);
+  --emr-success-alpha-10: rgba(56, 161, 105, 0.1);
+  --emr-success-alpha-20: rgba(56, 161, 105, 0.2);
+
+  --emr-warning: #dd6b20;
+  --emr-warning-light: #ed8936;
+  --emr-warning-lighter: #feebc8;
+  --emr-warning-text: #b45309;
+  --emr-warning-bg: #fff7ed;
+  --emr-warning-border: rgba(221, 107, 32, 0.2);
+
+  --emr-error: #e53e3e;
+  --emr-error-light: #fc8181;
+  --emr-error-lighter: #fed7d7;
+  --emr-error-text: #c92a2a;
+  --emr-error-bg: #fff3f3;
+  --emr-error-border: rgba(229, 62, 62, 0.3);
+  --emr-error-alpha-10: rgba(229, 62, 62, 0.1);
+  --emr-error-alpha-20: rgba(229, 62, 62, 0.2);
+
+  --emr-info: #3182ce;
+  --emr-info-light: #63b3ed;
+  --emr-info-bg: #eff6ff;
+  --emr-info-alpha-10: rgba(49, 130, 206, 0.1);
+  --emr-info-alpha-15: rgba(49, 130, 206, 0.15);
+
+  /* ==================== COMPETENCY COLORS (angiology) ==================== */
+  /* Used in anatomical diagram overlay — matches Corestudycast convention */
+  --emr-competency-normal: #1f2937;        /* solid black */
+  --emr-competency-ablated: #ffffff;       /* hollow — white fill */
+  --emr-competency-incompetent: #e53e3e;   /* red */
+  --emr-competency-inconclusive: #9ca3af;  /* gray */
+
+  /* ==================== BORDERS ==================== */
+  --emr-border-color: #e5e7eb;
+  --emr-border-default: #e5e7eb;
+  --emr-border-light: rgba(107, 114, 128, 0.2);
+  --emr-border-focus: #3182ce;
+  --emr-border-error: #e53e3e;
+  --emr-border-secondary: rgba(43, 108, 176, 0.2);
+
+  --emr-border-radius-sm: 4px;
+  --emr-border-radius: 6px;
+  --emr-border-radius-lg: 8px;
+  --emr-border-radius-xl: 12px;
+  --emr-border-radius-2xl: 16px;
+  --emr-border-radius-full: 9999px;
+
+  /* ==================== SHADOWS ==================== */
+  --emr-shadow-color: rgba(0, 0, 0, 0.08);
+  --emr-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --emr-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --emr-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --emr-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --emr-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.12);
+  --emr-shadow-focus: 0 0 0 3px rgba(49, 130, 206, 0.2);
+
+  --emr-shadow-success: 0 2px 6px rgba(56, 161, 105, 0.3);
+  --emr-shadow-warning: 0 2px 6px rgba(221, 107, 32, 0.3);
+  --emr-shadow-error: 0 2px 6px rgba(229, 62, 62, 0.3);
+  --emr-shadow-info: 0 2px 6px rgba(49, 130, 206, 0.3);
+
+  --emr-shadow-tab-blue: 0 6px 24px -4px rgba(43, 108, 176, 0.5);
+  --emr-shadow-section-header: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* ==================== GRADIENTS ==================== */
+  /* THE Primary Button Gradient — mandatory for all primary CTAs */
+  --emr-gradient-primary: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #3182ce 100%);
+  --emr-gradient-secondary: linear-gradient(135deg, #2b6cb0 0%, #3182ce 50%, #3182ce 100%);
+  --emr-gradient-success: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+  --emr-gradient-warning: linear-gradient(135deg, #dd6b20 0%, #ed8936 100%);
+  --emr-gradient-error: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+  --emr-gradient-section-header: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+  --emr-gradient-submenu: linear-gradient(90deg, #2b6cb0 0%, #3182ce 50%, #3182ce 100%);
+
+  /* Subtle gradients for card backgrounds */
+  --emr-gradient-subtle-primary: linear-gradient(135deg, rgba(26, 54, 93, 0.03) 0%, rgba(43, 108, 176, 0.03) 100%);
+  --emr-gradient-subtle-accent: linear-gradient(135deg, rgba(49, 130, 206, 0.04) 0%, rgba(190, 227, 248, 0.04) 100%);
+
+  /* ==================== TYPOGRAPHY ==================== */
+  --emr-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Georgian', 'Helvetica Neue', Arial, sans-serif;
+  --emr-font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  --emr-font-4xs: 8px;
+  --emr-font-3xs: 9px;
+  --emr-font-2xs: 10px;
+  --emr-font-xs: 11px;
+  --emr-font-sm: 12px;
+  --emr-font-base: 13px;
+  --emr-font-md: 14px;
+  --emr-font-lg: 16px;
+  --emr-font-xl: 18px;
+  --emr-font-2xl: 20px;
+  --emr-font-3xl: 24px;
+  --emr-font-4xl: 28px;
+  --emr-font-5xl: 32px;
+  --emr-font-6xl: 40px;
+  --emr-font-7xl: 48px;
+  --emr-font-8xl: 64px;
+
+  --emr-font-normal: 400;
+  --emr-font-medium: 500;
+  --emr-font-semibold: 600;
+  --emr-font-bold: 700;
+  --emr-font-extrabold: 800;
+
+  --emr-line-height-none: 1;
+  --emr-line-height-tight: 1.25;
+  --emr-line-height-snug: 1.375;
+  --emr-line-height-base: 1.5;
+  --emr-line-height-relaxed: 1.75;
+
+  --emr-letter-spacing-tight: -0.03em;
+  --emr-letter-spacing-normal: 0;
+  --emr-letter-spacing-wide: 0.02em;
+  --emr-letter-spacing-uppercase: 0.1em;
+
+  /* ==================== SPACING ==================== */
+  --emr-space-0: 0;
+  --emr-space-1: 4px;
+  --emr-space-2: 8px;
+  --emr-space-3: 12px;
+  --emr-space-4: 16px;
+  --emr-space-5: 20px;
+  --emr-space-6: 24px;
+  --emr-space-8: 32px;
+  --emr-space-10: 40px;
+  --emr-space-12: 48px;
+  --emr-space-16: 64px;
+  --emr-space-20: 80px;
+
+  /* ==================== Z-INDEX SCALE ==================== */
+  --emr-z-base: 0;
+  --emr-z-dropdown: 100;
+  --emr-z-sticky: 200;
+  --emr-z-modal: 1000;
+  --emr-z-toast: 1100;
+  --emr-z-tooltip: 1200;
+
+  /* ==================== TRANSITIONS ==================== */
+  --emr-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --emr-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --emr-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================================================
+   DARK MODE OVERRIDES — triggered by Mantine's color scheme attribute
+   ======================================================================== */
+
+:root[data-mantine-color-scheme='dark'] {
+  /* Invert gray scale */
+  --emr-gray-50: #0f172a;
+  --emr-gray-100: #1e293b;
+  --emr-gray-200: #334155;
+  --emr-gray-300: #475569;
+  --emr-gray-400: #64748b;
+  --emr-gray-500: #94a3b8;
+  --emr-gray-600: #cbd5e1;
+  --emr-gray-700: #e2e8f0;
+  --emr-gray-800: #f1f5f9;
+  --emr-gray-900: #f8fafc;
+
+  /* Text colors — near-white on dark */
+  --emr-text-primary: #f1f5f9;
+  --emr-text-secondary: #cbd5e1;
+  --emr-text-tertiary: #94a3b8;
+  --emr-text-inverse: #0f172a;
+
+  /* Surface backgrounds — slate family */
+  --emr-bg-page: #0f172a;
+  --emr-bg-card: #1e293b;
+  --emr-bg-modal: #1e293b;
+  --emr-bg-input: #1e293b;
+  --emr-bg-hover: #334155;
+  --emr-bg-section-header: #1e293b;
+
+  /* Borders */
+  --emr-border-color: #334155;
+  --emr-border-default: #334155;
+  --emr-border-light: rgba(148, 163, 184, 0.2);
+
+  /* Shadows — slightly stronger in dark mode for depth */
+  --emr-shadow-color: rgba(0, 0, 0, 0.3);
+  --emr-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --emr-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --emr-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --emr-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --emr-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* ========================================================================
+   GLOBAL BASE STYLES
+   ======================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--emr-font-family);
+  font-size: var(--emr-font-base);
+  line-height: var(--emr-line-height-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background-color: var(--emr-bg-page);
+  color: var(--emr-text-primary);
+  font-family: var(--emr-font-family);
+  transition: background-color var(--emr-transition-base), color var(--emr-transition-base);
+}
+
+/* Scrollbar styling (WebKit) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--emr-bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--emr-gray-300);
+  border-radius: var(--emr-border-radius);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--emr-gray-400);
+}
+
+/* Focus ring — unified across all interactive elements */
+*:focus-visible {
+  outline: 2px solid var(--emr-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--emr-border-radius-sm);
+}
+
+/* Georgian-aware root */
+html[lang='ka'] body {
+  font-feature-settings: 'kern' 1;
+}
