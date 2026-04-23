@@ -50,7 +50,16 @@
       "abnormal": "Abnormal reflux (>{threshold} ms)"
     },
     "help": {
-      "refluxDurationMs": "Pathological: >1000 ms deep, >500 ms superficial"
+      "refluxDurationMs": "Pathological: >1000 ms deep, >500 ms superficial",
+      "apDiameterMm": "Anterior-posterior diameter in B-mode (grey-scale)",
+      "transDiameterMm": "Transverse diameter in B-mode (grey-scale)",
+      "depthMm": "Depth from skin to vessel centre — used for endovenous ablation planning",
+      "compressibility": "Complete coaptation under gentle transducer pressure indicates normal patency. Non-compressibility is the primary sign of DVT.",
+      "thrombosis": "Presence and chronicity of intraluminal thrombus (acute = echo-lucent, chronic = echogenic).",
+      "spontaneity": "Spontaneous venous flow at rest — reduced or absent flow suggests obstruction upstream.",
+      "phasicity": "Respiratory variation in flow velocity. Loss of phasicity = proximal obstruction.",
+      "augmentation": "Flow increase with distal compression — absent augmentation suggests obstruction between probe and squeeze site.",
+      "competency": "Auto = derived from findings. Pick a value to override the diagram color."
     },
     "narrativeSections": {
       "rightFindings": "Right lower extremity — findings",
@@ -80,6 +89,7 @@
       "institution": "Institution",
       "accession": "Accession #",
       "indication": "Indication",
+      "indicationNotes": "Additional indication notes",
       "quality": "Study quality",
       "qualityExcellent": "Excellent",
       "qualityGood": "Good",
@@ -89,7 +99,23 @@
       "protocolStandard": "Standard",
       "protocolDvt": "DVT screen",
       "protocolReflux": "Reflux assessment",
-      "protocolPreop": "Pre-op mapping"
+      "protocolPreop": "Pre-op mapping",
+      "informedConsent": "Informed consent obtained",
+      "informedConsentSignedAt": "Consent signed on",
+      "informedConsentYes": "Yes",
+      "informedConsentNo": "No",
+      "patientPosition": "Patient position",
+      "medications": "Current medications",
+      "icd10Codes": "ICD-10 indications",
+      "icd10Placeholder": "Select one or more ICD-10 codes…",
+      "cptCode": "CPT procedure code",
+      "position": {
+        "supine": "Supine",
+        "reverse-trendelenburg-30": "Reverse Trendelenburg 30°",
+        "standing": "Standing",
+        "seated": "Seated",
+        "side-lying": "Side-lying"
+      }
     },
     "segmentTable": {
       "title": "Segment assessment",
@@ -165,9 +191,34 @@
       "spontaneity": "Spontaneity",
       "phasicity": "Phasicity",
       "augmentation": "Augmentation",
+      "competency": "Competency",
       "refluxDurationMs": "Reflux duration (ms)",
       "apDiameterMm": "AP diameter (mm)",
+      "transDiameterMm": "Transverse diameter (mm)",
       "depthMm": "Depth (mm)"
+    },
+    "competency": {
+      "auto": "Auto (from findings)",
+      "normal": "Normal",
+      "incompetent": "Incompetent",
+      "ablated": "Ablated",
+      "inconclusive": "Inconclusive"
+    },
+    "bulk": {
+      "allNormal": "All normal",
+      "allNormalTooltip": "Fill every segment in this tab with normal findings (⌘N)",
+      "clearAll": "Clear all",
+      "clearAllTooltip": "Clear every finding in the current tab",
+      "copyRightToLeft": "Copy R → L",
+      "copyRightToLeftTooltip": "Duplicate right-side findings to left (⌘D)",
+      "copyLeftToRight": "Copy L → R",
+      "copyLeftToRightTooltip": "Duplicate left-side findings to right"
+    },
+    "narrative": {
+      "sonographerComments": "Sonographer comments",
+      "sonographerCommentsHelp": "Technical notes from the sonographer who performed the study (scanner settings, difficult segments, patient tolerance).",
+      "clinicianComments": "Clinician impression",
+      "clinicianCommentsHelp": "Interpreting physician supplemental comments — distinct from the auto-generated impression."
     },
     "compressibility": {
       "normal": "Normal",
@@ -205,6 +256,7 @@
       "subtitle": "Numeric parameters for segments with recorded findings",
       "ms": "Duration (ms)",
       "ap": "AP (mm)",
+      "trans": "Trans (mm)",
       "depth": "Depth (mm)",
       "empty": "No segments recorded yet"
     },

@@ -8,15 +8,20 @@
  */
 
 import { memo, useMemo } from 'react';
-import { Box, Grid, Group, Text } from '@mantine/core';
+import { Box, Grid, Group, MultiSelect, Text } from '@mantine/core';
 import { IconClipboardText } from '@tabler/icons-react';
 import {
   EMRTextInput,
   EMRDatePicker,
   EMRSelect,
   EMRTextarea,
+  EMRCheckbox,
 } from '../shared/EMRFormFields';
-import type { StudyHeader as StudyHeaderShape } from '../../types/form';
+import type { StudyHeader as StudyHeaderShape, IndicationCode, CptCode } from '../../types/form';
+import type { PatientPosition } from '../../types/patient-position';
+import { PATIENT_POSITIONS } from '../../types/patient-position';
+import { VASCULAR_ICD10_CODES, icd10Display } from '../../constants/vascular-icd10';
+import { VASCULAR_CPT_CODES, cptDisplay } from '../../constants/vascular-cpt';
 import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './StudyHeader.module.css';
 
@@ -63,7 +68,7 @@ export const StudyHeader = memo(function StudyHeader({
   value,
   onChange,
 }: StudyHeaderProps): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const derivedAge = useMemo(() => ageFromBirthDate(value.patientBirthDate), [value.patientBirthDate]);
 
@@ -100,6 +105,74 @@ export const StudyHeader = memo(function StudyHeader({
     ],
     [t],
   );
+
+  const positionOptions = useMemo(
+    () =>
+      PATIENT_POSITIONS.map((p) => ({
+        value: p,
+        label: t(`venousLE.header.position.${p}`, p),
+      })),
+    [t],
+  );
+
+  const icd10Options = useMemo(
+    () =>
+      VASCULAR_ICD10_CODES.map((e) => ({
+        value: e.code,
+        label: `${e.code} — ${icd10Display(e, lang)}`,
+      })),
+    [lang],
+  );
+
+  const cptOptions = useMemo(
+    () =>
+      VASCULAR_CPT_CODES.map((e) => ({
+        value: e.code,
+        label: `${e.code} — ${cptDisplay(e, lang)}`,
+      })),
+    [lang],
+  );
+
+  const selectedIcd10Codes = useMemo(
+    () => (value.icd10Codes ?? []).map((c) => c.code),
+    [value.icd10Codes],
+  );
+
+  const handleIcd10Change = (codes: string[]): void => {
+    const mapped: IndicationCode[] = codes.map((code) => {
+      const entry = VASCULAR_ICD10_CODES.find((e) => e.code === code);
+      return {
+        code,
+        display: entry ? icd10Display(entry, lang) : code,
+      };
+    });
+    update('icd10Codes', mapped);
+  };
+
+  const handleCptChange = (code: string | null): void => {
+    if (!code) {
+      update('cptCode', undefined);
+      return;
+    }
+    const entry = VASCULAR_CPT_CODES.find((e) => e.code === code);
+    const next: CptCode = {
+      code,
+      display: entry ? cptDisplay(entry, lang) : code,
+    };
+    update('cptCode', next);
+  };
+
+  const handleConsentCheckbox = (checked: boolean): void => {
+    const nextValue: StudyHeaderValue = {
+      ...value,
+      informedConsent: checked,
+      // Stamp the signed-at timestamp when the box is first checked.
+      informedConsentSignedAt: checked
+        ? value.informedConsentSignedAt ?? new Date().toISOString().slice(0, 10)
+        : undefined,
+    };
+    onChange(nextValue);
+  };
 
   return (
     <section className={classes.card} aria-labelledby="study-header-title">
@@ -248,10 +321,96 @@ export const StudyHeader = memo(function StudyHeader({
             />
           </Grid.Col>
 
-          {/* Row 4 — full-width indication */}
+          {/* Row 4 — Patient position + CPT */}
+          <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
+            <EMRSelect
+              label={t('venousLE.header.patientPosition')}
+              value={value.patientPosition ?? null}
+              onChange={(v) =>
+                update('patientPosition', (v as PatientPosition | null) ?? undefined)
+              }
+              data={positionOptions}
+              size="md"
+              searchable
+              data-testid="header-patientPosition"
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
+            <EMRSelect
+              label={t('venousLE.header.cptCode')}
+              value={value.cptCode?.code ?? null}
+              onChange={(v) => handleCptChange(v)}
+              data={cptOptions}
+              size="md"
+              searchable
+              data-testid="header-cptCode"
+            />
+          </Grid.Col>
+
+          {/* Row 5 — full-width ICD-10 multi-select */}
+          <Grid.Col span={12}>
+            <Box className={classes.icd10Wrapper}>
+              <label className={classes.icd10Label} htmlFor="header-icd10">
+                {t('venousLE.header.icd10Codes')}
+              </label>
+              <MultiSelect
+                id="header-icd10"
+                data={icd10Options}
+                value={selectedIcd10Codes as string[]}
+                onChange={(v) => handleIcd10Change(v)}
+                placeholder={t('venousLE.header.icd10Placeholder', 'Select ICD-10 codes…')}
+                searchable
+                clearable
+                hidePickedOptions
+                maxDropdownHeight={280}
+                comboboxProps={{ withinPortal: true, zIndex: 10000 }}
+                data-testid="header-icd10"
+                size="md"
+              />
+            </Box>
+          </Grid.Col>
+
+          {/* Row 6 — Medications */}
           <Grid.Col span={12}>
             <EMRTextarea
-              label={t('venousLE.header.indication')}
+              label={t('venousLE.header.medications')}
+              value={value.medications ?? ''}
+              onChange={(v) => update('medications', v)}
+              minRows={2}
+              maxRows={3}
+              autosize
+              size="md"
+              data-testid="header-medications"
+            />
+          </Grid.Col>
+
+          {/* Row 7 — Informed Consent checkbox + signed-at */}
+          <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
+            <Box className={classes.consentRow}>
+              <EMRCheckbox
+                label={t('venousLE.header.informedConsent')}
+                checked={value.informedConsent === true}
+                onChange={(checked) => handleConsentCheckbox(checked)}
+                size="md"
+                data-testid="header-informedConsent"
+              />
+            </Box>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
+            <EMRDatePicker
+              label={t('venousLE.header.informedConsentSignedAt')}
+              value={isoDateToDate(value.informedConsentSignedAt)}
+              onChange={(d) => update('informedConsentSignedAt', dateToIso(d))}
+              size="md"
+              disabled={value.informedConsent !== true}
+              data-testid="header-informedConsentSignedAt"
+            />
+          </Grid.Col>
+
+          {/* Row 8 — legacy free-text indication (kept as supplemental note) */}
+          <Grid.Col span={12}>
+            <EMRTextarea
+              label={t('venousLE.header.indicationNotes')}
               value={value.indication ?? ''}
               onChange={(v) => update('indication', v)}
               minRows={2}

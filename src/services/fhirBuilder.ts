@@ -35,8 +35,10 @@ import type {
   Bundle,
   BundleEntry,
   CodeableConcept,
+  Consent,
   DiagnosticReport,
   EmittedResource,
+  Encounter,
   Observation,
   ObservationComponent,
   Patient,
@@ -44,6 +46,7 @@ import type {
   QuestionnaireResponse,
   QuestionnaireResponseItem,
   Reference,
+  ServiceRequest,
 } from '../types/fhir';
 import {
   CEAP_SNOMED,
@@ -52,6 +55,8 @@ import {
   VASCULAR_LOINC,
   VASCULAR_SEGMENTS_SNOMED,
 } from '../constants/fhir-systems';
+import { ICD10_SYSTEM } from '../constants/vascular-icd10';
+import { CPT_SYSTEM } from '../constants/vascular-cpt';
 import { ceapObservationComponents, formatCeapClassification } from './ceapService';
 import { narrativeFromFormState } from './narrativeService';
 
@@ -68,17 +73,37 @@ export function buildFhirBundle(form: FormState): Bundle {
 
   const patientEntry = buildPatientEntry(ctx);
   const qrEntry = buildQuestionnaireResponseEntry(ctx);
+  const encounterEntry = buildEncounterEntry(ctx);
+  const serviceRequestEntry = buildServiceRequestEntry(ctx);
+  const consentEntry = buildConsentEntry(ctx);
   const segmentObsEntries = buildSegmentObservationEntries(ctx);
+  const positionObsEntry = buildPatientPositionObservationEntry(ctx);
+  const sonographerObsEntry = buildSonographerCommentsObservationEntry(ctx);
+  const clinicianObsEntry = buildClinicianImpressionObservationEntry(ctx);
   const panelEntry = buildPanelObservationEntry(ctx, segmentObsEntries);
   const ceapEntry = buildCeapObservationEntry(ctx);
-  const reportEntry = buildDiagnosticReportEntry(ctx, panelEntry, segmentObsEntries, ceapEntry);
+  const reportEntry = buildDiagnosticReportEntry(
+    ctx,
+    panelEntry,
+    segmentObsEntries,
+    ceapEntry,
+    positionObsEntry,
+    sonographerObsEntry,
+    clinicianObsEntry,
+  );
 
   const entries: Array<BundleEntry<EmittedResource>> = [
     patientEntry,
     qrEntry,
-    panelEntry,
-    ...segmentObsEntries,
   ];
+  if (encounterEntry) entries.push(encounterEntry);
+  if (serviceRequestEntry) entries.push(serviceRequestEntry);
+  if (consentEntry) entries.push(consentEntry);
+  entries.push(panelEntry);
+  entries.push(...segmentObsEntries);
+  if (positionObsEntry) entries.push(positionObsEntry);
+  if (sonographerObsEntry) entries.push(sonographerObsEntry);
+  if (clinicianObsEntry) entries.push(clinicianObsEntry);
   if (ceapEntry) entries.push(ceapEntry);
   entries.push(reportEntry);
 
@@ -130,6 +155,15 @@ interface BuildContext {
   readonly reportRef: string;
   readonly ceapObsId: string | null;
   readonly ceapObsRef: string | null;
+  readonly encounterId: string | null;
+  readonly encounterRef: string | null;
+  readonly serviceRequestId: string | null;
+  readonly serviceRequestRef: string | null;
+  readonly consentId: string | null;
+  readonly consentRef: string | null;
+  readonly positionObsId: string | null;
+  readonly sonographerObsId: string | null;
+  readonly clinicianObsId: string | null;
   readonly loincCode: string;
   readonly loincDisplay: string;
 }
@@ -144,6 +178,26 @@ function createContext(form: FormState): BuildContext {
   const hasCeap = !!form.ceap;
   const ceapObsId = hasCeap ? newUuid() : null;
 
+  // Phase 1.5 optional resources — allocate IDs only if inputs are present.
+  const header = form.header;
+  const hasIcd10 = Array.isArray(header.icd10Codes) && header.icd10Codes.length > 0;
+  const hasCpt = !!header.cptCode;
+  const hasConsent = header.informedConsent === true;
+  const hasPosition = !!header.patientPosition;
+  const hasSonographer =
+    typeof form.narrative.sonographerComments === 'string' &&
+    form.narrative.sonographerComments.trim().length > 0;
+  const hasClinician =
+    typeof form.narrative.clinicianComments === 'string' &&
+    form.narrative.clinicianComments.trim().length > 0;
+
+  const encounterId = hasIcd10 ? newUuid() : null;
+  const serviceRequestId = hasCpt ? newUuid() : null;
+  const consentId = hasConsent ? newUuid() : null;
+  const positionObsId = hasPosition ? newUuid() : null;
+  const sonographerObsId = hasSonographer ? newUuid() : null;
+  const clinicianObsId = hasClinician ? newUuid() : null;
+
   return {
     form,
     nowIso,
@@ -157,6 +211,15 @@ function createContext(form: FormState): BuildContext {
     reportRef: urnRef(reportId),
     ceapObsId,
     ceapObsRef: ceapObsId ? urnRef(ceapObsId) : null,
+    encounterId,
+    encounterRef: encounterId ? urnRef(encounterId) : null,
+    serviceRequestId,
+    serviceRequestRef: serviceRequestId ? urnRef(serviceRequestId) : null,
+    consentId,
+    consentRef: consentId ? urnRef(consentId) : null,
+    positionObsId,
+    sonographerObsId,
+    clinicianObsId,
     loincCode: loinc.code,
     loincDisplay: loinc.display,
   };
@@ -285,6 +348,31 @@ function headerToItem(header: StudyHeader): QuestionnaireResponseItem {
   pushString(fields, 'referringPhysician', 'Referring physician', header.referringPhysician);
   pushString(fields, 'institution', 'Institution', header.institution);
   pushString(fields, 'accessionNumber', 'Accession number', header.accessionNumber);
+  // Phase 1.5 additions
+  if (header.informedConsent !== undefined) {
+    fields.push({
+      linkId: 'informedConsent',
+      text: 'Informed consent',
+      answer: [{ valueBoolean: header.informedConsent }],
+    });
+  }
+  pushString(fields, 'informedConsentSignedAt', 'Consent signed at', header.informedConsentSignedAt);
+  pushString(fields, 'patientPosition', 'Patient position', header.patientPosition);
+  pushString(fields, 'medications', 'Medications', header.medications);
+  if (header.icd10Codes && header.icd10Codes.length > 0) {
+    fields.push({
+      linkId: 'icd10Codes',
+      text: 'ICD-10 indications',
+      answer: header.icd10Codes.map((c) => ({ valueString: `${c.code} ${c.display}` })),
+    });
+  }
+  if (header.cptCode) {
+    fields.push({
+      linkId: 'cptCode',
+      text: 'CPT procedure code',
+      answer: [{ valueString: `${header.cptCode.code} ${header.cptCode.display}` }],
+    });
+  }
   return { linkId: 'header', text: 'Study header', item: fields };
 }
 
@@ -295,6 +383,8 @@ function narrativeToItem(narrative: StudyNarrative): QuestionnaireResponseItem {
   pushString(fields, 'findings', 'Findings', narrative.findings);
   pushString(fields, 'impression', 'Impression', narrative.impression);
   pushString(fields, 'comments', 'Comments', narrative.comments);
+  pushString(fields, 'sonographerComments', 'Sonographer comments', narrative.sonographerComments);
+  pushString(fields, 'clinicianComments', 'Clinician comments', narrative.clinicianComments);
   return { linkId: 'narrative', text: 'Narrative', item: fields };
 }
 
@@ -427,6 +517,19 @@ function appendVenousFindingObservations(
     'apDiameterMm',
     'Vein AP diameter',
     finding.apDiameterMm,
+    'mm',
+    false,
+    segmentBase,
+    side
+  );
+  pushVenousNumeric(
+    ctx,
+    out,
+    bodySite,
+    sideText,
+    'transDiameterMm',
+    'Vein transverse diameter',
+    finding.transDiameterMm,
     'mm',
     false,
     segmentBase,
@@ -674,6 +777,221 @@ function pushGenericNumeric(
 }
 
 // ---------------------------------------------------------------------------
+// Phase 1.5 additions — Encounter, ServiceRequest, Consent, per-performer Obs
+// ---------------------------------------------------------------------------
+
+function buildEncounterEntry(
+  ctx: BuildContext
+): BundleEntry<Encounter> | null {
+  if (!ctx.encounterId) return null;
+  const codes = ctx.form.header.icd10Codes ?? [];
+  const reasonCodes: CodeableConcept[] = codes.map((c) => ({
+    coding: [{ system: ICD10_SYSTEM, code: c.code, display: c.display }],
+    text: c.display,
+  }));
+  const encounter: Encounter = {
+    resourceType: 'Encounter',
+    id: ctx.encounterId,
+    status: 'finished',
+    class: {
+      system: STANDARD_FHIR_SYSTEMS.ENCOUNTER_CLASS,
+      code: 'AMB',
+      display: 'ambulatory',
+    },
+    subject: { reference: ctx.patientRef },
+    period: { start: ctx.nowIso, end: ctx.nowIso },
+    reasonCode: reasonCodes.length > 0 ? reasonCodes : undefined,
+  };
+  return {
+    fullUrl: urnRef(ctx.encounterId),
+    resource: encounter,
+    request: { method: 'POST', url: 'Encounter' },
+  };
+}
+
+function buildServiceRequestEntry(
+  ctx: BuildContext
+): BundleEntry<ServiceRequest> | null {
+  if (!ctx.serviceRequestId) return null;
+  const cpt = ctx.form.header.cptCode;
+  if (!cpt) return null;
+  const sr: ServiceRequest = {
+    resourceType: 'ServiceRequest',
+    id: ctx.serviceRequestId,
+    status: 'completed',
+    intent: 'order',
+    code: {
+      coding: [{ system: CPT_SYSTEM, code: cpt.code, display: cpt.display }],
+      text: cpt.display,
+    },
+    subject: { reference: ctx.patientRef },
+    encounter: ctx.encounterRef ? { reference: ctx.encounterRef } : undefined,
+    authoredOn: ctx.nowIso,
+    occurrenceDateTime: ctx.nowIso,
+  };
+  return {
+    fullUrl: urnRef(ctx.serviceRequestId),
+    resource: sr,
+    request: { method: 'POST', url: 'ServiceRequest' },
+  };
+}
+
+function buildConsentEntry(ctx: BuildContext): BundleEntry<Consent> | null {
+  if (!ctx.consentId) return null;
+  const signedAt =
+    ctx.form.header.informedConsentSignedAt ?? ctx.nowIso;
+
+  const consent: Consent = {
+    resourceType: 'Consent',
+    id: ctx.consentId,
+    status: 'active',
+    scope: {
+      coding: [
+        {
+          system: 'http://terminology.hl7.org/CodeSystem/consentscope',
+          code: 'patient-privacy',
+          display: 'Privacy Consent',
+        },
+      ],
+      text: 'Privacy Consent',
+    },
+    category: [
+      {
+        coding: [
+          {
+            system: 'http://terminology.hl7.org/CodeSystem/consentcategorycodes',
+            code: 'dch',
+            display: 'Disclosure to Consumer/Healthcare Provider',
+          },
+        ],
+        text: 'Informed consent for imaging study',
+      },
+    ],
+    patient: { reference: ctx.patientRef },
+    dateTime: signedAt,
+    provision: { type: 'permit' },
+  };
+  return {
+    fullUrl: urnRef(ctx.consentId),
+    resource: consent,
+    request: { method: 'POST', url: 'Consent' },
+  };
+}
+
+function buildPatientPositionObservationEntry(
+  ctx: BuildContext
+): BundleEntry<Observation> | null {
+  if (!ctx.positionObsId) return null;
+  const pos = ctx.form.header.patientPosition;
+  if (!pos) return null;
+
+  const obs: Observation = {
+    resourceType: 'Observation',
+    id: ctx.positionObsId,
+    status: 'final',
+    category: [observationCategory('imaging')],
+    code: {
+      coding: [
+        {
+          system: STANDARD_FHIR_SYSTEMS.LOINC,
+          code: '8361-8',
+          display: 'Patient position',
+        },
+      ],
+      text: 'Patient position',
+    },
+    subject: { reference: ctx.patientRef },
+    effectiveDateTime: ctx.nowIso,
+    issued: ctx.nowIso,
+    valueCodeableConcept: {
+      text: pos,
+      coding: [
+        {
+          system: `${MEDIMIND_EXTENSIONS.STUDY_TYPE.replace('angio-study-type', 'patient-position')}`,
+          code: pos,
+          display: pos,
+        },
+      ],
+    },
+  };
+  return {
+    fullUrl: urnRef(ctx.positionObsId),
+    resource: obs,
+    request: { method: 'POST', url: 'Observation' },
+  };
+}
+
+function buildSonographerCommentsObservationEntry(
+  ctx: BuildContext
+): BundleEntry<Observation> | null {
+  if (!ctx.sonographerObsId) return null;
+  const text = ctx.form.narrative.sonographerComments;
+  if (!text || text.trim().length === 0) return null;
+
+  const obs: Observation = {
+    resourceType: 'Observation',
+    id: ctx.sonographerObsId,
+    status: 'final',
+    category: [observationCategory('imaging')],
+    code: {
+      coding: [
+        {
+          system: STANDARD_FHIR_SYSTEMS.LOINC,
+          code: '59776-5',
+          display: 'Procedure findings Narrative',
+        },
+      ],
+      text: 'Sonographer comments',
+    },
+    subject: { reference: ctx.patientRef },
+    effectiveDateTime: ctx.nowIso,
+    issued: ctx.nowIso,
+    valueString: text,
+    note: [{ text: 'performer=sonographer' }],
+  };
+  return {
+    fullUrl: urnRef(ctx.sonographerObsId),
+    resource: obs,
+    request: { method: 'POST', url: 'Observation' },
+  };
+}
+
+function buildClinicianImpressionObservationEntry(
+  ctx: BuildContext
+): BundleEntry<Observation> | null {
+  if (!ctx.clinicianObsId) return null;
+  const text = ctx.form.narrative.clinicianComments;
+  if (!text || text.trim().length === 0) return null;
+
+  const obs: Observation = {
+    resourceType: 'Observation',
+    id: ctx.clinicianObsId,
+    status: 'final',
+    category: [observationCategory('imaging')],
+    code: {
+      coding: [
+        {
+          system: STANDARD_FHIR_SYSTEMS.LOINC,
+          code: '81230-8',
+          display: 'Imaging interpretation by clinician Narrative',
+        },
+      ],
+      text: 'Clinician impression',
+    },
+    subject: { reference: ctx.patientRef },
+    effectiveDateTime: ctx.nowIso,
+    issued: ctx.nowIso,
+    valueString: text,
+    note: [{ text: 'performer=clinician' }],
+  };
+  return {
+    fullUrl: urnRef(ctx.clinicianObsId),
+    resource: obs,
+    request: { method: 'POST', url: 'Observation' },
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 function buildPanelObservationEntry(
   ctx: BuildContext,
@@ -748,12 +1066,18 @@ function buildDiagnosticReportEntry(
   ctx: BuildContext,
   panelEntry: BundleEntry<Observation>,
   segmentEntries: ReadonlyArray<BundleEntry<Observation>>,
-  ceapEntry: BundleEntry<Observation> | null
+  ceapEntry: BundleEntry<Observation> | null,
+  positionEntry: BundleEntry<Observation> | null,
+  sonographerEntry: BundleEntry<Observation> | null,
+  clinicianEntry: BundleEntry<Observation> | null
 ): BundleEntry<DiagnosticReport> {
   const narrative = narrativeFromFormState(ctx.form);
   const conclusionParts: string[] = [];
   if (ctx.form.narrative.impression) {
     conclusionParts.push(ctx.form.narrative.impression);
+  }
+  if (ctx.form.narrative.clinicianComments) {
+    conclusionParts.push(ctx.form.narrative.clinicianComments);
   }
   if (narrative.conclusions.length > 0) {
     conclusionParts.push(...narrative.conclusions);
@@ -766,6 +1090,15 @@ function buildDiagnosticReportEntry(
       reference:
         e.fullUrl ?? (e.resource.id ? `Observation/${e.resource.id}` : undefined),
     });
+  }
+  if (positionEntry) {
+    results.push({ reference: positionEntry.fullUrl ?? `Observation/${ctx.positionObsId}` });
+  }
+  if (sonographerEntry) {
+    results.push({ reference: sonographerEntry.fullUrl ?? `Observation/${ctx.sonographerObsId}` });
+  }
+  if (clinicianEntry) {
+    results.push({ reference: clinicianEntry.fullUrl ?? `Observation/${ctx.clinicianObsId}` });
   }
   if (ceapEntry) {
     results.push({ reference: ceapEntry.fullUrl ?? `Observation/${ctx.ceapObsId}` });
@@ -812,6 +1145,7 @@ function buildDiagnosticReportEntry(
       text: ctx.loincDisplay,
     },
     subject: { reference: ctx.patientRef },
+    encounter: ctx.encounterRef ? { reference: ctx.encounterRef } : undefined,
     effectiveDateTime: ctx.nowIso,
     issued: ctx.nowIso,
     result: results,

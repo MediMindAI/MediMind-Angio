@@ -24,6 +24,16 @@ export interface PatientBlockLabels {
   readonly referring: string;
   readonly institution: string;
   readonly accession: string;
+  // Phase 1.5 Corestudycast additions (all optional for backwards compat)
+  readonly medications?: string;
+  readonly patientPosition?: string;
+  readonly icd10Codes?: string;
+  readonly cptCode?: string;
+  readonly informedConsent?: string;
+  readonly informedConsentYes?: string;
+  readonly informedConsentNo?: string;
+  /** Localized labels for `patientPosition` enum values. */
+  readonly positionLabels?: Readonly<Record<string, string>>;
 }
 
 export interface PatientBlockProps {
@@ -103,6 +113,37 @@ function Cell({
 export function PatientBlock({ header, labels }: PatientBlockProps): ReactElement {
   const age = computeAgeYears(header.patientBirthDate, header.studyDate);
 
+  // Derive the Phase 1.5 row values.
+  const positionKey = header.patientPosition;
+  const positionDisplay = positionKey
+    ? labels.positionLabels?.[positionKey] ?? positionKey
+    : undefined;
+  const icd10Display =
+    header.icd10Codes && header.icd10Codes.length > 0
+      ? header.icd10Codes.map((c) => c.code).join(', ')
+      : undefined;
+  const cptDisplay = header.cptCode
+    ? `${header.cptCode.code} — ${header.cptCode.display}`
+    : undefined;
+  const consentDisplay =
+    header.informedConsent === true
+      ? `${labels.informedConsentYes ?? 'Yes'}${
+          header.informedConsentSignedAt ? ` (${header.informedConsentSignedAt})` : ''
+        }`
+      : header.informedConsent === false
+      ? labels.informedConsentNo ?? 'No'
+      : undefined;
+  const medicationsDisplay = header.medications;
+
+  const hasExtraRow1 = !!(
+    labels.patientPosition ||
+    labels.icd10Codes ||
+    labels.cptCode ||
+    labels.informedConsent
+  ) &&
+    (positionDisplay || icd10Display || cptDisplay || consentDisplay);
+  const hasMedicationsRow = !!labels.medications && !!medicationsDisplay;
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -119,6 +160,27 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
         <Cell label={labels.institution} value={fieldValue(header.institution)} />
         <Cell label={labels.accession} value={fieldValue(header.accessionNumber)} />
       </View>
+      {hasExtraRow1 ? (
+        <View style={styles.row}>
+          {labels.patientPosition ? (
+            <Cell label={labels.patientPosition} value={fieldValue(positionDisplay)} />
+          ) : null}
+          {labels.cptCode ? (
+            <Cell label={labels.cptCode} value={fieldValue(cptDisplay)} />
+          ) : null}
+          {labels.icd10Codes ? (
+            <Cell label={labels.icd10Codes} value={fieldValue(icd10Display)} />
+          ) : null}
+          {labels.informedConsent ? (
+            <Cell label={labels.informedConsent} value={fieldValue(consentDisplay)} />
+          ) : null}
+        </View>
+      ) : null}
+      {hasMedicationsRow ? (
+        <View style={styles.row}>
+          <Cell label={labels.medications!} value={fieldValue(medicationsDisplay)} />
+        </View>
+      ) : null}
     </View>
   );
 }

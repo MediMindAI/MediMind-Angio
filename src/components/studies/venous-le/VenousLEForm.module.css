@@ -159,6 +159,22 @@
   border-top: 1px dashed var(--emr-border-color);
 }
 
+/* ==================== COMMENTS BLOCK ==================== */
+
+.commentsCard {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .commentsCard {
+    padding: 14px;
+  }
+}
+
 /* ==================== PRINT ==================== */
 
 @media print {

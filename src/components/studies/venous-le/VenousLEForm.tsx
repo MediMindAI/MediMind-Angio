@@ -28,6 +28,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { Box, Grid, SimpleGrid, Stack, Text } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { AnatomyView, AnatomyLegend } from '../../anatomy';
 import type { Competency, SegmentId } from '../../../types/anatomy';
@@ -41,6 +42,7 @@ import { ImpressionBlock } from '../../form/ImpressionBlock';
 import { CEAPPicker } from '../../form/CEAPPicker';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
+import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
 import {
   VENOUS_LE_SEGMENTS,
   deriveCompetency,
@@ -67,16 +69,24 @@ interface VenousFormStateV1 {
   readonly impressionEdited: boolean;
   readonly ceap: CeapClassification | undefined;
   readonly recommendations: ReadonlyArray<Recommendation>;
+  /** Sonographer comments (distinct from clinician impression). */
+  readonly sonographerComments: string;
+  /** Clinician interpretive comments. */
+  readonly clinicianComments: string;
 }
 
 const STUDY_ID = 'venousLEBilateral';
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
+const DEFAULT_CPT = defaultCptForStudy('venousLEBilateral');
 
 const INITIAL_STATE: VenousFormStateV1 = {
   studyType: 'venousLEBilateral',
   header: {
     patientName: '',
     studyDate: TODAY_ISO,
+    // Default CPT matches the study type; user can override.
+    cptCode: { code: DEFAULT_CPT.code, display: cptDisplay(DEFAULT_CPT, 'en') },
   },
   findings: {},
   view: 'right',
@@ -84,6 +94,8 @@ const INITIAL_STATE: VenousFormStateV1 = {
   impressionEdited: false,
   ceap: undefined,
   recommendations: [],
+  sonographerComments: '',
+  clinicianComments: '',
 };
 
 // ============================================================================
@@ -101,6 +113,11 @@ type Action =
   | { type: 'SET_IMPRESSION'; value: string; edited: boolean }
   | { type: 'SET_CEAP'; value: CeapClassification | undefined }
   | { type: 'SET_RECOMMENDATIONS'; value: ReadonlyArray<Recommendation> }
+  | { type: 'SET_SONOGRAPHER_COMMENTS'; value: string }
+  | { type: 'SET_CLINICIAN_COMMENTS'; value: string }
+  | { type: 'SET_ALL_NORMAL'; scope: 'left' | 'right' | 'bilateral' }
+  | { type: 'CLEAR_ALL'; scope: 'left' | 'right' | 'bilateral' }
+  | { type: 'COPY_SIDE'; from: 'left' | 'right' }
   | { type: 'HYDRATE'; value: VenousFormStateV1 };
 
 function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
@@ -140,6 +157,62 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       return { ...state, ceap: action.value };
     case 'SET_RECOMMENDATIONS':
       return { ...state, recommendations: action.value };
+    case 'SET_SONOGRAPHER_COMMENTS':
+      return { ...state, sonographerComments: action.value };
+    case 'SET_CLINICIAN_COMMENTS':
+      return { ...state, clinicianComments: action.value };
+    case 'SET_ALL_NORMAL': {
+      const sides: ReadonlyArray<'left' | 'right'> =
+        action.scope === 'bilateral' ? ['left', 'right'] : [action.scope];
+      const nextFindings: Record<string, VenousSegmentFinding> = {
+        ...(state.findings as Record<string, VenousSegmentFinding>),
+      };
+      for (const base of VENOUS_LE_SEGMENTS) {
+        for (const side of sides) {
+          const fullId = `${base}-${side}` as VenousLEFullSegmentId;
+          nextFindings[fullId] = {
+            compressibility: 'normal',
+            thrombosis: 'none',
+            spontaneity: 'normal',
+            phasicity: 'normal',
+            augmentation: 'normal',
+          };
+        }
+      }
+      return { ...state, findings: nextFindings as VenousSegmentFindings };
+    }
+    case 'CLEAR_ALL': {
+      const sides: ReadonlyArray<'left' | 'right'> =
+        action.scope === 'bilateral' ? ['left', 'right'] : [action.scope];
+      const nextFindings: Record<string, VenousSegmentFinding> = {
+        ...(state.findings as Record<string, VenousSegmentFinding>),
+      };
+      for (const base of VENOUS_LE_SEGMENTS) {
+        for (const side of sides) {
+          const fullId = `${base}-${side}` as VenousLEFullSegmentId;
+          delete nextFindings[fullId];
+        }
+      }
+      return { ...state, findings: nextFindings as VenousSegmentFindings };
+    }
+    case 'COPY_SIDE': {
+      const src = action.from;
+      const dst = src === 'left' ? 'right' : 'left';
+      const nextFindings: Record<string, VenousSegmentFinding> = {
+        ...(state.findings as Record<string, VenousSegmentFinding>),
+      };
+      for (const base of VENOUS_LE_SEGMENTS) {
+        const srcId = `${base}-${src}` as VenousLEFullSegmentId;
+        const dstId = `${base}-${dst}` as VenousLEFullSegmentId;
+        const srcFinding = state.findings[srcId];
+        if (srcFinding) {
+          nextFindings[dstId] = { ...srcFinding };
+        } else {
+          delete nextFindings[dstId];
+        }
+      }
+      return { ...state, findings: nextFindings as VenousSegmentFindings };
+    }
     default: {
       const _exhaustive: never = action;
       return _exhaustive;
@@ -162,6 +235,12 @@ function stateToFormState(s: VenousFormStateV1): FormState {
     referringPhysician: s.header.referringPhysician,
     institution: s.header.institution,
     accessionNumber: s.header.accessionNumber,
+    informedConsent: s.header.informedConsent,
+    informedConsentSignedAt: s.header.informedConsentSignedAt,
+    patientPosition: s.header.patientPosition,
+    medications: s.header.medications,
+    icd10Codes: s.header.icd10Codes,
+    cptCode: s.header.cptCode,
   };
   return {
     studyType: 'venousLEBilateral',
@@ -169,6 +248,8 @@ function stateToFormState(s: VenousFormStateV1): FormState {
     narrative: {
       indication: s.header.indication,
       impression: s.impression,
+      sonographerComments: s.sonographerComments || undefined,
+      clinicianComments: s.clinicianComments || undefined,
     },
     segments: [],
     recommendations: s.recommendations,
@@ -215,6 +296,66 @@ function competencyMapFromFindings(
   }
   return out;
 }
+
+// ============================================================================
+// CommentsBlock — sonographer vs clinician comments
+// ============================================================================
+
+import { EMRTextarea } from '../../shared/EMRFormFields';
+
+interface CommentsBlockProps {
+  readonly sonographer: string;
+  readonly clinician: string;
+  readonly onSonographerChange: (v: string) => void;
+  readonly onClinicianChange: (v: string) => void;
+}
+
+const CommentsBlock = memo(function CommentsBlock({
+  sonographer,
+  clinician,
+  onSonographerChange,
+  onClinicianChange,
+}: CommentsBlockProps): React.ReactElement {
+  const { t } = useTranslation();
+  return (
+    <Box className={classes.commentsCard}>
+      <Grid gutter={{ base: 'sm', md: 'md' }}>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <EMRTextarea
+            label={t('venousLE.narrative.sonographerComments', 'Sonographer comments')}
+            helpText={t(
+              'venousLE.narrative.sonographerCommentsHelp',
+              'Technical notes from the sonographer performing the study.',
+            )}
+            value={sonographer}
+            onChange={onSonographerChange}
+            minRows={3}
+            maxRows={6}
+            autosize
+            size="md"
+            data-testid="narrative-sonographer"
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <EMRTextarea
+            label={t('venousLE.narrative.clinicianComments', 'Clinician impression')}
+            helpText={t(
+              'venousLE.narrative.clinicianCommentsHelp',
+              'Interpreting clinician supplemental comments.',
+            )}
+            value={clinician}
+            onChange={onClinicianChange}
+            minRows={3}
+            maxRows={6}
+            autosize
+            size="md"
+            data-testid="narrative-clinician"
+          />
+        </Grid.Col>
+      </Grid>
+    </Box>
+  );
+});
 
 // ============================================================================
 // Main component
@@ -276,6 +417,26 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
     dispatch({ type: 'SET_RECOMMENDATIONS', value: v });
   }, []);
 
+  const handleSonographerComments = useCallback((v: string) => {
+    dispatch({ type: 'SET_SONOGRAPHER_COMMENTS', value: v });
+  }, []);
+
+  const handleClinicianComments = useCallback((v: string) => {
+    dispatch({ type: 'SET_CLINICIAN_COMMENTS', value: v });
+  }, []);
+
+  const handleSetAllNormal = useCallback(() => {
+    dispatch({ type: 'SET_ALL_NORMAL', scope: state.view });
+  }, [state.view]);
+
+  const handleClearAll = useCallback(() => {
+    dispatch({ type: 'CLEAR_ALL', scope: state.view });
+  }, [state.view]);
+
+  const handleCopySide = useCallback((from: 'left' | 'right') => {
+    dispatch({ type: 'COPY_SIDE', from });
+  }, []);
+
   const handleAnatomySegmentClick = useCallback(
     (id: SegmentId) => {
       // Jump the segment-table view to the segment's side and highlight it.
@@ -299,6 +460,16 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       window.location.pathname = '/';
     }
   }, []);
+
+  // Keyboard shortcuts (mirrored to tooltip hints):
+  //   ⌘N / Ctrl+N → All Normal  (for the current tab's scope)
+  //   ⌘D / Ctrl+D → Duplicate right side → left side
+  //   ⌘S / Ctrl+S → Save draft (explicitly preventDefault to block browser "Save Page As")
+  useHotkeys([
+    ['mod+N', () => handleSetAllNormal(), { preventDefault: true }],
+    ['mod+D', () => handleCopySide('right'), { preventDefault: true }],
+    ['mod+S', () => saveNow(), { preventDefault: true }],
+  ]);
 
   // Project to FormState for FHIR/PDF.
   const formState = useMemo(() => stateToFormState(state), [state]);
@@ -386,6 +557,9 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
                 onFindingChange={handleFinding}
                 highlightId={highlightId}
                 onHighlight={handleRowHighlight}
+                onSetAllNormal={handleSetAllNormal}
+                onClearAll={handleClearAll}
+                onCopySide={handleCopySide}
               />
             </Grid.Col>
           </Grid>
@@ -398,6 +572,13 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
             edited={state.impressionEdited}
             onChange={handleImpression}
             onRegenerate={handleImpressionRegenerate}
+          />
+
+          <CommentsBlock
+            sonographer={state.sonographerComments}
+            clinician={state.clinicianComments}
+            onSonographerChange={handleSonographerComments}
+            onClinicianChange={handleClinicianComments}
           />
 
           <CEAPPicker value={state.ceap} onChange={handleCeap} />

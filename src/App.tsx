@@ -6,6 +6,7 @@ import { STORAGE_KEYS } from './constants/storage-keys';
 import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { VenousLEForm } from './components/studies/venous-le/VenousLEForm';
+import { VersionFooter } from './components/layout/VersionFooter';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
 const initialColorScheme = colorSchemeManager.get('auto');
@@ -54,7 +55,10 @@ export default function App() {
       defaultColorScheme={initialColorScheme}
     >
       <ThemeProvider>
-        <TranslationProvider>{renderRoute(route)}</TranslationProvider>
+        <TranslationProvider>
+          {renderRoute(route)}
+          <VersionFooter />
+        </TranslationProvider>
       </ThemeProvider>
     </MantineProvider>
   );

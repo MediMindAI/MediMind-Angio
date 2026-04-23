@@ -14,6 +14,7 @@ import type { ReportLabels } from './ReportDocument';
 import type { VenousLESegmentBase } from '../studies/venous-le/config';
 import { VENOUS_LE_SEGMENTS } from '../studies/venous-le/config';
 import type { Competency } from '../../types/anatomy';
+import { PATIENT_POSITIONS } from '../../types/patient-position';
 
 export type TFunction = (key: string, fallbackOrParams?: string | Record<string, unknown>) => string;
 
@@ -37,6 +38,14 @@ export function buildReportLabels(t: TFunction): ReportLabels {
     inconclusive: t('competency.inconclusive', 'Inconclusive'),
   };
 
+  const positionLabels: Record<string, string> = PATIENT_POSITIONS.reduce(
+    (acc, p) => {
+      acc[p] = t(`venousLE.header.position.${p}`, p);
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+
   return {
     title: t('venousLE.form.title', t('venousLE.title', 'Lower Extremity Venous Duplex')),
     subtitle: t('venousLE.form.subtitle', 'Bilateral reflux + DVT assessment'),
@@ -52,6 +61,14 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       referring: t('venousLE.header.referringPhysician', 'Referring physician'),
       institution: t('venousLE.header.institution', 'Institution'),
       accession: t('venousLE.header.accession', 'Accession #'),
+      patientPosition: t('venousLE.header.patientPosition', 'Patient position'),
+      medications: t('venousLE.header.medications', 'Medications'),
+      icd10Codes: t('venousLE.header.icd10Codes', 'ICD-10 indications'),
+      cptCode: t('venousLE.header.cptCode', 'CPT code'),
+      informedConsent: t('venousLE.header.informedConsent', 'Informed consent'),
+      informedConsentYes: t('venousLE.header.informedConsentYes', 'Yes'),
+      informedConsentNo: t('venousLE.header.informedConsentNo', 'No'),
+      positionLabels,
     },
     diagram: {
       anterior: t('anatomy.view.le-anterior', 'Anterior view'),
@@ -65,6 +82,7 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       segment: t('venousLE.segmentTable.segment', 'Segment'),
       refluxMs: t('venousLE.refluxTable.ms', 'Duration (ms)'),
       apMm: t('venousLE.refluxTable.ap', 'AP (mm)'),
+      transMm: t('venousLE.refluxTable.trans', 'Trans (mm)'),
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),
       segmentName,
       emptyDash: '—',
@@ -78,12 +96,14 @@ export function buildReportLabels(t: TFunction): ReportLabels {
         'venousLE.narrativeSections.leftFindings',
         'Left lower extremity — findings',
       ),
-      indication: t('venousLE.header.indication', 'Indication'),
+      indication: t('venousLE.header.indicationNotes', t('venousLE.header.indication', 'Indication')),
       technique: t('venousLE.technique', 'Technique'),
       findings: t('venousLE.findings', 'Findings'),
       impression: t('venousLE.impression.title', 'Impression'),
       comments: t('venousLE.comments', 'Comments'),
       conclusions: t('venousLE.narrativeSections.conclusions', 'Conclusions'),
+      sonographerComments: t('venousLE.narrative.sonographerComments', 'Sonographer comments'),
+      clinicianComments: t('venousLE.narrative.clinicianComments', 'Clinician impression'),
     },
     ceap: {
       heading: t('venousLE.ceap.title', 'CEAP 2020 Classification'),

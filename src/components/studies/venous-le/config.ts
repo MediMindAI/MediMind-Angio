@@ -117,8 +117,17 @@ export interface VenousSegmentFinding {
   readonly refluxDurationMs?: number;
   /** AP diameter in mm. */
   readonly apDiameterMm?: number;
+  /** Transverse diameter in mm (alongside AP — Corestudycast parity). */
+  readonly transDiameterMm?: number;
   /** Depth from skin in mm (for ablation planning). */
   readonly depthMm?: number;
+
+  /**
+   * Manual override for diagram competency color.
+   * When set, `deriveCompetency()` returns this value without running the
+   * rule-based derivation.
+   */
+  readonly competencyOverride?: import('../../../types/anatomy').Competency;
 
   /** Free-text note for this segment. */
   readonly note?: string;
@@ -237,6 +246,17 @@ export const NUMERIC_PARAMETERS: ReadonlyArray<ParameterDef> = [
     min: 0,
     max: 50,
     step: 0.1,
+    help: 'venousLE.help.apDiameterMm',
+  },
+  {
+    id: 'transDiameterMm',
+    label: 'venousLE.param.transDiameterMm',
+    kind: 'diameter-mm',
+    unit: 'mm',
+    min: 0,
+    max: 50,
+    step: 0.1,
+    help: 'venousLE.help.transDiameterMm',
   },
   {
     id: 'depthMm',
@@ -246,6 +266,7 @@ export const NUMERIC_PARAMETERS: ReadonlyArray<ParameterDef> = [
     min: 0,
     max: 100,
     step: 0.1,
+    help: 'venousLE.help.depthMm',
   },
 ];
 
@@ -285,6 +306,11 @@ export function deriveCompetency(
   finding: VenousSegmentFinding | undefined
 ): Competency {
   if (!finding) return 'normal';
+
+  // Manual override wins over all auto-derivation rules.
+  if (finding.competencyOverride !== undefined) {
+    return finding.competencyOverride;
+  }
 
   if (finding.thrombosis === 'acute' || finding.thrombosis === 'chronic') {
     return 'incompetent';

@@ -44,6 +44,7 @@ const findings: Partial<Record<VenousLEFullSegmentId, VenousSegmentFinding>> = {
     compressibility: 'normal',
     refluxDurationMs: 1800,
     apDiameterMm: 7.4,
+    transDiameterMm: 6.8,
     depthMm: 8.2,
   },
 
@@ -69,6 +70,19 @@ const form: FormState = {
     referringPhysician: 'Dr. Referrer',
     institution: 'MediMind Angio Clinic',
     accessionNumber: 'ACC-2026-00042',
+    // Phase 1.5 Corestudycast parity
+    informedConsent: true,
+    informedConsentSignedAt: '2026-04-23',
+    patientPosition: 'reverse-trendelenburg-30',
+    medications: 'Apixaban 5 mg BID',
+    icd10Codes: [
+      { code: 'I83.91', display: 'Symptomatic varicose veins of lower extremities' },
+      { code: 'I87.2', display: 'Venous insufficiency (chronic) (peripheral)' },
+    ],
+    cptCode: {
+      code: '93970',
+      display: 'Duplex scan of extremity veins, complete bilateral study',
+    },
   },
   segments: [],
   narrative: {
@@ -78,6 +92,10 @@ const form: FormState = {
     findings: '',
     impression: '',
     comments: '',
+    sonographerComments:
+      'Scanner settings: 9 MHz linear, harmonic compound imaging enabled.',
+    clinicianComments:
+      'Pattern consistent with primary superficial venous insufficiency.',
   },
   ceap: {
     c: 'C2',
@@ -235,6 +253,44 @@ assert(interpretationCount > 0, 'expected at least one abnormal interpretation g
 const ceapObs = observations.find((o) => typeof o.valueString === 'string' && /^C\d/.test(o.valueString));
 assert(ceapObs !== undefined, 'no CEAP Observation emitted');
 assert(Array.isArray(ceapObs.component) && (ceapObs.component ?? []).length === 4, 'CEAP Observation must have 4 components (C,E,A,P)');
+
+// ---------------------------------------------------------------------------
+// Phase 1.5 parity — Consent, Encounter (ICD-10), ServiceRequest (CPT),
+// Trans diameter Observation, Patient Position Observation.
+// ---------------------------------------------------------------------------
+
+const consentCount = entries.filter((e) => e.resource.resourceType === 'Consent').length;
+assert(consentCount === 1, `expected 1 Consent resource, got ${consentCount}`);
+
+const encounterEntry = entries.find((e) => e.resource.resourceType === 'Encounter');
+assert(encounterEntry !== undefined, 'no Encounter resource emitted');
+const encounterRes = encounterEntry.resource as unknown as {
+  reasonCode?: ReadonlyArray<{ coding?: ReadonlyArray<{ system?: string; code?: string }> }>;
+};
+const icd10Count = (encounterRes.reasonCode ?? []).filter((cc) =>
+  (cc.coding ?? []).some((c) => c.system === 'http://hl7.org/fhir/sid/icd-10'),
+).length;
+assert(icd10Count >= 1, 'Encounter.reasonCode must include at least one ICD-10 coding');
+
+const serviceRequestEntry = entries.find((e) => e.resource.resourceType === 'ServiceRequest');
+assert(serviceRequestEntry !== undefined, 'no ServiceRequest resource emitted');
+const srRes = serviceRequestEntry.resource as unknown as {
+  code?: { coding?: ReadonlyArray<{ system?: string }> };
+};
+assert(
+  (srRes.code?.coding ?? []).some((c) => c.system === 'http://www.ama-assn.org/go/cpt'),
+  'ServiceRequest.code.coding must include a CPT code',
+);
+
+const transObs = observations.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=transDiameterMm')),
+);
+assert(transObs !== undefined, 'expected a transverse-diameter Observation');
+
+const positionObs = observations.find((o) =>
+  (o.code.coding ?? []).some((c) => c.code === '8361-8'),
+);
+assert(positionObs !== undefined, 'expected a Patient Position Observation (LOINC 8361-8)');
 
 // ---------------------------------------------------------------------------
 // Summary + exit

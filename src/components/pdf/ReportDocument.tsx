@@ -100,9 +100,18 @@ export interface ReportDocumentProps {
  */
 function deriveVenousFindings(form: FormState): VenousSegmentFindings {
   if (!isVenousForm(form)) return {};
+
+  // If the form UI stashed the full findings map on `parameters.segmentFindings`
+  // (Phase 1+ behavior), use that directly — it already carries trans, AP, depth.
+  const staged = form.parameters['segmentFindings'];
+  if (staged && typeof staged === 'object') {
+    return staged as unknown as VenousSegmentFindings;
+  }
+
   const out: Partial<Record<`${VenousLESegmentBase}-left` | `${VenousLESegmentBase}-right`, {
     readonly refluxDurationMs?: number;
     readonly apDiameterMm?: number;
+    readonly transDiameterMm?: number;
     readonly depthMm?: number;
   }>> = {};
 
@@ -115,14 +124,18 @@ function deriveVenousFindings(form: FormState): VenousSegmentFindings {
     const entry: {
       refluxDurationMs?: number;
       apDiameterMm?: number;
+      transDiameterMm?: number;
       depthMm?: number;
     } = {};
     if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
     if (typeof seg.diameterMm === 'number') entry.apDiameterMm = seg.diameterMm;
-    // depth lives on `parameters` keyed by `depth-<fullId>` in Phase 1 forms.
+    // trans + depth live on `parameters` keyed by `<name>-<fullId>` in Phase 1 forms.
     const depthKey = `depth-${key}`;
     const depthVal = form.parameters[depthKey];
     if (typeof depthVal === 'number') entry.depthMm = depthVal;
+    const transKey = `trans-${key}`;
+    const transVal = form.parameters[transKey];
+    if (typeof transVal === 'number') entry.transDiameterMm = transVal;
     if (Object.keys(entry).length > 0) out[key] = entry;
   }
 

@@ -19,10 +19,23 @@
 import type { CeapClassification } from './ceap';
 import type { SegmentState } from './anatomy';
 import type { StudyType } from './study';
+import type { PatientPosition } from './patient-position';
 
 // ============================================================================
 // Shared sub-shapes
 // ============================================================================
+
+/** An ICD-10-CM indication code, as captured on the StudyHeader. */
+export interface IndicationCode {
+  readonly code: string;
+  readonly display: string;
+}
+
+/** A CPT procedure code, as captured on the StudyHeader. */
+export interface CptCode {
+  readonly code: string;
+  readonly display: string;
+}
 
 /** Patient + encounter header shown at the top of the report. */
 export interface StudyHeader {
@@ -35,6 +48,20 @@ export interface StudyHeader {
   readonly referringPhysician?: string;
   readonly institution?: string;
   readonly accessionNumber?: string;
+
+  // --- Phase 1.5 Corestudycast-parity additions ---
+  /** Informed consent obtained from patient for the imaging study. */
+  readonly informedConsent?: boolean;
+  /** ISO date-time when the patient signed informed consent. */
+  readonly informedConsentSignedAt?: string;
+  /** Patient's physical position during the study. */
+  readonly patientPosition?: PatientPosition;
+  /** Medications taken by the patient at time of study (free text). */
+  readonly medications?: string;
+  /** Structured ICD-10 indications (replaces free-text `indication`). */
+  readonly icd10Codes?: ReadonlyArray<IndicationCode>;
+  /** CPT procedure code billed for the study. */
+  readonly cptCode?: CptCode;
 }
 
 /** Free-text sections of the report. */
@@ -47,8 +74,12 @@ export interface StudyNarrative {
   readonly findings?: string;
   /** Clinician's impression / assessment. */
   readonly impression?: string;
-  /** Additional comments. */
+  /** Additional comments (deprecated — use `sonographerComments` / `clinicianComments`). */
   readonly comments?: string;
+  /** Comments written by the sonographer/technologist performing the study. */
+  readonly sonographerComments?: string;
+  /** Comments / impression written by the interpreting clinician. */
+  readonly clinicianComments?: string;
 }
 
 /** One structured recommendation entry. */

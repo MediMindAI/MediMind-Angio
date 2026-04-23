@@ -72,6 +72,7 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
           f.augmentation !== undefined ||
           f.refluxDurationMs !== undefined ||
           f.apDiameterMm !== undefined ||
+          f.transDiameterMm !== undefined ||
           f.depthMm !== undefined;
         if (!hasAny) continue;
         out.push({ fullId, base, side, finding: f });
@@ -129,6 +130,9 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
                 {t('venousLE.refluxTable.ap')}
               </div>
               <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
+                {t('venousLE.refluxTable.trans')}
+              </div>
+              <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
                 {t('venousLE.refluxTable.depth')}
               </div>
             </div>
@@ -182,6 +186,20 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
                       decimalScale={1}
                       size="sm"
                       data-testid={`num-${r.fullId}-apDiameterMm`}
+                    />
+                  </div>
+
+                  <div className={classes.cell} data-label={t('venousLE.refluxTable.trans')}>
+                    <EMRNumberInput
+                      aria-label={`${t('venousLE.param.transDiameterMm')} — ${r.fullId}`}
+                      value={r.finding.transDiameterMm ?? ''}
+                      onChange={makeHandler(r.fullId, 'transDiameterMm')}
+                      min={0}
+                      max={50}
+                      step={0.1}
+                      decimalScale={1}
+                      size="sm"
+                      data-testid={`num-${r.fullId}-transDiameterMm`}
                     />
                   </div>
 

@@ -24,6 +24,10 @@ export interface NarrativeSectionLabels {
   readonly impression: string;
   readonly comments: string;
   readonly conclusions: string;
+  /** Heading for the sonographer-only comments subsection (Phase 1.5). */
+  readonly sonographerComments?: string;
+  /** Heading for the clinician-only impression subsection (Phase 1.5). */
+  readonly clinicianComments?: string;
 }
 
 export interface NarrativeSectionProps {
@@ -127,7 +131,19 @@ export function NarrativeSection({
       <ParagraphBlock title={labels.rightFindings} text={rightFindings} />
       <ParagraphBlock title={labels.leftFindings} text={leftFindings} />
       <ParagraphBlock title={labels.findings} text={narrative.findings} />
+      {labels.sonographerComments ? (
+        <ParagraphBlock
+          title={labels.sonographerComments}
+          text={narrative.sonographerComments}
+        />
+      ) : null}
       <ParagraphBlock title={labels.impression} text={narrative.impression} />
+      {labels.clinicianComments ? (
+        <ParagraphBlock
+          title={labels.clinicianComments}
+          text={narrative.clinicianComments}
+        />
+      ) : null}
       {conclusions && conclusions.length > 0 ? (
         <BulletList title={labels.conclusions} items={conclusions} />
       ) : null}

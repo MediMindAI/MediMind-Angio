@@ -129,6 +129,42 @@ export interface Encounter extends ResourceBase {
   readonly class: Coding;
   readonly subject: Reference;
   readonly period?: Period;
+  readonly reasonCode?: ReadonlyArray<CodeableConcept>;
+}
+
+// --- ServiceRequest ---------------------------------------------------------
+
+export interface ServiceRequest extends ResourceBase {
+  readonly resourceType: 'ServiceRequest';
+  readonly status: 'draft' | 'active' | 'on-hold' | 'revoked' | 'completed' | 'entered-in-error' | 'unknown';
+  readonly intent: 'proposal' | 'plan' | 'directive' | 'order' | 'original-order' | 'reflex-order' | 'filler-order' | 'instance-order' | 'option';
+  readonly category?: ReadonlyArray<CodeableConcept>;
+  readonly code?: CodeableConcept;
+  readonly subject: Reference;
+  readonly encounter?: Reference;
+  readonly authoredOn?: FhirDateTime;
+  readonly requester?: Reference;
+  readonly occurrenceDateTime?: FhirDateTime;
+  readonly reasonCode?: ReadonlyArray<CodeableConcept>;
+}
+
+// --- Consent ----------------------------------------------------------------
+
+export interface ConsentProvision {
+  readonly type?: 'deny' | 'permit';
+  readonly period?: Period;
+}
+
+export interface Consent extends ResourceBase {
+  readonly resourceType: 'Consent';
+  readonly status: 'draft' | 'proposed' | 'active' | 'rejected' | 'inactive' | 'entered-in-error';
+  readonly scope: CodeableConcept;
+  readonly category: ReadonlyArray<CodeableConcept>;
+  readonly patient?: Reference;
+  readonly dateTime?: FhirDateTime;
+  readonly performer?: ReadonlyArray<Reference>;
+  readonly policyRule?: CodeableConcept;
+  readonly provision?: ConsentProvision;
 }
 
 // --- Observation ------------------------------------------------------------
@@ -239,4 +275,11 @@ export interface Bundle<T extends ResourceBase = ResourceBase> extends ResourceB
 // Union of all resources we emit from this app
 // ============================================================================
 
-export type EmittedResource = Patient | Encounter | Observation | DiagnosticReport | QuestionnaireResponse;
+export type EmittedResource =
+  | Patient
+  | Encounter
+  | ServiceRequest
+  | Consent
+  | Observation
+  | DiagnosticReport
+  | QuestionnaireResponse;

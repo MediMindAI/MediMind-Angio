@@ -14,8 +14,14 @@
 
 import { memo, useCallback, useMemo } from 'react';
 import { Box, Group, Text, Tooltip, UnstyledButton } from '@mantine/core';
-import { IconStethoscope } from '@tabler/icons-react';
-import { EMRTabs } from '../common';
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconCheck,
+  IconStethoscope,
+  IconTrash,
+} from '@tabler/icons-react';
+import { EMRTabs, EMRButton } from '../common';
 import { EMRSelect } from '../shared/EMRFormFields';
 import type { EMRSelectOption } from '../shared/EMRFormFields';
 import {
@@ -32,8 +38,17 @@ import type {
   VenousSegmentFinding,
   VenousSegmentFindings,
 } from '../studies/venous-le/config';
+import type { Competency } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './SegmentTable.module.css';
+
+const COMPETENCY_VALUES: ReadonlyArray<Competency | 'auto'> = [
+  'auto',
+  'normal',
+  'incompetent',
+  'ablated',
+  'inconclusive',
+];
 
 export type SegmentTableView = 'left' | 'right' | 'bilateral';
 
@@ -41,13 +56,39 @@ export type SegmentTableView = 'left' | 'right' | 'bilateral';
 const PARAMS: ReadonlyArray<{
   readonly id: keyof VenousSegmentFinding;
   readonly titleKey: string;
+  readonly helpKey: string;
   readonly options: ReadonlyArray<string>;
 }> = [
-  { id: 'compressibility', titleKey: 'venousLE.param.compressibility', options: COMPRESSIBILITY_VALUES },
-  { id: 'thrombosis', titleKey: 'venousLE.param.thrombosis', options: THROMBOSIS_VALUES },
-  { id: 'spontaneity', titleKey: 'venousLE.param.spontaneity', options: SPONTANEITY_VALUES },
-  { id: 'phasicity', titleKey: 'venousLE.param.phasicity', options: PHASICITY_VALUES },
-  { id: 'augmentation', titleKey: 'venousLE.param.augmentation', options: AUGMENTATION_VALUES },
+  {
+    id: 'compressibility',
+    titleKey: 'venousLE.param.compressibility',
+    helpKey: 'venousLE.help.compressibility',
+    options: COMPRESSIBILITY_VALUES,
+  },
+  {
+    id: 'thrombosis',
+    titleKey: 'venousLE.param.thrombosis',
+    helpKey: 'venousLE.help.thrombosis',
+    options: THROMBOSIS_VALUES,
+  },
+  {
+    id: 'spontaneity',
+    titleKey: 'venousLE.param.spontaneity',
+    helpKey: 'venousLE.help.spontaneity',
+    options: SPONTANEITY_VALUES,
+  },
+  {
+    id: 'phasicity',
+    titleKey: 'venousLE.param.phasicity',
+    helpKey: 'venousLE.help.phasicity',
+    options: PHASICITY_VALUES,
+  },
+  {
+    id: 'augmentation',
+    titleKey: 'venousLE.param.augmentation',
+    helpKey: 'venousLE.help.augmentation',
+    options: AUGMENTATION_VALUES,
+  },
 ];
 
 /** Short column label for the segment column (visible at narrow widths). */
@@ -89,6 +130,12 @@ export interface SegmentTableProps {
   /** Segment id currently highlighted on the diagram (drives row emphasis). */
   readonly highlightId: VenousLEFullSegmentId | null;
   readonly onHighlight: (id: VenousLEFullSegmentId | null) => void;
+  /** Fill every segment (current view scope) with compressibility=normal, clear others. */
+  readonly onSetAllNormal: () => void;
+  /** Clear every segment (current view scope). */
+  readonly onClearAll: () => void;
+  /** Copy findings from one side to the other. */
+  readonly onCopySide: (from: 'left' | 'right') => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +144,7 @@ export interface SegmentTableProps {
 
 interface CellProps {
   readonly label: string;
+  readonly tooltip?: string;
   readonly value: string | undefined;
   readonly options: ReadonlyArray<EMRSelectOption>;
   readonly onChange: (next: string | undefined) => void;
@@ -105,12 +153,13 @@ interface CellProps {
 
 const ParamCell = memo(function ParamCell({
   label,
+  tooltip,
   value,
   options,
   onChange,
   testId,
 }: CellProps): React.ReactElement {
-  return (
+  const select = (
     <EMRSelect
       aria-label={label}
       value={value ?? null}
@@ -121,6 +170,20 @@ const ParamCell = memo(function ParamCell({
       data-testid={testId}
       fullWidth
     />
+  );
+  if (!tooltip) return select;
+  return (
+    <Tooltip
+      label={tooltip}
+      openDelay={500}
+      withArrow
+      multiline
+      events={{ hover: true, focus: false, touch: false }}
+      position="top"
+      maw={280}
+    >
+      <div style={{ width: '100%' }}>{select}</div>
+    </Tooltip>
   );
 });
 
@@ -137,6 +200,10 @@ interface SegmentRowProps {
   readonly finding: VenousSegmentFinding | undefined;
   readonly paramTitles: ReadonlyArray<string>;
   readonly paramValueLabels: ReadonlyArray<ReadonlyArray<EMRSelectOption>>;
+  readonly paramTooltips: ReadonlyArray<string>;
+  readonly competencyOptions: ReadonlyArray<EMRSelectOption>;
+  readonly competencyLabel: string;
+  readonly competencyTooltip: string;
   readonly highlighted: boolean;
   readonly onFindingChange: (
     id: VenousLEFullSegmentId,
@@ -154,6 +221,10 @@ const SegmentRow = memo(function SegmentRow({
   finding,
   paramTitles,
   paramValueLabels,
+  paramTooltips,
+  competencyOptions,
+  competencyLabel,
+  competencyTooltip,
   highlighted,
   onFindingChange,
   onHighlight,
@@ -166,6 +237,17 @@ const SegmentRow = memo(function SegmentRow({
     [fullId, onFindingChange],
   );
 
+  const handleCompetencyChange = useCallback(
+    (next: string | undefined) => {
+      if (!next || next === 'auto') {
+        onFindingChange(fullId, { competencyOverride: undefined });
+        return;
+      }
+      onFindingChange(fullId, { competencyOverride: next as Competency });
+    },
+    [fullId, onFindingChange],
+  );
+
   const handleFocusRow = useCallback(() => {
     onHighlight(fullId);
   }, [fullId, onHighlight]);
@@ -173,6 +255,8 @@ const SegmentRow = memo(function SegmentRow({
   const rowClass = [classes.row, highlighted ? classes.rowHighlighted : '']
     .filter(Boolean)
     .join(' ');
+
+  const competencyValue = finding?.competencyOverride ?? 'auto';
 
   return (
     <div
@@ -208,6 +292,7 @@ const SegmentRow = memo(function SegmentRow({
           >
             <ParamCell
               label={paramTitles[i] ?? ''}
+              tooltip={paramTooltips[i]}
               value={value}
               options={paramValueLabels[i] ?? []}
               onChange={makeHandler(p.id)}
@@ -216,6 +301,21 @@ const SegmentRow = memo(function SegmentRow({
           </div>
         );
       })}
+
+      <div
+        className={`${classes.cell} ${classes.paramCell}`}
+        data-param="competencyOverride"
+        data-label={competencyLabel}
+      >
+        <ParamCell
+          label={competencyLabel}
+          tooltip={competencyTooltip}
+          value={competencyValue}
+          options={competencyOptions as EMRSelectOption[]}
+          onChange={handleCompetencyChange}
+          testId={`cell-${fullId}-competencyOverride`}
+        />
+      </div>
     </div>
   );
 });
@@ -231,11 +331,19 @@ export const SegmentTable = memo(function SegmentTable({
   onFindingChange,
   highlightId,
   onHighlight,
+  onSetAllNormal,
+  onClearAll,
+  onCopySide,
 }: SegmentTableProps): React.ReactElement {
   const { t } = useTranslation();
 
   // Stable per-render translated strings — avoid recomputing per row.
   const paramTitles = useMemo(() => PARAMS.map((p) => t(p.titleKey)), [t]);
+
+  const paramTooltips = useMemo(
+    () => PARAMS.map((p) => t(p.helpKey, '')),
+    [t],
+  );
 
   const paramValueLabels = useMemo<ReadonlyArray<ReadonlyArray<EMRSelectOption>>>(
     () =>
@@ -245,6 +353,21 @@ export const SegmentTable = memo(function SegmentTable({
           label: t(`venousLE.${p.id as string}.${v}`, v),
         })),
       ),
+    [t],
+  );
+
+  const competencyLabel = t('venousLE.param.competency', 'Competency');
+  const competencyTooltip = t(
+    'venousLE.help.competency',
+    'Auto = derived from findings. Pick a value to override the diagram color.',
+  );
+
+  const competencyOptions = useMemo<ReadonlyArray<EMRSelectOption>>(
+    () =>
+      COMPETENCY_VALUES.map((v) => ({
+        value: v,
+        label: t(`venousLE.competency.${v}`, v),
+      })),
     [t],
   );
 
@@ -308,6 +431,80 @@ export const SegmentTable = memo(function SegmentTable({
         </EMRTabs>
       </Box>
 
+      {/* Bulk-action toolbar */}
+      <Box className={classes.bulkToolbar}>
+        <Group gap="xs" wrap="wrap">
+          <Tooltip
+            label={t('venousLE.bulk.allNormalTooltip', 'Fill every segment with normal findings (⌘N)')}
+            withArrow
+            openDelay={500}
+          >
+            <span>
+              <EMRButton
+                variant="secondary"
+                size="sm"
+                leftSection={<IconCheck size={14} />}
+                onClick={onSetAllNormal}
+                data-testid="bulk-all-normal"
+              >
+                {t('venousLE.bulk.allNormal', 'All normal')}
+              </EMRButton>
+            </span>
+          </Tooltip>
+          <Tooltip
+            label={t('venousLE.bulk.clearAllTooltip', 'Clear every finding in this tab')}
+            withArrow
+            openDelay={500}
+          >
+            <span>
+              <EMRButton
+                variant="ghost"
+                size="sm"
+                leftSection={<IconTrash size={14} />}
+                onClick={onClearAll}
+                data-testid="bulk-clear-all"
+              >
+                {t('venousLE.bulk.clearAll', 'Clear all')}
+              </EMRButton>
+            </span>
+          </Tooltip>
+          <Tooltip
+            label={t('venousLE.bulk.copyRightToLeftTooltip', 'Duplicate right-side findings to left (⌘D)')}
+            withArrow
+            openDelay={500}
+          >
+            <span>
+              <EMRButton
+                variant="ghost"
+                size="sm"
+                leftSection={<IconArrowRight size={14} />}
+                onClick={() => onCopySide('right')}
+                data-testid="bulk-copy-r-to-l"
+              >
+                {t('venousLE.bulk.copyRightToLeft', 'Copy R → L')}
+              </EMRButton>
+            </span>
+          </Tooltip>
+          <Tooltip
+            label={t('venousLE.bulk.copyLeftToRightTooltip', 'Duplicate left-side findings to right')}
+            withArrow
+            openDelay={500}
+          >
+            <span>
+              <EMRButton
+                variant="ghost"
+                size="sm"
+                leftSection={<IconArrowLeft size={14} />}
+                onClick={() => onCopySide('left')}
+                data-testid="bulk-copy-l-to-r"
+              >
+                {t('venousLE.bulk.copyLeftToRight', 'Copy L → R')}
+              </EMRButton>
+            </span>
+          </Tooltip>
+        </Group>
+      </Box>
+
       <div className={classes.tableWrap} role="table" aria-label={t('venousLE.segmentTable.title')}>
         {/* Column header */}
         <div className={classes.headRow} role="row">
@@ -324,6 +521,13 @@ export const SegmentTable = memo(function SegmentTable({
               {title}
             </div>
           ))}
+          <div
+            className={`${classes.cell} ${classes.paramCell} ${classes.headCell}`}
+            role="columnheader"
+            data-param="competencyOverride"
+          >
+            {competencyLabel}
+          </div>
         </div>
 
         {/* Rows */}
@@ -338,6 +542,10 @@ export const SegmentTable = memo(function SegmentTable({
             finding={findings[r.fullId]}
             paramTitles={paramTitles}
             paramValueLabels={paramValueLabels}
+            paramTooltips={paramTooltips}
+            competencyOptions={competencyOptions}
+            competencyLabel={competencyLabel}
+            competencyTooltip={competencyTooltip}
             highlighted={highlightId === r.fullId}
             onFindingChange={onFindingChange}
             onHighlight={onHighlight}

@@ -37,6 +37,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "src/globals.d.ts",
     "scripts/**/*.ts",
     "vite.config.ts"
   ],

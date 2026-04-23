@@ -59,6 +59,19 @@ const mockForm: FormState = {
     referringPhysician: 'Dr. Giorgi Beridze',
     institution: 'MediMind Angio Center',
     accessionNumber: 'ACC-20260423-004',
+    // Phase 1.5 additions
+    informedConsent: true,
+    informedConsentSignedAt: '2026-04-23',
+    patientPosition: 'reverse-trendelenburg-30',
+    medications: 'Apixaban 5 mg BID (last dose 08:00); Atorvastatin 20 mg OD.',
+    icd10Codes: [
+      { code: 'I83.91', display: 'Symptomatic varicose veins of lower extremities' },
+      { code: 'I87.2', display: 'Venous insufficiency (chronic) (peripheral)' },
+    ],
+    cptCode: {
+      code: '93970',
+      display: 'Duplex scan of extremity veins, complete bilateral study',
+    },
   },
   segments: [
     // RIGHT side
@@ -162,6 +175,10 @@ const mockForm: FormState = {
     impression:
       'Bilateral great saphenous vein incompetence with reflux extending to the proximal calf on the right. Small saphenous vein incompetence on the left. Deep venous system shows no evidence of DVT, with preserved compressibility and phasicity throughout.',
     comments: 'Patient asked about sclerotherapy options — referred to phlebology follow-up.',
+    sonographerComments:
+      'Limited compressibility assessment at GSV mid-calf due to patient tolerance; positioning reverted to seated after 10 min.',
+    clinicianComments:
+      'Findings correlate with CEAP C2s. Recommend outpatient endovenous ablation consult for bilateral GSV.',
   },
   ceap: {
     c: 'C2',
@@ -194,6 +211,12 @@ const mockForm: FormState = {
     'depth-gsv-prox-calf-right': 5.1,
     'depth-gsv-ak-left': 5.8,
     'depth-ssv-left': 4.2,
+    'trans-gsv-ak-right': 5.9,
+    'trans-gsv-prox-calf-right': 4.6,
+    'trans-gsv-ak-left': 5.3,
+    'trans-ssv-left': 3.8,
+    'trans-cfv-right': 9.8,
+    'trans-cfv-left': 10.5,
   },
 };
 
@@ -217,6 +240,20 @@ const labels: ReportLabels = {
     referring: 'Referring Physician',
     institution: 'Institution',
     accession: 'Accession',
+    patientPosition: 'Position',
+    medications: 'Medications',
+    icd10Codes: 'ICD-10',
+    cptCode: 'CPT',
+    informedConsent: 'Informed consent',
+    informedConsentYes: 'Yes',
+    informedConsentNo: 'No',
+    positionLabels: {
+      supine: 'Supine',
+      'reverse-trendelenburg-30': 'Reverse Trendelenburg 30°',
+      standing: 'Standing',
+      seated: 'Seated',
+      'side-lying': 'Side-lying',
+    },
   },
   diagram: {
     anterior: 'Anterior',
@@ -235,6 +272,7 @@ const labels: ReportLabels = {
     segment: 'Segment',
     refluxMs: 'Reflux (ms)',
     apMm: 'AP (mm)',
+    transMm: 'Trans (mm)',
     depthMm: 'Depth (mm)',
     segmentName: {
       cfv: 'Common femoral v.',
@@ -269,6 +307,8 @@ const labels: ReportLabels = {
     impression: 'Impression',
     comments: 'Comments',
     conclusions: 'Conclusions',
+    sonographerComments: 'Sonographer Comments',
+    clinicianComments: 'Clinician Impression',
   },
   ceap: {
     heading: 'CEAP Classification (2020)',
@@ -324,6 +364,7 @@ async function main(): Promise<void> {
     {
       refluxDurationMs?: number;
       apDiameterMm?: number;
+      transDiameterMm?: number;
       depthMm?: number;
       compressibility?: 'non-compressible' | 'inconclusive';
     }
@@ -334,11 +375,16 @@ async function main(): Promise<void> {
     const entry: {
       refluxDurationMs?: number;
       apDiameterMm?: number;
+      transDiameterMm?: number;
       depthMm?: number;
       compressibility?: 'non-compressible' | 'inconclusive';
     } = {};
     if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
-    if (typeof seg.diameterMm === 'number') entry.apDiameterMm = seg.diameterMm;
+    if (typeof seg.diameterMm === 'number') {
+      entry.apDiameterMm = seg.diameterMm;
+      // Approximate transverse diameter ≈ 90% of AP (mock only).
+      entry.transDiameterMm = Number((seg.diameterMm * 0.9).toFixed(1));
+    }
     if (seg.competency === 'incompetent') entry.compressibility = 'non-compressible';
     if (seg.competency === 'inconclusive') entry.compressibility = 'inconclusive';
     mutableFindings[key] = entry;

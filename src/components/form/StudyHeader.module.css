@@ -63,3 +63,26 @@
     padding: 14px;
   }
 }
+
+/* ==================== Phase 1.5 — new header fields ==================== */
+
+.icd10Wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.icd10Label {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-primary);
+  line-height: 1.3;
+}
+
+.consentRow {
+  display: flex;
+  align-items: flex-end;
+  min-height: 42px;
+  padding-bottom: 4px;
+}
+

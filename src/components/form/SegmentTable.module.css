@@ -55,12 +55,21 @@
   border-bottom: 1px solid var(--emr-border-color);
 }
 
+.bulkToolbar {
+  padding: 10px 20px;
+  background: var(--emr-bg-hover);
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
 @media (max-width: 768px) {
   .head {
     padding: 12px 16px;
   }
   .tabsWrap {
     padding: 10px 12px 0 12px;
+  }
+  .bulkToolbar {
+    padding: 8px 12px;
   }
 }
 
@@ -81,8 +90,8 @@
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 96px repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: 88px repeat(6, minmax(0, 1fr));
+  gap: 6px;
   align-items: center;
 }
 

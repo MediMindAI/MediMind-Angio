@@ -1,0 +1,61 @@
+/* VersionFooter — fixed bottom-right build-hash ribbon. */
+
+.footer {
+  position: fixed;
+  bottom: 8px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: var(--emr-font-mono);
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-tertiary);
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 999px;
+  box-shadow: var(--emr-shadow-xs);
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.label {
+  color: var(--emr-text-secondary);
+  font-weight: var(--emr-font-semibold);
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+.dot {
+  color: var(--emr-text-tertiary);
+}
+
+.hash {
+  color: var(--emr-text-tertiary);
+}
+
+@media (max-width: 575px) {
+  .footer {
+    bottom: 4px;
+    right: 4px;
+    padding: 3px 8px;
+  }
+}
+
+@media print {
+  .footer {
+    display: none !important;
+  }
+}
+
+/* Global no-print utility class for anything else that wants opt-out. */
+:global(.no-print) {
+  /* no-op in screen — overridden inside media print below */
+}
+
+@media print {
+  :global(.no-print) {
+    display: none !important;
+  }
+}

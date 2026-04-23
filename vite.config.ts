@@ -1,10 +1,31 @@
 /// <reference types="vite/client" />
 import react from '@vitejs/plugin-react';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
 // GitHub Pages base path — set via env var on CI (e.g. "/medimind-angio/")
 const base = process.env.VITE_BASE_PATH ?? '/';
+
+/**
+ * Read the current git short-hash at build time. Wrapped in try/catch so
+ * builds still succeed when git is unavailable (CI worker without .git,
+ * downloaded zip, etc.). Uses execFileSync with an explicit args array to
+ * avoid any shell interpolation.
+ */
+function readGitShortHash(): string {
+  try {
+    const out = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return out.trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+const BUILD_HASH = readGitShortHash();
 
 export default defineConfig({
   base,
@@ -13,6 +34,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
+  },
+  define: {
+    __BUILD_HASH__: JSON.stringify(BUILD_HASH),
   },
   server: {
     port: 3001,
