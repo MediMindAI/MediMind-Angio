@@ -110,9 +110,21 @@ export const FormActions = memo(function FormActions({
       anatomy = { anterior: null, posterior: null };
     }
 
+    // Pre-resolve recommendation text via t() so PDFs render the same
+    // localized prose the web UI shows. The PDF layer can't access React
+    // context, so we bake the resolved string into `text` before handing
+    // the form off to @react-pdf.
+    const localizedForm = {
+      ...form,
+      recommendations: form.recommendations.map((r) => ({
+        ...r,
+        text: r.textKey ? t(r.textKey, r.text) : r.text,
+      })),
+    };
+
     return pdf(
       <ReportDocument
-        form={form}
+        form={localizedForm}
         labels={labels}
         anatomy={anatomy}
         rightFindings={localized?.rightFindings}
