@@ -1,0 +1,187 @@
+// SPDX-License-Identifier: Apache-2.0
+
+import { memo, useCallback, useMemo, useState, type MouseEvent } from 'react';
+import {
+  IconActivity,
+  IconArrowRight,
+  IconBrain,
+  IconHeartbeat,
+  IconShieldCheckered,
+  IconStethoscope,
+  IconWaveSawTool,
+} from '@tabler/icons-react';
+import { EMRAlert } from '../common/EMRAlert';
+import { EMRBadge } from '../common/EMRBadge';
+import { useTranslation } from '../../contexts/TranslationContext';
+import classes from './StudyPicker.module.css';
+
+type IconProps = { size?: number | string; stroke?: number };
+
+interface StudyDefinition {
+  key: string;
+  translationKey: string;
+  icon: React.ComponentType<IconProps>;
+  available: boolean;
+}
+
+// Order: Phase-1 first, then the four Phase-2..5 studies.
+const STUDIES: ReadonlyArray<StudyDefinition> = [
+  { key: 'venousLE', translationKey: 'studies.venousLE', icon: IconActivity, available: true },
+  { key: 'arterialLE', translationKey: 'studies.arterialLE', icon: IconWaveSawTool, available: false },
+  { key: 'carotid', translationKey: 'studies.carotid', icon: IconBrain, available: false },
+  { key: 'abdominalVenous', translationKey: 'studies.abdominalVenous', icon: IconHeartbeat, available: false },
+  { key: 'dialysisAortic', translationKey: 'studies.dialysisAortic', icon: IconShieldCheckered, available: false },
+];
+
+/**
+ * StudyPicker — landing grid for the angiology study-type selection.
+ *
+ * Layout: eyebrow + large title + subtitle, then a responsive 1 / 2 / 3
+ * column grid of cards. Phase-1 studies are clickable, Phase-2..5 cards
+ * stay visible but disabled so users can see what's coming.
+ */
+export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
+  const { t } = useTranslation();
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const cards = useMemo(() => STUDIES, []);
+
+  const handlePointerMove = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    e.currentTarget.style.setProperty('--pointer-x', `${x}%`);
+    e.currentTarget.style.setProperty('--pointer-y', `${y}%`);
+  }, []);
+
+  const handleStartStudy = useCallback(
+    (studyKey: string) => {
+      // Phase 0: log + show a gentle alert. Phase 1 will wire this to the
+      // Venous-LE form renderer.
+      // eslint-disable-next-line no-console
+      console.info('[StudyPicker] start study:', studyKey);
+      setNotice(
+        t(
+          'studyPicker.phase1Notice',
+          'The Lower Extremity Venous Duplex form renders next. Ship date: Phase 1.',
+        ),
+      );
+    },
+    [t],
+  );
+
+  return (
+    <div className={classes.backdrop}>
+      <div className={classes.container}>
+        {/* Eyebrow + title + subtitle */}
+        <header className={classes.header}>
+          <span className={classes.eyebrow}>
+            <span className={classes.eyebrowDot} aria-hidden />
+            <span className={classes.eyebrowText}>{t('app.tagline')}</span>
+          </span>
+          <h1 className={classes.title}>{t('studyPicker.title')}</h1>
+          <p className={classes.subtitle}>{t('studyPicker.subtitle')}</p>
+        </header>
+
+        {/* Alert — shown after clicking the Phase 1 card */}
+        {notice && (
+          <div style={{ marginBottom: 24 }}>
+            <EMRAlert
+              variant="info"
+              withCloseButton
+              onClose={() => setNotice(null)}
+              data-testid="phase1-notice"
+            >
+              {notice}
+            </EMRAlert>
+          </div>
+        )}
+
+        {/* Study card grid */}
+        <div
+          className={classes.grid}
+          role="list"
+          aria-label={t('studyPicker.title')}
+        >
+          {cards.map((study, index) => {
+            const Icon = study.icon;
+            const delayKey = `delay${index}` as const;
+            const cardClass = [
+              classes.card,
+              study.available ? classes.cardAvailable : classes.cardDisabled,
+              classes[delayKey] ?? '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+
+            const title = t(`${study.translationKey}.title`);
+            const description = t(`${study.translationKey}.description`);
+            const short = t(`${study.translationKey}.short`);
+
+            return (
+              <button
+                key={study.key}
+                type="button"
+                role="listitem"
+                className={cardClass}
+                onClick={
+                  study.available ? () => handleStartStudy(study.key) : undefined
+                }
+                onMouseMove={handlePointerMove}
+                disabled={!study.available}
+                aria-label={`${title} — ${
+                  study.available ? t('studyPicker.phase1Badge') : t('studyPicker.comingSoon')
+                }`}
+                data-testid={`study-card-${study.key}`}
+              >
+                <div className={classes.cardTop}>
+                  <span className={classes.iconWrap} aria-hidden>
+                    <Icon size={22} stroke={1.75} />
+                  </span>
+                  <span className={classes.badgeSlot}>
+                    {study.available ? (
+                      <EMRBadge variant="status-active" size="sm">
+                        {t('studyPicker.phase1Badge')}
+                      </EMRBadge>
+                    ) : (
+                      <EMRBadge variant="status-archived" size="sm">
+                        {t('studyPicker.comingSoon')}
+                      </EMRBadge>
+                    )}
+                  </span>
+                </div>
+
+                <div className={classes.cardBody}>
+                  <h2 className={classes.title}>{title}</h2>
+                  <p className={classes.description}>{description}</p>
+                </div>
+
+                <div className={classes.cardFoot}>
+                  {study.available ? (
+                    <span className={classes.cta}>
+                      {t('studyPicker.startStudy')}
+                      <IconArrowRight size={16} stroke={2.25} aria-hidden />
+                    </span>
+                  ) : (
+                    <span className={classes.ctaMuted}>{t('studyPicker.comingSoon')}</span>
+                  )}
+                  <span className={classes.shortCode}>{short}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Footnote */}
+        <div className={classes.footnote}>
+          <span className={classes.footnoteInner}>
+            <IconStethoscope size={14} stroke={1.75} aria-hidden />
+            FHIR&nbsp;R4 · {t('app.tagline')}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export default StudyPicker;

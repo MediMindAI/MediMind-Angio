@@ -1,0 +1,169 @@
+/* AppShell — top nav + main content area */
+
+.header {
+  background: var(--emr-gradient-primary);
+  color: var(--emr-text-inverse);
+  border-bottom: none;
+  box-shadow:
+    0 1px 0 var(--emr-white-alpha-10) inset,
+    0 4px 16px -8px rgba(15, 23, 42, 0.35);
+  position: relative;
+}
+
+/* Hairline shimmer along the bottom edge */
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--emr-white-alpha-20) 30%,
+    var(--emr-white-alpha-20) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 100%;
+  padding: 0 24px;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .headerInner {
+    padding: 0 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 575px) {
+  .headerInner {
+    padding: 0 12px;
+    gap: 8px;
+  }
+}
+
+/* ==================== BRAND LOCKUP ==================== */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  padding: 6px 10px 6px 6px;
+  margin-left: -6px;
+  border-radius: var(--emr-border-radius-lg);
+  transition: background 0.2s ease;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.brand:hover {
+  background: var(--emr-white-alpha-10);
+}
+
+.brand:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--emr-white-alpha-50);
+}
+
+.brandIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: var(--emr-text-white);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1;
+}
+
+.brandWord {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-bold);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  color: var(--emr-text-white);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.brandWordAccent {
+  color: var(--emr-light-accent);
+  font-weight: var(--emr-font-medium);
+  letter-spacing: 0.01em;
+}
+
+.brandDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--emr-white-alpha-20);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.brandSubtitle {
+  color: var(--emr-text-inverse-secondary);
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  letter-spacing: var(--emr-letter-spacing-wide);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .brandDivider,
+  .brandSubtitle {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .brandText {
+    display: none;
+  }
+
+  .brand {
+    padding: 6px;
+    gap: 0;
+  }
+}
+
+/* ==================== HEADER CONTROLS ==================== */
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 575px) {
+  .controls {
+    gap: 6px;
+  }
+}
+
+/* ==================== MAIN ==================== */
+.main {
+  background: var(--emr-bg-page);
+  color: var(--emr-text-primary);
+  min-height: 100vh;
+}

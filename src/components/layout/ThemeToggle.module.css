@@ -1,0 +1,67 @@
+/* ThemeToggle — icon-only segmented control */
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--emr-white-alpha-10);
+  border: 1px solid var(--emr-white-alpha-20);
+  border-radius: var(--emr-border-radius-full);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 var(--emr-white-alpha-10);
+  flex-shrink: 0;
+}
+
+.segment {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--emr-border-radius-full);
+  color: var(--emr-white-alpha-85);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.segment:hover:not(.active) {
+  color: var(--emr-text-white);
+}
+
+.segment:active:not(.active) {
+  transform: scale(0.94);
+}
+
+.segment:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--emr-white-alpha-50);
+}
+
+.active {
+  /* Stay white in both modes — header is always on a dark gradient.
+     --emr-text-white is #ffffff in both light and dark, never inverts. */
+  background: var(--emr-text-white);
+  color: var(--emr-primary);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.14),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+.segment svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+}

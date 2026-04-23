@@ -73,5 +73,24 @@
     "ablated": "Ablated",
     "incompetent": "Incompetent",
     "inconclusive": "Inconclusive"
+  },
+  "anatomy": {
+    "view": {
+      "le-anterior": "Anterior view",
+      "le-posterior": "Posterior view"
+    },
+    "legend": {
+      "label": "Competency legend"
+    },
+    "demo": {
+      "title": "Anatomy diagram smoke test",
+      "subtitle": "Phase 0 verification — click a segment to cycle its competency. Hover for segment labels.",
+      "randomize": "Randomize",
+      "allIncompetent": "All incompetent",
+      "allNormal": "All normal",
+      "reset": "Reset",
+      "segmentCount": "Segments set:",
+      "lastClick": "Last click:"
+    }
   }
 }

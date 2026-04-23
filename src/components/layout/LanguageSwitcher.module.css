@@ -1,0 +1,92 @@
+/* LanguageSwitcher — segmented control that sits on the gradient header */
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--emr-white-alpha-10);
+  border: 1px solid var(--emr-white-alpha-20);
+  border-radius: var(--emr-border-radius-full);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 var(--emr-white-alpha-10);
+  flex-shrink: 0;
+}
+
+.segment {
+  position: relative;
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--emr-border-radius-full);
+  color: var(--emr-white-alpha-85);
+  font-family: inherit;
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  letter-spacing: var(--emr-letter-spacing-wide);
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.segment:hover:not(.active) {
+  color: var(--emr-text-white);
+}
+
+.segment:active:not(.active) {
+  transform: scale(0.96);
+}
+
+.segment:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--emr-white-alpha-50);
+}
+
+.active {
+  /* Explicit white — the header is always on a dark gradient, so the
+     active segment stays white in both light and dark mode.
+     Uses --emr-text-white which is #ffffff in both modes (never inverted). */
+  background: var(--emr-text-white);
+  color: var(--emr-primary);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.14),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  font-weight: var(--emr-font-semibold);
+  cursor: default;
+}
+
+/* Shorthand labels for narrow screens */
+.labelShort {
+  display: none;
+}
+
+.labelFull {
+  display: inline;
+}
+
+@media (max-width: 575px) {
+  .labelShort {
+    display: inline;
+  }
+
+  .labelFull {
+    display: none;
+  }
+
+  .segment {
+    padding: 0 10px;
+    min-width: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+}
