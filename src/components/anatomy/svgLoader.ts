@@ -14,7 +14,9 @@ export type AnatomyView =
   | 'le-posterior'
   | 'abdominal-pelvic'
   | 'le-arterial'
+  | 'le-arterial-anterior'
   | 'carotid'
+  | 'neck-carotid'
   | 'dialysis-access';
 
 /** In-flight + completed cache, keyed by view. */

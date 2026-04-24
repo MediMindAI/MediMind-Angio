@@ -14,7 +14,9 @@
  */
 
 import { memo, useCallback, useMemo, useReducer, useState } from 'react';
-import { Grid, Stack, Group, SegmentedControl, Textarea } from '@mantine/core';
+import { Grid, Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
+import { AnatomyView } from '../../anatomy/AnatomyView';
+import { SEVERITY_COLORS } from '../../../constants/theme-colors';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconStack2 } from '@tabler/icons-react';
@@ -41,6 +43,7 @@ import type {
   ArterialSegmentFindings,
   SegmentalPressures,
 } from './config';
+import { deriveArterialCompetency } from './config';
 import { SegmentalPressureTable } from './SegmentalPressureTable';
 import { ArterialSegmentTable, type ArterialTableView } from './ArterialSegmentTable';
 import {
@@ -424,6 +427,15 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
 
   const formState = useMemo(() => toFormState(state), [state]);
 
+  const arterialColorFn = useCallback(
+    (id: string): { fill: string; stroke: string } => {
+      const finding = state.findings[id as ArterialLEFullSegmentId];
+      const band = deriveArterialCompetency(finding);
+      return SEVERITY_COLORS[band];
+    },
+    [state.findings],
+  );
+
   return (
     <div className={classes.wrap}>
       <Stack gap="md">
@@ -476,6 +488,32 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
             />
           </Grid.Col>
         </Grid>
+
+        <Paper withBorder radius="md" shadow="sm" p="md">
+          <Stack gap="sm">
+            <div>
+              <Title order={5} mb={2}>
+                {t('arterialLE.anatomy.title', 'Arterial anatomy')}
+              </Title>
+              <Text size="sm" c="dimmed">
+                {t(
+                  'arterialLE.anatomy.subtitle',
+                  'Segment colors reflect severity (normal → occluded).',
+                )}
+              </Text>
+            </div>
+            <Group justify="center">
+              <AnatomyView
+                view="le-arterial-anterior"
+                segments={{}}
+                size="lg"
+                interactive={false}
+                colorFn={arterialColorFn}
+                ariaLabel={t('arterialLE.anatomy.title', 'Arterial anatomy')}
+              />
+            </Group>
+          </Stack>
+        </Paper>
 
         <Stack gap="sm" className={classes.textSection}>
           <Textarea

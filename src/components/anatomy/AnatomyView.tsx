@@ -51,6 +51,13 @@ export interface AnatomyViewProps {
   className?: string;
   /** Accessible label for the whole diagram. */
   ariaLabel?: string;
+  /**
+   * Optional override — if provided, bypasses the built-in competency-based
+   * coloring and lets the caller decide colors per segment id directly.
+   * Used by non-venous studies (arterial, carotid) that have their own
+   * severity bands instead of the 4-state `Competency` enum.
+   */
+  colorFn?: (id: SegmentId) => { fill: string; stroke: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -94,6 +101,7 @@ function colorizeSvg(
   silhouetteStroke: string,
   segmentStrokeWidth: number,
   highlightId: SegmentId | null,
+  colorFn: ((id: SegmentId) => { fill: string; stroke: string }) | undefined,
 ): string {
   // 1) Silhouette leg outline stroke -- theme-aware so it reads in dark mode.
   let out = raw.replace(
@@ -110,7 +118,9 @@ function colorizeSvg(
     /<path\s+id="([a-z0-9-]+)"([^>]*)>/g,
     (_match: string, id: string, rest: string) => {
       const competency = segmentsMap.get(id) ?? defaultCompetency;
-      const { fill, stroke } = colorForCompetency(competency);
+      const { fill, stroke } = colorFn
+        ? colorFn(id)
+        : colorForCompetency(competency);
       const isHighlighted = highlightId === id;
       const widthToApply = isHighlighted ? segmentStrokeWidth + 2 : segmentStrokeWidth;
       // Strip any existing fill/stroke/stroke-width on this <path>, then append ours.
@@ -155,6 +165,7 @@ export function AnatomyView({
   highlightId = null,
   className,
   ariaLabel,
+  colorFn,
 }: AnatomyViewProps): React.ReactElement {
   const { t } = useTranslation();
   const [rawSvg, setRawSvg] = useState<string | null>(null);
@@ -203,8 +214,9 @@ export function AnatomyView({
       silhouetteStroke,
       segmentStrokeWidth,
       highlightId ?? null,
+      colorFn,
     );
-  }, [rawSvg, segmentsMap, defaultCompetency, segmentStrokeWidth, highlightId]);
+  }, [rawSvg, segmentsMap, defaultCompetency, segmentStrokeWidth, highlightId, colorFn]);
 
   // ---------- Pointer event delegation ----------
 

@@ -8,7 +8,9 @@
  */
 
 import { memo, useCallback, useMemo, useReducer, useState } from 'react';
-import { Stack, Group, SegmentedControl, Textarea } from '@mantine/core';
+import { Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
+import { AnatomyView } from '../../anatomy/AnatomyView';
+import { SEVERITY_COLORS } from '../../../constants/theme-colors';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconStack2 } from '@tabler/icons-react';
@@ -35,6 +37,7 @@ import type {
   CarotidVesselFinding,
   CarotidVesselFullId,
 } from './config';
+import { deriveCarotidCompetency } from './config';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
 import { NASCETPicker } from './NASCETPicker';
 import { type CarotidTemplate, type CarotidTemplateKind } from './templates';
@@ -369,6 +372,17 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const formState = useMemo(() => toFormState(state), [state]);
 
+  const carotidColorFn = useCallback(
+    (id: string): { fill: string; stroke: string } => {
+      const finding = state.findings[id as CarotidVesselFullId];
+      const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
+      const nascetCat = side ? state.nascet[side] : undefined;
+      const band = deriveCarotidCompetency(finding, nascetCat);
+      return SEVERITY_COLORS[band];
+    },
+    [state.findings, state.nascet],
+  );
+
   return (
     <div className={classes.wrap}>
       <Stack gap="md">
@@ -417,6 +431,32 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
           value={state.nascet}
           onChange={handleNascetChange}
         />
+
+        <Paper withBorder radius="md" shadow="sm" p="md">
+          <Stack gap="sm">
+            <div>
+              <Title order={5} mb={2}>
+                {t('carotid.anatomy.title', 'Carotid anatomy')}
+              </Title>
+              <Text size="sm" c="dimmed">
+                {t(
+                  'carotid.anatomy.subtitle',
+                  'Vessel colors reflect severity (normal → occluded).',
+                )}
+              </Text>
+            </div>
+            <Group justify="center">
+              <AnatomyView
+                view="neck-carotid"
+                segments={{}}
+                size="lg"
+                interactive={false}
+                colorFn={carotidColorFn}
+                ariaLabel={t('carotid.anatomy.title', 'Carotid anatomy')}
+              />
+            </Group>
+          </Stack>
+        </Paper>
 
         <Stack gap="sm" className={classes.textSection}>
           <Textarea
