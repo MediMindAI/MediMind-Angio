@@ -13,6 +13,33 @@
 import type { ReportLabels } from './ReportDocument';
 import type { VenousLESegmentBase } from '../studies/venous-le/config';
 import { VENOUS_LE_SEGMENTS } from '../studies/venous-le/config';
+import type {
+  ArterialLESegmentBase,
+  Waveform,
+  StenosisCategory,
+  PlaqueMorphology as ArterialPlaqueMorphology,
+  AbiBand,
+} from '../studies/arterial-le/config';
+import {
+  ARTERIAL_LE_SEGMENTS,
+  WAVEFORM_VALUES,
+  STENOSIS_CATEGORY_VALUES,
+  PLAQUE_MORPHOLOGY_VALUES as ARTERIAL_PLAQUE_VALUES,
+} from '../studies/arterial-le/config';
+import type {
+  CarotidVesselBase,
+  FlowDirection,
+  PlaqueMorphology as CarotidPlaqueMorphology,
+  PlaqueSurface,
+  NascetCategory,
+} from '../studies/carotid/config';
+import {
+  CAROTID_VESSELS,
+  FLOW_DIRECTION_VALUES,
+  PLAQUE_MORPHOLOGY_VALUES as CAROTID_PLAQUE_VALUES,
+  PLAQUE_SURFACE_VALUES,
+  NASCET_CATEGORY_VALUES,
+} from '../studies/carotid/config';
 import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
 
@@ -44,6 +71,92 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       return acc;
     },
     {} as Record<string, string>,
+  );
+
+  // ----- Arterial LE -----
+  const arterialSegmentName: Record<ArterialLESegmentBase, string> =
+    ARTERIAL_LE_SEGMENTS.reduce(
+      (acc, base) => {
+        acc[base] = t(`arterialLE.segment.${base}`, base);
+        return acc;
+      },
+      {} as Record<ArterialLESegmentBase, string>,
+    );
+
+  const waveformName: Record<Waveform, string> = WAVEFORM_VALUES.reduce(
+    (acc, v) => {
+      acc[v] = t(`arterialLE.waveform.${v}`, v);
+      return acc;
+    },
+    {} as Record<Waveform, string>,
+  );
+
+  const stenosisName: Record<StenosisCategory, string> = STENOSIS_CATEGORY_VALUES.reduce(
+    (acc, v) => {
+      acc[v] = t(`arterialLE.stenosis.${v}`, v);
+      return acc;
+    },
+    {} as Record<StenosisCategory, string>,
+  );
+
+  const arterialPlaqueName: Record<ArterialPlaqueMorphology, string> =
+    ARTERIAL_PLAQUE_VALUES.reduce(
+      (acc, v) => {
+        acc[v] = t(`arterialLE.plaque.${v}`, v);
+        return acc;
+      },
+      {} as Record<ArterialPlaqueMorphology, string>,
+    );
+
+  const abiBand: Record<AbiBand, string> = {
+    'non-compressible': t('arterialLE.abi.band.non-compressible', 'Non-compressible'),
+    normal: t('arterialLE.abi.band.normal', 'Normal'),
+    mild: t('arterialLE.abi.band.mild', 'Mild PAD'),
+    moderate: t('arterialLE.abi.band.moderate', 'Moderate PAD'),
+    severe: t('arterialLE.abi.band.severe', 'Severe / CLI'),
+    unknown: t('arterialLE.abi.band.unknown', '—'),
+  };
+
+  // ----- Carotid -----
+  const vesselName: Record<CarotidVesselBase, string> = CAROTID_VESSELS.reduce(
+    (acc, base) => {
+      acc[base] = t(`carotid.vessel.${base}`, base);
+      return acc;
+    },
+    {} as Record<CarotidVesselBase, string>,
+  );
+
+  const flowName: Record<FlowDirection, string> = FLOW_DIRECTION_VALUES.reduce(
+    (acc, v) => {
+      acc[v] = t(`carotid.flow.${v}`, v);
+      return acc;
+    },
+    {} as Record<FlowDirection, string>,
+  );
+
+  const carotidPlaqueName: Record<CarotidPlaqueMorphology, string> =
+    CAROTID_PLAQUE_VALUES.reduce(
+      (acc, v) => {
+        acc[v] = t(`carotid.plaque.${v}`, v);
+        return acc;
+      },
+      {} as Record<CarotidPlaqueMorphology, string>,
+    );
+
+  const surfaceName: Record<PlaqueSurface, string> = PLAQUE_SURFACE_VALUES.reduce(
+    (acc, v) => {
+      acc[v] = t(`carotid.surface.${v}`, v);
+      return acc;
+    },
+    {} as Record<PlaqueSurface, string>,
+  );
+
+  const nascetCategoryName: Record<NascetCategory, string> = NASCET_CATEGORY_VALUES.reduce(
+    (acc, v) => {
+      acc[v] = t(`carotid.nascet.${v}`, v);
+      return acc;
+    },
+    {} as Record<NascetCategory, string>,
   );
 
   return {
@@ -86,6 +199,61 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),
       segmentName,
       emptyDash: '—',
+    },
+    arterialFindings: {
+      right: t('arterialLE.tabs.right', 'Right'),
+      left: t('arterialLE.tabs.left', 'Left'),
+      segment: t('arterialLE.segmentTable.segment', 'Segment'),
+      waveform: t('arterialLE.findingsTable.waveShort', t('arterialLE.param.waveform', 'Waveform')),
+      psv: t('arterialLE.findingsTable.psvShort', t('arterialLE.param.psvCmS', 'PSV')),
+      stenosis: t('arterialLE.findingsTable.stenShort', t('arterialLE.param.stenosisCategory', 'Stenosis')),
+      plaque: t('arterialLE.findingsTable.plaqueShort', t('arterialLE.param.plaqueMorphology', 'Plaque')),
+      occluded: t('arterialLE.findingsTable.occlShort', t('arterialLE.param.occluded', 'Occl.')),
+      occludedMark: '✓',
+      segmentName: arterialSegmentName,
+      waveformName,
+      stenosisName,
+      plaqueName: arterialPlaqueName,
+      emptyDash: '—',
+    },
+    pressures: {
+      title: t('arterialLE.pressureTable.title', t('arterialLE.pressures.title', 'Segmental pressures (mmHg)')),
+      sideRight: t('arterialLE.pressureTable.sideRight', 'R'),
+      sideLeft: t('arterialLE.pressureTable.sideLeft', 'L'),
+      brachial: t('arterialLE.pressureTable.brachialShort', t('arterialLE.pressures.brachial', 'Brachial')),
+      highThigh: t('arterialLE.pressureTable.highThighShort', t('arterialLE.pressures.highThigh', 'High thigh')),
+      lowThigh: t('arterialLE.pressureTable.lowThighShort', t('arterialLE.pressures.lowThigh', 'Low thigh')),
+      calf: t('arterialLE.pressureTable.calfShort', t('arterialLE.pressures.calf', 'Calf')),
+      ankleDp: t('arterialLE.pressureTable.ankleDpShort', t('arterialLE.pressures.ankleDp', 'Ankle DP')),
+      anklePt: t('arterialLE.pressureTable.anklePtShort', t('arterialLE.pressures.anklePt', 'Ankle PT')),
+      toe: t('arterialLE.pressureTable.toeShort', t('arterialLE.pressures.toe', 'Toe')),
+      abi: t('arterialLE.abi.label', 'ABI'),
+      tbi: t('arterialLE.tbi.label', 'TBI'),
+      abiBand,
+      emptyDash: '—',
+    },
+    carotidFindings: {
+      right: t('carotid.tabs.right', 'Right'),
+      left: t('carotid.tabs.left', 'Left'),
+      vessel: t('carotid.segmentTable.vessel', 'Vessel'),
+      psv: t('carotid.findingsTable.psvShort', t('carotid.param.psvCmS', 'PSV')),
+      edv: t('carotid.findingsTable.edvShort', t('carotid.param.edvCmS', 'EDV')),
+      flow: t('carotid.findingsTable.flowShort', t('carotid.param.flowDirection', 'Flow')),
+      plaque: t('carotid.findingsTable.plaqueShort', t('carotid.param.plaqueMorphology', 'Plaque')),
+      ratio: t('carotid.findingsTable.ratioShort', t('carotid.param.ratio', 'ICA/CCA')),
+      ulcerationMark: t('carotid.findingsTable.ulcerationMark', '⚠'),
+      vesselName,
+      flowName,
+      plaqueName: carotidPlaqueName,
+      surfaceName,
+      emptyDash: '—',
+    },
+    nascet: {
+      title: t('carotid.nascetSummary.title', t('carotid.nascet.title', 'NASCET classification')),
+      rightIca: t('carotid.nascetSummary.rightIca', 'Right ICA'),
+      leftIca: t('carotid.nascetSummary.leftIca', 'Left ICA'),
+      categoryName: nascetCategoryName,
+      noneLabel: t('carotid.nascetSummary.noneLabel', '—'),
     },
     narrative: {
       rightFindings: t(

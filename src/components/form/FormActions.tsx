@@ -66,15 +66,20 @@ export const FormActions = memo(function FormActions({
       { registerFontsAsync },
       { loadAnatomyForPdf },
       { isVenousForm },
+      { deriveArterialCompetency },
+      { deriveCarotidCompetency },
     ] = await Promise.all([
       import('@react-pdf/renderer'),
       import('../pdf/ReportDocument'),
       import('../../services/fontService'),
       import('../pdf/anatomyToPdfSvg'),
       import('../../types/form'),
+      import('../studies/arterial-le/config'),
+      import('../studies/carotid/config'),
     ]);
     await registerFontsAsync();
     const labels = buildReportLabels(t);
+    const { SEVERITY_COLORS } = await import('../../constants/theme-colors');
 
     // Resolve anatomy SVGs for venous forms before rendering.
     let anatomy: Parameters<typeof ReportDocument>[0]['anatomy'];
@@ -106,6 +111,50 @@ export const FormActions = memo(function FormActions({
           ? (rawFindings as unknown as VenousSegmentFindings)
           : {};
       localized = buildLocalizedNarrative(narrativeFindings, t);
+    } else if (form.studyType === 'arterialLE') {
+      const rawFindings = form.parameters['segmentFindings'];
+      const arterialFindings =
+        rawFindings && typeof rawFindings === 'object'
+          ? (rawFindings as unknown as Record<
+              string,
+              Parameters<typeof deriveArterialCompetency>[0]
+            >)
+          : {};
+      const competencyFn = (fullId: string): { fill: string; stroke: string } => {
+        const band = deriveArterialCompetency(arterialFindings[fullId]);
+        return SEVERITY_COLORS[band];
+      };
+      const anterior = await loadAnatomyForPdf(
+        'le-arterial-anterior',
+        {},
+        { competencyFn },
+      );
+      anatomy = { anterior, posterior: null };
+    } else if (form.studyType === 'carotid') {
+      const rawFindings = form.parameters['segmentFindings'];
+      const carotidFindings =
+        rawFindings && typeof rawFindings === 'object'
+          ? (rawFindings as unknown as Record<
+              string,
+              Parameters<typeof deriveCarotidCompetency>[0]
+            >)
+          : {};
+      const rawNascet = form.parameters['nascet'];
+      const nascet =
+        rawNascet && typeof rawNascet === 'object'
+          ? (rawNascet as unknown as {
+              right?: Parameters<typeof deriveCarotidCompetency>[1];
+              left?: Parameters<typeof deriveCarotidCompetency>[1];
+            })
+          : {};
+      const competencyFn = (fullId: string): { fill: string; stroke: string } => {
+        const side = fullId.endsWith('-left') ? 'left' : fullId.endsWith('-right') ? 'right' : null;
+        const nascetCat = side ? nascet[side] : undefined;
+        const band = deriveCarotidCompetency(carotidFindings[fullId], nascetCat);
+        return SEVERITY_COLORS[band];
+      };
+      const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn });
+      anatomy = { anterior, posterior: null };
     } else {
       anatomy = { anterior: null, posterior: null };
     }

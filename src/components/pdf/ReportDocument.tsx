@@ -23,6 +23,14 @@ import { DiagramSection } from './sections/DiagramSection';
 import type { DiagramSectionLabels } from './sections/DiagramSection';
 import { FindingsTable } from './sections/FindingsTable';
 import type { FindingsTableLabels } from './sections/FindingsTable';
+import { ArterialFindingsTable } from './sections/ArterialFindingsTable';
+import type { ArterialFindingsTableLabels } from './sections/ArterialFindingsTable';
+import { SegmentalPressureTable } from './sections/SegmentalPressureTable';
+import type { SegmentalPressureTableLabels } from './sections/SegmentalPressureTable';
+import { CarotidFindingsTable } from './sections/CarotidFindingsTable';
+import type { CarotidFindingsTableLabels } from './sections/CarotidFindingsTable';
+import { NASCETSummaryBlock } from './sections/NASCETSummaryBlock';
+import type { NASCETSummaryLabels } from './sections/NASCETSummaryBlock';
 import { NarrativeSection } from './sections/NarrativeSection';
 import type { NarrativeSectionLabels } from './sections/NarrativeSection';
 import { CEAPSection } from './sections/CEAPSection';
@@ -34,6 +42,14 @@ import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
 import type { FormState } from '../../types/form';
 import { isVenousForm } from '../../types/form';
 import type { VenousSegmentFindings, VenousLESegmentBase } from '../studies/venous-le/config';
+import type {
+  ArterialSegmentFindings,
+  SegmentalPressures,
+} from '../studies/arterial-le/config';
+import type {
+  CarotidFindings,
+  CarotidNascetClassification,
+} from '../studies/carotid/config';
 
 // ---------------------------------------------------------------------------
 // Label bundle — every user-facing string the PDF needs.
@@ -47,6 +63,10 @@ export interface ReportLabels {
   readonly patient: PatientBlockLabels;
   readonly diagram: DiagramSectionLabels;
   readonly findings: FindingsTableLabels;
+  readonly arterialFindings: ArterialFindingsTableLabels;
+  readonly pressures: SegmentalPressureTableLabels;
+  readonly carotidFindings: CarotidFindingsTableLabels;
+  readonly nascet: NASCETSummaryLabels;
   readonly narrative: NarrativeSectionLabels;
   readonly ceap: CEAPSectionLabels;
   readonly recommendations: RecommendationsSectionLabels;
@@ -142,6 +162,38 @@ function deriveVenousFindings(form: FormState): VenousSegmentFindings {
   return out;
 }
 
+/** Arterial LE form stashes findings on `parameters.segmentFindings`. */
+function deriveArterialFindings(form: FormState): ArterialSegmentFindings {
+  if (form.studyType !== 'arterialLE') return {};
+  const raw = form.parameters['segmentFindings'];
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as unknown as ArterialSegmentFindings;
+}
+
+/** Arterial LE form stashes pressures on `parameters.pressures`. */
+function deriveArterialPressures(form: FormState): SegmentalPressures {
+  if (form.studyType !== 'arterialLE') return {};
+  const raw = form.parameters['pressures'];
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as unknown as SegmentalPressures;
+}
+
+/** Carotid form stashes findings on `parameters.segmentFindings`. */
+function deriveCarotidFindings(form: FormState): CarotidFindings {
+  if (form.studyType !== 'carotid') return {};
+  const raw = form.parameters['segmentFindings'];
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as unknown as CarotidFindings;
+}
+
+/** Carotid form stashes NASCET per side on `parameters.nascet`. */
+function deriveCarotidNascet(form: FormState): CarotidNascetClassification {
+  if (form.studyType !== 'carotid') return {};
+  const raw = form.parameters['nascet'];
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as unknown as CarotidNascetClassification;
+}
+
 function formatDate(iso: string | undefined): string {
   if (!iso) return '—';
   const date = new Date(iso);
@@ -180,6 +232,12 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
 
   const findings = deriveVenousFindings(form);
   const isVenous = isVenousForm(form);
+  const isArterial = form.studyType === 'arterialLE';
+  const isCarotid = form.studyType === 'carotid';
+  const arterialFindings = deriveArterialFindings(form);
+  const arterialPressures = deriveArterialPressures(form);
+  const carotidFindings = deriveCarotidFindings(form);
+  const carotidNascet = deriveCarotidNascet(form);
 
   const pageWidth = `${PDF_LAYOUT.contentWidthPt}pt`;
 
@@ -241,12 +299,83 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
               />
             </View>
           </View>
-        ) : form.studyType === 'arterialLE' || form.studyType === 'carotid' ? (
-          // Arterial LE + Carotid: narrative-first layout (page 1 = shell;
-          // detailed tables live on page 2 via the generic Narrative +
-          // Recommendations sections). A dedicated per-study findings table
-          // is a future upgrade.
-          null
+        ) : isArterial ? (
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                width: pageWidth,
+                marginBottom: 4,
+              }}
+            >
+              <View style={{ width: '50%', paddingRight: 3 }}>
+                <ArterialFindingsTable
+                  findings={arterialFindings}
+                  labels={labels.arterialFindings}
+                  singleSide="right"
+                />
+              </View>
+              <View style={{ width: '50%', paddingLeft: 3 }}>
+                <ArterialFindingsTable
+                  findings={arterialFindings}
+                  labels={labels.arterialFindings}
+                  singleSide="left"
+                />
+              </View>
+            </View>
+            <View style={{ width: pageWidth }}>
+              <SegmentalPressureTable
+                pressures={arterialPressures}
+                labels={labels.pressures}
+              />
+            </View>
+            <View style={{ width: pageWidth }}>
+              <DiagramSection
+                anterior={anatomy?.anterior ?? null}
+                posterior={null}
+                labels={labels.diagram}
+                viewWidthPt={260}
+              />
+            </View>
+          </View>
+        ) : isCarotid ? (
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                width: pageWidth,
+                marginBottom: 4,
+              }}
+            >
+              <View style={{ width: '50%', paddingRight: 3 }}>
+                <CarotidFindingsTable
+                  findings={carotidFindings}
+                  labels={labels.carotidFindings}
+                  singleSide="right"
+                />
+              </View>
+              <View style={{ width: '50%', paddingLeft: 3 }}>
+                <CarotidFindingsTable
+                  findings={carotidFindings}
+                  labels={labels.carotidFindings}
+                  singleSide="left"
+                />
+              </View>
+            </View>
+            <View style={{ width: pageWidth }}>
+              <NASCETSummaryBlock nascet={carotidNascet} labels={labels.nascet} />
+            </View>
+            <View style={{ width: pageWidth }}>
+              <DiagramSection
+                anterior={anatomy?.anterior ?? null}
+                posterior={null}
+                labels={labels.diagram}
+                viewWidthPt={260}
+              />
+            </View>
+          </View>
         ) : (
           <FindingsTable findings={findings} labels={labels.findings} />
         )}
