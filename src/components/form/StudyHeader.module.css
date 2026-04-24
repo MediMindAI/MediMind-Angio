@@ -15,8 +15,10 @@
 }
 
 .head {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
+  min-height: 70px;
   padding: 16px 20px;
   background: var(--emr-gradient-section-header, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 55%, var(--emr-accent) 100%));
   color: #ffffff;
@@ -75,13 +77,16 @@
 
 .summary {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 4px 10px;
   font-size: var(--emr-font-sm) !important;
   line-height: 1.3 !important;
   color: rgba(255, 255, 255, 0.88) !important;
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summaryField {
