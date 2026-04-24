@@ -106,6 +106,25 @@ export const COMPETENCY_COLORS = {
 } as const;
 
 // =============================================================================
+// SEVERITY COLORS (arterial + carotid — drives stenosis overlay)
+// =============================================================================
+
+/**
+ * Five-band severity palette used by arterial LE and carotid duplex
+ * anatomy diagrams. Green → amber → orange → red → dark red as stenosis
+ * worsens, with occluded rendered as a near-black dark red.
+ */
+export const SEVERITY_COLORS = {
+  normal: { fill: '#22c55e', stroke: '#16a34a' },
+  mild: { fill: '#fbbf24', stroke: '#d97706' },
+  moderate: { fill: '#f97316', stroke: '#ea580c' },
+  severe: { fill: '#ef4444', stroke: '#b91c1c' },
+  occluded: { fill: '#991b1b', stroke: '#7f1d1d' },
+} as const;
+
+export type Severity = keyof typeof SEVERITY_COLORS;
+
+// =============================================================================
 // STATUS COLORS (for badges, state maps)
 // =============================================================================
 
@@ -142,3 +161,4 @@ export type SemanticColor = keyof typeof SEMANTIC_COLORS;
 export type StatusColor = keyof typeof STATUS_COLORS;
 export type GradientName = keyof typeof GRADIENTS;
 export type Competency = keyof typeof COMPETENCY_COLORS;
+

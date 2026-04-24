@@ -277,3 +277,31 @@ export const ARTERIAL_OCCLUSION_FINDING: ArterialSegmentFinding = {
   stenosisCategory: 'occluded',
   occluded: true,
 };
+
+// ============================================================================
+// Anatomy-diagram competency mapping
+// ============================================================================
+
+/**
+ * 5-band severity used to color the schematic arterial tree on both the
+ * PDF and the form-side diagram. Shared palette key with `SEVERITY_COLORS`
+ * in `theme-colors.ts`.
+ */
+export type ArterialCompetency = 'normal' | 'mild' | 'moderate' | 'severe' | 'occluded';
+
+/**
+ * Derive a severity band from a per-segment finding. Matches the same
+ * thresholds as `stenosisCategoryFromPct()` but collapses "none" → "normal".
+ */
+export function deriveArterialCompetency(
+  finding: ArterialSegmentFinding | undefined,
+): ArterialCompetency {
+  if (!finding) return 'normal';
+  if (finding.occluded || finding.waveform === 'absent' || finding.stenosisCategory === 'occluded') {
+    return 'occluded';
+  }
+  if (finding.stenosisCategory === 'severe' || (finding.stenosisPct ?? 0) >= 70) return 'severe';
+  if (finding.stenosisCategory === 'moderate' || (finding.stenosisPct ?? 0) >= 50) return 'moderate';
+  if (finding.stenosisCategory === 'mild' || (finding.stenosisPct ?? 0) >= 30) return 'mild';
+  return 'normal';
+}

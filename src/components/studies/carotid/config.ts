@@ -177,3 +177,31 @@ export const CAROTID_CONFIG: StudyConfig = {
   segments: allCarotidFullIds() as ReadonlyArray<string>,
   parameters: [...CATEGORICAL_PARAMETERS, ...NUMERIC_PARAMETERS],
 };
+
+// ============================================================================
+// Anatomy-diagram competency mapping
+// ============================================================================
+
+/**
+ * 5-band severity used to color the schematic neck-carotid diagram on
+ * both the PDF and the form-side diagram. Shares its palette key with
+ * `SEVERITY_COLORS` in `theme-colors.ts`.
+ */
+export type CarotidCompetency = 'normal' | 'mild' | 'moderate' | 'severe' | 'occluded';
+
+/**
+ * Derive a severity band from a vessel's finding + (optional) side-scoped
+ * NASCET category. NASCET takes precedence when supplied, otherwise we
+ * fall back to flow-direction / plaque presence.
+ */
+export function deriveCarotidCompetency(
+  finding: CarotidVesselFinding | undefined,
+  nascetCat?: NascetCategory,
+): CarotidCompetency {
+  if (!finding) return 'normal';
+  if (finding.flowDirection === 'absent' || nascetCat === 'occluded') return 'occluded';
+  if (nascetCat === 'ge70' || nascetCat === 'near-occlusion') return 'severe';
+  if (nascetCat === '50to69') return 'moderate';
+  if (finding.plaquePresent) return 'mild';
+  return 'normal';
+}

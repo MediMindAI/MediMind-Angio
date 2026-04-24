@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" role="img" aria-labelledby="title-le-arterial-anterior">
+  <title id="title-le-arterial-anterior">Lower-extremity arterial system — schematic anterior view</title>
+  <desc>Schematic straight-line diagram of the lower-extremity arterial tree with junction dots. Every artery segment carries a canonical id (cia-left, sfa-mid-right, dp-left, etc.) matching the IAC/SVU arterial duplex protocol.</desc>
+  <g id="silhouette" fill="#f7fafc" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
+    <path d="M 140,55 C 136,175 160,380 166,440 C 160,480 156,595 156,625 C 162,705 193,810 197,850 L 233,850 C 237,810 238,705 244,625 C 244,595 240,480 234,440 C 240,380 264,175 260,55 Z" />
+    <path d="M 340,55 C 336,175 360,380 366,440 C 360,480 356,595 356,625 C 362,705 363,810 367,850 L 403,850 C 407,810 438,705 444,625 C 444,595 440,480 434,440 C 440,380 464,175 460,55 Z" />
+  </g>
+  <g id="pelvis-hint" fill="none" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
+    <path d="M 120,40 Q 300,20 480,40" />
+  </g>
+  <line x1="300" y1="30" x2="300" y2="180" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+  <g id="side-labels" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" fill="#4a5568" text-anchor="middle">
+    <text x="200" y="40">R</text>
+    <text x="400" y="40">L</text>
+  </g>
+  <g id="segments" fill="none" stroke="#1a365d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- RIGHT SIDE -->
+    <path id="cia-right" d="M 300,180 L 230,240" data-label="Common iliac artery (right)"><title>Common iliac artery (right)</title></path>
+    <path id="eia-right" d="M 230,240 L 210,320" data-label="External iliac artery (right)"><title>External iliac artery (right)</title></path>
+    <path id="cfa-right" d="M 210,320 L 205,380" data-label="Common femoral artery (right)"><title>Common femoral artery (right)</title></path>
+    <path id="pfa-right" d="M 205,355 L 175,420" data-label="Profunda femoris artery (right)"><title>Profunda femoris artery (right)</title></path>
+    <path id="sfa-prox-right" d="M 205,380 L 205,470" data-label="Superficial femoral artery — proximal (right)"><title>Superficial femoral artery — proximal (right)</title></path>
+    <path id="sfa-mid-right" d="M 205,470 L 205,560" data-label="Superficial femoral artery — mid (right)"><title>Superficial femoral artery — mid (right)</title></path>
+    <path id="sfa-dist-right" d="M 205,560 L 205,640" data-label="Superficial femoral artery — distal (right)"><title>Superficial femoral artery — distal (right)</title></path>
+    <path id="pop-ak-right" d="M 205,640 L 205,700" data-label="Popliteal artery — above knee (right)"><title>Popliteal artery — above knee (right)</title></path>
+    <path id="pop-bk-right" d="M 205,700 L 205,750" data-label="Popliteal artery — below knee (right)"><title>Popliteal artery — below knee (right)</title></path>
+    <path id="tpt-right" d="M 205,750 L 205,780" data-label="Tibioperoneal trunk (right)"><title>Tibioperoneal trunk (right)</title></path>
+    <path id="ata-right" d="M 205,780 L 175,860" data-label="Anterior tibial artery (right)"><title>Anterior tibial artery (right)</title></path>
+    <path id="pta-right" d="M 205,780 L 225,860" data-label="Posterior tibial artery (right)"><title>Posterior tibial artery (right)</title></path>
+    <path id="per-right" d="M 205,780 L 205,850" data-label="Peroneal artery (right)"><title>Peroneal artery (right)</title></path>
+    <path id="dp-right" d="M 175,860 L 160,880" data-label="Dorsalis pedis artery (right)"><title>Dorsalis pedis artery (right)</title></path>
+
+    <!-- LEFT SIDE (mirrored around x=300) -->
+    <path id="cia-left" d="M 300,180 L 370,240" data-label="Common iliac artery (left)"><title>Common iliac artery (left)</title></path>
+    <path id="eia-left" d="M 370,240 L 390,320" data-label="External iliac artery (left)"><title>External iliac artery (left)</title></path>
+    <path id="cfa-left" d="M 390,320 L 395,380" data-label="Common femoral artery (left)"><title>Common femoral artery (left)</title></path>
+    <path id="pfa-left" d="M 395,355 L 425,420" data-label="Profunda femoris artery (left)"><title>Profunda femoris artery (left)</title></path>
+    <path id="sfa-prox-left" d="M 395,380 L 395,470" data-label="Superficial femoral artery — proximal (left)"><title>Superficial femoral artery — proximal (left)</title></path>
+    <path id="sfa-mid-left" d="M 395,470 L 395,560" data-label="Superficial femoral artery — mid (left)"><title>Superficial femoral artery — mid (left)</title></path>
+    <path id="sfa-dist-left" d="M 395,560 L 395,640" data-label="Superficial femoral artery — distal (left)"><title>Superficial femoral artery — distal (left)</title></path>
+    <path id="pop-ak-left" d="M 395,640 L 395,700" data-label="Popliteal artery — above knee (left)"><title>Popliteal artery — above knee (left)</title></path>
+    <path id="pop-bk-left" d="M 395,700 L 395,750" data-label="Popliteal artery — below knee (left)"><title>Popliteal artery — below knee (left)</title></path>
+    <path id="tpt-left" d="M 395,750 L 395,780" data-label="Tibioperoneal trunk (left)"><title>Tibioperoneal trunk (left)</title></path>
+    <path id="ata-left" d="M 395,780 L 425,860" data-label="Anterior tibial artery (left)"><title>Anterior tibial artery (left)</title></path>
+    <path id="pta-left" d="M 395,780 L 375,860" data-label="Posterior tibial artery (left)"><title>Posterior tibial artery (left)</title></path>
+    <path id="per-left" d="M 395,780 L 395,850" data-label="Peroneal artery (left)"><title>Peroneal artery (left)</title></path>
+    <path id="dp-left" d="M 425,860 L 440,880" data-label="Dorsalis pedis artery (left)"><title>Dorsalis pedis artery (left)</title></path>
+  </g>
+  <g id="junction-dots" fill="#1a365d" stroke="none">
+    <circle cx="300" cy="180" r="4" />
+    <circle cx="205" cy="380" r="3" />
+    <circle cx="395" cy="380" r="3" />
+    <circle cx="205" cy="780" r="4" />
+    <circle cx="395" cy="780" r="4" />
+  </g>
+</svg>

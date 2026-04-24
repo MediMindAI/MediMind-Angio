@@ -24,7 +24,11 @@ import { COMPETENCY_COLORS } from '../../constants/theme-colors';
 // Public types
 // ---------------------------------------------------------------------------
 
-export type AnatomyViewName = 'le-anterior' | 'le-posterior';
+export type AnatomyViewName =
+  | 'le-anterior'
+  | 'le-posterior'
+  | 'le-arterial-anterior'
+  | 'neck-carotid';
 
 export interface PdfSvgElement {
   readonly kind: 'segment' | 'outline';
@@ -209,9 +213,24 @@ function colorsForSegment(
 // ---------------------------------------------------------------------------
 
 /**
- * Load + parse an anatomy view, assigning competency colors to each segment
- * path based on the supplied findings map. The result is consumed directly
- * by `DiagramSection` to emit `<Svg>` + `<Path>` children.
+ * Color resolver for a single segment path. Takes the full segment id
+ * (e.g. `sfa-mid-left`, `bulb-right`) and returns the fill + stroke the
+ * PDF should paint that segment. Used by arterial + carotid to plug in
+ * their own severity→palette mapping; venous uses the default.
+ */
+export type SegmentColorsFn = (
+  fullId: string,
+) => { fill: string; stroke: string };
+
+/**
+ * Load + parse an anatomy view, assigning colors to each segment path.
+ *
+ * By default (venous), colors come from `colorsForSegment()` keyed off
+ * `VenousSegmentFindings`. Callers can pass a `competencyFn` to override
+ * that logic for arterial/carotid diagrams — they pre-bind their study's
+ * findings into a closure returning {fill, stroke} for any given segment
+ * id. The result is consumed directly by `DiagramSection` to emit
+ * `<Svg>` + `<Path>` children.
  */
 export async function loadAnatomyForPdf(
   view: AnatomyViewName,
@@ -220,6 +239,8 @@ export async function loadAnatomyForPdf(
     readonly outlineStroke?: string;
     readonly outlineStrokeWidth?: number;
     readonly segmentStrokeWidth?: number;
+    /** Override color resolution (arterial + carotid use this). */
+    readonly competencyFn?: SegmentColorsFn;
   }
 ): Promise<AnatomyToPdfResult> {
   const raw = await loadRawAnatomySvg(view);
@@ -229,13 +250,16 @@ export async function loadAnatomyForPdf(
   const outlineStroke = options?.outlineStroke ?? '#cbd5e0';
   const outlineStrokeWidth = options?.outlineStrokeWidth ?? 1.25;
   const segmentStrokeWidth = options?.segmentStrokeWidth ?? 4;
+  const competencyFn = options?.competencyFn;
 
   const elements: PdfSvgElement[] = [];
 
   for (const p of paths) {
     if (p.section === 'segments') {
       if (!p.id) continue;
-      const { fill, stroke } = colorsForSegment(p.id, findings);
+      const { fill, stroke } = competencyFn
+        ? competencyFn(p.id)
+        : colorsForSegment(p.id, findings);
       elements.push({
         kind: 'segment',
         id: p.id,

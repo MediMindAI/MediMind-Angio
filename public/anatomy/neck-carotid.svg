@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" role="img" aria-labelledby="title-neck-carotid">
+  <title id="title-neck-carotid">Neck — schematic carotid, vertebral, and subclavian arteries</title>
+  <desc>Schematic straight-line diagram of the extracranial carotid, vertebral, and subclavian arteries with junction dots. Every vessel carries a canonical id (cca-prox-left, bulb-right, vert-v2-left, etc.) matching the SRU / ESVS carotid duplex protocol.</desc>
+  <g id="silhouette" fill="#f7fafc" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
+    <!-- Head (top) -->
+    <ellipse cx="300" cy="55" rx="70" ry="45" />
+    <!-- Neck trapezoid -->
+    <path d="M 250,95 L 250,250 Q 240,270 230,290 L 230,360 L 370,360 L 370,290 Q 360,270 350,250 L 350,95 Z" />
+    <!-- Upper chest -->
+    <path d="M 150,360 L 450,360 L 470,470 L 130,470 Z" />
+  </g>
+  <g id="pelvis-hint" fill="none" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
+    <!-- Spine midline hint -->
+    <path d="M 300,100 L 300,360" stroke-dasharray="4 4" />
+  </g>
+  <g id="side-labels" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" fill="#4a5568" text-anchor="middle">
+    <text x="180" y="20">R</text>
+    <text x="420" y="20">L</text>
+  </g>
+  <g id="segments" fill="none" stroke="#1a365d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- RIGHT SIDE -->
+    <!-- Aortic arch → right subclavian (via brachiocephalic, schematic) -->
+    <path id="subclav-prox-right" d="M 300,430 L 225,410" data-label="Subclavian artery — proximal (right)"><title>Subclavian artery — proximal (right)</title></path>
+    <path id="subclav-dist-right" d="M 225,410 L 150,395" data-label="Subclavian artery — distal (right)"><title>Subclavian artery — distal (right)</title></path>
+    <!-- Right vertebral ascends from subclavian -->
+    <path id="vert-v1-right" d="M 225,410 L 240,350" data-label="Vertebral artery V1 (right)"><title>Vertebral artery V1 (right)</title></path>
+    <path id="vert-v2-right" d="M 240,350 L 255,230" data-label="Vertebral artery V2 (right)"><title>Vertebral artery V2 (right)</title></path>
+    <path id="vert-v3-right" d="M 255,230 L 270,110" data-label="Vertebral artery V3 (right)"><title>Vertebral artery V3 (right)</title></path>
+    <!-- Right CCA ascending -->
+    <path id="cca-prox-right" d="M 300,430 L 215,370" data-label="Common carotid artery — proximal (right)"><title>Common carotid artery — proximal (right)</title></path>
+    <path id="cca-mid-right" d="M 215,370 L 210,280" data-label="Common carotid artery — mid (right)"><title>Common carotid artery — mid (right)</title></path>
+    <path id="cca-dist-right" d="M 210,280 L 210,200" data-label="Common carotid artery — distal (right)"><title>Common carotid artery — distal (right)</title></path>
+    <!-- Carotid bulb (bifurcation) -->
+    <path id="bulb-right" d="M 210,200 L 210,175" data-label="Carotid bulb (right)"><title>Carotid bulb (right)</title></path>
+    <!-- ICA ascends medial -->
+    <path id="ica-prox-right" d="M 210,175 L 220,150" data-label="Internal carotid artery — proximal (right)"><title>Internal carotid artery — proximal (right)</title></path>
+    <path id="ica-mid-right" d="M 220,150 L 230,125" data-label="Internal carotid artery — mid (right)"><title>Internal carotid artery — mid (right)</title></path>
+    <path id="ica-dist-right" d="M 230,125 L 245,100" data-label="Internal carotid artery — distal (right)"><title>Internal carotid artery — distal (right)</title></path>
+    <!-- ECA branches lateral from bulb -->
+    <path id="eca-right" d="M 210,175 L 180,130" data-label="External carotid artery (right)"><title>External carotid artery (right)</title></path>
+
+    <!-- LEFT SIDE (mirrored around x=300) -->
+    <path id="subclav-prox-left" d="M 300,430 L 375,410" data-label="Subclavian artery — proximal (left)"><title>Subclavian artery — proximal (left)</title></path>
+    <path id="subclav-dist-left" d="M 375,410 L 450,395" data-label="Subclavian artery — distal (left)"><title>Subclavian artery — distal (left)</title></path>
+    <path id="vert-v1-left" d="M 375,410 L 360,350" data-label="Vertebral artery V1 (left)"><title>Vertebral artery V1 (left)</title></path>
+    <path id="vert-v2-left" d="M 360,350 L 345,230" data-label="Vertebral artery V2 (left)"><title>Vertebral artery V2 (left)</title></path>
+    <path id="vert-v3-left" d="M 345,230 L 330,110" data-label="Vertebral artery V3 (left)"><title>Vertebral artery V3 (left)</title></path>
+    <path id="cca-prox-left" d="M 300,430 L 385,370" data-label="Common carotid artery — proximal (left)"><title>Common carotid artery — proximal (left)</title></path>
+    <path id="cca-mid-left" d="M 385,370 L 390,280" data-label="Common carotid artery — mid (left)"><title>Common carotid artery — mid (left)</title></path>
+    <path id="cca-dist-left" d="M 390,280 L 390,200" data-label="Common carotid artery — distal (left)"><title>Common carotid artery — distal (left)</title></path>
+    <path id="bulb-left" d="M 390,200 L 390,175" data-label="Carotid bulb (left)"><title>Carotid bulb (left)</title></path>
+    <path id="ica-prox-left" d="M 390,175 L 380,150" data-label="Internal carotid artery — proximal (left)"><title>Internal carotid artery — proximal (left)</title></path>
+    <path id="ica-mid-left" d="M 380,150 L 370,125" data-label="Internal carotid artery — mid (left)"><title>Internal carotid artery — mid (left)</title></path>
+    <path id="ica-dist-left" d="M 370,125 L 355,100" data-label="Internal carotid artery — distal (left)"><title>Internal carotid artery — distal (left)</title></path>
+    <path id="eca-left" d="M 390,175 L 420,130" data-label="External carotid artery (left)"><title>External carotid artery (left)</title></path>
+  </g>
+  <g id="aortic-arch" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round">
+    <path d="M 220,460 Q 300,400 380,460" />
+  </g>
+  <g id="junction-dots" fill="#1a365d" stroke="none">
+    <circle cx="300" cy="430" r="4" />
+    <circle cx="225" cy="410" r="3" />
+    <circle cx="375" cy="410" r="3" />
+    <circle cx="210" cy="175" r="4" />
+    <circle cx="390" cy="175" r="4" />
+  </g>
+</svg>
