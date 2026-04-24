@@ -1,89 +1,89 @@
 {
   "arterialLE": {
     "tabs": {
-      "left": "Left",
-      "right": "Right",
-      "bilateral": "Bilateral"
+      "left": "მარცხენა",
+      "right": "მარჯვენა",
+      "bilateral": "ორმხრივი"
     },
     "side": {
-      "left": "left",
-      "right": "right"
+      "left": "მარცხენა",
+      "right": "მარჯვენა"
     },
     "segment": {
-      "cia": "common iliac artery",
-      "eia": "external iliac artery",
-      "cfa": "common femoral artery",
-      "pfa": "profunda femoris artery",
-      "sfa-prox": "superficial femoral artery, proximal",
-      "sfa-mid": "superficial femoral artery, mid",
-      "sfa-dist": "superficial femoral artery, distal",
-      "pop-ak": "popliteal artery above knee",
-      "pop-bk": "popliteal artery below knee",
-      "tpt": "tibioperoneal trunk",
-      "ata": "anterior tibial artery",
-      "pta": "posterior tibial artery",
-      "per": "peroneal artery",
-      "dp": "dorsalis pedis artery"
+      "cia": "საერთო თეძოს არტერია",
+      "eia": "გარე თეძოს არტერია",
+      "cfa": "საერთო ბარძაყის არტერია",
+      "pfa": "ბარძაყის ღრმა არტერია",
+      "sfa-prox": "ბარძაყის ზედაპირული არტერია, პროქსიმალური",
+      "sfa-mid": "ბარძაყის ზედაპირული არტერია, შუა",
+      "sfa-dist": "ბარძაყის ზედაპირული არტერია, დისტალური",
+      "pop-ak": "ქუსლქვეშა არტერია, მუხლს ზემოთ",
+      "pop-bk": "ქუსლქვეშა არტერია, მუხლს ქვემოთ",
+      "tpt": "ტიბიო-პერონეალური ღერო",
+      "ata": "წინა წვივის არტერია",
+      "pta": "უკანა წვივის არტერია",
+      "per": "მცირე წვივის არტერია",
+      "dp": "ტერფის ზურგა არტერია"
     },
     "segmentTable": {
-      "title": "Segmental assessment",
-      "subtitle": "Waveform, PSV, stenosis, and plaque per segment",
-      "segment": "Segment"
+      "title": "სეგმენტური შეფასება",
+      "subtitle": "ტალღოვანი ფორმა, PSV, სტენოზი და პლაკი თითოეული სეგმენტისთვის",
+      "segment": "სეგმენტი"
     },
     "param": {
-      "waveform": "Waveform",
+      "waveform": "ტალღოვანი ფორმა",
       "psvCmS": "PSV (cm/s)",
-      "stenosisCategory": "Stenosis",
-      "stenosisPct": "Stenosis %",
-      "plaqueMorphology": "Plaque",
-      "plaqueLengthMm": "Plaque length (mm)",
-      "occluded": "Occl."
+      "stenosisCategory": "სტენოზი",
+      "stenosisPct": "სტენოზი %",
+      "plaqueMorphology": "პლაკი",
+      "plaqueLengthMm": "პლაკის სიგრძე (mm)",
+      "occluded": "ოკლ."
     },
     "help": {
-      "psvCmS": "Peak systolic velocity at sample site.",
-      "stenosisPct": "Manually entered % lumen narrowing.",
-      "plaqueLengthMm": "Axial plaque length along vessel."
+      "psvCmS": "პიკური სისტოლური სიჩქარე გაზომვის წერტილში.",
+      "stenosisPct": "ხელით შეყვანილი სანათურის შევიწროების %.",
+      "plaqueLengthMm": "პლაკის ღერძული სიგრძე სისხლძარღვის გასწვრივ."
     },
     "waveform": {
-      "triphasic": "Triphasic",
-      "biphasic": "Biphasic",
-      "monophasic-phasic": "Monophasic, phasic",
-      "monophasic-damped": "Monophasic, damped",
-      "absent": "Absent / no flow"
+      "triphasic": "სამფაზური",
+      "biphasic": "ორფაზური",
+      "monophasic-phasic": "ერთფაზური, ფაზური",
+      "monophasic-damped": "ერთფაზური, მილევადი",
+      "absent": "არარსებული / ნაკადი არ ფიქსირდება"
     },
     "stenosis": {
       "none": "< 30 %",
       "mild": "30–49 %",
       "moderate": "50–69 %",
       "severe": "70–99 %",
-      "occluded": "Occluded"
+      "occluded": "ოკლუზია"
     },
     "plaque": {
-      "none": "None",
-      "calcified": "Calcified",
-      "mixed": "Mixed",
-      "soft": "Soft"
+      "none": "არ არის",
+      "calcified": "კალცინირებული",
+      "mixed": "შერეული",
+      "soft": "რბილი"
     },
     "pressures": {
-      "title": "Segmental pressures",
-      "subtitle": "Cuff pressures in mmHg. ABI and TBI auto-compute.",
-      "level": "Level",
-      "brachial": "Brachial",
-      "highThigh": "High thigh",
-      "lowThigh": "Low thigh",
-      "calf": "Calf",
-      "ankleDp": "Ankle DP",
-      "anklePt": "Ankle PT",
-      "toe": "Toe"
+      "title": "სეგმენტური წნევები",
+      "subtitle": "მანჟეტის წნევები mmHg-ში. ABI და TBI გამოითვლება ავტომატურად.",
+      "level": "დონე",
+      "brachial": "მხრის",
+      "highThigh": "ბარძაყის ზედა",
+      "lowThigh": "ბარძაყის ქვედა",
+      "calf": "წვივი",
+      "ankleDp": "კოჭი DP",
+      "anklePt": "კოჭი PT",
+      "toe": "თითი"
     },
     "abi": {
       "label": "ABI",
       "band": {
-        "non-compressible": "Non-compressible",
-        "normal": "Normal",
-        "mild": "Mild PAD",
-        "moderate": "Moderate PAD",
-        "severe": "Severe / CLI",
+        "non-compressible": "არაკომპრესირებადი",
+        "normal": "ნორმალური",
+        "mild": "მსუბუქი PAD",
+        "moderate": "საშუალო PAD",
+        "severe": "მძიმე / CLI",
         "unknown": "—"
       }
     },
@@ -91,89 +91,89 @@
       "label": "TBI"
     },
     "narrative": {
-      "impression": "Impression",
-      "sonographerComments": "Sonographer comments",
-      "clinicianComments": "Clinician comments",
-      "normalSide": "Normal {side} lower-extremity arterial tree with triphasic flow throughout.",
-      "occluded": "Occluded — {vein}.",
-      "stenosis": "{severity} stenosis — {vein} (PSV {psv} cm/s).",
-      "dampedWaveform": "{waveform} flow — {vein}."
+      "impression": "დასკვნა",
+      "sonographerComments": "სონოგრაფისტის კომენტარები",
+      "clinicianComments": "კლინიცისტის კომენტარები",
+      "normalSide": "{side} ქვედა კიდურის არტერიული ხე ნორმის ფარგლებშია, ყველა სეგმენტში ფიქსირდება სამფაზური ნაკადი.",
+      "occluded": "ოკლუზია — {vein}.",
+      "stenosis": "{severity} სტენოზი — {vein} (PSV {psv} cm/s).",
+      "dampedWaveform": "{waveform} ნაკადი — {vein}."
     },
     "conclusion": {
-      "occluded": "Occlusion — {side} {vein}.",
-      "significantStenosis": "Hemodynamically significant ({severity}) stenosis — {side} {vein}.",
+      "occluded": "ოკლუზია — {side} {vein}.",
+      "significantStenosis": "ჰემოდინამიკურად მნიშვნელოვანი ({severity}) სტენოზი — {side} {vein}.",
       "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
     },
     "actions": {
-      "newCase": "+ New case",
-      "newCaseConfirmTitle": "Start a new case?",
-      "newCaseConfirmBody": "All current findings, pressures, impression and recommendations will be cleared. This cannot be undone.",
-      "newCaseConfirm": "Discard & start new",
-      "newCaseToastTitle": "New case started",
-      "newCaseToastMessage": "All data cleared.",
-      "applyTemplate": "Apply template",
-      "applyTemplateConfirmTitle": "Apply template?",
-      "applyTemplateConfirmBody": "This will replace current findings, pressures, impression, and recommendations.",
-      "cancel": "Cancel",
-      "templateApplied": "Template applied"
+      "newCase": "+ ახალი კვლევა",
+      "newCaseConfirmTitle": "დავიწყოთ ახალი კვლევა?",
+      "newCaseConfirmBody": "მიმდინარე მიგნებები, წნევები, დასკვნა და რეკომენდაციები წაიშლება. მოქმედება შეუქცევადია.",
+      "newCaseConfirm": "წაშლა და ახლის დაწყება",
+      "newCaseToastTitle": "ახალი კვლევა დაწყებულია",
+      "newCaseToastMessage": "ყველა მონაცემი წაშლილია.",
+      "applyTemplate": "შაბლონის გამოყენება",
+      "applyTemplateConfirmTitle": "გამოვიყენოთ შაბლონი?",
+      "applyTemplateConfirmBody": "ეს ჩაანაცვლებს მიმდინარე მიგნებებს, წნევებს, დასკვნას და რეკომენდაციებს.",
+      "cancel": "გაუქმება",
+      "templateApplied": "შაბლონი გამოყენებულია"
     },
     "templates": {
-      "menuLabel": "Templates",
+      "menuLabel": "შაბლონები",
       "normalBilateral": {
-        "name": "Normal bilateral",
-        "description": "All segments triphasic, no plaque, ABI normal bilaterally.",
-        "impression": "Normal bilateral lower-extremity arterial duplex examination. All segments demonstrate triphasic flow with normal peak systolic velocities. Ankle-Brachial Index is within normal limits bilaterally (R: 1.08, L: 1.08). No hemodynamically significant stenosis or occlusion. No atherosclerotic plaque identified."
+        "name": "ნორმალური ორმხრივი კვლევა",
+        "description": "ყველა სეგმენტი სამფაზური, პლაკის გარეშე, ABI ორმხრივად ნორმაშია.",
+        "impression": "ქვედა კიდურების ორმხრივი არტერიული დუპლექს-კვლევა ნორმის ფარგლებშია. ყველა სეგმენტში ფიქსირდება სამფაზური ნაკადი ნორმალური პიკური სისტოლური სიჩქარეებით. კოჭ-მხრის ინდექსი (ABI) ორმხრივად ნორმის ფარგლებშია (მარჯვენა: 1.08, მარცხენა: 1.08). ჰემოდინამიკურად მნიშვნელოვანი სტენოზი ან ოკლუზია არ გამოვლენილა. ათეროსკლეროზული პლაკი არ ფიქსირდება."
       },
       "mildSfaRight": {
-        "name": "Mild SFA disease (right)",
-        "description": "Focal <50% stenosis right SFA-mid, ABI 0.92.",
-        "impression": "Mild atherosclerotic disease of the right superficial femoral artery, mid segment. Focal biphasic waveform with PSV elevation (180 cm/s) suggests <50% stenosis. Right ABI 0.92 — at the lower limit of normal, consistent with hemodynamically non-significant disease. Normal left lower extremity arterial tree."
+        "name": "მსუბუქი SFA დაავადება (მარჯვენა)",
+        "description": "ფოკალური <50% სტენოზი მარჯვენა SFA-ს შუა მონაკვეთში, ABI 0.92.",
+        "impression": "მარჯვენა ბარძაყის ზედაპირული არტერიის შუა სეგმენტის მსუბუქი ათეროსკლეროზული დაავადება. ფოკალური ორფაზური ტალღოვანი ფორმა PSV-ის ამაღლებით (180 cm/s) მიანიშნებს <50% სტენოზზე. მარჯვენა ABI 0.92 — ნორმის ქვედა ზღვარზე, რაც შეესაბამება ჰემოდინამიკურად არამნიშვნელოვან დაავადებას. მარცხენა ქვედა კიდურის არტერიული ხე ნორმის ფარგლებშია."
       },
       "moderateClaudicationRightSfa": {
-        "name": "Moderate claudication — right SFA",
-        "description": "50–69% right SFA-mid/dist stenosis, ABI 0.75.",
-        "impression": "Moderate right superficial femoral artery stenosis, mid-to-distal segment, with post-stenotic flow dampening extending to the popliteal artery. PSV doubling (280 cm/s) and waveform conversion to monophasic-phasic are consistent with 50–69% stenosis by velocity criteria. Right ABI 0.75 — moderate peripheral arterial disease. Flow through the profunda femoris and below-knee runoff is preserved."
+        "name": "საშუალო კლაუდიკაცია — მარჯვენა SFA",
+        "description": "50–69% სტენოზი მარჯვენა SFA-ს შუა/დისტალურ მონაკვეთში, ABI 0.75.",
+        "impression": "მარჯვენა ბარძაყის ზედაპირული არტერიის შუა-დისტალური სეგმენტის საშუალო ხარისხის სტენოზი, პოსტსტენოზური ნაკადის მილევადობით ქუსლქვეშა არტერიის მიმართულებით. PSV-ის გაორმაგება (280 cm/s) და ტალღოვანი ფორმის გადასვლა ერთფაზურ-ფაზურ კონფიგურაციაზე შეესაბამება 50–69% სტენოზს სიჩქარული კრიტერიუმების მიხედვით. მარჯვენა ABI 0.75 — საშუალო ხარისხის პერიფერიული არტერიული დაავადება. ბარძაყის ღრმა არტერიის და მუხლქვემოთა რეგიონის ნაკადი შენარჩუნებულია."
       },
       "severeClaudicationLeftSfaOcclusion": {
-        "name": "Severe claudication — left SFA occlusion",
-        "description": "Left SFA-mid occluded, collateralized, ABI 0.45.",
-        "impression": "Occlusion of the left superficial femoral artery, mid segment, with reconstitution of the popliteal artery via profunda femoris collaterals. Distal runoff demonstrates damped monophasic flow in all three tibial vessels. Left ABI 0.45 — moderate-to-severe peripheral arterial disease. Right arterial tree patent with triphasic waveforms."
+        "name": "მძიმე კლაუდიკაცია — მარცხენა SFA ოკლუზია",
+        "description": "მარცხენა SFA-ს შუა მონაკვეთის ოკლუზია, კოლატერალიზაციით, ABI 0.45.",
+        "impression": "მარცხენა ბარძაყის ზედაპირული არტერიის შუა სეგმენტის ოკლუზია ქუსლქვეშა არტერიის რეკონსტიტუციით ბარძაყის ღრმა არტერიის კოლატერალების საშუალებით. დისტალური რეგიონი სამივე წვივის არტერიაში ავლენს მილევად ერთფაზურ ნაკადს. მარცხენა ABI 0.45 — საშუალო-მძიმე ხარისხის პერიფერიული არტერიული დაავადება. მარჯვენა არტერიული ხე გამტარია სამფაზური ტალღოვანი ფორმებით."
       },
       "cliRightTissueLoss": {
-        "name": "CLI — right, tissue loss",
-        "description": "Multilevel right CLI, Rutherford 5. ABI 0.30, TBI 0.15.",
-        "impression": "Multilevel critical limb ischemia of the right lower extremity with tissue loss. Inflow disease at the iliofemoral level suggested by dampened common femoral artery waveform. Mid superficial femoral artery stenosis >70% with distal SFA occlusion. Above-knee popliteal flow is absent. Runoff restricted to the peroneal artery with dampened monophasic flow; anterior and posterior tibial arteries are occluded. Right ABI 0.30, TBI 0.15 — severe limb-threatening ischemia (Rutherford 5)."
+        "name": "CLI — მარჯვენა, ქსოვილის დაკარგვა",
+        "description": "მრავალდონიანი მარჯვენა CLI, რადერფორდი 5. ABI 0.30, TBI 0.15.",
+        "impression": "მარჯვენა ქვედა კიდურის მრავალდონიანი კრიტიკული იშემია ქსოვილის დაკარგვით. თეძო-ბარძაყის დონის შემავალი ნაკადის დაავადება მიანიშნულია საერთო ბარძაყის არტერიის მილევადი ტალღოვანი ფორმით. ბარძაყის ზედაპირული არტერიის შუა სეგმენტის >70% სტენოზი დისტალური SFA-ს ოკლუზიით. ქუსლქვეშა არტერიის მუხლს ზემოთ ნაკადი არ ფიქსირდება. დისტალური ნაკადი შეზღუდულია მცირე წვივის არტერიამდე მილევადი ერთფაზური დინებით; წინა და უკანა წვივის არტერიები ოკლუდირებულია. მარჯვენა ABI 0.30, TBI 0.15 — კიდურისთვის მუქარის მატარებელი მძიმე იშემია (რადერფორდი 5)."
       },
       "aortoiliacDiseaseBilateral": {
-        "name": "Aortoiliac inflow disease (bilateral)",
-        "description": "Bilateral CFA damped waveforms, ABI 0.60 bilateral.",
-        "impression": "Hemodynamic features suggestive of bilateral aortoiliac inflow disease — bilaterally dampened common femoral artery waveforms with preservation of triphasic (though reduced-amplitude) flow distally. Bilateral ABI 0.60 — moderate peripheral arterial disease, symmetric pattern consistent with inflow limitation. Direct iliac visualization is limited by duplex ultrasound; cross-sectional imaging recommended."
+        "name": "აორტო-თეძოს შემავალი ნაკადის დაავადება (ორმხრივი)",
+        "description": "ორმხრივი CFA-ს მილევადი ტალღოვანი ფორმები, ABI 0.60 ორმხრივად.",
+        "impression": "ჰემოდინამიკური ნიშნები მიუთითებს ორმხრივი აორტო-თეძოს შემავალი ნაკადის დაავადებაზე — ორივე მხარეს საერთო ბარძაყის არტერიის მილევადი ტალღოვანი ფორმებით და დისტალურად სამფაზური (თუმცა შემცირებული ამპლიტუდის) ნაკადის შენარჩუნებით. ორმხრივი ABI 0.60 — საშუალო ხარისხის პერიფერიული არტერიული დაავადება, სიმეტრიული პატერნი, რაც შეესაბამება შემავალი ნაკადის შეზღუდვას. თეძოს არტერიების პირდაპირი ვიზუალიზაცია დუპლექს-ულტრაბგერით შეზღუდულია; რეკომენდებულია განივი ვიზუალიზაცია."
       },
       "postBypassGraftPatentRight": {
-        "name": "Post-bypass graft — patent (right)",
-        "description": "Right fem-pop bypass patent, ABI 0.95.",
-        "impression": "Patent right femoropopliteal bypass graft at post-operative surveillance duplex. Proximal anastomosis, graft body, and distal anastomosis all demonstrate normal triphasic flow without hemodynamically significant stenosis. Inflow common femoral artery is unobstructed. Distal runoff is intact with triphasic flow in the below-knee popliteal and tibial arteries. Right ABI 0.95 — normal. Findings consistent with a well-functioning bypass."
+        "name": "შუნტირების შემდგომი — გამტარი (მარჯვენა)",
+        "description": "მარჯვენა ფემორო-პოპლიტეალური შუნტი გამტარია, ABI 0.95.",
+        "impression": "მარჯვენა ფემორო-პოპლიტეალური შუნტი გამტარია პოსტოპერაციული საკონტროლო დუპლექს-კვლევისას. პროქსიმალური ანასტომოზი, შუნტის სხეული და დისტალური ანასტომოზი ავლენს ნორმალურ სამფაზურ ნაკადს ჰემოდინამიკურად მნიშვნელოვანი სტენოზის გარეშე. საერთო ბარძაყის არტერიის შემავალი ნაკადი დაუბრკოლებელია. დისტალური რეგიონი ინტაქტურია სამფაზური ნაკადით მუხლქვედა ქუსლქვეშა და წვივის არტერიებში. მარჯვენა ABI 0.95 — ნორმალური. მიგნებები შეესაბამება გამართულ შუნტს."
       },
       "postStentPatentLeftSfa": {
-        "name": "Post-stent — patent (left SFA)",
-        "description": "Left SFA stent patent, ABI 0.95.",
-        "impression": "Status post left superficial femoral artery stenting. In-stent flow is triphasic with acceptable peak systolic velocity (180 cm/s) and no step-up at the stent margins, indicating no in-stent restenosis. Left ABI 0.95 — normal. Inflow and outflow are patent."
+        "name": "სტენტის შემდგომი — გამტარი (მარცხენა SFA)",
+        "description": "მარცხენა SFA სტენტი გამტარია, ABI 0.95.",
+        "impression": "მდგომარეობა მარცხენა ბარძაყის ზედაპირული არტერიის სტენტირების შემდეგ. სტენტშიდა ნაკადი სამფაზურია დასაშვები პიკური სისტოლური სიჩქარით (180 cm/s) და სტენტის კიდეებზე სიჩქარის ნახტომის გარეშე, რაც მიუთითებს სტენტშიდა რესტენოზის არარსებობაზე. მარცხენა ABI 0.95 — ნორმალური. შემავალი და გამომავალი ნაკადი გამტარია."
       },
       "diabeticNonCompressibleRight": {
-        "name": "Diabetic non-compressible (right)",
-        "description": "Right ABI >1.3 (medial calcinosis), rely on TBI.",
-        "impression": "Non-compressible right ankle arteries (ABI >1.3) consistent with medial arterial calcinosis — a common finding in diabetes and chronic kidney disease. Ankle pressure is therefore non-diagnostic for hemodynamic status. Toe-Brachial Index of 0.43 indicates moderate peripheral arterial disease. Waveforms demonstrate damped monophasic flow in the anterior and posterior tibial arteries, corroborating distal disease. Clinical correlation with symptoms and consideration of supplementary imaging (CTA or angiography) recommended."
+        "name": "დიაბეტური არაკომპრესირებადი (მარჯვენა)",
+        "description": "მარჯვენა ABI >1.3 (მედიალური კალცინოზი), დაეყრდენით TBI-ს.",
+        "impression": "მარჯვენა კოჭის არტერიები არაკომპრესირებადია (ABI >1.3), რაც შეესაბამება მედიალურ არტერიულ კალცინოზს — შაქრიანი დიაბეტისა და თირკმლის ქრონიკული დაავადების ხშირ გამოვლინებას. შესაბამისად, კოჭის წნევა არადიაგნოსტიკურია ჰემოდინამიკური მდგომარეობის შესაფასებლად. თითი-მხრის ინდექსი (TBI) 0.43 მიუთითებს საშუალო ხარისხის პერიფერიულ არტერიულ დაავადებაზე. ტალღოვანი ფორმები ავლენს მილევად ერთფაზურ ნაკადს წინა და უკანა წვივის არტერიებში, რაც ადასტურებს დისტალურ დაავადებას. რეკომენდებულია კლინიკური კორელაცია სიმპტომებთან და დამატებითი ვიზუალიზაციის განხილვა (CTA ან ანგიოგრაფია)."
       }
     },
     "rec": {
-      "mildSfaRisk": "Atherosclerotic risk-factor modification — statin, antiplatelet, BP/diabetes/smoking control per ESVS 2024. Supervised exercise therapy if symptomatic. Repeat surveillance duplex in 12 months.",
-      "moderateClaudicationOMT": "Optimal medical therapy per ESVS 2024 — high-intensity statin, antiplatelet (clopidogrel or DAPT for short-term), HbA1c <7%, smoking cessation. Supervised exercise therapy first-line. Cilostazol 100 mg BID unless contraindicated. Re-evaluate at 3 months; if lifestyle-limiting claudication persists, consider CTA and endovascular revascularization.",
-      "severeSfaOcclusion": "Urgent vascular surgery consultation for revascularization planning. Obtain CT angiography to characterize lesion length, calcification, and runoff. Per ESVS 2024: TASC B/C SFA occlusion — endovascular-first strategy for most patients; open bypass for long (>25 cm) heavily calcified lesions with poor runoff. Initiate optimal medical therapy immediately.",
-      "cliEmergent": "Emergent vascular surgery and wound-care consultation. CT angiography or MR angiography head-to-toe for revascularization planning. Per ESVS 2024 CLI guidance: revascularization offered to all patients with anticipated benefit. Urgent initiation of analgesia, antibiotic coverage if infected wound, and optimal medical therapy. Consider hyperbaric oxygen and advanced wound care as adjunct. Limb salvage is the goal; amputation reserved for non-reconstructible disease or failed revascularization.",
-      "aortoiliacCTA": "CT angiography or MR angiography of the abdomen-pelvis to directly image the aortoiliac segment and grade stenosis/occlusion length. Evaluate for Leriche syndrome if buttock claudication with erectile dysfunction. Optimal medical therapy initiated. Endovascular iliac intervention is first-line per ESVS 2024 for most patients with claudication or rest pain attributable to iliac disease.",
-      "postBypassSurveillance": "Continue routine graft surveillance duplex every 6 months for first 2 years, then annually per SVS 2018 practice guideline. Immediate return for recurrent claudication or rest pain. Continue antiplatelet therapy and statin.",
-      "postStentDapt": "Continue dual antiplatelet therapy per interventionalist's regimen (typically 1–3 months post-procedure) then lifelong single antiplatelet. Statin at maximum tolerated dose. Duplex surveillance at 1, 6, and 12 months post-stent, then annually. Prompt re-evaluation if return of claudication symptoms.",
-      "diabeticNonCompressible": "ABI is non-diagnostic due to medial calcinosis; rely on TBI, toe pressures, and waveform analysis for hemodynamic assessment. If symptoms of claudication or rest pain, proceed to CT angiography or invasive angiography. Aggressive atherosclerotic risk factor management — glycemic control, statin, antiplatelet, smoking cessation. Foot-care education and annual foot exam essential. Re-evaluate duplex in 6–12 months or sooner if symptomatic."
+      "mildSfaRisk": "ათეროსკლეროზული რისკ-ფაქტორების კორექცია — სტატინი, ანტიაგრეგანტი, არტერიული წნევის/შაქრიანი დიაბეტის/მოწევის კონტროლი ESVS 2024-ის შესაბამისად. სიმპტომების შემთხვევაში მეთვალყურეობის ქვეშ ფიზიკური ვარჯიშის თერაპია. დუპლექს-კვლევის გამეორება 12 თვის შემდეგ.",
+      "moderateClaudicationOMT": "ოპტიმალური სამედიცინო თერაპია ESVS 2024-ის შესაბამისად — მაღალი ინტენსივობის სტატინი, ანტიაგრეგანტი (კლოპიდოგრელი ან მოკლევადიანი DAPT), HbA1c <7%, მოწევის შეწყვეტა. პირველი რიგის ღონისძიება — მეთვალყურეობის ქვეშ ფიზიკური ვარჯიშის თერაპია. ცილოსტაზოლი 100 მგ დღეში 2-ჯერ კონტრაინდიკაციების არარსებობისას. გადაფასება 3 თვის შემდეგ; თუ ცხოვრების ხარისხის შემზღუდველი კლაუდიკაცია გრძელდება, განიხილეთ CTA და ენდოვასკულარული რევასკულარიზაცია.",
+      "severeSfaOcclusion": "სასწრაფო ანგიოქირურგის კონსულტაცია რევასკულარიზაციის დაგეგმვისთვის. CT ანგიოგრაფია დაზიანების სიგრძის, კალცინაციის და დისტალური გამტარობის შესაფასებლად. ESVS 2024-ის შესაბამისად: TASC B/C SFA ოკლუზიისას — უპირატესად ენდოვასკულარული სტრატეგია; ღია შუნტირება გრძელი (>25 სმ), მძიმედ კალცინირებული დაზიანებების და ცუდი დისტალური გამტარობის შემთხვევაში. ოპტიმალური სამედიცინო თერაპიის დაუყოვნებელი დაწყება.",
+      "cliEmergent": "გადაუდებელი ანგიოქირურგის და წყლულების მკურნალობის სპეციალისტის კონსულტაცია. თავიდან ფეხამდე CT ან MR ანგიოგრაფია რევასკულარიზაციის დასაგეგმად. ESVS 2024-ის CLI-ს გაიდლაინის შესაბამისად: რევასკულარიზაცია შეთავაზებული უნდა იყოს ყველა პაციენტისთვის, სადაც მოსალოდნელია სარგებელი. დაუყოვნებლივ დაიწყეთ ტკივილგამაყუჩებელი თერაპია, ინფიცირებული ჭრილობის შემთხვევაში ანტიბიოტიკოთერაპია და ოპტიმალური სამედიცინო თერაპია. განიხილეთ ჰიპერბარული ჟანგბადი და მოწინავე ჭრილობის მკურნალობა, როგორც დამატებითი საშუალებები. მიზანი — კიდურის შენარჩუნება; ამპუტაცია მხოლოდ არარეკონსტრუქციადი დაავადების ან წარუმატებელი რევასკულარიზაციის შემდეგ.",
+      "aortoiliacCTA": "მუცლისა და მენჯის CT ან MR ანგიოგრაფია აორტო-თეძოს სეგმენტის პირდაპირი ვიზუალიზაციისთვის და სტენოზის/ოკლუზიის სიგრძის შესაფასებლად. დუნდულოს კლაუდიკაციის და ერექციული დისფუნქციის შემთხვევაში შეაფასეთ ლერიშის სინდრომი. ოპტიმალური სამედიცინო თერაპია დაუყოვნებლივ. ESVS 2024-ის შესაბამისად, კლაუდიკაციის ან მოსვენებითი ტკივილის თეძოს არტერიული ეტიოლოგიის შემთხვევაში პირველი რიგის ღონისძიებაა ენდოვასკულარული თეძოს ინტერვენცია.",
+      "postBypassSurveillance": "შუნტის რუტინული დუპლექს-მეთვალყურეობა ყოველ 6 თვეში პირველი 2 წლის განმავლობაში, შემდეგ — წელიწადში ერთხელ SVS 2018-ის გაიდლაინის შესაბამისად. კლაუდიკაციის ან მოსვენებითი ტკივილის გამეორებისას — დაუყოვნებელი მიმართვა. გააგრძელეთ ანტიაგრეგანტი და სტატინი.",
+      "postStentDapt": "განაგრძეთ ორმაგი ანტიაგრეგანტული თერაპია ინტერვენციონისტის რეჟიმის შესაბამისად (ჩვეულებრივ 1–3 თვე პროცედურის შემდეგ), შემდეგ — უვადო ერთმაგი ანტიაგრეგანტი. სტატინი მაქსიმალური ასატანი დოზით. დუპლექს-მეთვალყურეობა 1, 6 და 12 თვეში სტენტირების შემდეგ, შემდეგ — წელიწადში ერთხელ. კლაუდიკაციის სიმპტომების დაბრუნებისას — დაუყოვნებელი გადაფასება.",
+      "diabeticNonCompressible": "ABI არადიაგნოსტიკურია მედიალური კალცინოზის გამო; ჰემოდინამიკური შეფასებისთვის დაეყრდენით TBI-ს, თითის წნევებს და ტალღოვანი ფორმების ანალიზს. კლაუდიკაციის ან მოსვენებითი ტკივილის სიმპტომების შემთხვევაში ჩაატარეთ CT ანგიოგრაფია ან ინვაზიური ანგიოგრაფია. ათეროსკლეროზული რისკ-ფაქტორების აგრესიული მართვა — გლიკემიის კონტროლი, სტატინი, ანტიაგრეგანტი, მოწევის შეწყვეტა. აუცილებელია ტერფის მოვლის განათლება და ტერფის ყოველწლიური დათვალიერება. დუპლექსის გამეორება 6–12 თვეში ან უფრო ადრე სიმპტომების შემთხვევაში."
     }
   }
 }

@@ -1,89 +1,89 @@
 {
   "arterialLE": {
     "tabs": {
-      "left": "Left",
-      "right": "Right",
-      "bilateral": "Bilateral"
+      "left": "Левая",
+      "right": "Правая",
+      "bilateral": "Двусторонняя"
     },
     "side": {
-      "left": "left",
-      "right": "right"
+      "left": "левой",
+      "right": "правой"
     },
     "segment": {
-      "cia": "common iliac artery",
-      "eia": "external iliac artery",
-      "cfa": "common femoral artery",
-      "pfa": "profunda femoris artery",
-      "sfa-prox": "superficial femoral artery, proximal",
-      "sfa-mid": "superficial femoral artery, mid",
-      "sfa-dist": "superficial femoral artery, distal",
-      "pop-ak": "popliteal artery above knee",
-      "pop-bk": "popliteal artery below knee",
-      "tpt": "tibioperoneal trunk",
-      "ata": "anterior tibial artery",
-      "pta": "posterior tibial artery",
-      "per": "peroneal artery",
-      "dp": "dorsalis pedis artery"
+      "cia": "общая подвздошная артерия",
+      "eia": "наружная подвздошная артерия",
+      "cfa": "общая бедренная артерия",
+      "pfa": "глубокая артерия бедра",
+      "sfa-prox": "поверхностная бедренная артерия, проксимальный сегмент",
+      "sfa-mid": "поверхностная бедренная артерия, средний сегмент",
+      "sfa-dist": "поверхностная бедренная артерия, дистальный сегмент",
+      "pop-ak": "подколенная артерия, выше колена",
+      "pop-bk": "подколенная артерия, ниже колена",
+      "tpt": "тибиоперонеальный ствол",
+      "ata": "передняя большеберцовая артерия",
+      "pta": "задняя большеберцовая артерия",
+      "per": "малоберцовая артерия",
+      "dp": "тыльная артерия стопы"
     },
     "segmentTable": {
-      "title": "Segmental assessment",
-      "subtitle": "Waveform, PSV, stenosis, and plaque per segment",
-      "segment": "Segment"
+      "title": "Посегментная оценка",
+      "subtitle": "Форма волны, PSV, стеноз и бляшка по каждому сегменту",
+      "segment": "Сегмент"
     },
     "param": {
-      "waveform": "Waveform",
+      "waveform": "Форма волны",
       "psvCmS": "PSV (cm/s)",
-      "stenosisCategory": "Stenosis",
-      "stenosisPct": "Stenosis %",
-      "plaqueMorphology": "Plaque",
-      "plaqueLengthMm": "Plaque length (mm)",
-      "occluded": "Occl."
+      "stenosisCategory": "Стеноз",
+      "stenosisPct": "Стеноз %",
+      "plaqueMorphology": "Бляшка",
+      "plaqueLengthMm": "Длина бляшки (mm)",
+      "occluded": "Окк."
     },
     "help": {
-      "psvCmS": "Peak systolic velocity at sample site.",
-      "stenosisPct": "Manually entered % lumen narrowing.",
-      "plaqueLengthMm": "Axial plaque length along vessel."
+      "psvCmS": "Пиковая систолическая скорость в точке измерения.",
+      "stenosisPct": "Процент сужения просвета, вводится вручную.",
+      "plaqueLengthMm": "Продольная длина бляшки вдоль сосуда."
     },
     "waveform": {
-      "triphasic": "Triphasic",
-      "biphasic": "Biphasic",
-      "monophasic-phasic": "Monophasic, phasic",
-      "monophasic-damped": "Monophasic, damped",
-      "absent": "Absent / no flow"
+      "triphasic": "Трёхфазная",
+      "biphasic": "Двухфазная",
+      "monophasic-phasic": "Монофазная, фазная",
+      "monophasic-damped": "Монофазная, демпфированная",
+      "absent": "Отсутствует / кровоток не определяется"
     },
     "stenosis": {
       "none": "< 30 %",
       "mild": "30–49 %",
       "moderate": "50–69 %",
       "severe": "70–99 %",
-      "occluded": "Occluded"
+      "occluded": "Окклюзия"
     },
     "plaque": {
-      "none": "None",
-      "calcified": "Calcified",
-      "mixed": "Mixed",
-      "soft": "Soft"
+      "none": "Нет",
+      "calcified": "Кальцинированная",
+      "mixed": "Смешанная",
+      "soft": "Мягкая"
     },
     "pressures": {
-      "title": "Segmental pressures",
-      "subtitle": "Cuff pressures in mmHg. ABI and TBI auto-compute.",
-      "level": "Level",
-      "brachial": "Brachial",
-      "highThigh": "High thigh",
-      "lowThigh": "Low thigh",
-      "calf": "Calf",
-      "ankleDp": "Ankle DP",
-      "anklePt": "Ankle PT",
-      "toe": "Toe"
+      "title": "Сегментарные давления",
+      "subtitle": "Давления в манжете в mmHg. ABI и TBI рассчитываются автоматически.",
+      "level": "Уровень",
+      "brachial": "Плечевое",
+      "highThigh": "Верхняя треть бедра",
+      "lowThigh": "Нижняя треть бедра",
+      "calf": "Голень",
+      "ankleDp": "Лодыжка DP",
+      "anklePt": "Лодыжка PT",
+      "toe": "Палец"
     },
     "abi": {
       "label": "ABI",
       "band": {
-        "non-compressible": "Non-compressible",
-        "normal": "Normal",
-        "mild": "Mild PAD",
-        "moderate": "Moderate PAD",
-        "severe": "Severe / CLI",
+        "non-compressible": "Несжимаемые артерии",
+        "normal": "Норма",
+        "mild": "Лёгкая PAD",
+        "moderate": "Умеренная PAD",
+        "severe": "Тяжёлая / CLI",
         "unknown": "—"
       }
     },
@@ -91,89 +91,89 @@
       "label": "TBI"
     },
     "narrative": {
-      "impression": "Impression",
-      "sonographerComments": "Sonographer comments",
-      "clinicianComments": "Clinician comments",
-      "normalSide": "Normal {side} lower-extremity arterial tree with triphasic flow throughout.",
-      "occluded": "Occluded — {vein}.",
-      "stenosis": "{severity} stenosis — {vein} (PSV {psv} cm/s).",
-      "dampedWaveform": "{waveform} flow — {vein}."
+      "impression": "Заключение",
+      "sonographerComments": "Комментарии сонографиста",
+      "clinicianComments": "Комментарии клинициста",
+      "normalSide": "Артериальное русло {side} нижней конечности в пределах нормы; трёхфазный кровоток прослеживается на всём протяжении.",
+      "occluded": "Окклюзия — {vein}.",
+      "stenosis": "{severity} стеноз — {vein} (PSV {psv} cm/s).",
+      "dampedWaveform": "{waveform} кровоток — {vein}."
     },
     "conclusion": {
-      "occluded": "Occlusion — {side} {vein}.",
-      "significantStenosis": "Hemodynamically significant ({severity}) stenosis — {side} {vein}.",
+      "occluded": "Окклюзия — {side} {vein}.",
+      "significantStenosis": "Гемодинамически значимый ({severity}) стеноз — {side} {vein}.",
       "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
     },
     "actions": {
-      "newCase": "+ New case",
-      "newCaseConfirmTitle": "Start a new case?",
-      "newCaseConfirmBody": "All current findings, pressures, impression and recommendations will be cleared. This cannot be undone.",
-      "newCaseConfirm": "Discard & start new",
-      "newCaseToastTitle": "New case started",
-      "newCaseToastMessage": "All data cleared.",
-      "applyTemplate": "Apply template",
-      "applyTemplateConfirmTitle": "Apply template?",
-      "applyTemplateConfirmBody": "This will replace current findings, pressures, impression, and recommendations.",
-      "cancel": "Cancel",
-      "templateApplied": "Template applied"
+      "newCase": "+ Новое исследование",
+      "newCaseConfirmTitle": "Начать новое исследование?",
+      "newCaseConfirmBody": "Все текущие находки, давления, заключение и рекомендации будут удалены. Действие необратимо.",
+      "newCaseConfirm": "Удалить и начать заново",
+      "newCaseToastTitle": "Новое исследование начато",
+      "newCaseToastMessage": "Все данные очищены.",
+      "applyTemplate": "Применить шаблон",
+      "applyTemplateConfirmTitle": "Применить шаблон?",
+      "applyTemplateConfirmBody": "Это заменит текущие находки, давления, заключение и рекомендации.",
+      "cancel": "Отмена",
+      "templateApplied": "Шаблон применён"
     },
     "templates": {
-      "menuLabel": "Templates",
+      "menuLabel": "Шаблоны",
       "normalBilateral": {
-        "name": "Normal bilateral",
-        "description": "All segments triphasic, no plaque, ABI normal bilaterally.",
-        "impression": "Normal bilateral lower-extremity arterial duplex examination. All segments demonstrate triphasic flow with normal peak systolic velocities. Ankle-Brachial Index is within normal limits bilaterally (R: 1.08, L: 1.08). No hemodynamically significant stenosis or occlusion. No atherosclerotic plaque identified."
+        "name": "Норма, двустороннее исследование",
+        "description": "Все сегменты с трёхфазным кровотоком, бляшки отсутствуют, ABI в норме с обеих сторон.",
+        "impression": "Дуплексное сканирование артерий нижних конечностей с обеих сторон в пределах нормы. Во всех сегментах регистрируется трёхфазный кровоток с нормальными пиковыми систолическими скоростями. Лодыжечно-плечевой индекс (ABI) в пределах нормы с обеих сторон (справа: 1.08, слева: 1.08). Гемодинамически значимых стенозов и окклюзий не выявлено. Атеросклеротические бляшки не визуализируются."
       },
       "mildSfaRight": {
-        "name": "Mild SFA disease (right)",
-        "description": "Focal <50% stenosis right SFA-mid, ABI 0.92.",
-        "impression": "Mild atherosclerotic disease of the right superficial femoral artery, mid segment. Focal biphasic waveform with PSV elevation (180 cm/s) suggests <50% stenosis. Right ABI 0.92 — at the lower limit of normal, consistent with hemodynamically non-significant disease. Normal left lower extremity arterial tree."
+        "name": "Лёгкое поражение SFA (справа)",
+        "description": "Локальный стеноз <50% правой SFA в среднем сегменте, ABI 0.92.",
+        "impression": "Лёгкое атеросклеротическое поражение среднего сегмента правой поверхностной бедренной артерии. Локальная двухфазная форма волны с повышением PSV (180 cm/s) соответствует стенозу <50%. Правый ABI 0.92 — на нижней границе нормы, что согласуется с гемодинамически незначимым поражением. Артериальное русло левой нижней конечности в пределах нормы."
       },
       "moderateClaudicationRightSfa": {
-        "name": "Moderate claudication — right SFA",
-        "description": "50–69% right SFA-mid/dist stenosis, ABI 0.75.",
-        "impression": "Moderate right superficial femoral artery stenosis, mid-to-distal segment, with post-stenotic flow dampening extending to the popliteal artery. PSV doubling (280 cm/s) and waveform conversion to monophasic-phasic are consistent with 50–69% stenosis by velocity criteria. Right ABI 0.75 — moderate peripheral arterial disease. Flow through the profunda femoris and below-knee runoff is preserved."
+        "name": "Умеренная перемежающаяся хромота — правая SFA",
+        "description": "Стеноз 50–69% в среднем/дистальном сегменте правой SFA, ABI 0.75.",
+        "impression": "Умеренный стеноз правой поверхностной бедренной артерии в средне-дистальном сегменте с постстенотическим демпфированием кровотока, распространяющимся на подколенную артерию. Удвоение PSV (280 cm/s) и трансформация формы волны до монофазной фазной соответствуют стенозу 50–69% по скоростным критериям. Правый ABI 0.75 — умеренное периферическое артериальное поражение. Кровоток в глубокой артерии бедра и артериях голени сохранён."
       },
       "severeClaudicationLeftSfaOcclusion": {
-        "name": "Severe claudication — left SFA occlusion",
-        "description": "Left SFA-mid occluded, collateralized, ABI 0.45.",
-        "impression": "Occlusion of the left superficial femoral artery, mid segment, with reconstitution of the popliteal artery via profunda femoris collaterals. Distal runoff demonstrates damped monophasic flow in all three tibial vessels. Left ABI 0.45 — moderate-to-severe peripheral arterial disease. Right arterial tree patent with triphasic waveforms."
+        "name": "Тяжёлая перемежающаяся хромота — окклюзия левой SFA",
+        "description": "Окклюзия среднего сегмента левой SFA, коллатерализация, ABI 0.45.",
+        "impression": "Окклюзия среднего сегмента левой поверхностной бедренной артерии с реконституцией подколенной артерии через коллатерали глубокой артерии бедра. Дистальное русло во всех трёх большеберцовых артериях демонстрирует демпфированный монофазный кровоток. Левый ABI 0.45 — умеренно-тяжёлое периферическое артериальное поражение. Правое артериальное русло проходимо, с трёхфазными формами волн."
       },
       "cliRightTissueLoss": {
-        "name": "CLI — right, tissue loss",
-        "description": "Multilevel right CLI, Rutherford 5. ABI 0.30, TBI 0.15.",
-        "impression": "Multilevel critical limb ischemia of the right lower extremity with tissue loss. Inflow disease at the iliofemoral level suggested by dampened common femoral artery waveform. Mid superficial femoral artery stenosis >70% with distal SFA occlusion. Above-knee popliteal flow is absent. Runoff restricted to the peroneal artery with dampened monophasic flow; anterior and posterior tibial arteries are occluded. Right ABI 0.30, TBI 0.15 — severe limb-threatening ischemia (Rutherford 5)."
+        "name": "CLI — правая, потеря ткани",
+        "description": "Многоуровневая CLI справа, стадия 5 по Резерфорду. ABI 0.30, TBI 0.15.",
+        "impression": "Многоуровневая критическая ишемия правой нижней конечности с потерей тканей. Поражение приточных сегментов на подвздошно-бедренном уровне подтверждается демпфированной формой волны в общей бедренной артерии. Стеноз >70% в среднем сегменте поверхностной бедренной артерии с окклюзией её дистального отдела. Кровоток в подколенной артерии выше колена не определяется. Дистальный кровоток ограничен малоберцовой артерией с демпфированным монофазным потоком; передняя и задняя большеберцовые артерии окклюзированы. Правый ABI 0.30, TBI 0.15 — тяжёлая ишемия, угрожающая конечности (стадия 5 по Резерфорду)."
       },
       "aortoiliacDiseaseBilateral": {
-        "name": "Aortoiliac inflow disease (bilateral)",
-        "description": "Bilateral CFA damped waveforms, ABI 0.60 bilateral.",
-        "impression": "Hemodynamic features suggestive of bilateral aortoiliac inflow disease — bilaterally dampened common femoral artery waveforms with preservation of triphasic (though reduced-amplitude) flow distally. Bilateral ABI 0.60 — moderate peripheral arterial disease, symmetric pattern consistent with inflow limitation. Direct iliac visualization is limited by duplex ultrasound; cross-sectional imaging recommended."
+        "name": "Поражение аорто-подвздошного сегмента (двустороннее)",
+        "description": "Демпфированные волны в обеих CFA, ABI 0.60 с обеих сторон.",
+        "impression": "Гемодинамические признаки указывают на двустороннее поражение приточных аорто-подвздошных сегментов — двусторонне демпфированные формы волн в общих бедренных артериях с сохранением трёхфазного (хотя и сниженной амплитуды) кровотока дистальнее. ABI 0.60 с обеих сторон — умеренное периферическое артериальное поражение, симметричный паттерн, характерный для ограничения притока. Прямая визуализация подвздошных сосудов при дуплексном сканировании ограничена; рекомендована поперечная визуализация."
       },
       "postBypassGraftPatentRight": {
-        "name": "Post-bypass graft — patent (right)",
-        "description": "Right fem-pop bypass patent, ABI 0.95.",
-        "impression": "Patent right femoropopliteal bypass graft at post-operative surveillance duplex. Proximal anastomosis, graft body, and distal anastomosis all demonstrate normal triphasic flow without hemodynamically significant stenosis. Inflow common femoral artery is unobstructed. Distal runoff is intact with triphasic flow in the below-knee popliteal and tibial arteries. Right ABI 0.95 — normal. Findings consistent with a well-functioning bypass."
+        "name": "После шунтирования — проходим (справа)",
+        "description": "Правый бедренно-подколенный шунт проходим, ABI 0.95.",
+        "impression": "Правый бедренно-подколенный шунт проходим при послеоперационном контрольном дуплексном сканировании. В проксимальном анастомозе, теле шунта и дистальном анастомозе регистрируется нормальный трёхфазный кровоток без гемодинамически значимых стенозов. Приточная общая бедренная артерия свободна. Дистальное русло интактно, с трёхфазным кровотоком в подколенной артерии ниже колена и артериях голени. Правый ABI 0.95 — норма. Данные соответствуют нормально функционирующему шунту."
       },
       "postStentPatentLeftSfa": {
-        "name": "Post-stent — patent (left SFA)",
-        "description": "Left SFA stent patent, ABI 0.95.",
-        "impression": "Status post left superficial femoral artery stenting. In-stent flow is triphasic with acceptable peak systolic velocity (180 cm/s) and no step-up at the stent margins, indicating no in-stent restenosis. Left ABI 0.95 — normal. Inflow and outflow are patent."
+        "name": "После стентирования — проходим (левая SFA)",
+        "description": "Стент в левой SFA проходим, ABI 0.95.",
+        "impression": "Состояние после стентирования левой поверхностной бедренной артерии. Внутристентовый кровоток трёхфазный с приемлемой пиковой систолической скоростью (180 cm/s) без скачка скоростей на границах стента, что свидетельствует об отсутствии внутристентового рестеноза. Левый ABI 0.95 — норма. Приточный и отточный сегменты проходимы."
       },
       "diabeticNonCompressibleRight": {
-        "name": "Diabetic non-compressible (right)",
-        "description": "Right ABI >1.3 (medial calcinosis), rely on TBI.",
-        "impression": "Non-compressible right ankle arteries (ABI >1.3) consistent with medial arterial calcinosis — a common finding in diabetes and chronic kidney disease. Ankle pressure is therefore non-diagnostic for hemodynamic status. Toe-Brachial Index of 0.43 indicates moderate peripheral arterial disease. Waveforms demonstrate damped monophasic flow in the anterior and posterior tibial arteries, corroborating distal disease. Clinical correlation with symptoms and consideration of supplementary imaging (CTA or angiography) recommended."
+        "name": "Диабетические несжимаемые артерии (справа)",
+        "description": "Правый ABI >1.3 (медиакальциноз), опора на TBI.",
+        "impression": "Несжимаемые артерии правой лодыжки (ABI >1.3), что соответствует медиакальцинозу — частой находке при сахарном диабете и хронической болезни почек. В связи с этим давление на лодыжке неинформативно для оценки гемодинамики. Пальце-плечевой индекс (TBI) 0.43 свидетельствует об умеренном периферическом артериальном поражении. Формы волн демонстрируют демпфированный монофазный кровоток в передней и задней большеберцовых артериях, что подтверждает дистальное поражение. Рекомендована клиническая корреляция с симптоматикой и рассмотрение дополнительной визуализации (CTA или ангиографии)."
       }
     },
     "rec": {
-      "mildSfaRisk": "Atherosclerotic risk-factor modification — statin, antiplatelet, BP/diabetes/smoking control per ESVS 2024. Supervised exercise therapy if symptomatic. Repeat surveillance duplex in 12 months.",
-      "moderateClaudicationOMT": "Optimal medical therapy per ESVS 2024 — high-intensity statin, antiplatelet (clopidogrel or DAPT for short-term), HbA1c <7%, smoking cessation. Supervised exercise therapy first-line. Cilostazol 100 mg BID unless contraindicated. Re-evaluate at 3 months; if lifestyle-limiting claudication persists, consider CTA and endovascular revascularization.",
-      "severeSfaOcclusion": "Urgent vascular surgery consultation for revascularization planning. Obtain CT angiography to characterize lesion length, calcification, and runoff. Per ESVS 2024: TASC B/C SFA occlusion — endovascular-first strategy for most patients; open bypass for long (>25 cm) heavily calcified lesions with poor runoff. Initiate optimal medical therapy immediately.",
-      "cliEmergent": "Emergent vascular surgery and wound-care consultation. CT angiography or MR angiography head-to-toe for revascularization planning. Per ESVS 2024 CLI guidance: revascularization offered to all patients with anticipated benefit. Urgent initiation of analgesia, antibiotic coverage if infected wound, and optimal medical therapy. Consider hyperbaric oxygen and advanced wound care as adjunct. Limb salvage is the goal; amputation reserved for non-reconstructible disease or failed revascularization.",
-      "aortoiliacCTA": "CT angiography or MR angiography of the abdomen-pelvis to directly image the aortoiliac segment and grade stenosis/occlusion length. Evaluate for Leriche syndrome if buttock claudication with erectile dysfunction. Optimal medical therapy initiated. Endovascular iliac intervention is first-line per ESVS 2024 for most patients with claudication or rest pain attributable to iliac disease.",
-      "postBypassSurveillance": "Continue routine graft surveillance duplex every 6 months for first 2 years, then annually per SVS 2018 practice guideline. Immediate return for recurrent claudication or rest pain. Continue antiplatelet therapy and statin.",
-      "postStentDapt": "Continue dual antiplatelet therapy per interventionalist's regimen (typically 1–3 months post-procedure) then lifelong single antiplatelet. Statin at maximum tolerated dose. Duplex surveillance at 1, 6, and 12 months post-stent, then annually. Prompt re-evaluation if return of claudication symptoms.",
-      "diabeticNonCompressible": "ABI is non-diagnostic due to medial calcinosis; rely on TBI, toe pressures, and waveform analysis for hemodynamic assessment. If symptoms of claudication or rest pain, proceed to CT angiography or invasive angiography. Aggressive atherosclerotic risk factor management — glycemic control, statin, antiplatelet, smoking cessation. Foot-care education and annual foot exam essential. Re-evaluate duplex in 6–12 months or sooner if symptomatic."
+      "mildSfaRisk": "Коррекция факторов риска атеросклероза — статин, антиагрегант, контроль артериального давления, сахарного диабета и отказ от курения согласно ESVS 2024. При наличии симптомов — контролируемая физическая нагрузка. Повторное дуплексное сканирование через 12 месяцев.",
+      "moderateClaudicationOMT": "Оптимальная медикаментозная терапия согласно ESVS 2024 — статин в высокой интенсивности, антиагрегант (клопидогрел или краткосрочная DAPT), HbA1c <7%, отказ от курения. Контролируемая физическая нагрузка — первая линия. Цилостазол 100 мг 2 раза в сутки при отсутствии противопоказаний. Переоценка через 3 месяца; при сохранении перемежающейся хромоты, ограничивающей образ жизни, рассмотреть CTA и эндоваскулярную реваскуляризацию.",
+      "severeSfaOcclusion": "Срочная консультация сосудистого хирурга для планирования реваскуляризации. Выполнить CT-ангиографию для оценки протяжённости поражения, кальцинации и состояния дистального русла. Согласно ESVS 2024: при окклюзии SFA TASC B/C — у большинства пациентов предпочтительна эндоваскулярная стратегия; открытое шунтирование — при длинных (>25 см), выраженно кальцинированных поражениях с плохим дистальным руслом. Незамедлительно начать оптимальную медикаментозную терапию.",
+      "cliEmergent": "Экстренная консультация сосудистого хирурга и специалиста по лечению ран. CT- или MR-ангиография от головы до стоп для планирования реваскуляризации. Согласно рекомендациям ESVS 2024 по CLI: реваскуляризация предлагается всем пациентам с ожидаемой пользой. Срочное начало анальгезии, антибиотикотерапии при инфицированной ране и оптимальной медикаментозной терапии. Рассмотреть гипербарическую оксигенацию и современные методы лечения ран как вспомогательную терапию. Цель — сохранение конечности; ампутация — только при нереконструируемом поражении или неудачной реваскуляризации.",
+      "aortoiliacCTA": "CT- или MR-ангиография брюшной полости и таза для прямой визуализации аорто-подвздошного сегмента и оценки протяжённости стенозов/окклюзий. При ягодичной хромоте в сочетании с эректильной дисфункцией — исключить синдром Лериша. Незамедлительно начать оптимальную медикаментозную терапию. Согласно ESVS 2024, при перемежающейся хромоте или боли покоя, обусловленных поражением подвздошного сегмента, первой линией у большинства пациентов является эндоваскулярное вмешательство.",
+      "postBypassSurveillance": "Продолжить плановое дуплексное наблюдение за шунтом каждые 6 месяцев в течение первых 2 лет, затем ежегодно согласно практическому руководству SVS 2018. При возобновлении перемежающейся хромоты или боли покоя — немедленное обращение. Продолжить антиагрегантную и статиновую терапию.",
+      "postStentDapt": "Продолжить двойную антиагрегантную терапию по схеме интервенциониста (обычно 1–3 месяца после процедуры), затем пожизненно — один антиагрегант. Статин в максимально переносимой дозе. Дуплексное наблюдение через 1, 6 и 12 месяцев после стентирования, далее ежегодно. При возобновлении симптомов перемежающейся хромоты — немедленная переоценка.",
+      "diabeticNonCompressible": "ABI неинформативен из-за медиакальциноза; для оценки гемодинамики опираться на TBI, пальцевые давления и анализ форм волн. При симптомах перемежающейся хромоты или боли покоя — CT-ангиография или инвазивная ангиография. Агрессивная коррекция факторов риска атеросклероза — гликемический контроль, статин, антиагрегант, отказ от курения. Обязательно обучение уходу за стопами и ежегодный осмотр стоп. Повторное дуплексное сканирование через 6–12 месяцев или ранее при появлении симптомов."
     }
   }
 }
