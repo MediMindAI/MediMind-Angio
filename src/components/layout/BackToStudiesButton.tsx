@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * BackToStudiesButton — small ghost chip that lands the user back on the
- * StudyPicker landing page (`/`). Mirrors the pathname-assignment
- * navigation used by `StudyPicker.handleStartStudy`.
+ * BackToStudiesButton — chip that lands the user back on the StudyPicker
+ * landing page (`/`). Mirrors the pathname-assignment navigation used by
+ * `StudyPicker.handleStartStudy`.
  */
 import { memo, useCallback } from 'react';
 import { Button } from '@mantine/core';
@@ -18,11 +18,22 @@ export const BackToStudiesButton = memo(function BackToStudiesButton(): React.Re
 
   return (
     <Button
-      variant="subtle"
-      size="xs"
-      leftSection={<IconArrowLeft size={14} stroke={2} />}
+      variant="default"
+      size="sm"
+      leftSection={<IconArrowLeft size={16} stroke={2} />}
       onClick={handleBack}
-      styles={{ root: { alignSelf: 'flex-start', fontWeight: 500 } }}
+      styles={{
+        root: {
+          alignSelf: 'flex-start',
+          fontWeight: 600,
+          borderRadius: 10,
+          paddingInline: 14,
+          borderColor: 'var(--emr-border-color)',
+          color: 'var(--emr-primary)',
+          background: 'var(--emr-bg-card)',
+          transition: 'background 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
+        },
+      }}
       data-testid="back-to-studies"
     >
       {t('studyPicker.backToStudies', 'Back to studies')}

@@ -60,11 +60,11 @@
 }
 
 .title {
-  font-size: var(--emr-font-lg);
-  font-weight: 600;
+  font-size: var(--emr-font-lg) !important;
+  font-weight: 600 !important;
   color: #ffffff !important;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.2 !important;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -78,8 +78,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 10px;
-  font-size: var(--emr-font-sm);
-  line-height: 1.3;
+  font-size: var(--emr-font-sm) !important;
+  line-height: 1.3 !important;
   color: rgba(255, 255, 255, 0.88) !important;
   margin-top: 2px;
 }
