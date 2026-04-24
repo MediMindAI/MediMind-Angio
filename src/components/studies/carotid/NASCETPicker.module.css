@@ -1,0 +1,133 @@
+/* NASCETPicker — bilateral stenosis classifier */
+
+.body {
+  padding: 12px 4px 4px 4px;
+}
+
+.previewLabel {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: #ffffff;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.previewChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.axis {
+  padding: 14px 16px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  box-shadow: var(--emr-shadow-sm);
+  min-width: 240px;
+}
+
+.axisHead {
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.axisTitle {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+.suggestChip {
+  padding: 3px 10px;
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+  border: 1px solid var(--emr-border-secondary);
+  border-radius: 999px;
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.suggestChip:hover {
+  background: var(--emr-secondary-alpha-20, var(--emr-secondary-alpha-10));
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.option:hover {
+  background: var(--emr-bg-hover);
+}
+
+.optionSelected {
+  box-shadow: inset 3px 0 0 var(--emr-primary);
+  border-color: var(--emr-primary);
+  background: var(--emr-primary-alpha-10, rgba(26, 54, 93, 0.08));
+}
+
+.option[data-role='success'].optionSelected {
+  border-color: var(--emr-success);
+  box-shadow: inset 3px 0 0 var(--emr-success);
+  background: var(--emr-success-alpha-10);
+}
+
+.option[data-role='warning'].optionSelected {
+  border-color: var(--emr-warning);
+  box-shadow: inset 3px 0 0 var(--emr-warning);
+  background: var(--emr-warning-bg, rgba(255, 193, 7, 0.1));
+}
+
+.option[data-role='error'].optionSelected {
+  border-color: var(--emr-error);
+  box-shadow: inset 3px 0 0 var(--emr-error);
+  background: var(--emr-error-alpha-10);
+}
+
+.code {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  flex-shrink: 0;
+  padding: 2px 8px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.optionSelected .code {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.desc {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  flex: 1;
+  min-width: 0;
+}

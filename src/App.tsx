@@ -8,6 +8,7 @@ import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { VenousLEForm } from './components/studies/venous-le/VenousLEForm';
 import { ArterialLEForm } from './components/studies/arterial-le/ArterialLEForm';
+import { CarotidForm } from './components/studies/carotid/CarotidForm';
 import { VersionFooter } from './components/layout/VersionFooter';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
@@ -23,7 +24,7 @@ const initialColorScheme = colorSchemeManager.get('auto');
  *   /demo/anatomy       → AnatomyDemo smoke test
  *   (anything else)     → AppShell landing page
  */
-type Route = 'anatomy-demo' | 'venous-le' | 'arterial-le' | 'shell';
+type Route = 'anatomy-demo' | 'venous-le' | 'arterial-le' | 'carotid' | 'shell';
 
 function currentRoute(): Route {
   if (typeof window === 'undefined') return 'shell';
@@ -34,6 +35,9 @@ function currentRoute(): Route {
   }
   if (path.endsWith('/arterial-le') || path.endsWith('/studies/arterial-le')) {
     return 'arterial-le';
+  }
+  if (path.endsWith('/carotid') || path.endsWith('/studies/carotid')) {
+    return 'carotid';
   }
   return 'shell';
 }
@@ -46,6 +50,8 @@ function renderRoute(route: Route): React.ReactElement {
       return <VenousLEForm />;
     case 'arterial-le':
       return <ArterialLEForm />;
+    case 'carotid':
+      return <CarotidForm />;
     case 'shell':
     default:
       return <AppShell />;

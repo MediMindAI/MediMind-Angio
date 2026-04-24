@@ -13,12 +13,14 @@
 import type { FormState } from '../types/form';
 import type { VenousSegmentFindings, VenousSegmentFinding } from '../components/studies/venous-le/config';
 import type { ArterialSegmentFindings, SegmentalPressures } from '../components/studies/arterial-le/config';
+import type { CarotidFindings, CarotidNascetClassification } from '../components/studies/carotid/config';
 import {
   generateNarrative,
   type NarrativeOutput,
   type NarrativeKeyEntry,
 } from '../components/studies/venous-le/narrativeGenerator';
 import { generateArterialNarrative } from '../components/studies/arterial-le/narrativeGenerator';
+import { generateCarotidNarrative } from '../components/studies/carotid/narrativeGenerator';
 
 export { generateNarrative };
 export type { NarrativeOutput, NarrativeKeyEntry };
@@ -63,6 +65,17 @@ export function narrativeFromFormState(form: FormState): NarrativeOutput {
       ? rawPressures
       : {}) as unknown as SegmentalPressures;
     return generateArterialNarrative(findings, pressures);
+  }
+
+  if (form.studyType === 'carotid') {
+    const rawFindings = form.parameters['segmentFindings'];
+    const rawNascet = form.parameters['nascet'];
+    if (!rawFindings || typeof rawFindings !== 'object') return EMPTY_NARRATIVE;
+    const findings = rawFindings as unknown as CarotidFindings;
+    const nascet = (rawNascet && typeof rawNascet === 'object'
+      ? rawNascet
+      : {}) as unknown as CarotidNascetClassification;
+    return generateCarotidNarrative(findings, nascet);
   }
 
   return EMPTY_NARRATIVE;

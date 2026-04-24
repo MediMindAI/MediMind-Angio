@@ -1,0 +1,143 @@
+{
+  "carotid": {
+    "tabs": { "left": "Left", "right": "Right", "bilateral": "Bilateral" },
+    "side": { "left": "Left", "right": "Right" },
+    "vessel": {
+      "cca-prox": "CCA, proximal",
+      "cca-mid": "CCA, mid",
+      "cca-dist": "CCA, distal",
+      "bulb": "Carotid bulb",
+      "ica-prox": "ICA, proximal",
+      "ica-mid": "ICA, mid",
+      "ica-dist": "ICA, distal",
+      "eca": "ECA",
+      "vert-v1": "Vertebral V1",
+      "vert-v2": "Vertebral V2",
+      "vert-v3": "Vertebral V3",
+      "subclav-prox": "Subclavian, proximal",
+      "subclav-dist": "Subclavian, distal"
+    },
+    "segmentTable": {
+      "title": "Vessel assessment",
+      "subtitle": "PSV, EDV, flow direction, and plaque per vessel",
+      "vessel": "Vessel"
+    },
+    "param": {
+      "psvCmS": "PSV (cm/s)",
+      "edvCmS": "EDV (cm/s)",
+      "flowDirection": "Flow",
+      "plaqueMorphology": "Plaque",
+      "plaqueLengthMm": "Plaque length (mm)",
+      "ulceration": "Ulc.",
+      "ratio": "ICA/CCA"
+    },
+    "flow": {
+      "antegrade": "Antegrade",
+      "retrograde": "Retrograde",
+      "bidirectional": "Bidirectional",
+      "absent": "Absent"
+    },
+    "plaque": {
+      "none": "None",
+      "calcified": "Calcified",
+      "mixed": "Mixed",
+      "soft": "Soft"
+    },
+    "nascet": {
+      "title": "NASCET stenosis classification",
+      "subtitle": "Bilateral ICA severity per SRU 2003 velocity criteria",
+      "preview": "NASCET",
+      "suggest": "Suggest",
+      "applySuggestion": "Apply SRU suggestion",
+      "lt50": "< 50 %",
+      "50to69": "50–69 %",
+      "ge70": "≥ 70 %",
+      "near-occlusion": "Near-occlusion",
+      "occluded": "Occluded"
+    },
+    "steal": {
+      "phase0": "Normal antegrade",
+      "phase1": "Phase I — mid-systolic deceleration",
+      "phase2": "Phase II — alternating (partial retrograde)",
+      "phase3": "Phase III — full retrograde"
+    },
+    "narrative": {
+      "impression": "Impression",
+      "sonographerComments": "Sonographer comments",
+      "clinicianComments": "Clinician comments",
+      "normalSide": "Normal {side} carotid system with triphasic antegrade flow and no significant plaque.",
+      "occluded": "No flow detected — {vessel}.",
+      "plaque": "{morphology} plaque ({length} mm) — {vessel}.",
+      "stealPhase": "Subclavian-steal Phase {phase} waveform — {vessel}."
+    },
+    "conclusion": {
+      "occluded": "Occlusion — {side} {vessel}.",
+      "nascet": "{side} ICA: {category} stenosis.",
+      "subclavianSteal": "{side} subclavian steal syndrome — full retrograde vertebral flow."
+    },
+    "actions": {
+      "newCase": "+ New case",
+      "newCaseConfirmTitle": "Start a new case?",
+      "newCaseConfirmBody": "All current findings, NASCET classification, impression and recommendations will be cleared. This cannot be undone.",
+      "newCaseConfirm": "Discard & start new",
+      "newCaseToastTitle": "New case started",
+      "newCaseToastMessage": "All data cleared.",
+      "applyTemplate": "Apply template",
+      "applyTemplateConfirmTitle": "Apply template?",
+      "applyTemplateConfirmBody": "This will replace current findings, NASCET classification, impression, and recommendations.",
+      "cancel": "Cancel",
+      "templateApplied": "Template applied"
+    },
+    "templates": {
+      "menuLabel": "Templates",
+      "normalBilateral": {
+        "name": "Normal bilateral",
+        "description": "All vessels normal, no plaque, NASCET <50% bilaterally.",
+        "impression": "Normal bilateral carotid, vertebral, and subclavian duplex examination. Common and internal carotid arteries demonstrate normal peak systolic and end-diastolic velocities with triphasic antegrade flow and no atherosclerotic plaque. Vertebral arteries show normal antegrade flow bilaterally. No hemodynamic evidence of stenosis or occlusion."
+      },
+      "mildBilateralAtherosclerosis": {
+        "name": "Mild bilateral atherosclerosis",
+        "description": "Bilateral bulb/ICA plaque, NASCET <50% bilateral.",
+        "impression": "Bilateral mild atherosclerotic disease of the carotid bifurcations involving the bulbs and proximal internal carotid arteries. Plaques are of mixed echogenicity with smooth surfaces and no ulceration. Peak systolic velocities remain within normal limits; no hemodynamically significant stenosis. NASCET < 50% bilaterally."
+      },
+      "moderateLeftIca": {
+        "name": "Moderate left ICA stenosis",
+        "description": "Left ICA 50–69%, soft plaque, ICA/CCA 2.5.",
+        "impression": "Moderate atherosclerotic stenosis of the left internal carotid artery, proximal segment, with NASCET 50–69% stenosis by SRU velocity criteria (PSV 180 cm/s, ICA/CCA ratio 2.5). Soft plaque, smooth surface, without ulceration. Right carotid system unremarkable — no significant stenosis. Vertebral and subclavian arteries are patent bilaterally with normal antegrade flow."
+      },
+      "severeLeftIca": {
+        "name": "Severe left ICA stenosis",
+        "description": "Left ICA ≥70%, irregular plaque with ulceration.",
+        "impression": "Severe atherosclerotic stenosis of the left internal carotid artery, proximal segment — NASCET ≥ 70% by SRU velocity criteria (PSV 310 cm/s, EDV 120 cm/s, ICA/CCA ratio 4.8). Mixed-echogenicity plaque with irregular surface and focal ulceration — high-risk morphology. Right carotid system unremarkable. Vertebrals patent with antegrade flow."
+      },
+      "leftIcaOcclusion": {
+        "name": "Left ICA occlusion",
+        "description": "Left ICA occluded, contralateral compensation.",
+        "impression": "Complete occlusion of the left internal carotid artery. The left common carotid artery distal segment demonstrates a high-resistance waveform with reversed end-diastolic flow, consistent with distal occlusion (externalization pattern). Right internal carotid artery shows compensatory elevated peak systolic velocity (145 cm/s) without evidence of primary stenosis — hemodynamic contralateral compensation. Vertebrals patent bilaterally."
+      },
+      "postCeaLeft": {
+        "name": "Post-CEA (left)",
+        "description": "Post-endarterectomy surveillance, no restenosis.",
+        "impression": "Status post left carotid endarterectomy. The left internal carotid artery demonstrates normal peak systolic and end-diastolic velocities with a smooth post-surgical lumen and minimal intimal thickening — no evidence of restenosis. Right carotid system shows mild atherosclerotic plaque without significant stenosis. Vertebrals patent bilaterally."
+      },
+      "postStentRightIca": {
+        "name": "Post-stent (right ICA)",
+        "description": "Right ICA stent patent, no in-stent restenosis.",
+        "impression": "Status post right internal carotid artery stenting with patent in-stent flow. In-stent peak systolic velocity (160 cm/s) and ICA/CCA ratio (1.8) are within accepted post-stent thresholds — no evidence of in-stent restenosis. Edge velocities are normal. Left carotid system unremarkable."
+      },
+      "subclavianStealLeft": {
+        "name": "Subclavian steal (left)",
+        "description": "Left subclavian stenosis with retrograde vertebral.",
+        "impression": "Left subclavian steal syndrome. Left subclavian artery, proximal segment, demonstrates dampened monophasic flow with focal velocity elevation (PSV 280 cm/s) consistent with proximal subclavian stenosis. The left vertebral artery shows complete retrograde flow (Phase III steal). Right carotid, vertebral, and subclavian systems are unremarkable. Bilateral carotid arteries are without hemodynamically significant stenosis."
+      }
+    },
+    "rec": {
+      "moderateIcaOMT": "Asymptomatic moderate stenosis: optimal medical therapy per ESVS 2023 — high-intensity statin, antiplatelet, BP control <140/90 mmHg, HbA1c <7%, smoking cessation. Duplex surveillance at 6 months. If symptomatic (TIA or minor stroke attributable to this territory), urgent referral for revascularization consideration.",
+      "severeIcaRevasc": "Urgent vascular surgery consultation for carotid revascularization evaluation per ESVS 2023. If symptomatic within past 6 months: CEA within 2 weeks (Class I, Level A) unless contraindications. If asymptomatic: CEA or CAS in patients with life expectancy >5 years and low perioperative risk (Class IIa). Best medical therapy bridge: high-intensity statin, dual antiplatelet short-term consideration, BP <140/90. Brain imaging (MRI) to document baseline infarct burden.",
+      "icaOcclusionConfirm": "Confirm occlusion with CT angiography or MR angiography. Rule out acute thrombosis vs chronic occlusion — different management. Anticoagulation if acute; antiplatelet + statin if chronic. Optimal medical therapy. Revascularization of chronic ICA occlusion generally not beneficial except in select symptomatic patients with compromised cerebral reserve — EC-IC bypass controversial and limited indication. Brain imaging to assess infarct burden and evaluate for hemodynamic symptoms.",
+      "postCeaSurveillance": "Routine post-CEA duplex surveillance per SVS guideline: at 1 month, 6 months, and annually thereafter. Report return of neurologic symptoms immediately. Continue antiplatelet + high-intensity statin lifelong.",
+      "postStentSurveillance": "Carotid-stent surveillance per SVS: duplex at 1 month, 6 months, 12 months, then annually. Higher in-stent PSV thresholds apply (≥ 220 cm/s concerning for restenosis). Dual antiplatelet per interventionalist regimen; then lifelong single antiplatelet + statin.",
+      "subclavianStealCTA": "Confirm subclavian stenosis with CT angiography of the aortic arch and great vessels. Check bilateral arm blood pressures — expected systolic differential >15–20 mmHg. If symptomatic (arm claudication, posterior circulation symptoms, coronary-subclavian steal in prior LIMA-CABG): endovascular subclavian revascularization first-line per ESVS 2018. If asymptomatic: best medical therapy and surveillance. Screen for diffuse atherosclerosis."
+    }
+  }
+}

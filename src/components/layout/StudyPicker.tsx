@@ -27,7 +27,7 @@ interface StudyDefinition {
 const STUDIES: ReadonlyArray<StudyDefinition> = [
   { key: 'venousLE', translationKey: 'studies.venousLE', icon: IconActivity, available: true },
   { key: 'arterialLE', translationKey: 'studies.arterialLE', icon: IconWaveSawTool, available: true },
-  { key: 'carotid', translationKey: 'studies.carotid', icon: IconBrain, available: false },
+  { key: 'carotid', translationKey: 'studies.carotid', icon: IconBrain, available: true },
   { key: 'abdominalVenous', translationKey: 'studies.abdominalVenous', icon: IconHeartbeat, available: false },
   { key: 'dialysisAortic', translationKey: 'studies.dialysisAortic', icon: IconShieldCheckered, available: false },
 ];

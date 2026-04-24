@@ -1,0 +1,215 @@
+/* CarotidSegmentTable — vessel findings grid */
+
+.card {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  overflow: hidden;
+}
+
+.head {
+  padding: 14px 18px;
+  background: var(--emr-gradient-section-header, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 55%, var(--emr-accent) 100%));
+  color: #ffffff;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--emr-font-md);
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--emr-font-xs);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 2px 0 0 0;
+}
+
+.body {
+  padding: 12px 14px;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.headRow,
+.row {
+  display: grid;
+  grid-template-columns: 220px 90px 90px 180px 120px 60px 90px;
+  gap: 8px;
+  align-items: center;
+  min-width: 900px;
+}
+
+.headRow {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--emr-border-color);
+  margin-bottom: 4px;
+}
+
+.row {
+  padding: 6px 0;
+  min-height: 48px;
+  border-radius: var(--emr-border-radius);
+  transition: background-color 0.15s ease;
+}
+
+.row:hover {
+  background: var(--emr-bg-hover);
+}
+
+.headCell {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell {
+  min-width: 0;
+}
+
+.vesselCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  min-width: 0;
+}
+
+.vesselLabel {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-primary);
+  font-weight: var(--emr-font-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.vesselSide {
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  padding: 2px 5px;
+  border-radius: var(--emr-border-radius-sm);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.vesselSide[data-side='left'] {
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+}
+
+.vesselSide[data-side='right'] {
+  background: var(--emr-accent-alpha-15, rgba(49, 130, 206, 0.15));
+  color: var(--emr-accent);
+}
+
+.ratioChip {
+  display: inline-flex;
+  padding: 2px 8px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  background: var(--emr-bg-hover);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--emr-text-tertiary);
+  font-size: var(--emr-font-xs);
+}
+
+/* --- Steal-phase inline chips --- */
+.stealRow {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.stealChip {
+  width: 24px;
+  height: 22px;
+  padding: 0 4px;
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-semibold);
+  background: var(--emr-bg-input);
+  color: var(--emr-text-secondary);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stealChip:hover {
+  background: var(--emr-bg-hover);
+}
+
+.stealChipSelected {
+  background: var(--emr-error);
+  color: #ffffff;
+  border-color: var(--emr-error);
+}
+
+@media (max-width: 900px) {
+  .headRow {
+    display: none;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+    background: var(--emr-bg-card);
+    border: 1px solid var(--emr-border-color);
+    border-radius: var(--emr-border-radius-lg);
+    margin-bottom: 10px;
+    min-width: 0;
+  }
+
+  .tableWrap {
+    overflow-x: visible;
+  }
+
+  .headRow,
+  .row {
+    min-width: 0;
+  }
+
+  .cell[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--emr-font-xs);
+    color: var(--emr-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--emr-letter-spacing-wide);
+    font-weight: var(--emr-font-semibold);
+    margin-bottom: 4px;
+  }
+}
