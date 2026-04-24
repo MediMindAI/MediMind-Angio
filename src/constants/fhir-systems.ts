@@ -275,3 +275,35 @@ export const MEDIMIND_EXTENSIONS = {
   /** Study type discriminator on the DiagnosticReport. */
   STUDY_TYPE: `${FHIR_BASE_URL}/StructureDefinition/angio-study-type`,
 } as const;
+
+// ============================================================================
+// Custom MediMind CodeSystems — per-parameter value sets
+// ============================================================================
+
+/**
+ * CodeSystem URLs for proprietary enumerations emitted on
+ * Observation.valueCodeableConcept.coding[].system. Each URL is namespaced by
+ * the parameter so downstream consumers can distinguish value tokens that
+ * overlap across parameters (e.g. `none` appears in both stenosis-category and
+ * plaque-morphology).
+ */
+export const MEDIMIND_CODESYSTEMS = {
+  /** Arterial waveform morphology: triphasic | biphasic | monophasic-* | absent. */
+  WAVEFORM_MORPHOLOGY: `${FHIR_BASE_URL}/CodeSystem/waveform-morphology`,
+  /** Arterial stenosis category: none | mild | moderate | severe | occluded. */
+  STENOSIS_CATEGORY: `${FHIR_BASE_URL}/CodeSystem/stenosis-category`,
+  /** Plaque morphology (shared arterial + carotid): none | calcified | mixed | soft. */
+  PLAQUE_MORPHOLOGY: `${FHIR_BASE_URL}/CodeSystem/plaque-morphology`,
+  /** Carotid plaque surface: smooth | irregular. */
+  PLAQUE_SURFACE: `${FHIR_BASE_URL}/CodeSystem/plaque-surface`,
+  /** Flow direction: antegrade | retrograde | bidirectional | absent. */
+  FLOW_DIRECTION: `${FHIR_BASE_URL}/CodeSystem/flow-direction`,
+  /** Subclavian steal phase (vertebrals): 0 | 1 | 2 | 3. */
+  SUBCLAVIAN_STEAL_PHASE: `${FHIR_BASE_URL}/CodeSystem/subclavian-steal-phase`,
+  /** NASCET category: lt50 | 50to69 | ge70 | near-occlusion | occluded. */
+  NASCET_CATEGORY: `${FHIR_BASE_URL}/CodeSystem/nascet-category`,
+  /** Velocity ratio (unit `1`) — pseudo-CodeSystem anchor for the numeric. */
+  VELOCITY_RATIO: `${FHIR_BASE_URL}/CodeSystem/velocity-ratio`,
+  /** Toe-Brachial Index — no standard LOINC, custom anchor. */
+  TBI: `${FHIR_BASE_URL}/CodeSystem/tbi`,
+} as const;

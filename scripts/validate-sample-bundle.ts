@@ -27,6 +27,15 @@ import type {
   VenousLEFullSegmentId,
   VenousSegmentFinding,
 } from '../src/components/studies/venous-le/config';
+import type {
+  ArterialLEFullSegmentId,
+  ArterialSegmentFinding,
+  SegmentalPressures,
+} from '../src/components/studies/arterial-le/config';
+import type {
+  CarotidFindings,
+  CarotidNascetClassification,
+} from '../src/components/studies/carotid/config';
 import { buildFhirBundle } from '../src/services/fhirBuilder';
 
 // ---------------------------------------------------------------------------
@@ -293,16 +302,21 @@ const positionObs = observations.find((o) =>
 assert(positionObs !== undefined, 'expected a Patient Position Observation (LOINC 8361-8)');
 
 // ---------------------------------------------------------------------------
-// Summary + exit
+// Summary
 // ---------------------------------------------------------------------------
 
-const counts: Record<string, number> = {};
-for (const e of entries as ReadonlyArray<BundleEntry<EmittedResource>>) {
-  const rt = e.resource.resourceType;
-  counts[rt] = (counts[rt] ?? 0) + 1;
+function countByType(entryList: ReadonlyArray<BundleEntry<EmittedResource>>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const e of entryList) {
+    const rt = e.resource.resourceType;
+    out[rt] = (out[rt] ?? 0) + 1;
+  }
+  return out;
 }
 
-console.log('PASS: FHIR Bundle validation');
+const counts = countByType(entries as ReadonlyArray<BundleEntry<EmittedResource>>);
+
+console.log('PASS: venous-LE Bundle');
 console.log(`  total entries: ${entries.length}`);
 for (const [rt, n] of Object.entries(counts)) {
   console.log(`    ${rt.padEnd(24)} × ${n}`);
@@ -311,4 +325,259 @@ console.log(`  abnormal interpretations: ${interpretationCount}`);
 console.log(`  CEAP formatted: ${ceapObs.valueString}`);
 console.log(`  DiagnosticReport conclusion: ${report.conclusion ? 'present' : 'absent'}`);
 
+// ---------------------------------------------------------------------------
+// Arterial LE smoke test
+// ---------------------------------------------------------------------------
+
+const arterialFindings: Partial<Record<ArterialLEFullSegmentId, ArterialSegmentFinding>> = {
+  'cfa-right': { waveform: 'triphasic', psvCmS: 110, stenosisCategory: 'none', plaqueMorphology: 'none' },
+  'sfa-mid-right': {
+    waveform: 'biphasic',
+    psvCmS: 240,
+    velocityRatio: 2.8,
+    stenosisCategory: 'moderate',
+    stenosisPct: 60,
+    plaqueMorphology: 'mixed',
+    plaqueLengthMm: 22,
+  },
+  'sfa-dist-right': {
+    waveform: 'absent',
+    stenosisCategory: 'occluded',
+    occluded: true,
+  },
+  'cfa-left': { waveform: 'triphasic', psvCmS: 105, stenosisCategory: 'none', plaqueMorphology: 'none' },
+};
+
+const arterialPressures: SegmentalPressures = {
+  brachialL: 130, brachialR: 135,
+  highThighR: 160, highThighL: 150,
+  lowThighR: 145, lowThighL: 140,
+  calfR: 140, calfL: 135,
+  ankleDpR: 130, ankleDpL: 80,   // left ankle low → ABI band should be mild or moderate
+  anklePtR: 128, anklePtL: 75,
+  toeR: 110, toeL: 60,
+};
+
+const arterialForm: FormState = {
+  studyType: 'arterialLE',
+  header: {
+    patientName: 'Mock Arterial Patient',
+    patientId: '22345678901',
+    patientBirthDate: '1962-07-01',
+    patientGender: 'male',
+    studyDate: '2026-04-24',
+    operatorName: 'Dr. Mock',
+    referringPhysician: 'Dr. Referrer',
+    institution: 'MediMind Angio Clinic',
+    accessionNumber: 'ACC-ART-00001',
+    informedConsent: true,
+    patientPosition: 'supine',
+  },
+  segments: [],
+  narrative: {
+    indication: 'Left calf claudication at 100 m.',
+    technique: 'Bilateral arterial duplex + segmental pressures.',
+    findings: '',
+    impression: '',
+    comments: '',
+    sonographerComments: '',
+    clinicianComments: 'Severe left SFA disease with occluded distal segment.',
+  },
+  recommendations: [],
+  parameters: {
+    segmentFindings: arterialFindings as unknown as string,
+    pressures: arterialPressures as unknown as string,
+  },
+};
+
+const arterialBundle: Bundle = buildFhirBundle(arterialForm);
+const arterialEntries = (arterialBundle.entry ?? []) as ReadonlyArray<BundleEntry<EmittedResource>>;
+assert(arterialBundle.resourceType === 'Bundle', 'arterial bundle resourceType');
+assert(arterialEntries.length > 5, 'arterial bundle entries too few');
+
+const arterialObs = arterialEntries
+  .filter((e) => isObservation(e.resource))
+  .map((e) => e.resource as Observation);
+
+// Spot-check: PSV observation (LOINC 11556-8) on right sfa-mid.
+const sfaMidPsv = arterialObs.find((o) =>
+  (o.code.coding ?? []).some((c) => c.code === '11556-8') &&
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=sfa-mid') && n.text.includes('side=right') && n.text.includes('parameter=psvCmS'))
+);
+assert(sfaMidPsv !== undefined, 'arterial: expected PSV observation for right sfa-mid');
+assert(sfaMidPsv.valueQuantity?.value === 240, 'arterial: sfa-mid PSV value mismatch');
+
+// Stenosis category coded value.
+const stenosisObs = arterialObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=sfa-mid') && n.text.includes('side=right') && n.text.includes('parameter=stenosisCategory'))
+);
+assert(stenosisObs !== undefined, 'arterial: expected stenosisCategory observation for right sfa-mid');
+assert(
+  (stenosisObs.valueCodeableConcept?.coding ?? []).some((c) => c.code === 'moderate'),
+  'arterial: stenosisCategory should be moderate'
+);
+
+// Occluded boolean
+const occludedObs = arterialObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=sfa-dist') && n.text.includes('parameter=occluded'))
+);
+assert(occludedObs !== undefined, 'arterial: expected occluded observation for right sfa-dist');
+assert(occludedObs.valueBoolean === true, 'arterial: occluded value must be true');
+
+// Segmental pressure
+const anklePressureL = arterialObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=ankleDpPressure') && n.text.includes('side=left'))
+);
+assert(anklePressureL !== undefined, 'arterial: expected left ankle DP pressure observation');
+assert(anklePressureL.valueQuantity?.value === 80, 'arterial: ankle DP pressure value mismatch');
+assert(anklePressureL.valueQuantity?.code === 'mm[Hg]', 'arterial: pressure unit should be mm[Hg]');
+
+// ABI observation (LOINC 76497-9)
+const abiL = arterialObs.find((o) =>
+  (o.code.coding ?? []).some((c) => c.code === '76497-9') &&
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=abi') && n.text.includes('side=left'))
+);
+assert(abiL !== undefined, 'arterial: expected left ABI observation (LOINC 76497-9)');
+
+// TBI observation (custom system)
+const tbiL = arterialObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=tbi') && n.text.includes('side=left'))
+);
+assert(tbiL !== undefined, 'arterial: expected left TBI observation');
+
+const arterialCounts = countByType(arterialEntries as ReadonlyArray<BundleEntry<EmittedResource>>);
+console.log('\nPASS: arterial-LE Bundle');
+console.log(`  total entries: ${arterialEntries.length}`);
+for (const [rt, n] of Object.entries(arterialCounts)) {
+  console.log(`    ${rt.padEnd(24)} × ${n}`);
+}
+
+// ---------------------------------------------------------------------------
+// Carotid smoke test
+// ---------------------------------------------------------------------------
+
+const carotidFindings: CarotidFindings = {
+  'cca-dist-right': { psvCmS: 85, edvCmS: 25, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
+  'ica-prox-right': {
+    psvCmS: 250, edvCmS: 110, flowDirection: 'antegrade',
+    plaquePresent: true, plaqueMorphology: 'mixed', plaqueSurface: 'irregular',
+    plaqueUlceration: true, plaqueLengthMm: 14,
+  },
+  'cca-dist-left': { psvCmS: 90, edvCmS: 28, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
+  'ica-prox-left': {
+    psvCmS: 110, edvCmS: 30, flowDirection: 'antegrade',
+    plaquePresent: true, plaqueMorphology: 'calcified', plaqueSurface: 'smooth',
+    plaqueLengthMm: 8,
+  },
+  'vert-v2-right': { psvCmS: 45, flowDirection: 'antegrade', subclavianStealPhase: 0 },
+  'vert-v2-left': { psvCmS: 22, flowDirection: 'bidirectional', subclavianStealPhase: 2 },
+};
+
+const nascet: CarotidNascetClassification = {
+  right: 'ge70',
+  left: 'lt50',
+};
+
+const carotidForm: FormState = {
+  studyType: 'carotid',
+  header: {
+    patientName: 'Mock Carotid Patient',
+    patientId: '32345678901',
+    patientBirthDate: '1955-11-20',
+    patientGender: 'male',
+    studyDate: '2026-04-24',
+    operatorName: 'Dr. Mock',
+    referringPhysician: 'Dr. Referrer',
+    institution: 'MediMind Angio Clinic',
+    accessionNumber: 'ACC-CAR-00001',
+    informedConsent: true,
+    patientPosition: 'supine',
+  },
+  segments: [],
+  narrative: {
+    indication: 'TIA workup.',
+    technique: 'Bilateral carotid-vertebral duplex.',
+    findings: '',
+    impression: '',
+    comments: '',
+    sonographerComments: '',
+    clinicianComments: 'Severe right ICA stenosis ≥ 70 % (NASCET).',
+  },
+  recommendations: [],
+  parameters: {
+    segmentFindings: carotidFindings as unknown as string,
+    nascet: nascet as unknown as string,
+  },
+};
+
+const carotidBundle: Bundle = buildFhirBundle(carotidForm);
+const carotidEntries = (carotidBundle.entry ?? []) as ReadonlyArray<BundleEntry<EmittedResource>>;
+assert(carotidBundle.resourceType === 'Bundle', 'carotid bundle resourceType');
+assert(carotidEntries.length > 5, 'carotid bundle entries too few');
+
+const carotidObs = carotidEntries
+  .filter((e) => isObservation(e.resource))
+  .map((e) => e.resource as Observation);
+
+// PSV on right ica-prox
+const icaPsv = carotidObs.find((o) =>
+  (o.code.coding ?? []).some((c) => c.code === '11556-8') &&
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=ica-prox') && n.text.includes('side=right') && n.text.includes('parameter=psvCmS'))
+);
+assert(icaPsv !== undefined, 'carotid: expected right ICA PSV observation');
+assert(icaPsv.valueQuantity?.value === 250, 'carotid: right ICA PSV value mismatch');
+
+// EDV on right ica-prox (LOINC 20352-4)
+const icaEdv = carotidObs.find((o) =>
+  (o.code.coding ?? []).some((c) => c.code === '20352-4') &&
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=ica-prox') && n.text.includes('side=right'))
+);
+assert(icaEdv !== undefined, 'carotid: expected right ICA EDV observation (LOINC 20352-4)');
+assert(icaEdv.valueQuantity?.value === 110, 'carotid: right ICA EDV value mismatch');
+
+// Plaque ulceration (boolean)
+const ulcerObs = carotidObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=plaqueUlceration'))
+);
+assert(ulcerObs !== undefined, 'carotid: expected plaqueUlceration observation');
+assert(ulcerObs.valueBoolean === true, 'carotid: plaqueUlceration should be true');
+
+// Subclavian steal phase on left vertebral
+const stealObs = carotidObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=vert-v2') && n.text.includes('side=left') && n.text.includes('parameter=subclavianStealPhase'))
+);
+assert(stealObs !== undefined, 'carotid: expected left vertebral subclavian-steal observation');
+assert(
+  (stealObs.valueCodeableConcept?.coding ?? []).some((c) => c.code === '2'),
+  'carotid: subclavian steal phase should be 2'
+);
+
+// NASCET category right side
+const nascetR = carotidObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=nascet') && n.text.includes('side=right'))
+);
+assert(nascetR !== undefined, 'carotid: expected right NASCET observation');
+assert(
+  (nascetR.valueCodeableConcept?.coding ?? []).some((c) => c.code === 'ge70'),
+  'carotid: right NASCET category should be ge70'
+);
+
+// ICA/CCA ratio on right (computed)
+const ratioR = carotidObs.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=icaCcaRatio') && n.text.includes('side=right'))
+);
+assert(ratioR !== undefined, 'carotid: expected right ICA/CCA ratio observation');
+assert(
+  typeof ratioR.valueQuantity?.value === 'number' && ratioR.valueQuantity.value > 2.9,
+  'carotid: right ICA/CCA ratio should be ~2.94'
+);
+
+const carotidCounts = countByType(carotidEntries as ReadonlyArray<BundleEntry<EmittedResource>>);
+console.log('\nPASS: carotid Bundle');
+console.log(`  total entries: ${carotidEntries.length}`);
+for (const [rt, n] of Object.entries(carotidCounts)) {
+  console.log(`    ${rt.padEnd(24)} × ${n}`);
+}
+
+console.log('\nAll 3 study-type bundles validated (venous-LE + arterial-LE + carotid).');
 process.exit(0);
