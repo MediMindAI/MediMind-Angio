@@ -26,7 +26,7 @@ interface StudyDefinition {
 // Order: Phase-1 first, then the four Phase-2..5 studies.
 const STUDIES: ReadonlyArray<StudyDefinition> = [
   { key: 'venousLE', translationKey: 'studies.venousLE', icon: IconActivity, available: true },
-  { key: 'arterialLE', translationKey: 'studies.arterialLE', icon: IconWaveSawTool, available: false },
+  { key: 'arterialLE', translationKey: 'studies.arterialLE', icon: IconWaveSawTool, available: true },
   { key: 'carotid', translationKey: 'studies.carotid', icon: IconBrain, available: false },
   { key: 'abdominalVenous', translationKey: 'studies.abdominalVenous', icon: IconHeartbeat, available: false },
   { key: 'dialysisAortic', translationKey: 'studies.dialysisAortic', icon: IconShieldCheckered, available: false },
@@ -53,12 +53,19 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   }, []);
 
   const handleStartStudy = useCallback((studyKey: string) => {
-    // Phase 1: route to /venous-le when the bilateral venous LE card is clicked.
     if (studyKey === 'venousLE') {
       window.location.pathname = '/venous-le';
       return;
     }
-    // Other study types will be wired in Phase 2..5.
+    if (studyKey === 'arterialLE') {
+      window.location.pathname = '/arterial-le';
+      return;
+    }
+    if (studyKey === 'carotid') {
+      window.location.pathname = '/carotid';
+      return;
+    }
+    // Remaining study types will be wired in later phases.
     // eslint-disable-next-line no-console
     console.info('[StudyPicker] start study (not yet available):', studyKey);
   }, []);

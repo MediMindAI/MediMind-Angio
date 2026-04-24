@@ -1,0 +1,76 @@
+/* WaveformSelector — compact 5-glyph radio group */
+
+.group {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--emr-bg-input);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  min-height: 36px;
+  align-items: center;
+}
+
+.groupMd {
+  min-height: 42px;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 30px;
+  padding: 4px 6px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--emr-border-radius-sm);
+  color: var(--emr-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.groupMd .option {
+  height: 36px;
+  width: 48px;
+}
+
+.option:hover:not([disabled]) {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.optionSelected {
+  background: var(--emr-primary);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.optionSelected:hover {
+  background: var(--emr-primary) !important;
+  color: #ffffff !important;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 1px;
+}
+
+.option[disabled] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.glyph {
+  width: 30px;
+  height: 14px;
+  display: block;
+  filter: brightness(0) saturate(100%);
+  opacity: 0.75;
+}
+
+.optionSelected .glyph {
+  filter: invert(100%);
+  opacity: 1;
+}

@@ -1,0 +1,179 @@
+{
+  "arterialLE": {
+    "tabs": {
+      "left": "Left",
+      "right": "Right",
+      "bilateral": "Bilateral"
+    },
+    "side": {
+      "left": "left",
+      "right": "right"
+    },
+    "segment": {
+      "cia": "common iliac artery",
+      "eia": "external iliac artery",
+      "cfa": "common femoral artery",
+      "pfa": "profunda femoris artery",
+      "sfa-prox": "superficial femoral artery, proximal",
+      "sfa-mid": "superficial femoral artery, mid",
+      "sfa-dist": "superficial femoral artery, distal",
+      "pop-ak": "popliteal artery above knee",
+      "pop-bk": "popliteal artery below knee",
+      "tpt": "tibioperoneal trunk",
+      "ata": "anterior tibial artery",
+      "pta": "posterior tibial artery",
+      "per": "peroneal artery",
+      "dp": "dorsalis pedis artery"
+    },
+    "segmentTable": {
+      "title": "Segmental assessment",
+      "subtitle": "Waveform, PSV, stenosis, and plaque per segment",
+      "segment": "Segment"
+    },
+    "param": {
+      "waveform": "Waveform",
+      "psvCmS": "PSV (cm/s)",
+      "stenosisCategory": "Stenosis",
+      "stenosisPct": "Stenosis %",
+      "plaqueMorphology": "Plaque",
+      "plaqueLengthMm": "Plaque length (mm)",
+      "occluded": "Occl."
+    },
+    "help": {
+      "psvCmS": "Peak systolic velocity at sample site.",
+      "stenosisPct": "Manually entered % lumen narrowing.",
+      "plaqueLengthMm": "Axial plaque length along vessel."
+    },
+    "waveform": {
+      "triphasic": "Triphasic",
+      "biphasic": "Biphasic",
+      "monophasic-phasic": "Monophasic, phasic",
+      "monophasic-damped": "Monophasic, damped",
+      "absent": "Absent / no flow"
+    },
+    "stenosis": {
+      "none": "< 30 %",
+      "mild": "30–49 %",
+      "moderate": "50–69 %",
+      "severe": "70–99 %",
+      "occluded": "Occluded"
+    },
+    "plaque": {
+      "none": "None",
+      "calcified": "Calcified",
+      "mixed": "Mixed",
+      "soft": "Soft"
+    },
+    "pressures": {
+      "title": "Segmental pressures",
+      "subtitle": "Cuff pressures in mmHg. ABI and TBI auto-compute.",
+      "level": "Level",
+      "brachial": "Brachial",
+      "highThigh": "High thigh",
+      "lowThigh": "Low thigh",
+      "calf": "Calf",
+      "ankleDp": "Ankle DP",
+      "anklePt": "Ankle PT",
+      "toe": "Toe"
+    },
+    "abi": {
+      "label": "ABI",
+      "band": {
+        "non-compressible": "Non-compressible",
+        "normal": "Normal",
+        "mild": "Mild PAD",
+        "moderate": "Moderate PAD",
+        "severe": "Severe / CLI",
+        "unknown": "—"
+      }
+    },
+    "tbi": {
+      "label": "TBI"
+    },
+    "narrative": {
+      "impression": "Impression",
+      "sonographerComments": "Sonographer comments",
+      "clinicianComments": "Clinician comments",
+      "normalSide": "Normal {side} lower-extremity arterial tree with triphasic flow throughout.",
+      "occluded": "Occluded — {vein}.",
+      "stenosis": "{severity} stenosis — {vein} (PSV {psv} cm/s).",
+      "dampedWaveform": "{waveform} flow — {vein}."
+    },
+    "conclusion": {
+      "occluded": "Occlusion — {side} {vein}.",
+      "significantStenosis": "Hemodynamically significant ({severity}) stenosis — {side} {vein}.",
+      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
+    },
+    "actions": {
+      "newCase": "+ New case",
+      "newCaseConfirmTitle": "Start a new case?",
+      "newCaseConfirmBody": "All current findings, pressures, impression and recommendations will be cleared. This cannot be undone.",
+      "newCaseConfirm": "Discard & start new",
+      "newCaseToastTitle": "New case started",
+      "newCaseToastMessage": "All data cleared.",
+      "applyTemplate": "Apply template",
+      "applyTemplateConfirmTitle": "Apply template?",
+      "applyTemplateConfirmBody": "This will replace current findings, pressures, impression, and recommendations.",
+      "cancel": "Cancel",
+      "templateApplied": "Template applied"
+    },
+    "templates": {
+      "menuLabel": "Templates",
+      "normalBilateral": {
+        "name": "Normal bilateral",
+        "description": "All segments triphasic, no plaque, ABI normal bilaterally.",
+        "impression": "Normal bilateral lower-extremity arterial duplex examination. All segments demonstrate triphasic flow with normal peak systolic velocities. Ankle-Brachial Index is within normal limits bilaterally (R: 1.08, L: 1.08). No hemodynamically significant stenosis or occlusion. No atherosclerotic plaque identified."
+      },
+      "mildSfaRight": {
+        "name": "Mild SFA disease (right)",
+        "description": "Focal <50% stenosis right SFA-mid, ABI 0.92.",
+        "impression": "Mild atherosclerotic disease of the right superficial femoral artery, mid segment. Focal biphasic waveform with PSV elevation (180 cm/s) suggests <50% stenosis. Right ABI 0.92 — at the lower limit of normal, consistent with hemodynamically non-significant disease. Normal left lower extremity arterial tree."
+      },
+      "moderateClaudicationRightSfa": {
+        "name": "Moderate claudication — right SFA",
+        "description": "50–69% right SFA-mid/dist stenosis, ABI 0.75.",
+        "impression": "Moderate right superficial femoral artery stenosis, mid-to-distal segment, with post-stenotic flow dampening extending to the popliteal artery. PSV doubling (280 cm/s) and waveform conversion to monophasic-phasic are consistent with 50–69% stenosis by velocity criteria. Right ABI 0.75 — moderate peripheral arterial disease. Flow through the profunda femoris and below-knee runoff is preserved."
+      },
+      "severeClaudicationLeftSfaOcclusion": {
+        "name": "Severe claudication — left SFA occlusion",
+        "description": "Left SFA-mid occluded, collateralized, ABI 0.45.",
+        "impression": "Occlusion of the left superficial femoral artery, mid segment, with reconstitution of the popliteal artery via profunda femoris collaterals. Distal runoff demonstrates damped monophasic flow in all three tibial vessels. Left ABI 0.45 — moderate-to-severe peripheral arterial disease. Right arterial tree patent with triphasic waveforms."
+      },
+      "cliRightTissueLoss": {
+        "name": "CLI — right, tissue loss",
+        "description": "Multilevel right CLI, Rutherford 5. ABI 0.30, TBI 0.15.",
+        "impression": "Multilevel critical limb ischemia of the right lower extremity with tissue loss. Inflow disease at the iliofemoral level suggested by dampened common femoral artery waveform. Mid superficial femoral artery stenosis >70% with distal SFA occlusion. Above-knee popliteal flow is absent. Runoff restricted to the peroneal artery with dampened monophasic flow; anterior and posterior tibial arteries are occluded. Right ABI 0.30, TBI 0.15 — severe limb-threatening ischemia (Rutherford 5)."
+      },
+      "aortoiliacDiseaseBilateral": {
+        "name": "Aortoiliac inflow disease (bilateral)",
+        "description": "Bilateral CFA damped waveforms, ABI 0.60 bilateral.",
+        "impression": "Hemodynamic features suggestive of bilateral aortoiliac inflow disease — bilaterally dampened common femoral artery waveforms with preservation of triphasic (though reduced-amplitude) flow distally. Bilateral ABI 0.60 — moderate peripheral arterial disease, symmetric pattern consistent with inflow limitation. Direct iliac visualization is limited by duplex ultrasound; cross-sectional imaging recommended."
+      },
+      "postBypassGraftPatentRight": {
+        "name": "Post-bypass graft — patent (right)",
+        "description": "Right fem-pop bypass patent, ABI 0.95.",
+        "impression": "Patent right femoropopliteal bypass graft at post-operative surveillance duplex. Proximal anastomosis, graft body, and distal anastomosis all demonstrate normal triphasic flow without hemodynamically significant stenosis. Inflow common femoral artery is unobstructed. Distal runoff is intact with triphasic flow in the below-knee popliteal and tibial arteries. Right ABI 0.95 — normal. Findings consistent with a well-functioning bypass."
+      },
+      "postStentPatentLeftSfa": {
+        "name": "Post-stent — patent (left SFA)",
+        "description": "Left SFA stent patent, ABI 0.95.",
+        "impression": "Status post left superficial femoral artery stenting. In-stent flow is triphasic with acceptable peak systolic velocity (180 cm/s) and no step-up at the stent margins, indicating no in-stent restenosis. Left ABI 0.95 — normal. Inflow and outflow are patent."
+      },
+      "diabeticNonCompressibleRight": {
+        "name": "Diabetic non-compressible (right)",
+        "description": "Right ABI >1.3 (medial calcinosis), rely on TBI.",
+        "impression": "Non-compressible right ankle arteries (ABI >1.3) consistent with medial arterial calcinosis — a common finding in diabetes and chronic kidney disease. Ankle pressure is therefore non-diagnostic for hemodynamic status. Toe-Brachial Index of 0.43 indicates moderate peripheral arterial disease. Waveforms demonstrate damped monophasic flow in the anterior and posterior tibial arteries, corroborating distal disease. Clinical correlation with symptoms and consideration of supplementary imaging (CTA or angiography) recommended."
+      }
+    },
+    "rec": {
+      "mildSfaRisk": "Atherosclerotic risk-factor modification — statin, antiplatelet, BP/diabetes/smoking control per ESVS 2024. Supervised exercise therapy if symptomatic. Repeat surveillance duplex in 12 months.",
+      "moderateClaudicationOMT": "Optimal medical therapy per ESVS 2024 — high-intensity statin, antiplatelet (clopidogrel or DAPT for short-term), HbA1c <7%, smoking cessation. Supervised exercise therapy first-line. Cilostazol 100 mg BID unless contraindicated. Re-evaluate at 3 months; if lifestyle-limiting claudication persists, consider CTA and endovascular revascularization.",
+      "severeSfaOcclusion": "Urgent vascular surgery consultation for revascularization planning. Obtain CT angiography to characterize lesion length, calcification, and runoff. Per ESVS 2024: TASC B/C SFA occlusion — endovascular-first strategy for most patients; open bypass for long (>25 cm) heavily calcified lesions with poor runoff. Initiate optimal medical therapy immediately.",
+      "cliEmergent": "Emergent vascular surgery and wound-care consultation. CT angiography or MR angiography head-to-toe for revascularization planning. Per ESVS 2024 CLI guidance: revascularization offered to all patients with anticipated benefit. Urgent initiation of analgesia, antibiotic coverage if infected wound, and optimal medical therapy. Consider hyperbaric oxygen and advanced wound care as adjunct. Limb salvage is the goal; amputation reserved for non-reconstructible disease or failed revascularization.",
+      "aortoiliacCTA": "CT angiography or MR angiography of the abdomen-pelvis to directly image the aortoiliac segment and grade stenosis/occlusion length. Evaluate for Leriche syndrome if buttock claudication with erectile dysfunction. Optimal medical therapy initiated. Endovascular iliac intervention is first-line per ESVS 2024 for most patients with claudication or rest pain attributable to iliac disease.",
+      "postBypassSurveillance": "Continue routine graft surveillance duplex every 6 months for first 2 years, then annually per SVS 2018 practice guideline. Immediate return for recurrent claudication or rest pain. Continue antiplatelet therapy and statin.",
+      "postStentDapt": "Continue dual antiplatelet therapy per interventionalist's regimen (typically 1–3 months post-procedure) then lifelong single antiplatelet. Statin at maximum tolerated dose. Duplex surveillance at 1, 6, and 12 months post-stent, then annually. Prompt re-evaluation if return of claudication symptoms.",
+      "diabeticNonCompressible": "ABI is non-diagnostic due to medial calcinosis; rely on TBI, toe pressures, and waveform analysis for hemodynamic assessment. If symptoms of claudication or rest pain, proceed to CT angiography or invasive angiography. Aggressive atherosclerotic risk factor management — glycemic control, statin, antiplatelet, smoking cessation. Foot-care education and annual foot exam essential. Re-evaluate duplex in 6–12 months or sooner if symptomatic."
+    }
+  }
+}

@@ -7,6 +7,7 @@ import { STORAGE_KEYS } from './constants/storage-keys';
 import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { VenousLEForm } from './components/studies/venous-le/VenousLEForm';
+import { ArterialLEForm } from './components/studies/arterial-le/ArterialLEForm';
 import { VersionFooter } from './components/layout/VersionFooter';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
@@ -22,7 +23,7 @@ const initialColorScheme = colorSchemeManager.get('auto');
  *   /demo/anatomy       → AnatomyDemo smoke test
  *   (anything else)     → AppShell landing page
  */
-type Route = 'anatomy-demo' | 'venous-le' | 'shell';
+type Route = 'anatomy-demo' | 'venous-le' | 'arterial-le' | 'shell';
 
 function currentRoute(): Route {
   if (typeof window === 'undefined') return 'shell';
@@ -30,6 +31,9 @@ function currentRoute(): Route {
   if (path.endsWith('/demo/anatomy')) return 'anatomy-demo';
   if (path.endsWith('/venous-le') || path.endsWith('/studies/venous-le')) {
     return 'venous-le';
+  }
+  if (path.endsWith('/arterial-le') || path.endsWith('/studies/arterial-le')) {
+    return 'arterial-le';
   }
   return 'shell';
 }
@@ -40,6 +44,8 @@ function renderRoute(route: Route): React.ReactElement {
       return <AnatomyDemo />;
     case 'venous-le':
       return <VenousLEForm />;
+    case 'arterial-le':
+      return <ArterialLEForm />;
     case 'shell':
     default:
       return <AppShell />;

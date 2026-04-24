@@ -241,6 +241,11 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
               />
             </View>
           </View>
+        ) : form.studyType === 'arterialLE' ? (
+          // Arterial LE: narrative-first layout (page 1 = shell only; detailed
+          // tables live on page 2 via the generic Narrative + Recommendations
+          // sections). A dedicated arterial findings table is a future upgrade.
+          null
         ) : (
           <FindingsTable findings={findings} labels={labels.findings} />
         )}

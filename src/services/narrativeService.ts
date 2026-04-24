@@ -12,11 +12,13 @@
 
 import type { FormState } from '../types/form';
 import type { VenousSegmentFindings, VenousSegmentFinding } from '../components/studies/venous-le/config';
+import type { ArterialSegmentFindings, SegmentalPressures } from '../components/studies/arterial-le/config';
 import {
   generateNarrative,
   type NarrativeOutput,
   type NarrativeKeyEntry,
 } from '../components/studies/venous-le/narrativeGenerator';
+import { generateArterialNarrative } from '../components/studies/arterial-le/narrativeGenerator';
 
 export { generateNarrative };
 export type { NarrativeOutput, NarrativeKeyEntry };
@@ -43,24 +45,27 @@ const EMPTY_NARRATIVE: NarrativeOutput = Object.freeze({
  */
 export function narrativeFromFormState(form: FormState): NarrativeOutput {
   if (
-    form.studyType !== 'venousLEBilateral' &&
-    form.studyType !== 'venousLERight' &&
-    form.studyType !== 'venousLELeft'
+    form.studyType === 'venousLEBilateral' ||
+    form.studyType === 'venousLERight' ||
+    form.studyType === 'venousLELeft'
   ) {
-    return EMPTY_NARRATIVE;
+    const raw = form.parameters['segmentFindings'];
+    if (!raw || typeof raw !== 'object') return EMPTY_NARRATIVE;
+    return generateNarrative(raw as unknown as VenousSegmentFindings);
   }
 
-  const raw = form.parameters['segmentFindings'];
-  if (!raw || typeof raw !== 'object') {
-    // `parameters` is a loose record (string|number|boolean); the table UI
-    // stores the findings map outside this shape. When not present there's
-    // nothing to narrate.
-    return EMPTY_NARRATIVE;
+  if (form.studyType === 'arterialLE') {
+    const rawFindings = form.parameters['segmentFindings'];
+    const rawPressures = form.parameters['pressures'];
+    if (!rawFindings || typeof rawFindings !== 'object') return EMPTY_NARRATIVE;
+    const findings = rawFindings as unknown as ArterialSegmentFindings;
+    const pressures = (rawPressures && typeof rawPressures === 'object'
+      ? rawPressures
+      : {}) as unknown as SegmentalPressures;
+    return generateArterialNarrative(findings, pressures);
   }
 
-  // Narrow cast — the form owner guarantees shape when the key is present.
-  const findings = raw as unknown as VenousSegmentFindings;
-  return generateNarrative(findings);
+  return EMPTY_NARRATIVE;
 }
 
 /**

@@ -1,0 +1,61 @@
+/* ArterialLEForm — top-level container */
+
+.wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 20px 120px 20px;
+}
+
+.newCaseButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--emr-bg-card);
+  color: var(--emr-text-primary);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.newCaseButton:hover {
+  background: var(--emr-bg-hover);
+  border-color: var(--emr-border-focus);
+}
+
+.newCaseButton:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 2px;
+}
+
+.templateSelect {
+  padding: 8px 14px;
+  background: var(--emr-bg-input);
+  color: var(--emr-text-primary);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.templateSelect:hover {
+  border-color: var(--emr-border-focus);
+}
+
+.templateSelect:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 1px;
+}
+
+.textSection {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  padding: 16px 20px;
+}
