@@ -1,36 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { memo, useCallback, useMemo, type MouseEvent } from 'react';
-import {
-  IconActivity,
-  IconArrowRight,
-  IconBrain,
-  IconHeartbeat,
-  IconShieldCheckered,
-  IconStethoscope,
-  IconWaveSawTool,
-} from '@tabler/icons-react';
+import { IconArrowRight, IconStethoscope } from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { STUDY_PLUGINS } from '../studies';
 import classes from './StudyPicker.module.css';
-
-type IconProps = { size?: number | string; stroke?: number };
-
-interface StudyDefinition {
-  key: string;
-  translationKey: string;
-  icon: React.ComponentType<IconProps>;
-  available: boolean;
-}
-
-// Order: Phase-1 first, then the four Phase-2..5 studies.
-const STUDIES: ReadonlyArray<StudyDefinition> = [
-  { key: 'venousLE', translationKey: 'studies.venousLE', icon: IconActivity, available: true },
-  { key: 'arterialLE', translationKey: 'studies.arterialLE', icon: IconWaveSawTool, available: true },
-  { key: 'carotid', translationKey: 'studies.carotid', icon: IconBrain, available: true },
-  { key: 'abdominalVenous', translationKey: 'studies.abdominalVenous', icon: IconHeartbeat, available: false },
-  { key: 'dialysisAortic', translationKey: 'studies.dialysisAortic', icon: IconShieldCheckered, available: false },
-];
 
 /**
  * StudyPicker — landing grid for the angiology study-type selection.
@@ -42,7 +17,7 @@ const STUDIES: ReadonlyArray<StudyDefinition> = [
 export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   const { t } = useTranslation();
 
-  const cards = useMemo(() => STUDIES, []);
+  const cards = useMemo(() => STUDY_PLUGINS, []);
 
   const handlePointerMove = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -53,19 +28,11 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   }, []);
 
   const handleStartStudy = useCallback((studyKey: string) => {
-    if (studyKey === 'venousLE') {
-      window.location.pathname = '/venous-le';
+    const plugin = STUDY_PLUGINS.find((p) => p.key === studyKey);
+    if (plugin?.route) {
+      window.location.pathname = plugin.route;
       return;
     }
-    if (studyKey === 'arterialLE') {
-      window.location.pathname = '/arterial-le';
-      return;
-    }
-    if (studyKey === 'carotid') {
-      window.location.pathname = '/carotid';
-      return;
-    }
-    // Remaining study types will be wired in later phases.
     // eslint-disable-next-line no-console
     console.info('[StudyPicker] start study (not yet available):', studyKey);
   }, []);

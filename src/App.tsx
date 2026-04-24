@@ -6,60 +6,34 @@ import { mantineTheme, cssVariablesResolver, createAppColorSchemeManager } from 
 import { STORAGE_KEYS } from './constants/storage-keys';
 import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
-import { VenousLEForm } from './components/studies/venous-le/VenousLEForm';
-import { ArterialLEForm } from './components/studies/arterial-le/ArterialLEForm';
-import { CarotidForm } from './components/studies/carotid/CarotidForm';
+import { findPluginByPath } from './components/studies';
 import { VersionFooter } from './components/layout/VersionFooter';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
 const initialColorScheme = colorSchemeManager.get('auto');
 
 /**
- * Very lightweight route switch — we add the Phase-1 Venous LE form here.
- * The frontend-designer agent will replace this with a real router later.
+ * Very lightweight route switch.
  *
  * Routes:
- *   /venous-le          → VenousLEForm (Phase 1)
- *   /studies/venous-le  → alias of the above
  *   /demo/anatomy       → AnatomyDemo smoke test
+ *   Every STUDY_PLUGINS entry with a `route` wires its FormComponent.
+ *     - Legacy alias `/studies/<tail>` also resolves.
  *   (anything else)     → AppShell landing page
  */
-type Route = 'anatomy-demo' | 'venous-le' | 'arterial-le' | 'carotid' | 'shell';
-
-function currentRoute(): Route {
-  if (typeof window === 'undefined') return 'shell';
+function renderRoute(): React.ReactElement {
+  if (typeof window === 'undefined') return <AppShell />;
   const path = window.location.pathname.replace(/\/+$/, '');
-  if (path.endsWith('/demo/anatomy')) return 'anatomy-demo';
-  if (path.endsWith('/venous-le') || path.endsWith('/studies/venous-le')) {
-    return 'venous-le';
+  if (path.endsWith('/demo/anatomy')) return <AnatomyDemo />;
+  const plugin = findPluginByPath(path);
+  if (plugin?.FormComponent) {
+    const Form = plugin.FormComponent;
+    return <Form />;
   }
-  if (path.endsWith('/arterial-le') || path.endsWith('/studies/arterial-le')) {
-    return 'arterial-le';
-  }
-  if (path.endsWith('/carotid') || path.endsWith('/studies/carotid')) {
-    return 'carotid';
-  }
-  return 'shell';
-}
-
-function renderRoute(route: Route): React.ReactElement {
-  switch (route) {
-    case 'anatomy-demo':
-      return <AnatomyDemo />;
-    case 'venous-le':
-      return <VenousLEForm />;
-    case 'arterial-le':
-      return <ArterialLEForm />;
-    case 'carotid':
-      return <CarotidForm />;
-    case 'shell':
-    default:
-      return <AppShell />;
-  }
+  return <AppShell />;
 }
 
 export default function App() {
-  const route = currentRoute();
   return (
     <MantineProvider
       theme={mantineTheme}
@@ -70,7 +44,7 @@ export default function App() {
       <ThemeProvider>
         <TranslationProvider>
           <Notifications position="top-right" zIndex={2000} />
-          {renderRoute(route)}
+          {renderRoute()}
           <VersionFooter />
         </TranslationProvider>
       </ThemeProvider>
