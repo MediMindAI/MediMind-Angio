@@ -202,7 +202,7 @@
       "normal": "ნორმალური",
       "incompetent": "ინკომპეტენტური",
       "ablated": "აბლირებული",
-      "inconclusive": "არადამაჯერებელი"
+      "inconclusive": "დაუდგენელი"
     },
     "bulk": {
       "allNormal": "ყველა ნორმაში",
@@ -273,7 +273,7 @@
       "normal": "ნორმალური",
       "partial": "ნაწილობრივი",
       "non-compressible": "არაკომპრესირებადი",
-      "inconclusive": "არადამაჯერებელი"
+      "inconclusive": "დაუდგენელი"
     },
     "thrombosis": {
       "none": "არ არის",
@@ -285,20 +285,20 @@
       "normal": "ნორმალური",
       "reduced": "შემცირებული",
       "absent": "არარსებული",
-      "inconclusive": "არადამაჯერებელი"
+      "inconclusive": "დაუდგენელი"
     },
     "phasicity": {
       "normal": "ნორმალური (ფაზური)",
       "continuous": "უწყვეტი",
       "pulsatile": "პულსაციური",
       "absent": "არარსებული",
-      "inconclusive": "არადამაჯერებელი"
+      "inconclusive": "დაუდგენელი"
     },
     "augmentation": {
       "normal": "ნორმალური",
       "reduced": "შემცირებული",
       "absent": "არარსებული",
-      "inconclusive": "არადამაჯერებელი"
+      "inconclusive": "დაუდგენელი"
     },
     "refluxTable": {
       "title": "რეფლუქსის ხანგრძლივობა და ზომები",

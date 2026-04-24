@@ -193,6 +193,17 @@
     "anatomy": {
       "title": "Carotid anatomy",
       "subtitle": "Vessel colors reflect severity (normal to occluded)."
+    },
+    "form": {
+      "title": "Carotid & Vertebral Duplex Study",
+      "subtitle": "Bilateral carotid, vertebral, and subclavian artery assessment"
+    },
+    "findingsTable": {
+      "psvShort": "PSV",
+      "edvShort": "EDV",
+      "flowShort": "Flow",
+      "plaqueShort": "Plaque",
+      "ratioShort": "ICA/CCA"
     }
   }
 }

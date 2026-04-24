@@ -51,7 +51,7 @@ export const FormActions = memo(function FormActions({
   onSaveDraft,
   baseFilename,
 }: FormActionsProps): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfPreviewing, setPdfPreviewing] = useState(false);
 
@@ -78,7 +78,7 @@ export const FormActions = memo(function FormActions({
       import('../studies/carotid/config'),
     ]);
     await registerFontsAsync();
-    const labels = buildReportLabels(t);
+    const labels = buildReportLabels(t, form, lang);
     const { SEVERITY_COLORS } = await import('../../constants/theme-colors');
 
     // Resolve anatomy SVGs for venous forms before rendering.

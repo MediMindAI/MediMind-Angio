@@ -22,7 +22,8 @@
     "subtitle": "Доступные ангиологические исследования",
     "phase1Badge": "Доступно",
     "comingSoon": "Скоро",
-    "startStudy": "Начать"
+    "startStudy": "Начать",
+    "backToStudies": "← Назад к списку исследований"
   },
   "studies": {
     "venousLE": {

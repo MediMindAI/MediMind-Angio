@@ -223,6 +223,17 @@
     "anatomy": {
       "title": "Arterial anatomy",
       "subtitle": "Segment colors reflect severity (normal to occluded)."
+    },
+    "form": {
+      "title": "Lower Extremity Arterial Duplex Study",
+      "subtitle": "Bilateral arterial waveform, pressure, and stenosis assessment"
+    },
+    "findingsTable": {
+      "waveShort": "Wave",
+      "psvShort": "PSV",
+      "stenShort": "Sten.",
+      "plaqueShort": "Plaque",
+      "occlShort": "Occl."
     }
   }
 }

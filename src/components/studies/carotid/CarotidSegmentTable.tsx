@@ -198,7 +198,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                     data={flowOptions}
                     size="sm"
                     data-testid={`carotid-${r.fullId}-flow`}
-                    placeholder="—"
                   />
                   {isVertebral(r.base) ? (
                     <VertebralStealInline
@@ -218,7 +217,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                     data={plaqueOptions}
                     size="sm"
                     data-testid={`carotid-${r.fullId}-plaque`}
-                    placeholder="—"
                   />
                 </div>
 

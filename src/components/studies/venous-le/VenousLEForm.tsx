@@ -39,6 +39,7 @@ import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from 
 import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
 import { ConfirmDialog } from '../../common';
 import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
+import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
 import { type SegmentTableView } from '../../form/SegmentTable';
 import { ImpressionBlock } from '../../form/ImpressionBlock';
@@ -788,6 +789,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
       <div className={classes.container}>
         <Stack gap="md">
+          <BackToStudiesButton />
           <StudyHeader value={state.header} onChange={handleHeader} />
 
           <SegmentAssessmentCard

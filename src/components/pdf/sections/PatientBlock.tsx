@@ -34,6 +34,11 @@ export interface PatientBlockLabels {
   readonly informedConsentNo?: string;
   /** Localized labels for `patientPosition` enum values. */
   readonly positionLabels?: Readonly<Record<string, string>>;
+  /**
+   * Optional localized CPT description. If set, overrides `header.cptCode.display`
+   * (which is frozen at form-init time and may be English even in Georgian PDFs).
+   */
+  readonly cptLocalizedDisplay?: string;
 }
 
 export interface PatientBlockProps {
@@ -123,7 +128,7 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
       ? header.icd10Codes.map((c) => c.code).join(', ')
       : undefined;
   const cptDisplay = header.cptCode
-    ? `${header.cptCode.code} — ${header.cptCode.display}`
+    ? `${header.cptCode.code} — ${labels.cptLocalizedDisplay ?? header.cptCode.display}`
     : undefined;
   const consentDisplay =
     header.informedConsent === true

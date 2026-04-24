@@ -22,7 +22,8 @@
     "subtitle": "Available angiology studies",
     "phase1Badge": "Available",
     "comingSoon": "Coming soon",
-    "startStudy": "Start study"
+    "startStudy": "Start study",
+    "backToStudies": "← Back to studies"
   },
   "studies": {
     "venousLE": {

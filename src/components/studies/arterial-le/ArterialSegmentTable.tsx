@@ -195,7 +195,6 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                     data={stenosisOptions}
                     size="sm"
                     data-testid={`arterial-${r.fullId}-stenosis`}
-                    placeholder="—"
                   />
                 </div>
 
@@ -213,7 +212,6 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                     data={plaqueOptions}
                     size="sm"
                     data-testid={`arterial-${r.fullId}-plaque`}
-                    placeholder="—"
                   />
                 </div>
 

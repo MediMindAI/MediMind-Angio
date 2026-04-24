@@ -42,13 +42,44 @@ import {
 } from '../studies/carotid/config';
 import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
+import type { FormState } from '../../types/form';
+import type { Language } from '../../contexts/TranslationContext';
+import { cptDisplay as formatCptDisplay, findCptByCode } from '../../constants/vascular-cpt';
 
 export type TFunction = (key: string, fallbackOrParams?: string | Record<string, unknown>) => string;
 
 /**
  * Build the full label bundle for the PDF from the caller's translate function.
+ *
+ * `form` + `lang` are used to:
+ *   - dispatch the PDF title key on `form.studyType` (so arterial + carotid don't
+ *     ship with the venous title)
+ *   - re-derive the CPT-code display from `VASCULAR_CPT` using the active language
+ *     (the form-stored display is frozen at form-init time in English)
  */
-export function buildReportLabels(t: TFunction): ReportLabels {
+export function buildReportLabels(
+  t: TFunction,
+  form?: FormState,
+  lang?: Language,
+): ReportLabels {
+  const titleKey =
+    form?.studyType === 'arterialLE'
+      ? 'arterialLE.form.title'
+      : form?.studyType === 'carotid'
+      ? 'carotid.form.title'
+      : 'venousLE.form.title';
+  const subtitleKey =
+    form?.studyType === 'arterialLE'
+      ? 'arterialLE.form.subtitle'
+      : form?.studyType === 'carotid'
+      ? 'carotid.form.subtitle'
+      : 'venousLE.form.subtitle';
+
+  // Re-derive localized CPT display from the lookup table using the active language.
+  const cptCode = form?.header.cptCode?.code;
+  const cptEntry = cptCode ? findCptByCode(cptCode) : undefined;
+  const cptLocalizedDisplay =
+    cptEntry && lang ? formatCptDisplay(cptEntry, lang) : undefined;
   // Per-segment names keyed by base id — the FindingsTable walks VENOUS_LE_SEGMENTS.
   const segmentName: Record<VenousLESegmentBase, string> = VENOUS_LE_SEGMENTS.reduce(
     (acc, base) => {
@@ -160,8 +191,8 @@ export function buildReportLabels(t: TFunction): ReportLabels {
   );
 
   return {
-    title: t('venousLE.form.title', t('venousLE.title', 'Lower Extremity Venous Duplex')),
-    subtitle: t('venousLE.form.subtitle', 'Bilateral reflux + DVT assessment'),
+    title: t(titleKey, 'Vascular Duplex Report'),
+    subtitle: t(subtitleKey, ''),
     preliminary: t('venousLE.status.preliminary', 'Preliminary'),
     patient: {
       patientName: t('venousLE.header.patientName', 'Patient name'),
@@ -182,6 +213,7 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       informedConsentYes: t('venousLE.header.informedConsentYes', 'Yes'),
       informedConsentNo: t('venousLE.header.informedConsentNo', 'No'),
       positionLabels,
+      cptLocalizedDisplay,
     },
     diagram: {
       anterior: t('anatomy.view.le-anterior', 'Anterior view'),

@@ -25,6 +25,7 @@ import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from 
 import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
 import { ConfirmDialog, EMRButton } from '../../common';
 import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
+import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
 import { SaveTemplateDialog, type SaveTemplatePayload } from '../../form/SaveTemplateDialog';
@@ -439,6 +440,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   return (
     <div className={classes.wrap}>
       <Stack gap="md">
+        <BackToStudiesButton />
         <StudyHeader value={state.header} onChange={handleHeaderChange} />
 
         <Group justify="space-between" wrap="wrap" gap="sm">
