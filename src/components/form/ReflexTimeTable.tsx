@@ -191,6 +191,7 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
                 step={100}
                 size="sm"
                 data-testid={`num-${r.fullId}-refluxDurationMs`}
+                warningMode="icon"
                 {...(isAbnormalReflux
                   ? { warningMessage: t('venousLE.reflux.abnormal', { threshold }) }
                   : {})}

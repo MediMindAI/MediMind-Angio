@@ -33,16 +33,23 @@ export interface FindingsTableLabels {
 export interface FindingsTableProps {
   readonly findings: VenousSegmentFindings;
   readonly labels: FindingsTableLabels;
+  /**
+   * When set, render only the given side (no vertical stacking of Right over
+   * Left). Used by the page-1 layout that puts the two side tables in a
+   * horizontal row so each table owns ~50% of the page width and column
+   * headers have room to breathe.
+   */
+  readonly singleSide?: Side;
 }
 
 type Side = 'left' | 'right';
 
 const COL_FLEX = {
-  segment: 3,
-  reflux: 1.4,
-  ap: 1.1,
-  trans: 1.1,
-  depth: 1.1,
+  segment: 2.4,
+  reflux: 1.3,
+  ap: 1.05,
+  trans: 1.05,
+  depth: 1.05,
 } as const;
 
 const styles = StyleSheet.create({
@@ -62,16 +69,16 @@ const styles = StyleSheet.create({
   columnHeader: {
     flexDirection: 'row',
     backgroundColor: '#e2e8f0',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    fontSize: PDF_FONT_SIZES.footnote,
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    fontSize: 7.5,
     fontWeight: 'bold',
     color: PDF_THEME.text,
   },
   row: {
     flexDirection: 'row',
     paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     borderBottomWidth: 0.5,
     borderBottomColor: PDF_THEME.border,
     borderBottomStyle: 'solid',
@@ -84,6 +91,10 @@ const styles = StyleSheet.create({
   },
   cell: {
     fontSize: PDF_FONT_SIZES.label,
+  },
+  headCell: {
+    fontSize: 7.5,
+    lineHeight: 1.1,
   },
   cellRight: {
     textAlign: 'right',
@@ -154,14 +165,14 @@ function SideTable({
     <View style={styles.wrapper}>
       <Text style={styles.sideHeader}>{headerLabel}</Text>
       <View style={styles.columnHeader}>
-        <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.cell }}>
+        <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.headCell }}>
           {labels.segment}
         </Text>
         <Text
           style={{
             flexBasis: 0,
             flexGrow: COL_FLEX.reflux,
-            ...styles.cell,
+            ...styles.headCell,
             ...styles.cellRight,
           }}
         >
@@ -171,7 +182,7 @@ function SideTable({
           style={{
             flexBasis: 0,
             flexGrow: COL_FLEX.ap,
-            ...styles.cell,
+            ...styles.headCell,
             ...styles.cellRight,
           }}
         >
@@ -181,7 +192,7 @@ function SideTable({
           style={{
             flexBasis: 0,
             flexGrow: COL_FLEX.trans,
-            ...styles.cell,
+            ...styles.headCell,
             ...styles.cellRight,
           }}
         >
@@ -191,7 +202,7 @@ function SideTable({
           style={{
             flexBasis: 0,
             flexGrow: COL_FLEX.depth,
-            ...styles.cell,
+            ...styles.headCell,
             ...styles.cellRight,
           }}
         >
@@ -252,7 +263,14 @@ function SideTable({
   );
 }
 
-export function FindingsTable({ findings, labels }: FindingsTableProps): ReactElement {
+export function FindingsTable({
+  findings,
+  labels,
+  singleSide,
+}: FindingsTableProps): ReactElement {
+  if (singleSide) {
+    return <SideTable side={singleSide} findings={findings} labels={labels} />;
+  }
   return (
     <View>
       <SideTable side="right" findings={findings} labels={labels} />

@@ -204,29 +204,41 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
         <PatientBlock header={form.header} labels={labels.patient} />
 
         {isVenous ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              width: pageWidth,
-            }}
-          >
+          <View>
+            {/* Tables row — right + left side tables sit on the same horizontal
+                line so column headers have ~half the page each (~240pt vs the
+                old ~265pt shared between two stacked tables). */}
             <View
               style={{
-                width: '45%',
-                paddingRight: 4,
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                width: pageWidth,
+                marginBottom: 4,
               }}
             >
+              <View style={{ width: '50%', paddingRight: 3 }}>
+                <FindingsTable
+                  findings={findings}
+                  labels={labels.findings}
+                  singleSide="right"
+                />
+              </View>
+              <View style={{ width: '50%', paddingLeft: 3 }}>
+                <FindingsTable
+                  findings={findings}
+                  labels={labels.findings}
+                  singleSide="left"
+                />
+              </View>
+            </View>
+            {/* Diagram row — full width below the tables. */}
+            <View style={{ width: pageWidth }}>
               <DiagramSection
                 anterior={anatomy?.anterior ?? null}
                 posterior={anatomy?.posterior ?? null}
                 labels={labels.diagram}
-                viewWidthPt={110}
+                viewWidthPt={150}
               />
-            </View>
-            <View style={{ width: '55%', paddingLeft: 4 }}>
-              <FindingsTable findings={findings} labels={labels.findings} />
             </View>
           </View>
         ) : (

@@ -267,6 +267,16 @@ export interface EMRNumberInputProps extends EMRFieldBaseProps {
 
   /** Clamp value to min/max on blur */
   clampBehavior?: 'blur' | 'strict' | 'none';
+
+  /**
+   * How `warningMessage` should render. `'inline'` (default) shows the message
+   * below the input via the field wrapper. `'icon'` suppresses the below-input
+   * message and instead shows a red alert icon inside the input's right
+   * section, with the message exposed as a tooltip and `aria-label` suffix —
+   * useful inside dense table grids where a below-input line would break row
+   * alignment.
+   */
+  warningMode?: 'inline' | 'icon';
 }
 
 /**

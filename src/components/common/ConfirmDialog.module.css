@@ -3,12 +3,35 @@
 .content {
   border-radius: var(--emr-border-radius-xl);
   border: 1px solid var(--emr-border-color);
-  box-shadow: var(--emr-shadow-lg);
+  box-shadow: var(--emr-shadow-xl);
+  overflow: hidden;
 }
 
 .body {
-  padding: 20px 22px 18px 22px;
+  padding: 22px 24px 18px 24px;
   background: var(--emr-bg-card);
+}
+
+.iconChip {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.iconChipInfo {
+  background: linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 60%, var(--emr-accent) 100%);
+  color: #ffffff;
+}
+
+.iconChipDanger {
+  background: var(--emr-error-alpha-10);
+  color: var(--emr-error);
+  box-shadow: inset 0 0 0 1px var(--emr-error-alpha-20);
 }
 
 .title {
@@ -22,5 +45,11 @@
 .message {
   font-size: var(--emr-font-sm);
   color: var(--emr-text-secondary);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.actions {
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--emr-border-color);
 }

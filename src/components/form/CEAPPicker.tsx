@@ -13,7 +13,7 @@
 import { memo, useCallback, useMemo } from 'react';
 import { Box, Grid, Group, Stack, Text } from '@mantine/core';
 import { IconCategory2 } from '@tabler/icons-react';
-import { EMRCollapsibleSection, EMRBadge } from '../common';
+import { EMRCollapsibleSection } from '../common';
 import { EMRRadioGroup, EMRCheckbox } from '../shared/EMRFormFields';
 import type { EMRRadioOption } from '../shared/EMRFormFields';
 import type {
@@ -158,9 +158,7 @@ export const CEAPPicker = memo(function CEAPPicker({
   const preview = (
     <Group gap="xs" align="center" wrap="nowrap" style={{ flexShrink: 0 }}>
       <Text className={classes.previewLabel}>{t('venousLE.ceap.preview')}</Text>
-      <EMRBadge variant="info" size="sm">
-        {formatted}
-      </EMRBadge>
+      <span className={classes.previewChip}>{formatted}</span>
     </Group>
   );
 

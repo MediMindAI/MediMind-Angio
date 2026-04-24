@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useId, forwardRef, memo, useCallback } from 'react';
-import { NumberInput } from '@mantine/core';
+import { NumberInput, Tooltip } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import type { EMRNumberInputProps } from './EMRFieldTypes';
 import { EMRFieldWrapper } from './EMRFieldWrapper';
 import './emr-fields.css';
@@ -52,6 +53,7 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
       hideControls = false,
       allowNegative = true,
       clampBehavior = 'blur',
+      warningMode = 'inline',
     },
     ref
   ): React.JSX.Element => {
@@ -77,9 +79,29 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
 
     const state = getValidationState();
 
+    // In icon-mode, suppress the below-input warning row so dense table grids
+    // keep a constant row height. The alert icon + tooltip carry the message.
+    const iconModeActive = warningMode === 'icon' && state === 'warning' && !!warningMessage;
+    const warningForWrapper = iconModeActive ? undefined : warningMessage;
+    const computedAriaLabel = iconModeActive && ariaLabel
+      ? `${ariaLabel} — ${warningMessage}`
+      : ariaLabel;
+
+    const effectiveRightSection = iconModeActive ? (
+      <Tooltip label={warningMessage} withArrow position="top" openDelay={250}>
+        <span
+          className="emr-input-warning-icon"
+          role="img"
+          aria-label={warningMessage}
+        >
+          <IconAlertTriangle size={14} stroke={2} />
+        </span>
+      </Tooltip>
+    ) : rightSection;
+
     const hasMessage = (state === 'error' && typeof error === 'string') ||
       (state === 'success' && !!successMessage) ||
-      (state === 'warning' && !!warningMessage) ||
+      (state === 'warning' && !!warningForWrapper) ||
       (state === 'default' && !!helpText);
     const messageElementId = hasMessage ? `${inputId}-${state === 'default' ? 'help' : state}` : undefined;
     const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
@@ -109,7 +131,7 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
         helpText={helpText}
         error={error ?? undefined}
         successMessage={successMessage}
-        warningMessage={warningMessage}
+        warningMessage={warningForWrapper}
         validationState={validationState}
         size={size}
         fullWidth={fullWidth}
@@ -141,12 +163,12 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
           allowNegative={allowNegative}
           clampBehavior={clampBehavior}
           required={required}
-          aria-label={ariaLabel}
+          aria-label={computedAriaLabel}
           aria-describedby={computedAriaDescribedBy}
           aria-invalid={state === 'error'}
           data-testid={dataTestId}
           leftSection={leftSection}
-          rightSection={rightSection}
+          rightSection={effectiveRightSection}
           error={!!error}
           classNames={{
             input: inputClasses,

@@ -1,37 +1,84 @@
 /* CEAPPicker — collapsible classification axes */
 
 .body {
-  padding: 8px 0;
+  padding: 12px 4px 4px 4px;
 }
 
-.axis {
-  padding: 14px 16px;
-  background: var(--emr-bg-hover);
-  border: 1px solid var(--emr-border-color);
-  border-radius: var(--emr-border-radius-lg);
-  height: 100%;
-}
-
-.axisTitle {
-  font-size: var(--emr-font-xs);
-  font-weight: var(--emr-font-semibold);
-  color: var(--emr-secondary);
-  text-transform: uppercase;
-  letter-spacing: var(--emr-letter-spacing-wide);
-  margin-bottom: 10px;
-}
+/* ============================================================================
+   Header preview pill — sits on the blue gradient header of the collapsible
+   section. Must use pure white text for contrast on the dark gradient.
+   ============================================================================ */
 
 .previewLabel {
   font-size: var(--emr-font-sm);
   font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-inverse);
+  color: #ffffff;
   letter-spacing: 0.01em;
   white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.previewChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+/* ============================================================================
+   Axis cards — one per CEAP axis (C / E / A / P) + Modifiers
+   ============================================================================ */
+
+.axis {
+  padding: 16px 18px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  height: 100%;
+  box-shadow: var(--emr-shadow-sm);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.axis:hover {
+  border-color: var(--emr-border-focus);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.axisTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.axisTitle::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  background: var(--emr-gradient-primary, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 50%, var(--emr-accent) 100%));
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
 @media (max-width: 575px) {
   .axis {
-    padding: 12px;
+    padding: 14px;
   }
 }

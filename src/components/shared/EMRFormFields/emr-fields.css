@@ -505,6 +505,28 @@
   background-color: var(--emr-secondary-alpha-10) !important;
 }
 
+/* ==================== INLINE WARNING ICON (icon-mode) ==================== */
+/* Used when EMRNumberInput is rendered in `warningMode="icon"` inside dense
+   table grids. The icon sits in the input's right section; the warning
+   message is exposed via tooltip + aria-label. Row height stays constant. */
+.emr-input-warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--emr-error-alpha-10);
+  color: var(--emr-error);
+  cursor: help;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.emr-input-warning-icon:hover {
+  background: var(--emr-error-alpha-20);
+}
+
 /* ==================== MOBILE TOUCH TARGETS ==================== */
 @media (max-width: 768px) {
   .emr-input {
