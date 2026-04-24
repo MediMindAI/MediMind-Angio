@@ -189,6 +189,10 @@
       "deleteConfirm": "Delete",
       "deleteSuccessTitle": "Template deleted",
       "deleteSuccessMessage": "The template has been removed from your library."
+    },
+    "anatomy": {
+      "title": "Carotid anatomy",
+      "subtitle": "Vessel colors reflect severity (normal to occluded)."
     }
   }
 }

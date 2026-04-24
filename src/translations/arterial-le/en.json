@@ -219,6 +219,10 @@
       "deleteConfirm": "Delete",
       "deleteSuccessTitle": "Template deleted",
       "deleteSuccessMessage": "The template has been removed from your library."
+    },
+    "anatomy": {
+      "title": "Arterial anatomy",
+      "subtitle": "Segment colors reflect severity (normal to occluded)."
     }
   }
 }
