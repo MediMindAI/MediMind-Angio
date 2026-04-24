@@ -240,7 +240,7 @@ export const StudyHeader = memo(function StudyHeader({
       >
         <Group gap="sm" align="center" wrap="nowrap" style={{ width: '100%' }}>
           <Box className={classes.iconWrap} aria-hidden>
-            <IconClipboardText size={18} stroke={1.75} />
+            <IconClipboardText size={20} stroke={1.75} />
           </Box>
           <Box style={{ minWidth: 0, flex: 1 }}>
             <Text className={classes.title} c="inherit" id="study-header-title">
