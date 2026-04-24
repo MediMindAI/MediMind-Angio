@@ -80,7 +80,7 @@ export function buildReportLabels(t: TFunction): ReportLabels {
       right: t('venousLE.tabs.right', 'Right'),
       left: t('venousLE.tabs.left', 'Left'),
       segment: t('venousLE.segmentTable.segment', 'Segment'),
-      refluxMs: t('venousLE.refluxTable.ms', 'Duration (ms)'),
+      refluxMs: t('venousLE.refluxTable.msShort', 'Dur. (ms)'),
       apMm: t('venousLE.refluxTable.ap', 'AP (mm)'),
       transMm: t('venousLE.refluxTable.trans', 'Trans (mm)'),
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),

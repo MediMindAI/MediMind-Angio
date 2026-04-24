@@ -95,6 +95,9 @@ const styles = StyleSheet.create({
   headCell: {
     fontSize: 7.5,
     lineHeight: 1.1,
+    // Clip rather than overflow into the neighbor column when a localization
+    // ends up longer than the allocated flex slot.
+    overflow: 'hidden',
   },
   cellRight: {
     textAlign: 'right',

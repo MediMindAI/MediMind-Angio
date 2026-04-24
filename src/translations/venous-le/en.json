@@ -304,6 +304,7 @@
       "title": "Reflux time and measurements",
       "subtitle": "Numeric parameters for segments with recorded findings",
       "ms": "Duration (ms)",
+      "msShort": "Dur. (ms)",
       "ap": "AP (mm)",
       "trans": "Trans (mm)",
       "depth": "Depth (mm)",
