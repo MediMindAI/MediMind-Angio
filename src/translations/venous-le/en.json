@@ -227,18 +227,18 @@
         "right": "Normal spontaneous phasic augmented flow in the right lower extremity.",
         "left": "Normal spontaneous phasic augmented flow in the left lower extremity."
       },
-      "refluxNoted": "Marked reflux noted in the {vein} ({ms} ms).",
-      "nonCompressible": "Non-compressible segment suggestive of acute DVT in the {vein}.",
-      "partialCompressibility": "Partial compressibility noted in the {vein}, consistent with chronic post-thrombotic changes.",
-      "acuteThrombus": "Acute thrombus visualized within the {vein}.",
-      "chronicThrombus": "Echogenic, adherent thrombus noted in the {vein}, consistent with chronic post-thrombotic changes.",
-      "inconclusive": "Study limited — inconclusive compressibility of the {vein}."
+      "refluxNoted": "Marked reflux ({ms} ms) — {vein}.",
+      "nonCompressible": "Non-compressible segment — {vein}. Finding suggestive of acute DVT.",
+      "partialCompressibility": "Partial compressibility — {vein}. Consistent with chronic post-thrombotic changes.",
+      "acuteThrombus": "Acute intraluminal thrombus — {vein}.",
+      "chronicThrombus": "Echogenic, adherent thrombus — {vein}. Consistent with chronic post-thrombotic changes.",
+      "inconclusive": "Study limited — inconclusive compressibility assessment ({vein})."
     },
     "conclusion": {
-      "reflux": "Pathological reflux in the {side} {vein} ({ms} ms).",
-      "acuteDvt": "Acute DVT suspected in the {side} {vein}.",
-      "chronicPostThrombotic": "Chronic post-thrombotic changes in the {side} {vein}.",
-      "inconclusive": "Study limitation: inconclusive assessment of the {side} {vein}."
+      "reflux": "Pathological reflux ({ms} ms) — {side} {vein}.",
+      "acuteDvt": "Acute DVT suspected — {side} {vein}.",
+      "chronicPostThrombotic": "Chronic post-thrombotic changes — {side} {vein}.",
+      "inconclusive": "Study limitation — inconclusive assessment of {side} {vein}."
     },
     "segments": {
       "cfv": "common femoral vein",
