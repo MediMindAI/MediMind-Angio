@@ -1,53 +1,35 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CarotidTemplateGallery — full-size modal gallery of clinical presets for
- * the Carotid / vertebral / subclavian duplex study.
+ * CarotidTemplateGallery — thin wrapper over `TemplateGalleryGeneric` that
+ * supplies carotid-specific templates, kind enum values, icons, and
+ * translation keys.
  *
- * Fork of `src/components/form/TemplateGallery.tsx`. Diffs from the venous
- * gallery are all surface: filter chip kinds (`normal | mild | moderate |
- * severe | post-procedure`), translation namespace `carotid.templateGallery.*`.
- *
- * Every `t()` call passes an English fallback as 2nd arg so the gallery
- * renders readable text even while translation JSON is loading.
+ * See `src/components/form/TemplateGalleryGeneric.tsx` for the shared UI
+ * implementation.
  */
 
-import { memo, useMemo, useState } from 'react';
-import { Box } from '@mantine/core';
+import { memo } from 'react';
 import {
   IconAlertTriangle,
-  IconBookmark,
   IconCircleCheck,
-  IconCircleDashed,
-  IconClock,
-  IconDeviceFloppy,
   IconInfoCircle,
-  IconLayoutGrid,
-  IconSearch,
-  IconStack2,
-  IconTrash,
   IconVaccine,
 } from '@tabler/icons-react';
 import type { ComponentType } from 'react';
-import { EMRButton, EMRModal } from '../../common';
-import { EMRTextInput } from '../../shared/EMRFormFields';
-import { useTranslation } from '../../../contexts/TranslationContext';
 import {
   CAROTID_TEMPLATES,
-  findCarotidTemplateById,
   type CarotidTemplate,
   type CarotidTemplateKind,
-  type CarotidTemplateScope,
-  type CarotidTemplateSeverity,
 } from './templates';
 import type { CustomTemplate } from '../../../services/customTemplatesService';
-import classes from './CarotidTemplateGallery.module.css';
+import {
+  TemplateGalleryGeneric,
+  type GalleryIconProps,
+  type GallerySeverity,
+  type GalleryTranslationKeys,
+} from '../../form/TemplateGalleryGeneric';
 
-interface IconProps {
-  readonly size?: number | string;
-  readonly stroke?: number;
-}
-
-type CategoryId = 'all' | 'recent' | 'custom' | CarotidTemplateKind;
+type IconCmp = ComponentType<GalleryIconProps>;
 
 const KIND_ORDER: ReadonlyArray<CarotidTemplateKind> = [
   'normal',
@@ -57,7 +39,7 @@ const KIND_ORDER: ReadonlyArray<CarotidTemplateKind> = [
   'post-procedure',
 ];
 
-const KIND_ICON: Record<CarotidTemplateKind, ComponentType<IconProps>> = {
+const KIND_ICONS: Record<CarotidTemplateKind, IconCmp> = {
   normal: IconCircleCheck,
   mild: IconInfoCircle,
   moderate: IconAlertTriangle,
@@ -65,92 +47,113 @@ const KIND_ICON: Record<CarotidTemplateKind, ComponentType<IconProps>> = {
   'post-procedure': IconVaccine,
 };
 
-const KIND_LABEL_KEY: Record<CarotidTemplateKind, string> = {
-  normal: 'carotid.templateGallery.kind.normal',
-  mild: 'carotid.templateGallery.kind.mild',
-  moderate: 'carotid.templateGallery.kind.moderate',
-  severe: 'carotid.templateGallery.kind.severe',
-  'post-procedure': 'carotid.templateGallery.kind.postProcedure',
+const KIND_LABELS: Record<
+  CarotidTemplateKind,
+  { key: string; fallback: string }
+> = {
+  normal: { key: 'carotid.templateGallery.kind.normal', fallback: 'Normal' },
+  mild: { key: 'carotid.templateGallery.kind.mild', fallback: 'Mild' },
+  moderate: { key: 'carotid.templateGallery.kind.moderate', fallback: 'Moderate' },
+  severe: { key: 'carotid.templateGallery.kind.severe', fallback: 'Severe' },
+  'post-procedure': {
+    key: 'carotid.templateGallery.kind.postProcedure',
+    fallback: 'Post-procedure',
+  },
 };
 
-const KIND_LABEL_FALLBACK: Record<CarotidTemplateKind, string> = {
-  normal: 'Normal',
-  mild: 'Mild',
-  moderate: 'Moderate',
-  severe: 'Severe',
-  'post-procedure': 'Post-procedure',
-};
-
-const SEVERITY_ICON: Record<CarotidTemplateSeverity, ComponentType<IconProps>> = {
+const SEVERITY_ICONS: Record<GallerySeverity, IconCmp> = {
   critical: IconAlertTriangle,
   urgent: IconAlertTriangle,
   routine: IconCircleCheck,
   informational: IconInfoCircle,
 };
 
-const SEVERITY_LABEL_KEY: Record<CarotidTemplateSeverity, string> = {
-  critical: 'carotid.templateGallery.severity.critical',
-  urgent: 'carotid.templateGallery.severity.urgent',
-  routine: 'carotid.templateGallery.severity.routine',
-  informational: 'carotid.templateGallery.severity.informational',
+const TRANSLATIONS: GalleryTranslationKeys = {
+  title: { key: 'carotid.templateGallery.title', fallback: 'Templates' },
+  subtitle: {
+    key: 'carotid.templateGallery.subtitle',
+    fallback: 'Pick a pre-built case or save your own.',
+  },
+  searchPlaceholder: {
+    key: 'carotid.templateGallery.searchPlaceholder',
+    fallback: 'Search templates…',
+  },
+  categoriesLabel: {
+    key: 'carotid.templateGallery.categoriesLabel',
+    fallback: 'Categories',
+  },
+  categoryAll: { key: 'carotid.templateGallery.categoryAll', fallback: 'All' },
+  recentGroup: {
+    key: 'carotid.templateGallery.recentGroup',
+    fallback: 'Recently used',
+  },
+  customGroup: {
+    key: 'carotid.templateGallery.customGroup',
+    fallback: 'My templates',
+  },
+  cardApply: { key: 'carotid.templateGallery.cardApply', fallback: 'Apply' },
+  saveAction: {
+    key: 'carotid.templateGallery.saveAction',
+    fallback: '+ Save current as template',
+  },
+  customTag: { key: 'carotid.templateGallery.customTag', fallback: 'My template' },
+  deleteAriaLabel: {
+    key: 'carotid.templateGallery.deleteAriaLabel',
+    fallback: 'Delete template',
+  },
+  emptyNoMatchTitle: {
+    key: 'carotid.templateGallery.emptyNoMatchTitle',
+    fallback: 'No templates match your search',
+  },
+  emptyNoMatch: {
+    key: 'carotid.templateGallery.emptyNoMatch',
+    fallback: 'No templates match "{query}" — try a different search term.',
+  },
+  emptyMineTitle: {
+    key: 'carotid.templateGallery.emptyMineTitle',
+    fallback: 'No saved templates yet',
+  },
+  emptyMine: {
+    key: 'carotid.templateGallery.emptyMine',
+    fallback:
+      "You haven't saved any templates yet. Fill in a case and click + Save current as template below.",
+  },
+  emptyRecentTitle: {
+    key: 'carotid.templateGallery.emptyRecentTitle',
+    fallback: 'Nothing here yet',
+  },
+  emptyRecent: {
+    key: 'carotid.templateGallery.emptyRecent',
+    fallback: 'Templates you apply will appear here for quick access.',
+  },
+  emptyGeneric: {
+    key: 'carotid.templateGallery.emptyGeneric',
+    fallback: 'No templates in this category.',
+  },
+  severityLabel: {
+    critical: {
+      key: 'carotid.templateGallery.severity.critical',
+      fallback: 'Critical',
+    },
+    urgent: { key: 'carotid.templateGallery.severity.urgent', fallback: 'Urgent' },
+    routine: {
+      key: 'carotid.templateGallery.severity.routine',
+      fallback: 'Routine',
+    },
+    informational: {
+      key: 'carotid.templateGallery.severity.informational',
+      fallback: 'Informational',
+    },
+  },
+  scopeLabel: {
+    right: { key: 'carotid.templateGallery.scope.right', fallback: 'Right' },
+    left: { key: 'carotid.templateGallery.scope.left', fallback: 'Left' },
+    bilateral: {
+      key: 'carotid.templateGallery.scope.bilateral',
+      fallback: 'Bilateral',
+    },
+  },
 };
-
-const SEVERITY_LABEL_FALLBACK: Record<CarotidTemplateSeverity, string> = {
-  critical: 'Critical',
-  urgent: 'Urgent',
-  routine: 'Routine',
-  informational: 'Informational',
-};
-
-const SCOPE_LABEL_KEY: Record<CarotidTemplateScope, string> = {
-  right: 'carotid.templateGallery.scope.right',
-  left: 'carotid.templateGallery.scope.left',
-  bilateral: 'carotid.templateGallery.scope.bilateral',
-};
-
-const SCOPE_LABEL_FALLBACK: Record<CarotidTemplateScope, string> = {
-  right: 'Right',
-  left: 'Left',
-  bilateral: 'Bilateral',
-};
-
-const FALLBACK_KIND_ICON = IconCircleDashed;
-
-type GalleryRow =
-  | { readonly kind: 'builtin'; readonly template: CarotidTemplate }
-  | { readonly kind: 'custom'; readonly template: CustomTemplate };
-
-function resolveTemplateById(
-  id: string,
-  customs: ReadonlyArray<CustomTemplate>,
-): GalleryRow | null {
-  const builtIn = findCarotidTemplateById(id);
-  if (builtIn) return { kind: 'builtin', template: builtIn };
-  const custom = customs.find((c) => c.id === id);
-  if (custom) return { kind: 'custom', template: custom };
-  return null;
-}
-
-function matchesSearch(
-  row: GalleryRow,
-  query: string,
-  t: (k: string, f?: string) => string,
-): boolean {
-  if (!query) return true;
-  const q = query.toLowerCase();
-  if (row.kind === 'builtin') {
-    const tpl = row.template;
-    const name = t(tpl.nameKey, tpl.nameFallback).toLowerCase();
-    const desc = t(tpl.descriptionKey, tpl.descriptionFallback).toLowerCase();
-    const impression = t(tpl.impressionKey, tpl.impressionFallback).toLowerCase();
-    return name.includes(q) || desc.includes(q) || impression.includes(q);
-  }
-  const tpl = row.template;
-  const name = (tpl.name ?? '').toLowerCase();
-  const desc = (tpl.description ?? '').toLowerCase();
-  const impression = (tpl.impression ?? '').toLowerCase();
-  return name.includes(q) || desc.includes(q) || impression.includes(q);
-}
 
 export interface CarotidTemplateGalleryProps {
   readonly opened: boolean;
@@ -162,505 +165,26 @@ export interface CarotidTemplateGalleryProps {
   readonly onDeleteCustom: (id: string) => void;
 }
 
-export const CarotidTemplateGallery = memo(function CarotidTemplateGallery({
-  opened,
-  onClose,
-  onApply,
-  onSaveCurrentAsTemplate,
-  customTemplates,
-  recentTemplateIds,
-  onDeleteCustom,
-}: CarotidTemplateGalleryProps): React.ReactElement {
-  const { t } = useTranslation();
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState<CategoryId>('all');
-
-  const recentRows = useMemo<ReadonlyArray<GalleryRow>>(() => {
-    const out: GalleryRow[] = [];
-    for (const id of recentTemplateIds) {
-      const row = resolveTemplateById(id, customTemplates);
-      if (row) out.push(row);
-    }
-    return out;
-  }, [recentTemplateIds, customTemplates]);
-
-  const customRows = useMemo<ReadonlyArray<GalleryRow>>(
-    () => customTemplates.map((tpl) => ({ kind: 'custom' as const, template: tpl })),
-    [customTemplates],
-  );
-
-  const builtInGroups = useMemo(
-    () =>
-      KIND_ORDER.map((kind) => ({
-        kind,
-        items: CAROTID_TEMPLATES.filter((tpl) => tpl.kind === kind).map(
-          (tpl) => ({ kind: 'builtin' as const, template: tpl }),
-        ),
-      })),
-    [],
-  );
-
-  const filterRows = (rows: ReadonlyArray<GalleryRow>): ReadonlyArray<GalleryRow> =>
-    rows.filter((r) => matchesSearch(r, search, t));
-
-  const filteredRecent = useMemo(() => filterRows(recentRows), [recentRows, search, t]);
-  const filteredCustom = useMemo(() => filterRows(customRows), [customRows, search, t]);
-  const filteredBuiltInGroups = useMemo(
-    () =>
-      builtInGroups.map((g) => ({
-        kind: g.kind,
-        items: filterRows(g.items),
-      })),
-    [builtInGroups, search, t],
-  );
-
-  const totalFilteredCount =
-    filteredRecent.length +
-    filteredCustom.length +
-    filteredBuiltInGroups.reduce((sum, g) => sum + g.items.length, 0);
-
-  const counts = useMemo(() => {
-    const kindCount: Record<CarotidTemplateKind, number> = {
-      normal: 0,
-      mild: 0,
-      moderate: 0,
-      severe: 0,
-      'post-procedure': 0,
-    };
-    for (const tpl of CAROTID_TEMPLATES) {
-      kindCount[tpl.kind] += 1;
-    }
-    return {
-      all: CAROTID_TEMPLATES.length + customTemplates.length,
-      recent: recentRows.length,
-      custom: customTemplates.length,
-      kinds: kindCount,
-    };
-  }, [customTemplates.length, recentRows.length]);
-
-  interface SidebarItem {
-    readonly id: CategoryId;
-    readonly icon: ComponentType<IconProps>;
-    readonly label: string;
-    readonly count: number;
-  }
-
-  const sidebarItems = useMemo<ReadonlyArray<SidebarItem>>(() => {
-    const items: SidebarItem[] = [];
-    items.push({
-      id: 'all',
-      icon: IconLayoutGrid,
-      label: t('carotid.templateGallery.categoryAll', 'All'),
-      count: counts.all,
-    });
-    if (counts.recent > 0) {
-      items.push({
-        id: 'recent',
-        icon: IconClock,
-        label: t('carotid.templateGallery.recentGroup', 'Recently used'),
-        count: counts.recent,
-      });
-    }
-    if (counts.custom > 0) {
-      items.push({
-        id: 'custom',
-        icon: IconBookmark,
-        label: t('carotid.templateGallery.customGroup', 'My templates'),
-        count: counts.custom,
-      });
-    }
-    for (const kind of KIND_ORDER) {
-      if (counts.kinds[kind] > 0) {
-        items.push({
-          id: kind,
-          icon: KIND_ICON[kind] ?? FALLBACK_KIND_ICON,
-          label: t(KIND_LABEL_KEY[kind], KIND_LABEL_FALLBACK[kind]),
-          count: counts.kinds[kind],
-        });
-      }
-    }
-    return items;
-  }, [counts, t]);
-
-  const effectiveCategory: CategoryId = useMemo(() => {
-    if (sidebarItems.some((item) => item.id === category)) return category;
-    return 'all';
-  }, [sidebarItems, category]);
-
-  const handleApply = (row: GalleryRow): void => {
-    onApply(row.template);
-    onClose();
-  };
-
-  const handleDelete = (e: React.MouseEvent, id: string): void => {
-    e.stopPropagation();
-    onDeleteCustom(id);
-  };
-
-  const handleCardKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    row: GalleryRow,
-  ): void => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleApply(row);
-    }
-  };
-
-  const renderCard = (row: GalleryRow): React.ReactElement => {
-    if (row.kind === 'builtin') {
-      const tpl = row.template;
-      const SeverityIcon = SEVERITY_ICON[tpl.severity];
-      return (
-        <button
-          key={`builtin-${tpl.id}`}
-          type="button"
-          className={classes.card}
-          data-severity={tpl.severity}
-          data-kind={tpl.kind}
-          onClick={() => handleApply(row)}
-          onKeyDown={(e) => handleCardKeyDown(e, row)}
-          data-testid={`template-card-${tpl.id}`}
-          aria-label={t(tpl.nameKey, tpl.nameFallback)}
-        >
-          <div className={classes.cardTopRow}>
-            <span
-              className={classes.cardIcon}
-              data-severity={tpl.severity}
-              aria-hidden
-            >
-              <SeverityIcon size={22} stroke={2} />
-            </span>
-            <span className={classes.severityBadge} data-severity={tpl.severity}>
-              {t(
-                SEVERITY_LABEL_KEY[tpl.severity],
-                SEVERITY_LABEL_FALLBACK[tpl.severity],
-              )}
-            </span>
-          </div>
-          <div className={classes.cardName}>{t(tpl.nameKey, tpl.nameFallback)}</div>
-          <div className={classes.cardDesc}>
-            {t(tpl.descriptionKey, tpl.descriptionFallback)}
-          </div>
-          <div className={classes.cardBottomRow}>
-            <EMRButton
-              variant="primary"
-              size="sm"
-              onClick={() => handleApply(row)}
-              data-testid={`template-apply-${tpl.id}`}
-            >
-              {t('carotid.templateGallery.cardApply', 'Apply')}
-            </EMRButton>
-            <span className={classes.scopeChip}>
-              {t(SCOPE_LABEL_KEY[tpl.scope], SCOPE_LABEL_FALLBACK[tpl.scope])}
-            </span>
-          </div>
-        </button>
-      );
-    }
-
-    const tpl = row.template;
-    const severity: CarotidTemplateSeverity = 'informational';
-    const scopeLabel =
-      tpl.scope === 'right' || tpl.scope === 'left' || tpl.scope === 'bilateral'
-        ? t(SCOPE_LABEL_KEY[tpl.scope], SCOPE_LABEL_FALLBACK[tpl.scope])
-        : '';
-    return (
-      <button
-        key={`custom-${tpl.id}`}
-        type="button"
-        className={classes.card}
-        data-severity={severity}
-        data-kind={tpl.kind}
-        onClick={() => handleApply(row)}
-        onKeyDown={(e) => handleCardKeyDown(e, row)}
-        data-testid={`template-card-${tpl.id}`}
-        aria-label={tpl.name}
-      >
-        <div className={classes.cardTopRow}>
-          <span className={classes.cardIcon} data-severity={severity} aria-hidden>
-            <IconBookmark size={22} stroke={2} />
-          </span>
-          <span className={classes.severityBadge} data-severity={severity}>
-            {t('carotid.templateGallery.customTag', 'My template')}
-          </span>
-        </div>
-        <button
-          type="button"
-          className={classes.deleteButton}
-          onClick={(e) => handleDelete(e, tpl.id)}
-          aria-label={t(
-            'carotid.templateGallery.deleteAriaLabel',
-            'Delete template',
-          )}
-          data-testid={`template-delete-${tpl.id}`}
-        >
-          <IconTrash size={14} stroke={2} />
-        </button>
-        <div className={classes.cardName}>{tpl.name}</div>
-        {tpl.description ? (
-          <div className={classes.cardDesc}>{tpl.description}</div>
-        ) : (
-          <div className={classes.cardDesc} aria-hidden="true">&nbsp;</div>
-        )}
-        <div className={classes.cardBottomRow}>
-          <EMRButton
-            variant="primary"
-            size="sm"
-            onClick={() => handleApply(row)}
-            data-testid={`template-apply-${tpl.id}`}
-          >
-            {t('carotid.templateGallery.cardApply', 'Apply')}
-          </EMRButton>
-          {scopeLabel ? <span className={classes.scopeChip}>{scopeLabel}</span> : null}
-        </div>
-      </button>
-    );
-  };
-
-  const renderSection = (
-    label: string,
-    icon: ComponentType<IconProps>,
-    rows: ReadonlyArray<GalleryRow>,
-    showHeader: boolean,
-    keyPrefix: string,
-  ): React.ReactElement | null => {
-    if (rows.length === 0) return null;
-    const Icon = icon;
-    return (
-      <section className={classes.section} key={keyPrefix}>
-        {showHeader && (
-          <div className={classes.sectionHeader}>
-            <span className={classes.sectionHeaderIcon} aria-hidden>
-              <Icon size={12} stroke={2.25} />
-            </span>
-            <span>{label}</span>
-          </div>
-        )}
-        <div className={classes.grid}>{rows.map(renderCard)}</div>
-      </section>
-    );
-  };
-
-  const renderPanel = (): React.ReactElement => {
-    if (totalFilteredCount === 0) {
-      if (search.trim().length > 0) {
-        return (
-          <div className={classes.empty}>
-            <IconSearch size={28} stroke={1.5} />
-            <div className={classes.emptyTitle}>
-              {t(
-                'carotid.templateGallery.emptyNoMatchTitle',
-                'No templates match your search',
-              )}
-            </div>
-            <div className={classes.emptyBody}>
-              {t(
-                'carotid.templateGallery.emptyNoMatch',
-                'No templates match "{query}" — try a different search term.',
-              ).replace('{query}', search)}
-            </div>
-          </div>
-        );
-      }
-      if (effectiveCategory === 'custom') {
-        return (
-          <div className={classes.empty}>
-            <IconBookmark size={28} stroke={1.5} />
-            <div className={classes.emptyTitle}>
-              {t(
-                'carotid.templateGallery.emptyMineTitle',
-                'No saved templates yet',
-              )}
-            </div>
-            <div className={classes.emptyBody}>
-              {t(
-                'carotid.templateGallery.emptyMine',
-                "You haven't saved any templates yet. Fill in a case and click + Save current as template below.",
-              )}
-            </div>
-          </div>
-        );
-      }
-      if (effectiveCategory === 'recent') {
-        return (
-          <div className={classes.empty}>
-            <IconClock size={28} stroke={1.5} />
-            <div className={classes.emptyTitle}>
-              {t(
-                'carotid.templateGallery.emptyRecentTitle',
-                'Nothing here yet',
-              )}
-            </div>
-            <div className={classes.emptyBody}>
-              {t(
-                'carotid.templateGallery.emptyRecent',
-                'Templates you apply will appear here for quick access.',
-              )}
-            </div>
-          </div>
-        );
-      }
-      return (
-        <div className={classes.empty}>
-          <IconStack2 size={28} stroke={1.5} />
-          <div className={classes.emptyBody}>
-            {t(
-              'carotid.templateGallery.emptyGeneric',
-              'No templates in this category.',
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    if (effectiveCategory === 'all') {
-      const sections: Array<React.ReactElement | null> = [];
-      sections.push(
-        renderSection(
-          t('carotid.templateGallery.recentGroup', 'Recently used'),
-          IconClock,
-          filteredRecent,
-          true,
-          'recent',
-        ),
-      );
-      sections.push(
-        renderSection(
-          t('carotid.templateGallery.customGroup', 'My templates'),
-          IconBookmark,
-          filteredCustom,
-          true,
-          'custom',
-        ),
-      );
-      for (const group of filteredBuiltInGroups) {
-        sections.push(
-          renderSection(
-            t(KIND_LABEL_KEY[group.kind], KIND_LABEL_FALLBACK[group.kind]),
-            KIND_ICON[group.kind] ?? FALLBACK_KIND_ICON,
-            group.items,
-            true,
-            `kind-${group.kind}`,
-          ),
-        );
-      }
-      return <>{sections.filter(Boolean)}</>;
-    }
-
-    if (effectiveCategory === 'recent') {
-      return renderSection('', IconClock, filteredRecent, false, 'recent-only')!;
-    }
-    if (effectiveCategory === 'custom') {
-      return renderSection('', IconBookmark, filteredCustom, false, 'custom-only')!;
-    }
-    const group = filteredBuiltInGroups.find((g) => g.kind === effectiveCategory);
-    if (group) {
-      return renderSection(
-        '',
-        KIND_ICON[group.kind] ?? FALLBACK_KIND_ICON,
-        group.items,
-        false,
-        `kind-only-${group.kind}`,
-      )!;
-    }
-    return <></>;
-  };
-
-  const footer = (
-    <div className={classes.footer}>
-      <div className={classes.footerLeft}>
-        <EMRButton
-          variant="secondary"
-          size="sm"
-          icon={IconDeviceFloppy}
-          onClick={onSaveCurrentAsTemplate}
-          data-testid="template-gallery-save-action"
-        >
-          {t('carotid.templateGallery.saveAction', '+ Save current as template')}
-        </EMRButton>
-      </div>
-      <div className={classes.footerRight}>
-        <EMRButton
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          data-testid="template-gallery-cancel"
-        >
-          {t('common.cancel', 'Cancel')}
-        </EMRButton>
-      </div>
-    </div>
-  );
-
+export const CarotidTemplateGallery = memo(function CarotidTemplateGallery(
+  props: CarotidTemplateGalleryProps,
+): React.ReactElement {
   return (
-    <EMRModal
-      opened={opened}
-      onClose={onClose}
-      size="xl"
-      icon={IconStack2}
-      title={t('carotid.templateGallery.title', 'Templates')}
-      subtitle={t(
-        'carotid.templateGallery.subtitle',
-        'Pick a pre-built case or save your own.',
-      )}
-      footer={footer}
-      showFooter
-      testId="carotid-template-gallery-modal"
-    >
-      <Box className={classes.root}>
-        <div className={classes.searchRow}>
-          <div className={classes.searchInput}>
-            <EMRTextInput
-              value={search}
-              onChange={(value) => setSearch(value)}
-              placeholder={t(
-                'carotid.templateGallery.searchPlaceholder',
-                'Search templates…',
-              )}
-              leftSection={<IconSearch size={16} stroke={1.75} />}
-              clearable
-              onClear={() => setSearch('')}
-              aria-label={t(
-                'carotid.templateGallery.searchPlaceholder',
-                'Search templates…',
-              )}
-              data-testid="template-gallery-search"
-            />
-          </div>
-        </div>
-
-        <div className={classes.body}>
-          <nav
-            className={classes.sidebar}
-            aria-label={t('carotid.templateGallery.categoriesLabel', 'Categories')}
-          >
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.id === effectiveCategory;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={classes.sidebarItem}
-                  aria-pressed={isActive}
-                  onClick={() => setCategory(item.id)}
-                  data-testid={`template-gallery-cat-${item.id}`}
-                >
-                  <span className={classes.sidebarIcon} aria-hidden>
-                    <Icon size={16} stroke={2} />
-                  </span>
-                  <span className={classes.sidebarLabel}>{item.label}</span>
-                  <span className={classes.sidebarCount}>{item.count}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className={classes.panel}>{renderPanel()}</div>
-        </div>
-      </Box>
-    </EMRModal>
+    <TemplateGalleryGeneric<CarotidTemplate>
+      opened={props.opened}
+      onClose={props.onClose}
+      onApply={props.onApply}
+      onSaveCurrentAsTemplate={props.onSaveCurrentAsTemplate}
+      customTemplates={props.customTemplates}
+      recentTemplateIds={props.recentTemplateIds}
+      onDeleteCustom={props.onDeleteCustom}
+      templates={CAROTID_TEMPLATES}
+      kindOrder={KIND_ORDER}
+      kindIcons={KIND_ICONS}
+      kindLabels={KIND_LABELS}
+      severityIcons={SEVERITY_ICONS}
+      translations={TRANSLATIONS}
+      testIdPrefix="carotid-template-gallery"
+    />
   );
 });
 
