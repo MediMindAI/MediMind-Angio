@@ -11,15 +11,24 @@ import { memo, useCallback, useMemo, useReducer, useState } from 'react';
 import { Stack, Group, SegmentedControl, Textarea } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus } from '@tabler/icons-react';
+import { IconPlus, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from '../../../types/form';
 import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog } from '../../common';
+import { ConfirmDialog, EMRButton } from '../../common';
 import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
+import { SaveTemplateDialog, type SaveTemplatePayload } from '../../form/SaveTemplateDialog';
 import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
+import {
+  loadCustomTemplates,
+  loadRecentTemplateIds,
+  pushRecentTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
+  type CustomTemplate,
+} from '../../../services/customTemplatesService';
 import type {
   CarotidFindings,
   CarotidNascetClassification,
@@ -28,7 +37,8 @@ import type {
 } from './config';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
 import { NASCETPicker } from './NASCETPicker';
-import { CAROTID_TEMPLATES, findCarotidTemplateById, type CarotidTemplate } from './templates';
+import { type CarotidTemplate, type CarotidTemplateKind } from './templates';
+import { CarotidTemplateGallery } from './CarotidTemplateGallery';
 import classes from './CarotidForm.module.css';
 
 const STUDY_ID = 'carotid';
@@ -55,7 +65,14 @@ type Action =
   | { type: 'SET_SONOGRAPHER'; comments: string }
   | { type: 'SET_CLINICIAN'; comments: string }
   | { type: 'SET_RECOMMENDATIONS'; recommendations: ReadonlyArray<Recommendation> }
-  | { type: 'APPLY_TEMPLATE'; template: CarotidTemplate; impression: string }
+  | {
+      type: 'APPLY_TEMPLATE';
+      findings: CarotidFindings;
+      nascet: CarotidNascetClassification;
+      view: CarotidTableView;
+      recommendations: ReadonlyArray<Recommendation>;
+      impression: string;
+    }
   | { type: 'RESET'; header: StudyHeaderValue };
 
 function defaultHeader(): StudyHeaderValue {
@@ -109,14 +126,12 @@ function reducer(state: CarotidFormStateV1, action: Action): CarotidFormStateV1 
     case 'APPLY_TEMPLATE':
       return {
         ...state,
-        findings: { ...action.template.findings },
-        nascet: { ...action.template.nascet },
-        view: action.template.scope === 'bilateral' ? 'bilateral' : action.template.scope,
+        findings: { ...action.findings },
+        nascet: { ...action.nascet },
+        view: action.view,
         impression: action.impression,
         impressionEdited: true,
-        recommendations: action.template.recommendations
-          ? [...action.template.recommendations]
-          : [],
+        recommendations: [...action.recommendations],
       };
     case 'RESET':
       return { ...initialState(), header: action.header };
@@ -154,8 +169,18 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     state,
   );
 
-  const [pendingTemplate, setPendingTemplate] = useState<CarotidTemplate | null>(null);
+  type PendingTemplate = CarotidTemplate | CustomTemplate;
+  const [pendingTemplate, setPendingTemplate] = useState<PendingTemplate | null>(null);
   const [newCaseOpen, setNewCaseOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [pendingDeleteCustomId, setPendingDeleteCustomId] = useState<string | null>(null);
+  const [customTemplates, setCustomTemplates] = useState<ReadonlyArray<CustomTemplate>>(
+    () => loadCustomTemplates('carotid'),
+  );
+  const [recentTemplateIds, setRecentTemplateIds] = useState<ReadonlyArray<string>>(
+    () => loadRecentTemplateIds('carotid'),
+  );
 
   const handleHeaderChange = useCallback((next: StudyHeaderValue) => {
     dispatch({ type: 'SET_HEADER', header: next });
@@ -192,25 +217,133 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     dispatch({ type: 'SET_RECOMMENDATIONS', recommendations: next });
   }, []);
 
-  const handleTemplateRequest = useCallback((tpl: CarotidTemplate) => {
+  /** Narrow helper — true iff the given template is a built-in (has nameKey). */
+  const isBuiltInTemplate = (
+    tpl: PendingTemplate,
+  ): tpl is CarotidTemplate =>
+    typeof (tpl as CarotidTemplate).nameKey === 'string';
+
+  const handleTemplateRequest = useCallback((tpl: PendingTemplate) => {
     setPendingTemplate(tpl);
   }, []);
 
   const handleTemplateConfirm = useCallback(() => {
     if (!pendingTemplate) return;
-    const impression = t(pendingTemplate.impressionKey, pendingTemplate.impressionFallback);
-    dispatch({
-      type: 'APPLY_TEMPLATE',
-      template: pendingTemplate,
-      impression,
-    });
+    if (isBuiltInTemplate(pendingTemplate)) {
+      const impression = t(pendingTemplate.impressionKey, pendingTemplate.impressionFallback);
+      const view: CarotidTableView =
+        pendingTemplate.scope === 'bilateral' ? 'bilateral' : pendingTemplate.scope;
+      dispatch({
+        type: 'APPLY_TEMPLATE',
+        findings: pendingTemplate.findings,
+        nascet: pendingTemplate.nascet,
+        view,
+        recommendations: pendingTemplate.recommendations
+          ? [...pendingTemplate.recommendations]
+          : [],
+        impression,
+      });
+      notifications.show({
+        title: t('carotid.actions.templateApplied', 'Template applied'),
+        message: t(pendingTemplate.nameKey, pendingTemplate.nameFallback),
+        color: 'blue',
+      });
+    } else {
+      const extras = (pendingTemplate.extras ?? {}) as Readonly<{
+        nascet?: CarotidNascetClassification;
+      }>;
+      const view: CarotidTableView =
+        pendingTemplate.scope === 'bilateral' ? 'bilateral' : pendingTemplate.scope;
+      dispatch({
+        type: 'APPLY_TEMPLATE',
+        findings: pendingTemplate.findings as CarotidFindings,
+        nascet: extras.nascet ?? {},
+        view,
+        recommendations: pendingTemplate.recommendations
+          ? [...pendingTemplate.recommendations]
+          : [],
+        impression: pendingTemplate.impression ?? '',
+      });
+      notifications.show({
+        title: t('carotid.actions.templateApplied', 'Template applied'),
+        message: pendingTemplate.name,
+        color: 'blue',
+      });
+    }
+    pushRecentTemplate('carotid', pendingTemplate.id);
+    setRecentTemplateIds(loadRecentTemplateIds('carotid'));
     setPendingTemplate(null);
-    notifications.show({
-      title: t('carotid.actions.templateApplied', 'Template applied'),
-      message: t(pendingTemplate.nameKey, pendingTemplate.nameFallback),
-      color: 'blue',
-    });
   }, [pendingTemplate, t]);
+
+  // ---- Gallery open/close ----
+  const handleOpenGallery = useCallback(() => setGalleryOpen(true), []);
+  const handleCloseGallery = useCallback(() => setGalleryOpen(false), []);
+
+  // ---- Save current as template ----
+  const handleOpenSaveDialog = useCallback(() => setSaveDialogOpen(true), []);
+  const handleCloseSaveDialog = useCallback(() => setSaveDialogOpen(false), []);
+
+  const handleSaveTemplateSubmit = useCallback(
+    (payload: SaveTemplatePayload) => {
+      const carotidKind: CarotidTemplateKind =
+        payload.kind === 'normal' || payload.kind === 'post-procedure'
+          ? payload.kind
+          : 'normal';
+      const scope =
+        state.view === 'right' || state.view === 'left' ? state.view : 'bilateral';
+      const saved = saveCustomTemplate('carotid', {
+        name: payload.name,
+        description: payload.description,
+        kind: carotidKind,
+        scope,
+        findings: state.findings,
+        extras: { nascet: state.nascet },
+        recommendations: state.recommendations,
+        impression: state.impression,
+        sonographerComments: state.sonographerComments,
+      });
+      setCustomTemplates(loadCustomTemplates('carotid'));
+      setSaveDialogOpen(false);
+      notifications.show({
+        title: t('carotid.templateGallery.saveSuccessTitle', 'Template saved'),
+        message: saved.name,
+        color: 'teal',
+        autoClose: 2500,
+      });
+    },
+    [
+      state.view,
+      state.findings,
+      state.nascet,
+      state.recommendations,
+      state.impression,
+      state.sonographerComments,
+      t,
+    ],
+  );
+
+  // ---- Delete custom template flow ----
+  const handleRequestDeleteCustom = useCallback((id: string) => {
+    setPendingDeleteCustomId(id);
+  }, []);
+  const handleCancelDeleteCustom = useCallback(() => {
+    setPendingDeleteCustomId(null);
+  }, []);
+  const handleConfirmDeleteCustom = useCallback(() => {
+    if (!pendingDeleteCustomId) return;
+    deleteCustomTemplate('carotid', pendingDeleteCustomId);
+    setCustomTemplates(loadCustomTemplates('carotid'));
+    setPendingDeleteCustomId(null);
+    notifications.show({
+      title: t('carotid.templateGallery.deleteSuccessTitle', 'Template deleted'),
+      message: t(
+        'carotid.templateGallery.deleteSuccessMessage',
+        'The template has been removed from your library.',
+      ),
+      color: 'teal',
+      autoClose: 2500,
+    });
+  }, [pendingDeleteCustomId, t]);
 
   const handleNewCaseRequest = useCallback(() => setNewCaseOpen(true), []);
   const handleNewCaseConfirm = useCallback(() => {
@@ -252,25 +385,15 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
             ]}
           />
           <Group gap="xs">
-            <select
-              className={classes.templateSelect}
-              onChange={(e) => {
-                const tpl = findCarotidTemplateById(e.target.value);
-                if (tpl) handleTemplateRequest(tpl);
-                e.currentTarget.value = '';
-              }}
-              defaultValue=""
-              aria-label={t('carotid.templates.menuLabel', 'Templates')}
+            <EMRButton
+              variant="secondary"
+              size="sm"
+              icon={IconStack2}
+              onClick={handleOpenGallery}
+              data-testid="carotid-template-gallery-trigger"
             >
-              <option value="" disabled>
-                {t('carotid.templates.menuLabel', 'Templates')}
-              </option>
-              {CAROTID_TEMPLATES.map((tpl) => (
-                <option key={tpl.id} value={tpl.id}>
-                  {t(tpl.nameKey, tpl.nameFallback)}
-                </option>
-              ))}
-            </select>
+              {t('carotid.templates.menuLabel', 'Templates')}
+            </EMRButton>
             <button
               type="button"
               className={classes.newCaseButton}
@@ -360,6 +483,36 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
         confirmLabel={t('carotid.actions.newCaseConfirm', 'Discard & start new')}
         cancelLabel={t('carotid.actions.cancel', 'Cancel')}
         onConfirm={handleNewCaseConfirm}
+        destructive
+      />
+
+      <CarotidTemplateGallery
+        opened={galleryOpen}
+        onClose={handleCloseGallery}
+        onApply={handleTemplateRequest}
+        onSaveCurrentAsTemplate={handleOpenSaveDialog}
+        customTemplates={customTemplates}
+        recentTemplateIds={recentTemplateIds}
+        onDeleteCustom={handleRequestDeleteCustom}
+      />
+
+      <SaveTemplateDialog
+        opened={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        onSubmit={handleSaveTemplateSubmit}
+      />
+
+      <ConfirmDialog
+        opened={pendingDeleteCustomId !== null}
+        onClose={handleCancelDeleteCustom}
+        title={t('carotid.templateGallery.deleteConfirmTitle', 'Delete template?')}
+        message={t(
+          'carotid.templateGallery.deleteConfirmBody',
+          'This template will be removed from your library. This cannot be undone.',
+        )}
+        confirmLabel={t('carotid.templateGallery.deleteConfirm', 'Delete')}
+        cancelLabel={t('carotid.actions.cancel', 'Cancel')}
+        onConfirm={handleConfirmDeleteCustom}
         destructive
       />
     </div>

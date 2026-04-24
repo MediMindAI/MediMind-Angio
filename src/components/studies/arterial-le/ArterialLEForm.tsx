@@ -17,15 +17,24 @@ import { memo, useCallback, useMemo, useReducer, useState } from 'react';
 import { Grid, Stack, Group, SegmentedControl, Textarea } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus } from '@tabler/icons-react';
+import { IconPlus, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from '../../../types/form';
 import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog } from '../../common';
+import { ConfirmDialog, EMRButton } from '../../common';
 import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
+import { SaveTemplateDialog, type SaveTemplatePayload } from '../../form/SaveTemplateDialog';
 import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
+import {
+  loadCustomTemplates,
+  loadRecentTemplateIds,
+  pushRecentTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
+  type CustomTemplate,
+} from '../../../services/customTemplatesService';
 import type {
   ArterialLEFullSegmentId,
   ArterialSegmentFinding,
@@ -35,10 +44,10 @@ import type {
 import { SegmentalPressureTable } from './SegmentalPressureTable';
 import { ArterialSegmentTable, type ArterialTableView } from './ArterialSegmentTable';
 import {
-  ARTERIAL_LE_TEMPLATES,
-  findArterialTemplateById,
   type ArterialLETemplate,
+  type ArterialTemplateKind,
 } from './templates';
+import { ArterialTemplateGallery } from './ArterialTemplateGallery';
 import { generateArterialNarrative } from './narrativeGenerator';
 import classes from './ArterialLEForm.module.css';
 
@@ -70,7 +79,15 @@ type Action =
   | { type: 'SET_SONOGRAPHER'; comments: string }
   | { type: 'SET_CLINICIAN'; comments: string }
   | { type: 'SET_RECOMMENDATIONS'; recommendations: ReadonlyArray<Recommendation> }
-  | { type: 'APPLY_TEMPLATE'; template: ArterialLETemplate; impression: string; sonographerComments?: string }
+  | {
+      type: 'APPLY_TEMPLATE';
+      findings: ArterialSegmentFindings;
+      pressures: SegmentalPressures;
+      view: ArterialTableView;
+      recommendations: ReadonlyArray<Recommendation>;
+      impression: string;
+      sonographerComments?: string;
+    }
   | { type: 'RESET'; header: StudyHeaderValue };
 
 function defaultHeader(): StudyHeaderValue {
@@ -123,16 +140,12 @@ function reducer(state: ArterialFormStateV1, action: Action): ArterialFormStateV
     case 'SET_RECOMMENDATIONS':
       return { ...state, recommendations: action.recommendations };
     case 'APPLY_TEMPLATE': {
-      const viewFromScope: ArterialTableView =
-        action.template.scope === 'bilateral' ? 'bilateral' : action.template.scope;
       return {
         ...state,
-        findings: { ...action.template.findings },
-        pressures: { ...action.template.pressures },
-        view: viewFromScope,
-        recommendations: action.template.recommendations
-          ? [...action.template.recommendations]
-          : [],
+        findings: { ...action.findings },
+        pressures: { ...action.pressures },
+        view: action.view,
+        recommendations: [...action.recommendations],
         impression: action.impression,
         impressionEdited: true,
         sonographerComments: action.sonographerComments ?? state.sonographerComments,
@@ -183,8 +196,18 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     state,
   );
 
-  const [pendingTemplate, setPendingTemplate] = useState<ArterialLETemplate | null>(null);
+  type PendingTemplate = ArterialLETemplate | CustomTemplate;
+  const [pendingTemplate, setPendingTemplate] = useState<PendingTemplate | null>(null);
   const [newCaseOpen, setNewCaseOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [pendingDeleteCustomId, setPendingDeleteCustomId] = useState<string | null>(null);
+  const [customTemplates, setCustomTemplates] = useState<ReadonlyArray<CustomTemplate>>(
+    () => loadCustomTemplates('arterialLE'),
+  );
+  const [recentTemplateIds, setRecentTemplateIds] = useState<ReadonlyArray<string>>(
+    () => loadRecentTemplateIds('arterialLE'),
+  );
 
   // --- Handlers --------------------------------------------------------------
 
@@ -223,29 +246,146 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     dispatch({ type: 'SET_RECOMMENDATIONS', recommendations: next });
   }, []);
 
-  const handleTemplateRequest = useCallback((tpl: ArterialLETemplate) => {
+  /** Narrow helper — true iff the given template is a built-in (has nameKey). */
+  const isBuiltInTemplate = (
+    tpl: PendingTemplate,
+  ): tpl is ArterialLETemplate =>
+    typeof (tpl as ArterialLETemplate).nameKey === 'string';
+
+  const handleTemplateRequest = useCallback((tpl: PendingTemplate) => {
     setPendingTemplate(tpl);
   }, []);
 
   const handleTemplateConfirm = useCallback(() => {
     if (!pendingTemplate) return;
-    const impression = t(pendingTemplate.impressionKey, pendingTemplate.impressionFallback);
-    const sonographer = pendingTemplate.sonographerCommentsKey
-      ? t(pendingTemplate.sonographerCommentsKey, pendingTemplate.sonographerCommentsFallback ?? '')
-      : undefined;
-    dispatch({
-      type: 'APPLY_TEMPLATE',
-      template: pendingTemplate,
-      impression,
-      sonographerComments: sonographer,
-    });
+    if (isBuiltInTemplate(pendingTemplate)) {
+      const impression = t(pendingTemplate.impressionKey, pendingTemplate.impressionFallback);
+      const sonographer = pendingTemplate.sonographerCommentsKey
+        ? t(
+            pendingTemplate.sonographerCommentsKey,
+            pendingTemplate.sonographerCommentsFallback ?? '',
+          )
+        : undefined;
+      const view: ArterialTableView =
+        pendingTemplate.scope === 'bilateral' ? 'bilateral' : pendingTemplate.scope;
+      dispatch({
+        type: 'APPLY_TEMPLATE',
+        findings: pendingTemplate.findings,
+        pressures: pendingTemplate.pressures,
+        view,
+        recommendations: pendingTemplate.recommendations
+          ? [...pendingTemplate.recommendations]
+          : [],
+        impression,
+        sonographerComments: sonographer,
+      });
+      notifications.show({
+        title: t('arterialLE.actions.templateApplied', 'Template applied'),
+        message: t(pendingTemplate.nameKey, pendingTemplate.nameFallback),
+        color: 'blue',
+      });
+    } else {
+      // Custom template — findings/pressures stored as unknown; cast by trust.
+      const extras = (pendingTemplate.extras ?? {}) as Readonly<{
+        pressures?: SegmentalPressures;
+      }>;
+      const view: ArterialTableView =
+        pendingTemplate.scope === 'bilateral' ? 'bilateral' : pendingTemplate.scope;
+      dispatch({
+        type: 'APPLY_TEMPLATE',
+        findings: pendingTemplate.findings as ArterialSegmentFindings,
+        pressures: extras.pressures ?? {},
+        view,
+        recommendations: pendingTemplate.recommendations
+          ? [...pendingTemplate.recommendations]
+          : [],
+        impression: pendingTemplate.impression ?? '',
+        sonographerComments: pendingTemplate.sonographerComments ?? undefined,
+      });
+      notifications.show({
+        title: t('arterialLE.actions.templateApplied', 'Template applied'),
+        message: pendingTemplate.name,
+        color: 'blue',
+      });
+    }
+    // Push to recent + refresh.
+    pushRecentTemplate('arterialLE', pendingTemplate.id);
+    setRecentTemplateIds(loadRecentTemplateIds('arterialLE'));
     setPendingTemplate(null);
-    notifications.show({
-      title: t('arterialLE.actions.templateApplied', 'Template applied'),
-      message: t(pendingTemplate.nameKey, pendingTemplate.nameFallback),
-      color: 'blue',
-    });
   }, [pendingTemplate, t]);
+
+  // ---- Gallery open/close ----
+  const handleOpenGallery = useCallback(() => setGalleryOpen(true), []);
+  const handleCloseGallery = useCallback(() => setGalleryOpen(false), []);
+
+  // ---- Save current as template ----
+  const handleOpenSaveDialog = useCallback(() => setSaveDialogOpen(true), []);
+  const handleCloseSaveDialog = useCallback(() => setSaveDialogOpen(false), []);
+
+  const handleSaveTemplateSubmit = useCallback(
+    (payload: SaveTemplatePayload) => {
+      // Map the venous `TemplateKind` to an arterial kind ("normal" works for both;
+      // the venous kinds `acute`/`chronic` fall back to `normal` — a save dialog
+      // upgrade is tracked in Wave 3).
+      const arterialKind: ArterialTemplateKind =
+        payload.kind === 'normal' || payload.kind === 'post-procedure'
+          ? payload.kind
+          : 'normal';
+      const scope =
+        state.view === 'right' || state.view === 'left' ? state.view : 'bilateral';
+      const saved = saveCustomTemplate('arterialLE', {
+        name: payload.name,
+        description: payload.description,
+        kind: arterialKind,
+        scope,
+        findings: state.findings,
+        extras: { pressures: state.pressures },
+        recommendations: state.recommendations,
+        impression: state.impression,
+        sonographerComments: state.sonographerComments,
+      });
+      setCustomTemplates(loadCustomTemplates('arterialLE'));
+      setSaveDialogOpen(false);
+      notifications.show({
+        title: t('arterialLE.templateGallery.saveSuccessTitle', 'Template saved'),
+        message: saved.name,
+        color: 'teal',
+        autoClose: 2500,
+      });
+    },
+    [
+      state.view,
+      state.findings,
+      state.pressures,
+      state.recommendations,
+      state.impression,
+      state.sonographerComments,
+      t,
+    ],
+  );
+
+  // ---- Delete custom template flow ----
+  const handleRequestDeleteCustom = useCallback((id: string) => {
+    setPendingDeleteCustomId(id);
+  }, []);
+  const handleCancelDeleteCustom = useCallback(() => {
+    setPendingDeleteCustomId(null);
+  }, []);
+  const handleConfirmDeleteCustom = useCallback(() => {
+    if (!pendingDeleteCustomId) return;
+    deleteCustomTemplate('arterialLE', pendingDeleteCustomId);
+    setCustomTemplates(loadCustomTemplates('arterialLE'));
+    setPendingDeleteCustomId(null);
+    notifications.show({
+      title: t('arterialLE.templateGallery.deleteSuccessTitle', 'Template deleted'),
+      message: t(
+        'arterialLE.templateGallery.deleteSuccessMessage',
+        'The template has been removed from your library.',
+      ),
+      color: 'teal',
+      autoClose: 2500,
+    });
+  }, [pendingDeleteCustomId, t]);
 
   const handleNewCaseRequest = useCallback(() => setNewCaseOpen(true), []);
   const handleNewCaseConfirm = useCallback(() => {
@@ -300,10 +440,15 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
             ]}
           />
           <Group gap="xs">
-            <TemplateDropdown
-              templates={ARTERIAL_LE_TEMPLATES}
-              onPick={handleTemplateRequest}
-            />
+            <EMRButton
+              variant="secondary"
+              size="sm"
+              icon={IconStack2}
+              onClick={handleOpenGallery}
+              data-testid="arterial-template-gallery-trigger"
+            >
+              {t('arterialLE.templates.menuLabel', 'Templates')}
+            </EMRButton>
             <button
               type="button"
               className={classes.newCaseButton}
@@ -399,43 +544,38 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
         onConfirm={handleNewCaseConfirm}
         destructive
       />
+
+      <ArterialTemplateGallery
+        opened={galleryOpen}
+        onClose={handleCloseGallery}
+        onApply={handleTemplateRequest}
+        onSaveCurrentAsTemplate={handleOpenSaveDialog}
+        customTemplates={customTemplates}
+        recentTemplateIds={recentTemplateIds}
+        onDeleteCustom={handleRequestDeleteCustom}
+      />
+
+      <SaveTemplateDialog
+        opened={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        onSubmit={handleSaveTemplateSubmit}
+      />
+
+      <ConfirmDialog
+        opened={pendingDeleteCustomId !== null}
+        onClose={handleCancelDeleteCustom}
+        title={t('arterialLE.templateGallery.deleteConfirmTitle', 'Delete template?')}
+        message={t(
+          'arterialLE.templateGallery.deleteConfirmBody',
+          'This template will be removed from your library. This cannot be undone.',
+        )}
+        confirmLabel={t('arterialLE.templateGallery.deleteConfirm', 'Delete')}
+        cancelLabel={t('arterialLE.actions.cancel', 'Cancel')}
+        onConfirm={handleConfirmDeleteCustom}
+        destructive
+      />
     </div>
   );
 });
-
-// ----------------------------------------------------------------------------
-// Template dropdown — minimal MVP; template-gallery modal is a future upgrade.
-// ----------------------------------------------------------------------------
-
-function TemplateDropdown({
-  templates,
-  onPick,
-}: {
-  templates: ReadonlyArray<ArterialLETemplate>;
-  onPick: (tpl: ArterialLETemplate) => void;
-}): React.ReactElement {
-  const { t } = useTranslation();
-  return (
-    <select
-      className={classes.templateSelect}
-      onChange={(e) => {
-        const tpl = findArterialTemplateById(e.target.value);
-        if (tpl) onPick(tpl);
-        e.currentTarget.value = '';  // reset so re-selecting same tpl re-fires
-      }}
-      defaultValue=""
-      aria-label={t('arterialLE.templates.menuLabel', 'Templates')}
-    >
-      <option value="" disabled>
-        {t('arterialLE.templates.menuLabel', 'Templates')}
-      </option>
-      {templates.map((tpl) => (
-        <option key={tpl.id} value={tpl.id}>
-          {t(tpl.nameKey, tpl.nameFallback)}
-        </option>
-      ))}
-    </select>
-  );
-}
 
 export default ArterialLEForm;

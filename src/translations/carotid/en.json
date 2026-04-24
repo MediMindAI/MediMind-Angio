@@ -1,7 +1,14 @@
 {
   "carotid": {
-    "tabs": { "left": "Left", "right": "Right", "bilateral": "Bilateral" },
-    "side": { "left": "Left", "right": "Right" },
+    "tabs": {
+      "left": "Left",
+      "right": "Right",
+      "bilateral": "Bilateral"
+    },
+    "side": {
+      "left": "Left",
+      "right": "Right"
+    },
     "vessel": {
       "cca-prox": "CCA, proximal",
       "cca-mid": "CCA, mid",
@@ -138,6 +145,50 @@
       "postCeaSurveillance": "Routine post-CEA duplex surveillance per SVS guideline: at 1 month, 6 months, and annually thereafter. Report return of neurologic symptoms immediately. Continue antiplatelet + high-intensity statin lifelong.",
       "postStentSurveillance": "Carotid-stent surveillance per SVS: duplex at 1 month, 6 months, 12 months, then annually. Higher in-stent PSV thresholds apply (≥ 220 cm/s concerning for restenosis). Dual antiplatelet per interventionalist regimen; then lifelong single antiplatelet + statin.",
       "subclavianStealCTA": "Confirm subclavian stenosis with CT angiography of the aortic arch and great vessels. Check bilateral arm blood pressures — expected systolic differential >15–20 mmHg. If symptomatic (arm claudication, posterior circulation symptoms, coronary-subclavian steal in prior LIMA-CABG): endovascular subclavian revascularization first-line per ESVS 2018. If asymptomatic: best medical therapy and surveillance. Screen for diffuse atherosclerosis."
+    },
+    "templateGallery": {
+      "title": "Templates",
+      "subtitle": "Pick a pre-built case or save your own.",
+      "searchPlaceholder": "Search templates…",
+      "categoryAll": "All",
+      "categoriesLabel": "Categories",
+      "cardApply": "Apply",
+      "customTag": "My template",
+      "recentGroup": "Recently used",
+      "customGroup": "My templates",
+      "saveAction": "+ Save current as template",
+      "deleteAriaLabel": "Delete template",
+      "emptyNoMatchTitle": "No templates match your search",
+      "emptyNoMatch": "No templates match \"{query}\" — try a different search term.",
+      "emptyMineTitle": "No saved templates yet",
+      "emptyMine": "You haven't saved any templates yet. Fill in a case and click + Save current as template below.",
+      "emptyRecentTitle": "Nothing here yet",
+      "emptyRecent": "Templates you apply will appear here for quick access.",
+      "emptyGeneric": "No templates in this category.",
+      "severity": {
+        "routine": "Routine",
+        "critical": "Critical",
+        "urgent": "Urgent",
+        "informational": "Informational"
+      },
+      "scope": {
+        "right": "Right",
+        "left": "Left",
+        "bilateral": "Bilateral"
+      },
+      "kind": {
+        "normal": "Normal",
+        "mild": "Mild",
+        "moderate": "Moderate",
+        "severe": "Severe",
+        "postProcedure": "Post-procedure"
+      },
+      "saveSuccessTitle": "Template saved",
+      "deleteConfirmTitle": "Delete template?",
+      "deleteConfirmBody": "This template will be removed from your library. This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "deleteSuccessTitle": "Template deleted",
+      "deleteSuccessMessage": "The template has been removed from your library."
     }
   }
 }

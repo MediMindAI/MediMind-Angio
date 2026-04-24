@@ -1,17 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * customTemplatesService — localStorage CRUD for user-authored Venous LE
- * templates + the "Recently used" LRU queue.
+ * customTemplatesService — localStorage CRUD for user-authored study
+ * templates (venous LE, arterial LE, carotid) + the "Recently used" LRU.
  *
- * Storage layout (two keys, both JSON-encoded):
+ * Storage layout (two keys per study, JSON-encoded):
  *
- *   venous-le.custom-templates  → ReadonlyArray<CustomTemplate>
- *   venous-le.recent-templates  → ReadonlyArray<string>   (template IDs, MRU-first, max 5)
+ *   custom-templates.${studyType}  → ReadonlyArray<CustomTemplate>
+ *   recent-templates.${studyType}  → ReadonlyArray<string>   (template IDs, MRU-first, max 5)
+ *
+ * Back-compat migration — a single one-time migration copies the pre-parametrized
+ * venous keys (`venous-le.custom-templates` / `venous-le.recent-templates`) over
+ * to the `venousLEBilateral` scoped keys, then deletes the old keys. The
+ * migration flag `custom-templates.migrated-from-venous-le` prevents re-runs.
  *
  * Scope rule — standalone app, no Medplum sync. Each saved template snapshots
- * the current findings / CEAP / recommendations / impression / sonographer
- * comments; it does NOT hold patient data. Intended for the single user on
- * this device. A future `Basic` resource sync is a drop-in.
+ * the current findings / CEAP (venous) / recommendations / impression /
+ * sonographer comments; it does NOT hold patient data. Intended for the single
+ * user on this device.
  *
  * Schema-version safety: every stored template carries a `schemaVersion` tag.
  * When the in-memory finding shape changes in the future, bump the version
@@ -20,22 +25,33 @@
  */
 
 import type { CeapClassification } from '../types/ceap';
-import type { Recommendation } from '../types/form';
-import type {
-  TemplateKind,
-  TemplateScope,
-} from '../components/studies/venous-le/templates';
-import type { VenousSegmentFindings } from '../components/studies/venous-le/config';
+import type { Recommendation, StudyType } from '../types/form';
 
-/** One user-authored template. */
+// Template kind / scope unions — each study has its own but we keep them
+// permissive here so the generic service can store any variant.
+export type CustomTemplateKind = string;
+export type CustomTemplateScope = 'right' | 'left' | 'bilateral';
+
+/**
+ * One user-authored template.
+ *
+ * `findings` is `unknown` on purpose — each study casts to its own shape
+ * (`VenousSegmentFindings`, `ArterialSegmentFindings`, `CarotidFindings`) at
+ * callsite. Likewise `extras` carries study-specific payload (arterial
+ * pressures, carotid NASCET).
+ */
 export interface CustomTemplate {
   readonly id: string;
   readonly name: string;
   readonly description: string;
-  readonly kind: TemplateKind;
-  readonly scope: TemplateScope;
-  readonly findings: VenousSegmentFindings;
+  readonly kind: CustomTemplateKind;
+  readonly scope: CustomTemplateScope;
+  /** Per-study findings map; the study casts it to its strong type. */
+  readonly findings: unknown;
+  /** Venous-specific CEAP (optional, only venous studies populate). */
   readonly ceap?: CeapClassification;
+  /** Study-specific extras (e.g. arterial `pressures`, carotid `nascet`). */
+  readonly extras?: Readonly<Record<string, unknown>>;
   readonly recommendations?: ReadonlyArray<Recommendation>;
   readonly impression?: string;
   readonly sonographerComments?: string;
@@ -44,9 +60,21 @@ export interface CustomTemplate {
   readonly schemaVersion: 1;
 }
 
-const CUSTOM_KEY = 'venous-le.custom-templates';
-const RECENT_KEY = 'venous-le.recent-templates';
+const CUSTOM_KEY_PREFIX = 'custom-templates';
+const RECENT_KEY_PREFIX = 'recent-templates';
+const MIGRATION_FLAG_KEY = 'custom-templates.migrated-from-venous-le';
+const LEGACY_CUSTOM_KEY = 'venous-le.custom-templates';
+const LEGACY_RECENT_KEY = 'venous-le.recent-templates';
+const LEGACY_TARGET_STUDY: StudyType = 'venousLEBilateral';
 const RECENT_MAX = 5;
+
+function customKey(studyType: StudyType): string {
+  return `${CUSTOM_KEY_PREFIX}.${studyType}`;
+}
+
+function recentKey(studyType: StudyType): string {
+  return `${RECENT_KEY_PREFIX}.${studyType}`;
+}
 
 // ---------------------------------------------------------------------------
 // Storage helpers
@@ -86,6 +114,55 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
+function removeKey(key: string): void {
+  const storage = safeStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+// ---------------------------------------------------------------------------
+// One-time back-compat migration
+// ---------------------------------------------------------------------------
+
+/**
+ * Migrate legacy venous-only keys (`venous-le.custom-templates`,
+ * `venous-le.recent-templates`) to the new study-scoped keys
+ * (`custom-templates.venousLEBilateral`, `recent-templates.venousLEBilateral`).
+ *
+ * Guarded by a flag so we never overwrite post-migration data, even if the
+ * user re-saves into the legacy key by accident.
+ *
+ * Idempotent — safe to call on every `loadCustomTemplates()` entry point.
+ */
+function runLegacyMigrationOnce(): void {
+  const storage = safeStorage();
+  if (!storage) return;
+  try {
+    if (storage.getItem(MIGRATION_FLAG_KEY) === '1') return;
+    // Migrate custom templates (only if the new key is absent — preserve any
+    // post-migration state that snuck in).
+    const legacyCustom = storage.getItem(LEGACY_CUSTOM_KEY);
+    if (legacyCustom && !storage.getItem(customKey(LEGACY_TARGET_STUDY))) {
+      storage.setItem(customKey(LEGACY_TARGET_STUDY), legacyCustom);
+    }
+    const legacyRecent = storage.getItem(LEGACY_RECENT_KEY);
+    if (legacyRecent && !storage.getItem(recentKey(LEGACY_TARGET_STUDY))) {
+      storage.setItem(recentKey(LEGACY_TARGET_STUDY), legacyRecent);
+    }
+    // Delete legacy keys regardless of copy (they're no longer consulted).
+    removeKey(LEGACY_CUSTOM_KEY);
+    removeKey(LEGACY_RECENT_KEY);
+    storage.setItem(MIGRATION_FLAG_KEY, '1');
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('[customTemplatesService] migration failed', err);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // CustomTemplate CRUD
 // ---------------------------------------------------------------------------
@@ -106,14 +183,18 @@ function isCustomTemplate(value: unknown): value is CustomTemplate {
   );
 }
 
-export function loadCustomTemplates(): ReadonlyArray<CustomTemplate> {
-  const raw = readJson<unknown>(CUSTOM_KEY);
+export function loadCustomTemplates(studyType: StudyType): ReadonlyArray<CustomTemplate> {
+  runLegacyMigrationOnce();
+  const raw = readJson<unknown>(customKey(studyType));
   if (!Array.isArray(raw)) return [];
   return raw.filter(isCustomTemplate);
 }
 
-function writeCustomTemplates(list: ReadonlyArray<CustomTemplate>): void {
-  writeJson(CUSTOM_KEY, list);
+function writeCustomTemplates(
+  studyType: StudyType,
+  list: ReadonlyArray<CustomTemplate>,
+): void {
+  writeJson(customKey(studyType), list);
 }
 
 function newId(): string {
@@ -127,10 +208,11 @@ export interface SaveCustomTemplateInput {
   readonly id?: string;
   readonly name: string;
   readonly description: string;
-  readonly kind: TemplateKind;
-  readonly scope: TemplateScope;
-  readonly findings: VenousSegmentFindings;
+  readonly kind: CustomTemplateKind;
+  readonly scope: CustomTemplateScope;
+  readonly findings: unknown;
   readonly ceap?: CeapClassification;
+  readonly extras?: Readonly<Record<string, unknown>>;
   readonly recommendations?: ReadonlyArray<Recommendation>;
   readonly impression?: string;
   readonly sonographerComments?: string;
@@ -141,8 +223,11 @@ export interface SaveCustomTemplateInput {
  * it matches an existing template, that entry is replaced in place;
  * otherwise a new id is minted and the template is prepended to the list.
  */
-export function saveCustomTemplate(input: SaveCustomTemplateInput): CustomTemplate {
-  const list = loadCustomTemplates();
+export function saveCustomTemplate(
+  studyType: StudyType,
+  input: SaveCustomTemplateInput,
+): CustomTemplate {
+  const list = loadCustomTemplates(studyType);
   const nowIso = new Date().toISOString();
   const existingIdx = input.id ? list.findIndex((t) => t.id === input.id) : -1;
 
@@ -154,10 +239,12 @@ export function saveCustomTemplate(input: SaveCustomTemplateInput): CustomTempla
     scope: input.scope,
     findings: input.findings,
     ceap: input.ceap,
+    extras: input.extras,
     recommendations: input.recommendations,
     impression: input.impression,
     sonographerComments: input.sonographerComments,
-    createdAt: existingIdx >= 0 && list[existingIdx] ? list[existingIdx]!.createdAt : nowIso,
+    createdAt:
+      existingIdx >= 0 && list[existingIdx] ? list[existingIdx]!.createdAt : nowIso,
     schemaVersion: 1,
   };
 
@@ -168,33 +255,34 @@ export function saveCustomTemplate(input: SaveCustomTemplateInput): CustomTempla
   } else {
     next = [template, ...list];
   }
-  writeCustomTemplates(next);
+  writeCustomTemplates(studyType, next);
   return template;
 }
 
-export function deleteCustomTemplate(id: string): void {
-  const list = loadCustomTemplates();
+export function deleteCustomTemplate(studyType: StudyType, id: string): void {
+  const list = loadCustomTemplates(studyType);
   const next = list.filter((t) => t.id !== id);
-  writeCustomTemplates(next);
+  writeCustomTemplates(studyType, next);
 }
 
 // ---------------------------------------------------------------------------
 // Recently-used queue (LRU, MRU-first, max 5, dedupes)
 // ---------------------------------------------------------------------------
 
-export function loadRecentTemplateIds(): ReadonlyArray<string> {
-  const raw = readJson<unknown>(RECENT_KEY);
+export function loadRecentTemplateIds(studyType: StudyType): ReadonlyArray<string> {
+  runLegacyMigrationOnce();
+  const raw = readJson<unknown>(recentKey(studyType));
   if (!Array.isArray(raw)) return [];
   return raw.filter((v): v is string => typeof v === 'string').slice(0, RECENT_MAX);
 }
 
-export function pushRecentTemplate(id: string): void {
-  const current = loadRecentTemplateIds();
+export function pushRecentTemplate(studyType: StudyType, id: string): void {
+  const current = loadRecentTemplateIds(studyType);
   const filtered = current.filter((x) => x !== id);
   const next = [id, ...filtered].slice(0, RECENT_MAX);
-  writeJson(RECENT_KEY, next);
+  writeJson(recentKey(studyType), next);
 }
 
-export function clearRecentTemplates(): void {
-  writeJson(RECENT_KEY, []);
+export function clearRecentTemplates(studyType: StudyType): void {
+  writeJson(recentKey(studyType), []);
 }

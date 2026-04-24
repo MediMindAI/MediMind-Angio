@@ -174,6 +174,51 @@
       "postBypassSurveillance": "Continue routine graft surveillance duplex every 6 months for first 2 years, then annually per SVS 2018 practice guideline. Immediate return for recurrent claudication or rest pain. Continue antiplatelet therapy and statin.",
       "postStentDapt": "Continue dual antiplatelet therapy per interventionalist's regimen (typically 1–3 months post-procedure) then lifelong single antiplatelet. Statin at maximum tolerated dose. Duplex surveillance at 1, 6, and 12 months post-stent, then annually. Prompt re-evaluation if return of claudication symptoms.",
       "diabeticNonCompressible": "ABI is non-diagnostic due to medial calcinosis; rely on TBI, toe pressures, and waveform analysis for hemodynamic assessment. If symptoms of claudication or rest pain, proceed to CT angiography or invasive angiography. Aggressive atherosclerotic risk factor management — glycemic control, statin, antiplatelet, smoking cessation. Foot-care education and annual foot exam essential. Re-evaluate duplex in 6–12 months or sooner if symptomatic."
+    },
+    "templateGallery": {
+      "title": "Templates",
+      "subtitle": "Pick a pre-built case or save your own.",
+      "searchPlaceholder": "Search templates…",
+      "categoryAll": "All",
+      "categoriesLabel": "Categories",
+      "cardApply": "Apply",
+      "customTag": "My template",
+      "recentGroup": "Recently used",
+      "customGroup": "My templates",
+      "saveAction": "+ Save current as template",
+      "deleteAriaLabel": "Delete template",
+      "emptyNoMatchTitle": "No templates match your search",
+      "emptyNoMatch": "No templates match \"{query}\" — try a different search term.",
+      "emptyMineTitle": "No saved templates yet",
+      "emptyMine": "You haven't saved any templates yet. Fill in a case and click + Save current as template below.",
+      "emptyRecentTitle": "Nothing here yet",
+      "emptyRecent": "Templates you apply will appear here for quick access.",
+      "emptyGeneric": "No templates in this category.",
+      "severity": {
+        "routine": "Routine",
+        "critical": "Critical",
+        "urgent": "Urgent",
+        "informational": "Informational"
+      },
+      "scope": {
+        "right": "Right",
+        "left": "Left",
+        "bilateral": "Bilateral"
+      },
+      "kind": {
+        "normal": "Normal",
+        "mild": "Mild",
+        "moderate": "Moderate",
+        "severe": "Severe",
+        "critical": "Critical",
+        "postProcedure": "Post-procedure"
+      },
+      "saveSuccessTitle": "Template saved",
+      "deleteConfirmTitle": "Delete template?",
+      "deleteConfirmBody": "This template will be removed from your library. This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "deleteSuccessTitle": "Template deleted",
+      "deleteSuccessMessage": "The template has been removed from your library."
     }
   }
 }

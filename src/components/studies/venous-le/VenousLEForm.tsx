@@ -448,11 +448,11 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const [pendingDeleteCustomId, setPendingDeleteCustomId] = useState<string | null>(null);
   /** Custom templates loaded from localStorage. */
   const [customTemplates, setCustomTemplates] = useState<ReadonlyArray<CustomTemplate>>(
-    () => loadCustomTemplates(),
+    () => loadCustomTemplates('venousLEBilateral'),
   );
   /** Recently-used template IDs (MRU-first). */
   const [recentTemplateIds, setRecentTemplateIds] = useState<ReadonlyArray<string>>(
-    () => loadRecentTemplateIds(),
+    () => loadRecentTemplateIds('venousLEBilateral'),
   );
 
   // Hydrate from draft on mount (one-shot).
@@ -586,7 +586,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
       dispatch({
         type: 'APPLY_TEMPLATE',
-        findings: template.findings,
+        findings: template.findings as VenousSegmentFindings,
         view: template.scope,
         ceap: template.ceap,
         recommendations,
@@ -597,8 +597,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       setHighlightId(null);
 
       // Push to recently-used queue + refresh state from storage.
-      pushRecentTemplate(template.id);
-      setRecentTemplateIds(loadRecentTemplateIds());
+      pushRecentTemplate('venousLEBilateral', template.id);
+      setRecentTemplateIds(loadRecentTemplateIds('venousLEBilateral'));
 
       const name = isBuiltInTemplate(template)
         ? t(template.nameKey, template.nameFallback)
@@ -647,7 +647,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
   const handleSaveTemplateSubmit = useCallback(
     (payload: SaveTemplatePayload) => {
-      const saved = saveCustomTemplate({
+      const saved = saveCustomTemplate('venousLEBilateral', {
         name: payload.name,
         description: payload.description,
         kind: payload.kind,
@@ -658,7 +658,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
         impression: state.impression,
         sonographerComments: state.sonographerComments,
       });
-      setCustomTemplates(loadCustomTemplates());
+      setCustomTemplates(loadCustomTemplates('venousLEBilateral'));
       setSaveDialogOpen(false);
       notifications.show({
         title: t('venousLE.templates.save.successToast.title', 'Template saved'),
@@ -693,8 +693,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
   const handleConfirmDeleteCustom = useCallback(() => {
     if (!pendingDeleteCustomId) return;
-    deleteCustomTemplate(pendingDeleteCustomId);
-    setCustomTemplates(loadCustomTemplates());
+    deleteCustomTemplate('venousLEBilateral', pendingDeleteCustomId);
+    setCustomTemplates(loadCustomTemplates('venousLEBilateral'));
     setPendingDeleteCustomId(null);
     notifications.show({
       title: t('venousLE.templates.delete.successToast.title', 'Template deleted'),
