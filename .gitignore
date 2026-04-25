@@ -41,3 +41,6 @@ coverage/
 .nyc_output/
 playwright-report/
 test-results/
+
+# Production audit reports (regenerated; not source-of-truth)
+audit-findings/
