@@ -103,7 +103,9 @@ export interface ReportDocumentProps {
   readonly generatedAt?: string;
   /**
    * Page size preset (Wave 4.3 — Part 04 MEDIUM). Defaults to `'A4'`.
-   * Pass `'Letter'` for US clinics (8.5 × 11 in).
+   * Pass `'LETTER'` for US clinics (8.5 × 11 in). Casing matches
+   * `@react-pdf/renderer`'s `PageSize` type so the value passes through
+   * to `<Page size={...}>` without translation.
    */
   readonly pageSize?: PdfPageSize;
   /**

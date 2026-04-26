@@ -118,16 +118,16 @@ describe('ReportDocument — accessibility & page-size props (Wave 4.3)', () => 
     }
   });
 
-  it('honors `pageSize="Letter"` on every page', () => {
+  it('honors `pageSize="LETTER"` on every page', () => {
     const el = ReportDocument({
       form: MOCK_FORM,
       labels: EMPTY_LABELS,
-      pageSize: 'Letter',
+      pageSize: 'LETTER',
     }) as ReactElement<DocumentLikeProps>;
     const pages = getPageProps(el);
     expect(pages.length).toBeGreaterThanOrEqual(2);
     for (const p of pages) {
-      expect(p.size).toBe('Letter');
+      expect(p.size).toBe('LETTER');
     }
   });
 });
