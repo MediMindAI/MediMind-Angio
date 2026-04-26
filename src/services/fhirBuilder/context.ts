@@ -80,25 +80,47 @@ function paramPrefixForStudy(studyType: StudyType): 'venous' | 'arterial' | 'car
   }
 }
 
-export function createContext(form: FormState): BuildContext {
-  const nowIso = new Date().toISOString();
-  const loinc = VASCULAR_LOINC[form.studyType];
-  // Runtime guard — typing makes this dead code under correct usage, but a
-  // freshly-added StudyType without a matching VASCULAR_LOINC entry would
-  // otherwise crash on the next .code access (Area 03 CRITICAL).
-  if (!loinc) {
-    throw new Error(`fhirBuilder: no VASCULAR_LOINC mapping for studyType "${form.studyType}"`);
-  }
-  const patientId = newUuid();
-  const panelId = newUuid();
-  const qrId = newUuid();
-  const reportId = newUuid();
-  const hasCeap = !!form.ceap;
-  const ceapObsId = hasCeap ? newUuid() : null;
+/**
+ * Encounter-level refs that are minted ONCE per encounter and reused by
+ * every per-study sub-context inside a multi-study Bundle (Phase 4a).
+ *
+ * Single-study Bundles still go through `createContext`, which mints these
+ * refs internally — so existing call-sites (`buildFhirBundle`, the Wave 1.4-
+ * 1.6 test corpus) keep working byte-identically.
+ */
+export interface SharedEncounterRefs {
+  readonly nowIso: string;
+  readonly patientId: string;
+  readonly patientRef: string;
+  readonly encounterId: string | null;
+  readonly encounterRef: string | null;
+  readonly operatorPractitionerId: string | null;
+  readonly operatorPractitionerRef: string | null;
+  readonly referrerPractitionerId: string | null;
+  readonly referrerPractitionerRef: string | null;
+  readonly institutionOrganizationId: string | null;
+  readonly institutionOrganizationRef: string | null;
+}
 
-  // Phase 1.5 optional resources — allocate IDs only if inputs are present.
+/**
+ * Mint per-study IDs (panel / QR / report / CEAP / consent / position /
+ * sonographer / clinician / serviceRequest) given a form. Pure ID minting —
+ * no behavioral logic. Both `createContext` and `createSharedContext` reuse
+ * this helper so the gating rules for optional resources stay in one place.
+ */
+function mintPerStudyIds(form: FormState): {
+  readonly panelId: string;
+  readonly qrId: string;
+  readonly reportId: string;
+  readonly ceapObsId: string | null;
+  readonly serviceRequestId: string | null;
+  readonly consentId: string | null;
+  readonly positionObsId: string | null;
+  readonly sonographerObsId: string | null;
+  readonly clinicianObsId: string | null;
+} {
   const header = form.header;
-  const hasIcd10 = Array.isArray(header.icd10Codes) && header.icd10Codes.length > 0;
+  const hasCeap = !!form.ceap;
   const hasCpt = !!header.cptCode;
   const hasConsent = header.informedConsent === true;
   const hasPosition = !!header.patientPosition;
@@ -109,12 +131,36 @@ export function createContext(form: FormState): BuildContext {
     typeof form.narrative.clinicianComments === 'string' &&
     form.narrative.clinicianComments.trim().length > 0;
 
+  return {
+    panelId: newUuid(),
+    qrId: newUuid(),
+    reportId: newUuid(),
+    ceapObsId: hasCeap ? newUuid() : null,
+    serviceRequestId: hasCpt ? newUuid() : null,
+    consentId: hasConsent ? newUuid() : null,
+    positionObsId: hasPosition ? newUuid() : null,
+    sonographerObsId: hasSonographer ? newUuid() : null,
+    clinicianObsId: hasClinician ? newUuid() : null,
+  };
+}
+
+export function createContext(form: FormState): BuildContext {
+  const nowIso = new Date().toISOString();
+  const loinc = VASCULAR_LOINC[form.studyType];
+  // Runtime guard — typing makes this dead code under correct usage, but a
+  // freshly-added StudyType without a matching VASCULAR_LOINC entry would
+  // otherwise crash on the next .code access (Area 03 CRITICAL).
+  if (!loinc) {
+    throw new Error(`fhirBuilder: no VASCULAR_LOINC mapping for studyType "${form.studyType}"`);
+  }
+  const patientId = newUuid();
+  const perStudy = mintPerStudyIds(form);
+
+  // Phase 1.5 optional resources — allocate IDs only if inputs are present.
+  const header = form.header;
+  const hasIcd10 = Array.isArray(header.icd10Codes) && header.icd10Codes.length > 0;
+
   const encounterId = hasIcd10 ? newUuid() : null;
-  const serviceRequestId = hasCpt ? newUuid() : null;
-  const consentId = hasConsent ? newUuid() : null;
-  const positionObsId = hasPosition ? newUuid() : null;
-  const sonographerObsId = hasSonographer ? newUuid() : null;
-  const clinicianObsId = hasClinician ? newUuid() : null;
 
   // Practitioner / Organization presence — gated on the source string being
   // non-empty after trim so blank header fields don't spawn empty resources.
@@ -134,23 +180,23 @@ export function createContext(form: FormState): BuildContext {
     nowIso,
     patientId,
     patientRef: urnRef(patientId),
-    panelId,
-    panelRef: urnRef(panelId),
-    qrId,
-    qrRef: urnRef(qrId),
-    reportId,
-    reportRef: urnRef(reportId),
-    ceapObsId,
-    ceapObsRef: ceapObsId ? urnRef(ceapObsId) : null,
+    panelId: perStudy.panelId,
+    panelRef: urnRef(perStudy.panelId),
+    qrId: perStudy.qrId,
+    qrRef: urnRef(perStudy.qrId),
+    reportId: perStudy.reportId,
+    reportRef: urnRef(perStudy.reportId),
+    ceapObsId: perStudy.ceapObsId,
+    ceapObsRef: perStudy.ceapObsId ? urnRef(perStudy.ceapObsId) : null,
     encounterId,
     encounterRef: encounterId ? urnRef(encounterId) : null,
-    serviceRequestId,
-    serviceRequestRef: serviceRequestId ? urnRef(serviceRequestId) : null,
-    consentId,
-    consentRef: consentId ? urnRef(consentId) : null,
-    positionObsId,
-    sonographerObsId,
-    clinicianObsId,
+    serviceRequestId: perStudy.serviceRequestId,
+    serviceRequestRef: perStudy.serviceRequestId ? urnRef(perStudy.serviceRequestId) : null,
+    consentId: perStudy.consentId,
+    consentRef: perStudy.consentId ? urnRef(perStudy.consentId) : null,
+    positionObsId: perStudy.positionObsId,
+    sonographerObsId: perStudy.sonographerObsId,
+    clinicianObsId: perStudy.clinicianObsId,
     operatorPractitionerId,
     operatorPractitionerRef: operatorPractitionerId ? urnRef(operatorPractitionerId) : null,
     referrerPractitionerId,
@@ -159,6 +205,65 @@ export function createContext(form: FormState): BuildContext {
     institutionOrganizationRef: institutionOrganizationId
       ? urnRef(institutionOrganizationId)
       : null,
+    loincCode: loinc.code,
+    loincDisplay: loinc.display,
+    paramPrefix: paramPrefixForStudy(form.studyType),
+  };
+}
+
+/**
+ * Per-study context that inherits encounter-level refs from a shared parent
+ * (Phase 4a). Used by `buildEncounterBundle` to spin up N study contexts that
+ * all reference the same Patient / Encounter / Practitioner / Organization
+ * while each carrying its own Panel / QR / Report / CEAP IDs.
+ *
+ * Shared refs (`patientId`, `encounterId`, `operatorPractitionerId`,
+ * `referrerPractitionerId`, `institutionOrganizationId`) come from the
+ * `shared` argument verbatim — this function does NOT mint them. Per-study
+ * refs (panel / QR / report / CEAP / consent / position / sonographer /
+ * clinician / serviceRequest) are minted fresh from `form` using the same
+ * gating rules as `createContext`.
+ *
+ * The single-study path (`createContext` → `buildFhirBundle`) is unchanged.
+ */
+export function createSharedContext(
+  form: FormState,
+  shared: SharedEncounterRefs,
+): BuildContext {
+  const loinc = VASCULAR_LOINC[form.studyType];
+  if (!loinc) {
+    throw new Error(`fhirBuilder: no VASCULAR_LOINC mapping for studyType "${form.studyType}"`);
+  }
+  const perStudy = mintPerStudyIds(form);
+
+  return {
+    form,
+    nowIso: shared.nowIso,
+    patientId: shared.patientId,
+    patientRef: shared.patientRef,
+    panelId: perStudy.panelId,
+    panelRef: urnRef(perStudy.panelId),
+    qrId: perStudy.qrId,
+    qrRef: urnRef(perStudy.qrId),
+    reportId: perStudy.reportId,
+    reportRef: urnRef(perStudy.reportId),
+    ceapObsId: perStudy.ceapObsId,
+    ceapObsRef: perStudy.ceapObsId ? urnRef(perStudy.ceapObsId) : null,
+    encounterId: shared.encounterId,
+    encounterRef: shared.encounterRef,
+    serviceRequestId: perStudy.serviceRequestId,
+    serviceRequestRef: perStudy.serviceRequestId ? urnRef(perStudy.serviceRequestId) : null,
+    consentId: perStudy.consentId,
+    consentRef: perStudy.consentId ? urnRef(perStudy.consentId) : null,
+    positionObsId: perStudy.positionObsId,
+    sonographerObsId: perStudy.sonographerObsId,
+    clinicianObsId: perStudy.clinicianObsId,
+    operatorPractitionerId: shared.operatorPractitionerId,
+    operatorPractitionerRef: shared.operatorPractitionerRef,
+    referrerPractitionerId: shared.referrerPractitionerId,
+    referrerPractitionerRef: shared.referrerPractitionerRef,
+    institutionOrganizationId: shared.institutionOrganizationId,
+    institutionOrganizationRef: shared.institutionOrganizationRef,
     loincCode: loinc.code,
     loincDisplay: loinc.display,
     paramPrefix: paramPrefixForStudy(form.studyType),
