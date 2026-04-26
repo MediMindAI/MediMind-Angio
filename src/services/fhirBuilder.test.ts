@@ -144,3 +144,80 @@ describe('buildFhirBundle', () => {
     expect(encounter?.period?.start).toBe('2026-04-20');
   });
 });
+
+// ============================================================================
+// Wave 2.5 — `parameters` widening + type-guard read boundary
+//
+// FormStateBase.parameters is now `Readonly<Record<string, unknown>>`. The
+// fhirBuilder read sites use `is*Findings` / `isCarotidNascet` /
+// `isArterialPressures` from `types/parameters.ts` instead of `as unknown as`
+// casts. These tests confirm:
+//   1. Real per-segment findings flow through the new typed boundary.
+//   2. Wrong-shape `segmentFindings` (string instead of object) does NOT crash
+//      the bundle build — the type guard fails open and the build proceeds
+//      with no segment-level Observations.
+// ============================================================================
+
+describe('Wave 2.5 — parameters type-guard read boundary', () => {
+  it('reads venous findings via the type guard (object payload)', () => {
+    const form = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: {
+        segmentFindings: {
+          'pop-left': { compressibility: 'non-compressible' },
+        },
+      },
+    } as FormState;
+    expect(() => buildFhirBundle(form)).not.toThrow();
+  });
+
+  it('reads arterial findings + pressures via the type guards', () => {
+    const form = {
+      ...minimalForm('arterialLE'),
+      parameters: {
+        segmentFindings: { 'sfa-left': { stenosisCategory: '50-69' } },
+        pressures: { ankleLeft: 120, brachialLeft: 130 },
+      },
+    } as FormState;
+    expect(() => buildFhirBundle(form)).not.toThrow();
+  });
+
+  it('reads carotid findings + nascet via the type guards', () => {
+    const form = {
+      ...minimalForm('carotid'),
+      parameters: {
+        segmentFindings: { 'ica-left': { plaqueMorphology: 'soft' } },
+        nascet: { left: '50-69%', right: '<50%' },
+      },
+    } as FormState;
+    expect(() => buildFhirBundle(form)).not.toThrow();
+  });
+
+  it('handles wrong-shape parameters gracefully (string instead of object)', () => {
+    // Type guard rejects "a string, not an object" → extract* returns undefined
+    // → bundle still builds (no segment Observations, no crash).
+    const malformed = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: { segmentFindings: 'a string, not an object' },
+    } as FormState;
+    expect(() => buildFhirBundle(malformed)).not.toThrow();
+  });
+
+  it('handles array-shaped parameters gracefully (arrays are not plain objects)', () => {
+    // The type guard explicitly rejects arrays — `parameters['segmentFindings']`
+    // should always be a keyed map, never a positional array.
+    const malformed = {
+      ...minimalForm('arterialLE'),
+      parameters: { segmentFindings: ['not', 'a', 'map'], pressures: null },
+    } as FormState;
+    expect(() => buildFhirBundle(malformed)).not.toThrow();
+  });
+
+  it('handles missing parameters keys gracefully (undefined payload)', () => {
+    const sparse = {
+      ...minimalForm('carotid'),
+      parameters: {}, // no segmentFindings, no nascet
+    } as FormState;
+    expect(() => buildFhirBundle(sparse)).not.toThrow();
+  });
+});
