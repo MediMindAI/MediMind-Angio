@@ -2,12 +2,27 @@
 /**
  * CarotidForm — bilateral carotid-vertebral-subclavian duplex container.
  *
- * Layout: StudyHeader · SegmentedControl (view) · CarotidSegmentTable ·
- * NASCETPicker · Impression/Sonographer/Clinician textareas ·
- * RecommendationsBlock · FormActions.
+ * Layout (Phase 3b — encounter pivot):
+ *   EncounterContextBanner · SegmentedControl (view) · CarotidSegmentTable ·
+ *   NASCETPicker · Impression/Sonographer/Clinician textareas ·
+ *   RecommendationsBlock · FormActions.
+ *
+ * Phase 3b refactor:
+ *   - Drops the legacy `<StudyHeader>` card. Encounter-level fields
+ *     (patient identity + visit context) come from `useEncounter()`; only
+ *     study-clinical scalars (studyDate, studyTime, accessionNumber,
+ *     cptCode, patientPosition, quality) live in this reducer.
+ *   - `RESET` no longer takes a header — all encounter fields are
+ *     untouched by per-study reset.
+ *   - `toFormState(state, encounter)` merges encounter header with
+ *     per-study scalars to assemble the FHIR-ready FormState.
+ *   - Persistence: `useEncounter().setStudyState('carotid', state)` so
+ *     the encounter draft is the single source of truth (option a in the
+ *     phase brief). Legacy per-study draft key (`'carotid'`) remains a
+ *     read-fallback on first hydration for back-compat.
  */
 
-import { memo, useCallback, useMemo, useReducer, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
 import { AnatomyView } from '../../anatomy/AnatomyView';
 import { SEVERITY_COLORS } from '../../../constants/theme-colors';
@@ -15,10 +30,18 @@ import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
-import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from '../../../types/form';
-import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
+import { useEncounter } from '../../../contexts/EncounterContext';
+import type {
+  CptCode,
+  FormState,
+  Recommendation,
+  StudyHeader as StudyHeaderShape,
+} from '../../../types/form';
+import type { PatientPosition } from '../../../types/patient-position';
+import type { EncounterDraft } from '../../../types/encounter';
+import { loadDraft } from '../../../hooks/useAutoSave';
 import { ConfirmDialog, EMRButton } from '../../common';
-import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
+import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
@@ -47,17 +70,42 @@ import classes from './CarotidForm.module.css';
 
 const STUDY_ID = 'carotid';
 
-interface CarotidFormStateV1 {
+/**
+ * Image-quality enum mirrors the venous-LE StudyHeader options. Phase 5
+ * will fold this into a shared per-study type once `StudyHeader` shrinks;
+ * scoping it here keeps the Phase 3b diff surgical.
+ */
+type StudyQuality = 'excellent' | 'good' | 'suboptimal' | 'limited';
+
+/**
+ * Per-study scalar fields — encounter-level identity/visit-context lives
+ * on `EncounterHeader` and reaches FHIR via `useEncounter()` in
+ * `toFormState`. Each per-study key is optional to keep migrations from
+ * legacy drafts (which never persisted these locally) safe.
+ */
+interface CarotidStudyFields {
+  /** ISO YYYY-MM-DD; defaults to encounter date when omitted. */
+  readonly studyDate?: string;
+  readonly studyTime?: string;
+  readonly accessionNumber?: string;
+  readonly cptCode?: CptCode;
+  readonly patientPosition?: PatientPosition;
+  readonly quality?: StudyQuality;
+}
+
+interface CarotidFormStateV2 extends CarotidStudyFields {
   /**
-   * Wave 3.2 (Part 03 MEDIUM) — runtime schema version. The interface name
-   * carries `V1`, but without a runtime field a release that bumps the
-   * state shape (rename, add required field, change findings shape) would
-   * silently hydrate yesterday's draft as the new shape and either crash
-   * or render wrong data. `loadDraft` initializers must validate this.
+   * Phase 3b (encounter pivot) bumped this from V1 to V2: the previous
+   * shape carried a full `header: StudyHeaderValue` slot that the
+   * encounter pivot moved up to `EncounterContext`. A stale V1 draft must
+   * NOT silently hydrate as V2 — `isHydratableCarotidState` enforces the
+   * `schemaVersion === 2` check below.
+   *
+   * Wave 3.2 (Part 03 MEDIUM) introduced the runtime schema field; Phase
+   * 3b bumps the value because the shape changed incompatibly.
    */
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly studyType: 'carotid';
-  readonly header: StudyHeaderValue;
   readonly findings: CarotidFindings;
   readonly nascet: CarotidNascetClassification;
   readonly view: CarotidTableView;
@@ -69,7 +117,7 @@ interface CarotidFormStateV1 {
 }
 
 type Action =
-  | { type: 'SET_HEADER'; header: StudyHeaderValue }
+  | { type: 'SET_STUDY_FIELD'; patch: Partial<CarotidStudyFields> }
   | { type: 'SET_VIEW'; view: CarotidTableView }
   | { type: 'SET_FINDING'; id: CarotidVesselFullId; patch: Partial<CarotidVesselFinding> }
   | { type: 'SET_NASCET'; nascet: CarotidNascetClassification }
@@ -85,23 +133,20 @@ type Action =
       recommendations: ReadonlyArray<Recommendation>;
       impression: string;
     }
-  | { type: 'RESET'; header: StudyHeaderValue };
+  | { type: 'RESET' }
+  | { type: 'HYDRATE'; state: CarotidFormStateV2 };
 
-function defaultHeader(): StudyHeaderValue {
+function defaultCarotidCpt(): CptCode {
   const cpt = defaultCptForStudy('carotid');
-  return {
-    patientName: '',
-    studyDate: new Date().toISOString().slice(0, 10),
-    indication: '',
-    cptCode: { code: cpt.code, display: cptDisplay(cpt, 'en') },
-  };
+  return { code: cpt.code, display: cptDisplay(cpt, 'en') };
 }
 
-function initialState(): CarotidFormStateV1 {
+function initialState(): CarotidFormStateV2 {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     studyType: 'carotid',
-    header: defaultHeader(),
+    studyDate: new Date().toISOString().slice(0, 10),
+    cptCode: defaultCarotidCpt(),
     findings: {},
     nascet: {},
     view: 'bilateral',
@@ -113,10 +158,10 @@ function initialState(): CarotidFormStateV1 {
   };
 }
 
-function reducer(state: CarotidFormStateV1, action: Action): CarotidFormStateV1 {
+function reducer(state: CarotidFormStateV2, action: Action): CarotidFormStateV2 {
   switch (action.type) {
-    case 'SET_HEADER':
-      return { ...state, header: action.header };
+    case 'SET_STUDY_FIELD':
+      return { ...state, ...action.patch };
     case 'SET_VIEW':
       return { ...state, view: action.view };
     case 'SET_FINDING': {
@@ -151,7 +196,12 @@ function reducer(state: CarotidFormStateV1, action: Action): CarotidFormStateV1 
         clinicianComments: '',
       };
     case 'RESET':
-      return { ...initialState(), header: action.header };
+      // Phase 3b — no header argument. Encounter-level fields stay
+      // untouched (they live in EncounterContext); per-study fields reset
+      // to their defaults via `initialState()`.
+      return { ...initialState() };
+    case 'HYDRATE':
+      return action.state;
     default: {
       // Wave 3.7 (Part 03 HIGH) — exhaustiveness check. If a new Action member
       // is added without a corresponding case here, TypeScript will fail
@@ -162,10 +212,61 @@ function reducer(state: CarotidFormStateV1, action: Action): CarotidFormStateV1 
   }
 }
 
-function toFormState(s: CarotidFormStateV1): FormState {
+/**
+ * Run-time guard for hydration — accepts both the new (Phase 3b) shape and
+ * legacy V1 drafts that still carry a `header` field. Legacy `header`
+ * fields are stripped here so encounter-level data in a stale per-study
+ * draft cannot override the live encounter context.
+ */
+function isHydratableCarotidState(value: unknown): value is CarotidFormStateV2 {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Partial<CarotidFormStateV2>;
+  return v.schemaVersion === 2 && v.studyType === 'carotid';
+}
+
+function normalizeHydratedState(raw: CarotidFormStateV2): CarotidFormStateV2 {
+  // Strip a legacy `header` field if it slipped through from a pre-pivot
+  // draft — it has no place in the new state shape and would leak stale
+  // patient identity if an upstream consumer ever spread the state.
+  const legacy = raw as CarotidFormStateV2 & { header?: unknown };
+  if ('header' in legacy) {
+    const { header: _legacyHeader, ...rest } = legacy;
+    void _legacyHeader;
+    return { ...initialState(), ...(rest as Partial<CarotidFormStateV2>) } as CarotidFormStateV2;
+  }
+  return raw;
+}
+
+function toFormState(s: CarotidFormStateV2, encounter: EncounterDraft | null): FormState {
+  // Encounter-level identity + visit context come from the encounter; the
+  // per-study reducer only contributes scalar overrides (studyDate,
+  // accessionNumber, cptCode, patientPosition, etc). The cast to
+  // StudyHeaderShape is preserved so studyTime / quality (which Phase 5
+  // will add to StudyHeader proper) flow through without surfacing in
+  // the shrunk-but-not-yet type.
+  const encounterHeader = encounter?.header;
+  const composed = {
+    patientName: encounterHeader?.patientName ?? '',
+    patientId: encounterHeader?.patientId,
+    patientBirthDate: encounterHeader?.patientBirthDate,
+    patientGender: encounterHeader?.patientGender,
+    operatorName: encounterHeader?.operatorName,
+    referringPhysician: encounterHeader?.referringPhysician,
+    institution: encounterHeader?.institution,
+    medications: encounterHeader?.medications,
+    informedConsent: encounterHeader?.informedConsent,
+    informedConsentSignedAt: encounterHeader?.informedConsentSignedAt,
+    icd10Codes: encounterHeader?.icd10Codes,
+    studyDate: s.studyDate ?? encounterHeader?.encounterDate ?? '',
+    studyTime: s.studyTime,
+    accessionNumber: s.accessionNumber,
+    cptCode: s.cptCode,
+    patientPosition: s.patientPosition,
+    quality: s.quality,
+  };
   return {
     studyType: 'carotid',
-    header: s.header as StudyHeaderShape,
+    header: composed as StudyHeaderShape,
     segments: [],
     narrative: {
       impression: s.impression,
@@ -184,28 +285,83 @@ function toFormState(s: CarotidFormStateV1): FormState {
 
 export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   const { t } = useTranslation();
+  const { encounter, setStudyState } = useEncounter();
 
   const [state, dispatch] = useReducer(reducer, undefined, () => {
-    // Wave 3.2 (Part 03 MEDIUM + Part 10 HIGH) — validate `schemaVersion === 1`
-    // and `studyType === 'carotid'` before hydrating. Previously the carotid
-    // form hydrated any persisted blob without checks, so a release that
-    // bumped the shape (or a corrupted draft) would crash or silently render
-    // wrong data. On mismatch we fall back to fresh initial state.
-    const persisted = loadDraft<CarotidFormStateV1>(STUDY_ID);
-    if (
-      persisted &&
-      persisted.schemaVersion === 1 &&
-      persisted.studyType === 'carotid'
-    ) {
-      return persisted;
+    // Phase 3b hydration order:
+    //   1. encounter.studies.carotid (the new source of truth)
+    //   2. legacy per-study draft under `'carotid'` key (back-compat for
+    //      drafts created before the encounter pivot landed)
+    //   3. fresh initialState
+    // Both sources are validated against schemaVersion + studyType so a
+    // stale shape can't silently render wrong data.
+    const fromEncounter = encounter?.studies?.carotid;
+    if (isHydratableCarotidState(fromEncounter)) {
+      return normalizeHydratedState(fromEncounter);
+    }
+    const persisted = loadDraft<CarotidFormStateV2>(STUDY_ID);
+    if (isHydratableCarotidState(persisted)) {
+      return normalizeHydratedState(persisted);
     }
     return initialState();
   });
 
-  const { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft } = useAutoSave<CarotidFormStateV1>(
-    STUDY_ID,
-    state,
-  );
+  // Phase 3b: encounter-driven hydration. If the encounter loads
+  // asynchronously (IDB resolution, route change), pull its persisted
+  // carotid slice into the reducer so the user resumes where they left
+  // off. We HYDRATE only when the encounter copy is meaningfully
+  // different from the in-memory state to avoid wiping unsaved typing.
+  useEffect(() => {
+    const fromEncounter = encounter?.studies?.carotid;
+    if (!isHydratableCarotidState(fromEncounter)) return;
+    // Cheap structural compare — JSON.stringify is acceptable for the
+    // small per-study slice (no functions, no cycles) and avoids pulling
+    // in a deep-equal helper just for one effect.
+    if (JSON.stringify(fromEncounter) === JSON.stringify(state)) return;
+    dispatch({ type: 'HYDRATE', state: normalizeHydratedState(fromEncounter) });
+    // Intentionally exclude `state` from the dep list — we only want to
+    // re-hydrate when the encounter source changes, not on every local
+    // edit (which would create a feedback loop).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encounter?.studies?.carotid]);
+
+  // Phase 3b: persist every reducer change into the encounter draft. The
+  // encounter store dual-writes to IDB + localStorage internally, so this
+  // single call replaces the legacy `useAutoSave` channel.
+  //
+  // Two anti-loop guards keep this from re-entering itself:
+  //   1. `lastPersistedRef` holds the most recently persisted state by
+  //      reference. We only call `setStudyState` when the local `state`
+  //      reference actually differs — guards against the encounter-ref
+  //      churn that `setStudyState` itself causes (which would otherwise
+  //      drive the effect to re-run with the same state).
+  //   2. `isFirstMirrorRun` skips the very first effect run, so the
+  //      freshly-hydrated state isn't immediately re-mirrored back into
+  //      the encounter (it was just read from there).
+  // `lastSavedAt` mirrors the timestamp so FormActions' "saved at HH:MM"
+  // affordance keeps working without re-introducing useAutoSave.
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const lastPersistedRef = useRef<CarotidFormStateV2 | null>(null);
+  // Anti-loop guards:
+  //   * Wait for a non-null encounter before mirroring.
+  //   * On the FIRST run with a non-null encounter, just seed
+  //     `lastPersistedRef` so we don't echo the freshly-hydrated state
+  //     back into the encounter (it was just read from there).
+  //   * Subsequent runs: persist only if `state` actually changed by
+  //     reference. The encounter-ref churn that `setStudyState` itself
+  //     produces re-fires the effect with the same `state`, so the ref
+  //     guard short-circuits the loop.
+  useEffect(() => {
+    if (!encounter) return;
+    if (lastPersistedRef.current === null) {
+      lastPersistedRef.current = state;
+      return;
+    }
+    if (lastPersistedRef.current === state) return;
+    lastPersistedRef.current = state;
+    setStudyState<CarotidFormStateV2>('carotid', state);
+    setLastSavedAt(new Date());
+  }, [encounter, setStudyState, state]);
 
   type PendingTemplate = CarotidTemplate | CustomTemplate;
   const [pendingTemplate, setPendingTemplate] = useState<PendingTemplate | null>(null);
@@ -219,10 +375,6 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   const [recentTemplateIds, setRecentTemplateIds] = useState<ReadonlyArray<string>>(
     () => loadRecentTemplateIds('carotid'),
   );
-
-  const handleHeaderChange = useCallback((next: StudyHeaderValue) => {
-    dispatch({ type: 'SET_HEADER', header: next });
-  }, []);
 
   const handleViewChange = useCallback((v: string) => {
     dispatch({ type: 'SET_VIEW', view: v as CarotidTableView });
@@ -385,27 +537,28 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const handleNewCaseRequest = useCallback(() => setNewCaseOpen(true), []);
   const handleNewCaseConfirm = useCallback(() => {
-    const keepHeader: StudyHeaderValue = {
-      ...defaultHeader(),
-      operatorName: state.header.operatorName,
-      institution: state.header.institution,
-    };
-    dispatch({ type: 'RESET', header: keepHeader });
-    clearDraft();
+    // Phase 3b: "+ New case" now means "reset THIS study's findings within
+    // the encounter". Encounter-level fields (patient identity, operator,
+    // institution) live on EncounterContext and stay untouched.
+    dispatch({ type: 'RESET' });
     setNewCaseOpen(false);
     notifications.show({
       title: t('carotid.actions.newCaseToastTitle', 'New case started'),
       message: t('carotid.actions.newCaseToastMessage', 'All data cleared.'),
       color: 'green',
     });
-  }, [state.header.operatorName, state.header.institution, clearDraft, t]);
+  }, [t]);
 
   useHotkeys([
-    ['mod+s', () => saveNow(), { preventDefault: true }],
+    // mod+s used to call saveNow() from useAutoSave; encounter writes are
+    // synchronous on every dispatch now, so the shortcut is a no-op-with-
+    // intent — kept reserved so a future explicit-save command can claim
+    // it without redoing keymap discovery.
+    ['mod+s', () => undefined, { preventDefault: true }],
     ['mod+shift+N', () => handleNewCaseRequest(), { preventDefault: true }],
   ]);
 
-  const formState = useMemo(() => toFormState(state), [state]);
+  const formState = useMemo(() => toFormState(state, encounter), [state, encounter]);
 
   const carotidColorFn = useCallback(
     (id: string): { fill: string; stroke: string } => {
@@ -437,7 +590,7 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     <div className={classes.wrap}>
       <Stack gap="md">
         <BackToStudiesButton />
-        <StudyHeader value={state.header} onChange={handleHeaderChange} />
+        <EncounterContextBanner />
 
         <Group justify="space-between" wrap="wrap" gap="sm">
           <SegmentedControl
@@ -545,9 +698,19 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
         <FormActions
           form={formState}
           lastSavedAt={lastSavedAt}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onSaveDraft={saveNow}
-          baseFilename={`carotid-${state.header.studyDate || 'report'}`}
+          hasUnsavedChanges={false}
+          onSaveDraft={() => {
+            // Encounter writes already flush on every reducer change.
+            // `Save now` is a manual re-flush so the user gets a fresh
+            // "saved at" timestamp on demand without relying on the
+            // change-detection guard in the persist effect.
+            if (encounter) {
+              lastPersistedRef.current = state;
+              setStudyState<CarotidFormStateV2>('carotid', state);
+              setLastSavedAt(new Date());
+            }
+          }}
+          baseFilename={`carotid-${state.studyDate || encounter?.header.encounterDate || 'report'}`}
         />
       </Stack>
 
