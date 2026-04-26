@@ -353,7 +353,7 @@
       "newCaseToastMessage": "ფორმა გასუფთავდა.",
       "cancel": "გაუქმება",
       "applyTemplateConfirmTitle": "გამოვიყენოთ შაბლონი?",
-      "applyTemplateConfirmBody": "ეს ჩაანაცვლებს მიმდინარე მონაცემებს, CEAP-ს და რეკომენდაციებს.",
+      "applyTemplateConfirmBody": "ეს ჩაანაცვლებს მიმდინარე მონაცემებს, CEAP-ს, რეკომენდაციებს, დასკვნას, სონოგრაფერის კომენტარებს და კლინიცისტის კომენტარებს.",
       "applyTemplate": "შაბლონის გამოყენება"
     },
     "anatomy": {

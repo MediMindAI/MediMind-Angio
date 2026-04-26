@@ -353,7 +353,7 @@
       "newCaseToastMessage": "Форма очищена.",
       "cancel": "Отмена",
       "applyTemplateConfirmTitle": "Применить шаблон?",
-      "applyTemplateConfirmBody": "Это заменит текущие находки, CEAP и рекомендации.",
+      "applyTemplateConfirmBody": "Это заменит текущие находки, CEAP, рекомендации, заключение, комментарии сонографиста и комментарии клинициста.",
       "applyTemplate": "Применить шаблон"
     },
     "anatomy": {

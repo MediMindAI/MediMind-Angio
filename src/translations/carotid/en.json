@@ -91,7 +91,7 @@
       "newCaseToastMessage": "All data cleared.",
       "applyTemplate": "Apply template",
       "applyTemplateConfirmTitle": "Apply template?",
-      "applyTemplateConfirmBody": "This will replace current findings, NASCET classification, impression, and recommendations.",
+      "applyTemplateConfirmBody": "This will replace current findings, NASCET classification, impression, recommendations, and clinician comments.",
       "cancel": "Cancel",
       "templateApplied": "Template applied"
     },

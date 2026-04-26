@@ -113,7 +113,7 @@
       "newCaseToastMessage": "All data cleared.",
       "applyTemplate": "Apply template",
       "applyTemplateConfirmTitle": "Apply template?",
-      "applyTemplateConfirmBody": "This will replace current findings, pressures, impression, and recommendations.",
+      "applyTemplateConfirmBody": "This will replace current findings, pressures, impression, recommendations, sonographer comments, and clinician comments.",
       "cancel": "Cancel",
       "templateApplied": "Template applied"
     },

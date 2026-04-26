@@ -91,7 +91,7 @@
       "newCaseToastMessage": "Все данные очищены.",
       "applyTemplate": "Применить шаблон",
       "applyTemplateConfirmTitle": "Применить шаблон?",
-      "applyTemplateConfirmBody": "Это заменит текущие данные, классификацию NASCET, заключение и рекомендации.",
+      "applyTemplateConfirmBody": "Это заменит текущие данные, классификацию NASCET, заключение, рекомендации и комментарии клинициста.",
       "cancel": "Отмена",
       "templateApplied": "Шаблон применён"
     },

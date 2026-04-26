@@ -113,7 +113,7 @@
       "newCaseToastMessage": "Все данные очищены.",
       "applyTemplate": "Применить шаблон",
       "applyTemplateConfirmTitle": "Применить шаблон?",
-      "applyTemplateConfirmBody": "Это заменит текущие находки, давления, заключение и рекомендации.",
+      "applyTemplateConfirmBody": "Это заменит текущие находки, давления, заключение, рекомендации, комментарии сонографиста и комментарии клинициста.",
       "cancel": "Отмена",
       "templateApplied": "Шаблон применён"
     },

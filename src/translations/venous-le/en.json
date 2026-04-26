@@ -353,7 +353,7 @@
       "newCaseToastMessage": "The form has been cleared.",
       "cancel": "Cancel",
       "applyTemplateConfirmTitle": "Apply template?",
-      "applyTemplateConfirmBody": "This will replace current findings, CEAP, and recommendations.",
+      "applyTemplateConfirmBody": "This will replace current findings, CEAP, recommendations, impression, sonographer comments, and clinician comments.",
       "applyTemplate": "Apply template"
     },
     "anatomy": {
