@@ -16,6 +16,7 @@
 
 .segment {
   position: relative;
+  /* Default desktop size — compact text segmented control */
   height: 30px;
   padding: 0 12px;
   display: inline-flex;
@@ -33,6 +34,16 @@
   flex-shrink: 0;
   cursor: pointer;
   transition: color 0.2s ease, transform 0.15s ease;
+}
+
+/* Wave 3.9 (Pattern D): mobile/tablet must hit the 44×44 tap-target floor.
+   Header always-visible — gloved iPad clinicians on duty shifts can't
+   miss-tap a 30px control. */
+@media (max-width: 768px) {
+  .segment {
+    height: 44px;
+    min-width: 44px;
+  }
 }
 
 .segment:hover:not(.active) {
@@ -81,7 +92,9 @@
 
   .segment {
     padding: 0 10px;
-    min-width: 38px;
+    /* Wave 3.9: 44×44 tap-target floor (Pattern D). */
+    min-width: 44px;
+    height: 44px;
   }
 }
 

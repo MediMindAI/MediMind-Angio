@@ -16,6 +16,7 @@
 
 .segment {
   position: relative;
+  /* Default desktop size — compact icon-only segmented control */
   width: 30px;
   height: 30px;
   display: inline-flex;
@@ -28,6 +29,16 @@
   cursor: pointer;
   transition: color 0.2s ease, transform 0.15s ease;
   flex-shrink: 0;
+}
+
+/* Wave 3.9 (Pattern D): mobile/tablet must hit the 44×44 tap-target floor.
+   Header always-visible — gloved iPad clinicians on duty shifts can't
+   miss-tap a 30px control. */
+@media (max-width: 768px) {
+  .segment {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .segment:hover:not(.active) {

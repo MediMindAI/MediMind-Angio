@@ -19,8 +19,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 30px;
+  /* Wave 3.9 (Pattern D): 44×44 tap-target floor. Width 48px keeps the
+     glyph (30×14) comfortably centered while satisfying the height
+     mandate for gloved iPad use. */
+  min-width: 48px;
+  min-height: 44px;
   padding: 4px 6px;
   background: transparent;
   border: 0;
@@ -32,8 +35,9 @@
 }
 
 .groupMd .option {
-  height: 36px;
-  width: 48px;
+  /* md group keeps the same tap-target floor; explicit values for clarity. */
+  min-height: 44px;
+  min-width: 48px;
 }
 
 .option:hover:not([disabled]) {

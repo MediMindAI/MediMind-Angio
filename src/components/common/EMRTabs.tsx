@@ -114,7 +114,15 @@ function useEMRTabsContext(): EMRTabsContextValue {
 // Size Configurations
 // ============================================================================
 
-const SIZE_CONFIG = {
+/**
+ * Wave 3.9 (Pattern D — tap-target hardening):
+ * Default `md` height MUST be ≥ 44px to satisfy the project-wide 44×44
+ * tap-target floor (CLAUDE.md mandate; iPad clinicians wearing gloves on
+ * a duty shift miss-tap anything smaller). `sm` is opt-in for dense
+ * desktop layouts only and is documented as not meeting the mobile
+ * tap-target requirement.
+ */
+export const SIZE_CONFIG = {
   sm: {
     height: 36,
     iconSize: 14,
@@ -123,7 +131,7 @@ const SIZE_CONFIG = {
     gap: 6,
   },
   md: {
-    height: 42,
+    height: 44,
     iconSize: 16,
     fontSize: 'var(--emr-font-base)',
     padding: '0 16px',
@@ -136,7 +144,7 @@ const SIZE_CONFIG = {
     padding: '0 20px',
     gap: 10,
   },
-};
+} as const;
 
 // ============================================================================
 // Sub-Components
