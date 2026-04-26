@@ -1,7 +1,31 @@
 <!doctype html>
-<html lang="ka">
+<!--
+  `lang` left empty intentionally — TranslationProvider patches
+  document.documentElement.lang on mount with the user's saved language
+  (ka / en / ru). See Wave 4 Task 4.4 for the full hookup.
+-->
+<html lang="">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Security headers (Wave 3.10).
+
+      CSP is intentionally strict: no remote scripts, no remote XHR/fetch,
+      no framing. `'unsafe-inline'` is required for `style-src` only because
+      Mantine and react-pdf inject runtime stylesheets via Emotion; once
+      Wave 4 swaps to nonce/hash-based style injection this can drop to
+      `'self'`. `connect-src 'self'` is correct for this app — there is no
+      backend; FHIR bundles are produced and downloaded client-side.
+
+      `img-src` allows `data:` and `blob:` because react-pdf and the
+      anatomy-SVG colorizer both build object-URLs for previews.
+
+      See audit-findings/angio-production-audit-2026-04-25.md Part 09 #2.
+    -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1a365d" />
     <meta name="description" content="Production-grade angiology reporting — FHIR-native, Georgian/English/Russian." />
