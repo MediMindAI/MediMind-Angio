@@ -161,8 +161,13 @@ export const EMRButton = memo(function EMRButton({
       rightSection={iconPosition === 'right' ? iconElement : undefined}
       styles={{
         root: {
+          // Wave 5.2: use `paddingInline` instead of shorthand `padding: '0 20px'`.
+          // Setting `padding-top/bottom: 0` zeroes Mantine's vertical label box
+          // and required a `label.overflow: visible` escape hatch (kept below as
+          // a belt-and-braces guard). `paddingInline` leaves Mantine's vertical
+          // padding alone so the label centres naturally.
           height,
-          padding: '0 20px',
+          paddingInline: 20,
           borderRadius: 'var(--emr-border-radius)',
           fontWeight: 'var(--emr-font-semibold)',
           fontSize: 'var(--emr-font-base)',
