@@ -27,8 +27,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Grid, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Box, Grid, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus } from '@tabler/icons-react';
@@ -456,7 +455,6 @@ function isBuiltInTemplate(tpl: AnyTemplate): tpl is VenousLETemplate {
 
 export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [highlightId, setHighlightId] = useState<VenousLEFullSegmentId | null>(null);
   /** Template awaiting confirmation (set when user picks one on a non-empty form). */
@@ -569,10 +567,6 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const handleRowHighlight = useCallback((id: VenousLEFullSegmentId | null) => {
     setHighlightId(id);
   }, []);
-
-  const handleBack = useCallback(() => {
-    navigate('/');
-  }, [navigate]);
 
   // ---- Template apply flow ----
 
@@ -789,34 +783,23 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
   return (
     <div className={classes.page}>
-      <div className={classes.crumbs}>
-        <div className={classes.crumbsLeft}>
-          <button
-            type="button"
-            className={classes.backButton}
-            onClick={handleBack}
-            aria-label={t('venousLE.actions.backToStudies')}
-          >
-            ← {t('venousLE.actions.backToStudies')}
-          </button>
-          <Text className={classes.crumbsTitle}>{t('venousLE.title')}</Text>
-        </div>
-        <button
-          type="button"
-          className={classes.newCaseButton}
-          onClick={handleNewCaseRequest}
-          aria-label={t('venousLE.actions.newCase', '+ New case')}
-          data-testid="new-case-button"
-        >
-          <IconPlus size={14} stroke={2.25} />
-          <span>{t('venousLE.actions.newCase', '+ New case')}</span>
-        </button>
-      </div>
-
       <div className={classes.container}>
         <Stack gap="md">
           <BackToStudiesButton />
           <StudyHeader value={state.header} onChange={handleHeader} />
+
+          <Group justify="flex-end" gap="xs" wrap="wrap">
+            <button
+              type="button"
+              className={classes.newCaseButton}
+              onClick={handleNewCaseRequest}
+              aria-label={t('venousLE.actions.newCase', '+ New case')}
+              data-testid="new-case-button"
+            >
+              <IconPlus size={16} stroke={2.25} />
+              <span>{t('venousLE.actions.newCase', '+ New case')}</span>
+            </button>
+          </Group>
 
           <SegmentAssessmentCard
             view={state.view}
