@@ -116,20 +116,36 @@ export interface LocalizedNarrative {
   readonly conclusions: ReadonlyArray<string>;
 }
 
-function resolveEntry(entry: NarrativeKeyEntry, t: TranslateFn): string {
+/**
+ * Resolve a single `NarrativeKeyEntry` to a localized sentence.
+ * Exported for direct unit testing (Wave 3.8 — Part 03 HIGH).
+ */
+export function resolveEntry(entry: NarrativeKeyEntry, t: TranslateFn): string {
   const params = entry.params;
   if (!params) {
     return t(entry.key);
   }
-  // The `vein` param ships as a translation key (`venousLE.segments.<base>`).
-  // Resolve it first so sentence templates can interpolate a localized vein
-  // name rather than a raw key.
+  // Wave 3.8 (Part 03 HIGH) — generalize from the venous-only special-case
+  // (`vein` + bare `side`) to also resolve carotid + arterial generator
+  // params (`vessel`, `severity`, `morphology`, `waveform`, `category`,
+  // `abiBand`, plus pre-prefixed `side: 'carotid.side.left'`). The carotid
+  // and arterial generators ship every translatable param value as a
+  // dotted translation key (e.g. `carotid.vessel.cca-prox`), so any string
+  // value containing a `.` is passed through `t()`. The legacy bare
+  // `side: 'left' | 'right'` from the venous generator is namespaced into
+  // `venousLE.sides.<value>` for back-compat.
   const resolved: Record<string, string | number> = {};
   for (const [paramKey, value] of Object.entries(params)) {
-    if (paramKey === 'vein' && typeof value === 'string') {
-      resolved[paramKey] = t(value);
-    } else if (paramKey === 'side' && typeof value === 'string') {
-      resolved[paramKey] = t(`venousLE.sides.${value}`);
+    if (typeof value === 'string') {
+      if (value.includes('.')) {
+        // Already a translation key — resolve directly.
+        resolved[paramKey] = t(value);
+      } else if (paramKey === 'side') {
+        // Legacy bare side from the venous generator.
+        resolved[paramKey] = t(`venousLE.sides.${value}`);
+      } else {
+        resolved[paramKey] = value;
+      }
     } else {
       resolved[paramKey] = value;
     }

@@ -281,8 +281,17 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     severity: 'urgent',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
       'subclav-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 280 },
+      'subclav-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 110 },
+      // Wave 3.8 (Part 03 HIGH) — subclavian-steal physiology produces
+      // retrograde flow throughout the entire ipsilateral vertebral
+      // (V1, V2, V3). Painting only V2 left the diagram half-coloured and
+      // the narrative under-reported the steal.
+      'vert-v1-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
       'vert-v2-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
+      'vert-v3-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
+      'vert-v1-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
       'vert-v2-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
+      'vert-v3-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
       'ica-prox-right':    { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'ica-prox-left':     { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
     }),
