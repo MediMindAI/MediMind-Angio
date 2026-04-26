@@ -103,6 +103,15 @@ export interface ArterialSegmentFinding {
   /** Plaque length in mm. */
   readonly plaqueLengthMm?: number;
   readonly note?: string;
+  /**
+   * Manual override for the diagram severity band. Mirrors
+   * `VenousSegmentFinding.competencyOverride`. When set,
+   * `deriveArterialCompetency()` returns this value without running the
+   * rule-based derivation. Useful for post-bypass / stented segments whose
+   * hemodynamics no longer fit the standard PSV / waveform thresholds
+   * (Wave 4.6 — Part 01 MEDIUM parity).
+   */
+  readonly competencyOverride?: ArterialCompetency;
 }
 
 export type ArterialSegmentFindings = Readonly<
@@ -305,6 +314,9 @@ export function deriveArterialCompetency(
   finding: ArterialSegmentFinding | undefined,
 ): ArterialCompetency {
   if (!finding) return 'normal';
+  // Manual override wins over all auto-derivation rules (Wave 4.6 parity
+  // with venous `deriveCompetency`).
+  if (finding.competencyOverride !== undefined) return finding.competencyOverride;
   if (finding.occluded || finding.waveform === 'absent' || finding.stenosisCategory === 'occluded') {
     return 'occluded';
   }

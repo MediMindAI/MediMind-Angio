@@ -103,6 +103,13 @@ export interface CarotidVesselFinding {
   /** 0 = normal, 1–3 = steal phases (vertebrals only). */
   readonly subclavianStealPhase?: SubclavianStealPhase;
   readonly note?: string;
+  /**
+   * Manual override for the diagram severity band. Mirrors
+   * `VenousSegmentFinding.competencyOverride` and the new arterial parity
+   * field. When set, `deriveCarotidCompetency()` returns this value without
+   * running the rule-based derivation (Wave 4.6 — Part 01 MEDIUM parity).
+   */
+  readonly competencyOverride?: CarotidCompetency;
 }
 
 export type CarotidFindings = Readonly<
@@ -207,6 +214,9 @@ export function deriveCarotidCompetency(
   nascetCat?: NascetCategory,
 ): CarotidCompetency {
   if (!finding) return 'normal';
+  // Manual override wins over all auto-derivation rules (Wave 4.6 parity
+  // with venous `deriveCompetency`).
+  if (finding.competencyOverride !== undefined) return finding.competencyOverride;
   if (finding.flowDirection === 'absent' || nascetCat === 'occluded') return 'occluded';
   if (nascetCat === 'ge70' || nascetCat === 'near-occlusion') return 'severe';
   if (nascetCat === '50to69') return 'moderate';

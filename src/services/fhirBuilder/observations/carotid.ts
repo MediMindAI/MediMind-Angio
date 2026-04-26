@@ -149,7 +149,15 @@ export function appendCarotidFindingObservations(
     isAbnormal: false,
   });
   // Categorical: subclavian steal phase (vertebrals only; numeric 0..3 → string)
-  if (isVertebral(vesselBase) && finding.subclavianStealPhase !== undefined) {
+  // Wave 4.6 (Part 03 MEDIUM) — phase 0 means "no steal" (the explicit
+  // negative). Emitting it as a coded Observation pollutes the bundle and
+  // misleads downstream queries that count any present subclavianStealPhase
+  // as positive. Skip 0; only emit phases 1..3.
+  if (
+    isVertebral(vesselBase) &&
+    finding.subclavianStealPhase !== undefined &&
+    finding.subclavianStealPhase !== 0
+  ) {
     const phase = String(finding.subclavianStealPhase);
     pushCodedCategorical(ctx, out, {
       bodySite,

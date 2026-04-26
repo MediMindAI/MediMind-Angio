@@ -52,7 +52,6 @@ import {
   type ArterialTemplateKind,
 } from './templates';
 import { ArterialTemplateGallery } from './ArterialTemplateGallery';
-import { generateArterialNarrative } from './narrativeGenerator';
 import classes from './ArterialLEForm.module.css';
 
 const STUDY_ID = 'arterialLE';
@@ -160,7 +159,11 @@ function reducer(state: ArterialFormStateV1, action: Action): ArterialFormStateV
         view: action.view,
         recommendations: [...action.recommendations],
         impression: action.impression,
-        impressionEdited: true,
+        // Wave 4.6 (Part 03 MEDIUM) — match venous reducer: only mark
+        // edited when the template actually carries impression text.
+        // Empty templates leave the textarea pristine so a regenerate-on-
+        // findings-change button (planned) can still rebuild it.
+        impressionEdited: action.impression.length > 0,
         sonographerComments: action.sonographerComments ?? state.sonographerComments,
         // Wave 3.1 (Part 10 HIGH) — always reset clinicianComments so an
         // interpretation typed for a previous patient cannot silently leak
@@ -442,14 +445,11 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     });
   }, [state.header.operatorName, state.header.institution, clearDraft, t]);
 
-  // --- Auto-impression (future: prompt user to regenerate) -------------------
-  // Currently computed lazily on template apply / PDF render; not wired
-  // into the textarea yet. Reserved for future "regenerate" button.
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  useMemo(
-    () => generateArterialNarrative(state.findings, state.pressures),
-    [state.findings, state.pressures],
-  );
+  // --- Auto-impression -------------------------------------------------------
+  // Wave 4.6 (Part 03 MEDIUM) — the previous discarded-result useMemo here
+  // forced narrative regeneration on every findings/pressures keystroke yet
+  // never read the output. Removed; the narrative is computed on demand by
+  // the PDF renderer + template-apply path.
 
   // --- Hotkeys ---------------------------------------------------------------
 
