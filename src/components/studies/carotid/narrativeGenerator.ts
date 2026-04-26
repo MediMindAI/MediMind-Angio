@@ -10,6 +10,7 @@ import {
   type CarotidFindings,
   type CarotidNascetClassification,
   type CarotidVesselFullId,
+  type NascetCategory,
   isVertebral,
 } from './config';
 import { nascetCategoryFallback } from './stenosisCalculator';
@@ -47,7 +48,7 @@ export function generateCarotidNarrative(
 function buildSide(
   findings: CarotidFindings,
   side: 'left' | 'right',
-  nascetCat: ReturnType<typeof pickCat>,
+  nascetCat: NascetCategory | undefined,
 ): SideBuild {
   const entries: NarrativeKeyEntry[] = [];
   const conclusions: NarrativeKeyEntry[] = [];
@@ -135,10 +136,6 @@ function buildSide(
     conclusionsKeys: conclusions.map((c) => c.key),
     conclusionsEntries: conclusions,
   };
-}
-
-function pickCat(nascetCat: string | undefined): string | undefined {
-  return nascetCat;
 }
 
 // Kept for compatibility if fallback resolvers need them directly.

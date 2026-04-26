@@ -17,20 +17,25 @@
  *   - AP diameter (mm)       — transverse caliper in grey-scale
  *   - Depth from skin (mm)   — for procedural planning (ablation targets)
  *
- * Segment IDs come from /scripts/segment-catalog.ts (canonical 15 venous-LE
- * segments × 2 sides = 30 FullSegmentIds). Matches the tagged SVG paths
+ * Segment IDs come from /scripts/segment-catalog.ts (canonical 20 venous-LE
+ * segments × 2 sides = 40 FullSegmentIds — anterior + posterior views, including
+ * superficial saphenous + muscular branches). Matches the tagged SVG paths
  * in /public/anatomy/le-anterior.svg and /public/anatomy/le-posterior.svg.
  */
 
-import type { ParameterDef, StudyConfig } from '../../../types/study';
+import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
 import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
+
+// Re-export the canonical `Side` type so existing consumers
+// (`import { Side } from '.../venous-le/config'`) keep working.
+export type { Side };
 
 // ============================================================================
 // Segment catalog (mirrors scripts/segment-catalog.ts — duplicated so runtime
 // bundles never pull script files)
 // ============================================================================
 
-/** Canonical 15-segment IAC/SVU lower-extremity venous duplex catalog. */
+/** Canonical 20-segment IAC/SVU lower-extremity venous duplex catalog (deep + superficial + muscular). */
 export const VENOUS_LE_SEGMENTS = [
   'cfv', // Common femoral vein
   'eiv', // External iliac vein
@@ -55,7 +60,6 @@ export const VENOUS_LE_SEGMENTS = [
 ] as const;
 
 export type VenousLESegmentBase = (typeof VENOUS_LE_SEGMENTS)[number];
-export type Side = 'left' | 'right';
 export type VenousLEFullSegmentId = `${VenousLESegmentBase}-${Side}`;
 
 export function allVenousLEFullIds(): ReadonlyArray<VenousLEFullSegmentId> {

@@ -8,8 +8,12 @@
  * on vertebrals.
  */
 
-import type { ParameterDef, StudyConfig } from '../../../types/study';
+import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
 import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
+
+// Re-export the canonical `Side` type so existing consumers
+// (`import { Side } from '.../carotid/config'`) keep working.
+export type { Side };
 
 // ============================================================================
 // Vessel catalog
@@ -32,7 +36,6 @@ export const CAROTID_VESSELS = [
 ] as const;
 
 export type CarotidVesselBase = (typeof CAROTID_VESSELS)[number];
-export type Side = 'left' | 'right';
 export type CarotidVesselFullId = `${CarotidVesselBase}-${Side}`;
 
 export function allCarotidFullIds(): ReadonlyArray<CarotidVesselFullId> {

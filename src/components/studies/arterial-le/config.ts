@@ -13,8 +13,12 @@
  * FullSegmentIds.
  */
 
-import type { ParameterDef, StudyConfig } from '../../../types/study';
+import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
 import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
+
+// Re-export the canonical `Side` type so existing consumers
+// (`import { Side } from '.../arterial-le/config'`) keep working.
+export type { Side };
 
 // ============================================================================
 // Segment catalog — anatomical order proximal → distal
@@ -38,7 +42,6 @@ export const ARTERIAL_LE_SEGMENTS = [
 ] as const;
 
 export type ArterialLESegmentBase = (typeof ARTERIAL_LE_SEGMENTS)[number];
-export type Side = 'left' | 'right';
 export type ArterialLEFullSegmentId = `${ArterialLESegmentBase}-${Side}`;
 
 export function allArterialLEFullIds(): ReadonlyArray<ArterialLEFullSegmentId> {

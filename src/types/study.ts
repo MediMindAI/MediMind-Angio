@@ -16,6 +16,14 @@
 import type { SegmentId } from './anatomy';
 
 /**
+ * Side discriminator for any per-side study artifact (segments, pressures,
+ * narrative). Promoted out of per-study `config.ts` files in Wave 4.6 so
+ * every form, builder, and test references the same primitive — drift
+ * between three local declarations was an Area-03 MEDIUM finding.
+ */
+export type Side = 'left' | 'right';
+
+/**
  * Supported study types (Phase 0). New entries must also have:
  *   1. A LOINC code in VASCULAR_LOINC
  *   2. A segment catalog in StudyConfig

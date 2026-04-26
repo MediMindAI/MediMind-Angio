@@ -12,6 +12,7 @@
  */
 
 import type { Recommendation } from '../../../types/form';
+import type { Side } from '../../../types/study';
 import type {
   ArterialSegmentFinding,
   ArterialSegmentFindings,
@@ -59,8 +60,7 @@ export interface ArterialLETemplate {
 // Seed helpers
 // ---------------------------------------------------------------------------
 
-const SIDES = ['left', 'right'] as const;
-type Side = (typeof SIDES)[number];
+const SIDES: ReadonlyArray<Side> = ['left', 'right'];
 
 function fillAll(
   finding: ArterialSegmentFinding,

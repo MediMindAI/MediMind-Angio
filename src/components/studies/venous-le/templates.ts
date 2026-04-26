@@ -35,6 +35,7 @@
 
 import type { CeapClassification } from '../../../types/ceap';
 import type { Recommendation } from '../../../types/form';
+import type { Side } from '../../../types/study';
 import {
   VENOUS_LE_SEGMENTS,
   type VenousLEFullSegmentId,
@@ -85,8 +86,6 @@ export interface VenousLETemplate {
 // ---------------------------------------------------------------------------
 // Finding-map builders
 // ---------------------------------------------------------------------------
-
-type Side = 'left' | 'right';
 
 /** A "normal" (fully negative) DVT-rule-out finding shape. */
 const NORMAL_FINDING: VenousSegmentFinding = Object.freeze({
