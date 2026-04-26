@@ -2,18 +2,28 @@
 
 import { memo, useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
 import {
   IconArrowRight,
   IconStethoscope,
   IconClockHour4,
   IconTrash,
+  IconPlayerPlay,
+  IconPlus,
 } from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
 import { EMRButton } from '../common/EMRButton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { STUDY_PLUGINS } from '../studies';
-import { listDrafts, clearAllDrafts } from '../../services/draftStore';
+import { clearAllDrafts } from '../../services/draftStore';
+import {
+  clearAllEncounters,
+  clearEncounter,
+  listEncounters,
+} from '../../services/encounterStore';
+import type { EncounterDraft } from '../../types/encounter';
+import type { StudyType } from '../../types/study';
 import classes from './StudyPicker.module.css';
 
 /**
@@ -22,43 +32,122 @@ import classes from './StudyPicker.module.css';
  * Layout: eyebrow + large title + subtitle, then a responsive 1 / 2 / 3
  * column grid of cards. Phase-1 studies are clickable, Phase-2..5 cards
  * stay visible but disabled so users can see what's coming.
+ *
+ * Phase 2.b — replaced the Wave 4.1 draft-count banner with an encounter
+ * list. When `listEncounters()` returns ≥ 1 entry, we render a "+ New
+ * encounter" CTA + a list of resumable encounters with their patient,
+ * date, study chips, Resume + Discard actions, and a Clear-all action.
+ * The "+ New encounter" link routes to `/` — once Phase 3a flips the
+ * root route to render `<EncounterIntake>`, the flow naturally lands on
+ * the intake form.
  */
+
+/** Derive whole-year age from an ISO birth date — null when missing/invalid. */
+function ageFromBirthDate(birthIso: string | undefined): number | null {
+  if (!birthIso) return null;
+  const dob = new Date(birthIso);
+  if (Number.isNaN(dob.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age -= 1;
+  return age >= 0 ? age : null;
+}
+
+/** Map a StudyType to a short label via the existing study-plugin translations. */
+function studyTypeShortLabel(
+  studyType: StudyType,
+  t: (key: string, paramsOrDefault?: Record<string, unknown> | string) => string,
+): string {
+  // Plugins live under `studies.<key>.short`. Map the canonical StudyType to
+  // its plugin key (venousLE* variants all share one plugin).
+  const pluginKey =
+    studyType === 'venousLEBilateral' || studyType === 'venousLERight' || studyType === 'venousLELeft'
+      ? 'venousLE'
+      : studyType;
+  const plugin = STUDY_PLUGINS.find((p) => p.key === pluginKey);
+  if (!plugin) return studyType;
+  return t(`${plugin.translationKey}.short`, studyType);
+}
+
 export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const cards = useMemo(() => STUDY_PLUGINS, []);
 
-  // Wave 4.1 — drafts banner. Shows in-progress draft count and a
-  // destructive "Clear all drafts" button so a clinician arriving at a
-  // shared workstation can wipe leftover PHI before starting their case.
-  const [draftCount, setDraftCount] = useState(0);
+  // Phase 2.b — encounter list replaces the Wave 4.1 draft banner. Each row
+  // is a resumable in-progress encounter; the clinician can Resume or
+  // Discard individually, plus a "Clear all" destructive action.
+  const [encounters, setEncounters] = useState<EncounterDraft[]>([]);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [pendingDiscardId, setPendingDiscardId] = useState<string | null>(null);
+  const [discarding, setDiscarding] = useState(false);
 
-  const refreshDraftCount = useCallback(async () => {
+  const refreshEncounters = useCallback(async () => {
     try {
-      const drafts = await listDrafts();
-      setDraftCount(drafts.length);
+      const list = await listEncounters();
+      setEncounters(list);
     } catch {
-      setDraftCount(0);
+      setEncounters([]);
     }
   }, []);
 
   useEffect(() => {
-    void refreshDraftCount();
-  }, [refreshDraftCount]);
+    void refreshEncounters();
+  }, [refreshEncounters]);
 
   const handleConfirmClearAll = useCallback(async () => {
     setClearing(true);
     try {
-      await clearAllDrafts();
-      setDraftCount(0);
+      // Clear both encounters and per-study drafts so the workstation is
+      // wiped of leftover PHI from any source. clearAllDrafts is the
+      // existing Wave 4.1 helper; clearAllEncounters is Phase 1b's.
+      await Promise.all([clearAllEncounters(), clearAllDrafts()]);
+      setEncounters([]);
+      notifications.show({
+        message: t('encounter.list.clearedToast'),
+        color: 'gray',
+      });
     } finally {
       setClearing(false);
       setConfirmClearOpen(false);
     }
-  }, []);
+  }, [t]);
+
+  const handleConfirmDiscard = useCallback(async () => {
+    if (!pendingDiscardId) return;
+    setDiscarding(true);
+    try {
+      await clearEncounter(pendingDiscardId);
+      await refreshEncounters();
+    } finally {
+      setDiscarding(false);
+      setPendingDiscardId(null);
+    }
+  }, [pendingDiscardId, refreshEncounters]);
+
+  const handleResume = useCallback(
+    (encounter: EncounterDraft) => {
+      const firstStudy = encounter.selectedStudyTypes[0];
+      if (!firstStudy) {
+        // Defensive — encounter without selected studies shouldn't exist
+        // but in case it does, fall back to encounter route prefix only.
+        navigate(`/encounter/${encounter.encounterId}`);
+        return;
+      }
+      navigate(`/encounter/${encounter.encounterId}/${firstStudy}`);
+    },
+    [navigate],
+  );
+
+  const handleNewEncounter = useCallback(() => {
+    // TODO(Phase 3a): when App.tsx flips `/` to render <EncounterIntake>,
+    // this naturally lands on the intake form. For now, navigating to `/`
+    // simply re-renders this picker — the user must scroll to the cards.
+    navigate('/');
+  }, [navigate]);
 
   const handlePointerMove = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -94,34 +183,97 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
           <p className={classes.subtitle}>{t('studyPicker.subtitle')}</p>
         </header>
 
-        {/* Wave 4.1 — drafts banner */}
-        {draftCount > 0 && (
-          <div
-            className={classes.draftsBanner}
-            role="status"
-            data-testid="drafts-banner"
-          >
-            <span className={classes.draftsBannerIcon} aria-hidden>
-              <IconClockHour4 size={18} stroke={1.75} />
-            </span>
-            <div className={classes.draftsBannerCopy}>
-              <span className={classes.draftsBannerTitle}>
-                {t('studyPicker.draftsBanner', { count: draftCount })}
-              </span>
-              <span className={classes.draftsBannerSubtitle}>
-                {t('studyPicker.idleTimeout')}
-              </span>
+        {/* Phase 2.b — encounter list */}
+        {encounters.length > 0 && (
+          <section className={classes.encounterListSection} data-testid="encounter-list">
+            <div className={classes.encounterListHeader}>
+              <h2 className={classes.encounterListTitle}>
+                <IconClockHour4 size={18} stroke={1.75} aria-hidden />
+                {t('encounter.list.title')}
+              </h2>
+              <EMRButton
+                variant="primary"
+                size="sm"
+                leftSection={<IconPlus size={16} stroke={1.75} />}
+                onClick={handleNewEncounter}
+                data-testid="encounter-list-new"
+              >
+                {t('encounter.list.newEncounter')}
+              </EMRButton>
             </div>
-            <EMRButton
-              variant="danger"
-              size="sm"
-              leftSection={<IconTrash size={16} stroke={1.75} />}
-              onClick={() => setConfirmClearOpen(true)}
-              data-testid="drafts-clear-all"
-            >
-              {t('studyPicker.clearAllDrafts')}
-            </EMRButton>
-          </div>
+
+            <ul className={classes.encounterList}>
+              {encounters.map((enc) => {
+                const age = ageFromBirthDate(enc.header.patientBirthDate);
+                const ageSuffix = age !== null ? ` · ${age}` : '';
+                return (
+                  <li
+                    key={enc.encounterId}
+                    className={classes.encounterRow}
+                    data-testid={`encounter-row-${enc.encounterId}`}
+                  >
+                    <div className={classes.encounterRowMain}>
+                      <div className={classes.encounterRowPatient}>
+                        <span className={classes.encounterRowPatientName}>
+                          {enc.header.patientName || '—'}
+                          {ageSuffix}
+                        </span>
+                        <span className={classes.encounterRowDate}>
+                          {t('encounter.banner.dateLabel')}: {enc.header.encounterDate || '—'}
+                        </span>
+                      </div>
+                      <div className={classes.encounterRowChips}>
+                        {enc.selectedStudyTypes.map((st) => {
+                          const started = Boolean(enc.studies && st in enc.studies);
+                          return (
+                            <EMRBadge
+                              key={`${enc.encounterId}-${st}`}
+                              variant={started ? 'status-active' : 'status-draft'}
+                              size="sm"
+                            >
+                              {studyTypeShortLabel(st, t)}
+                            </EMRBadge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className={classes.encounterRowActions}>
+                      <EMRButton
+                        variant="primary"
+                        size="sm"
+                        leftSection={<IconPlayerPlay size={16} stroke={1.75} />}
+                        onClick={() => handleResume(enc)}
+                        data-testid={`encounter-resume-${enc.encounterId}`}
+                      >
+                        {t('encounter.list.resume')}
+                      </EMRButton>
+                      <EMRButton
+                        variant="outline"
+                        size="sm"
+                        leftSection={<IconTrash size={16} stroke={1.75} />}
+                        onClick={() => setPendingDiscardId(enc.encounterId)}
+                        data-testid={`encounter-discard-${enc.encounterId}`}
+                      >
+                        {t('encounter.list.discard')}
+                      </EMRButton>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className={classes.encounterListFooter}>
+              <EMRButton
+                variant="danger"
+                size="sm"
+                leftSection={<IconTrash size={16} stroke={1.75} />}
+                onClick={() => setConfirmClearOpen(true)}
+                data-testid="encounter-list-clear-all"
+              >
+                {t('encounter.list.clearAll')}
+              </EMRButton>
+            </div>
+          </section>
         )}
 
         {/* Study card grid */}
@@ -211,12 +363,24 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
       <ConfirmDialog
         opened={confirmClearOpen}
         onClose={() => setConfirmClearOpen(false)}
-        title={t('studyPicker.clearAllDrafts')}
-        message={t('studyPicker.clearAllConfirm')}
-        confirmLabel={t('studyPicker.clearAllDrafts')}
+        title={t('encounter.list.clearAllConfirmTitle')}
+        message={t('encounter.list.clearAllConfirmBody')}
+        confirmLabel={t('encounter.list.clearAllConfirmAction')}
         cancelLabel={t('common.cancel')}
         onConfirm={() => void handleConfirmClearAll()}
         loading={clearing}
+        destructive
+      />
+
+      <ConfirmDialog
+        opened={pendingDiscardId !== null}
+        onClose={() => setPendingDiscardId(null)}
+        title={t('encounter.list.discardConfirmTitle')}
+        message={t('encounter.list.discardConfirmBody')}
+        confirmLabel={t('encounter.list.discardConfirmAction')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => void handleConfirmDiscard()}
+        loading={discarding}
         destructive
       />
     </div>

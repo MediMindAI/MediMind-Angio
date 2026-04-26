@@ -566,6 +566,131 @@
   }
 }
 
+/* ==================== ENCOUNTER LIST (Phase 2.b) ==================== */
+/* Replaces the Wave 4.1 drafts banner. Lists in-progress encounters with
+   patient name, encounter date, study chips, and Resume/Discard actions.
+   Clear-all sits at the bottom for shared-workstation hygiene. */
+.encounterListSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  margin: 0 0 32px;
+  border-radius: var(--emr-border-radius-xl);
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.encounterListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.encounterListTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+}
+
+.encounterListTitle svg {
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+}
+
+.encounterList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.encounterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-bg-page);
+  flex-wrap: wrap;
+}
+
+.encounterRowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.encounterRowPatient {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.encounterRowPatientName {
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  white-space: nowrap;
+}
+
+.encounterRowDate {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  white-space: nowrap;
+}
+
+.encounterRowChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.encounterRowActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.encounterListFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px dashed var(--emr-border-color);
+  margin-top: 4px;
+  padding: 12px 0 0;
+}
+
+@media (max-width: 576px) {
+  .encounterListSection {
+    padding: 14px;
+  }
+  .encounterRow {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 14px;
+  }
+  .encounterRowActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 /* ==================== ACCESSIBILITY ==================== */
 @media (prefers-reduced-motion: reduce) {
   .card,
