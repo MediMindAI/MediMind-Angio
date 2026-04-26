@@ -15,7 +15,7 @@
 import type { ReactElement } from 'react';
 import { Document, Page, View } from '@react-pdf/renderer';
 import { baseStyles } from './styles';
-import { PDF_LAYOUT } from './pdfTheme';
+import { PDF_LAYOUT, PDF_PAGE_PRESETS, type PdfPageSize } from './pdfTheme';
 import { HeaderSection, PreliminaryWatermark } from './sections/HeaderSection';
 import { PatientBlock } from './sections/PatientBlock';
 import type { PatientBlockLabels } from './sections/PatientBlock';
@@ -101,9 +101,18 @@ export interface ReportDocumentProps {
   readonly conclusions?: ReadonlyArray<string>;
   /** ISO timestamp for footer + header. Defaults to form.header.studyDate. */
   readonly generatedAt?: string;
-  // The smoke-test/legacy callers sometimes pass `data` — we accept it as an
-  // opaque pass-through so the PDFGenerator's existing type doesn't break.
-  readonly data?: unknown;
+  /**
+   * Page size preset (Wave 4.3 — Part 04 MEDIUM). Defaults to `'A4'`.
+   * Pass `'Letter'` for US clinics (8.5 × 11 in).
+   */
+  readonly pageSize?: PdfPageSize;
+  /**
+   * BCP-47 document language for PDF metadata / screen-reader hints
+   * (Wave 4.3 — Part 04 MEDIUM). Defaults to `'en'` so accessibility
+   * tooling never misreads English content as Georgian. Set this from
+   * the active UI language in the caller.
+   */
+  readonly lang?: 'en' | 'ka' | 'ru';
 }
 
 // ---------------------------------------------------------------------------
@@ -216,7 +225,10 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
     leftFindings,
     conclusions,
     generatedAt,
+    pageSize = 'A4',
+    lang = 'en',
   } = props;
+  const pagePreset = PDF_PAGE_PRESETS[pageSize];
 
   const issueDate = formatIsoForDisplay(generatedAt ?? form.header.studyDate);
   // Footer timestamp: include time + TZ abbreviation so a Tbilisi sonographer
@@ -234,17 +246,27 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
   const carotidFindings = deriveCarotidFindings(form);
   const carotidNascet = deriveCarotidNascet(form);
 
-  const pageWidth = `${PDF_LAYOUT.contentWidthPt}pt`;
+  // Use the active page preset (Letter has wider content area than A4) so
+  // tables anchor to the correct content box on US-page renders. Falls
+  // back to PDF_LAYOUT for any unrecognized preset (defensive).
+  const pageWidth = `${pagePreset?.contentWidthPt ?? PDF_LAYOUT.contentWidthPt}pt`;
 
   return (
     <Document
       title={labels.title}
       author={org?.name}
-      subject={form.header.patientId ?? ''}
-      language="ka"
+      // Use the report title (already translated, non-PHI) as `subject`.
+      // Previously this was `form.header.patientId`, which embedded the MRN
+      // in the PDF's metadata header — a PHI leak even when the file body
+      // is shared with redactions stripped (Wave 4.3 — Part 04 MEDIUM).
+      subject={labels.title}
+      // BCP-47 document language — drives screen-reader pronunciation of
+      // the embedded text (Wave 4.3 — Part 04 MEDIUM). Was hardcoded to
+      // "ka", which mis-tagged English & Russian reports.
+      language={lang}
     >
       {/* ------------- Page 1 — Header · Patient · Diagram · Findings ---------- */}
-      <Page size="A4" style={baseStyles.page}>
+      <Page size={pageSize} style={baseStyles.page}>
         {preliminary ? <PreliminaryWatermark label={labels.preliminary} /> : null}
 
         <HeaderSection
@@ -385,7 +407,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
       </Page>
 
       {/* ------------- Page 2 — Narrative · CEAP · Recommendations ------------- */}
-      <Page size="A4" style={baseStyles.page}>
+      <Page size={pageSize} style={baseStyles.page}>
         {preliminary ? <PreliminaryWatermark label={labels.preliminary} /> : null}
 
         <HeaderSection

@@ -163,9 +163,13 @@ export const FormActions = memo(function FormActions({
         leftFindings={localized?.leftFindings}
         conclusions={localized?.conclusions}
         generatedAt={new Date().toISOString()}
+        // Wave 4.3 — pass the active UI language so the rendered PDF's
+        // `<Document language>` matches its content (was hardcoded "ka",
+        // which mis-tagged English / Russian reports for screen readers).
+        lang={lang}
       />
     ).toBlob();
-  }, [form, t]);
+  }, [form, t, lang]);
 
   const handleDownloadPdf = useCallback(async () => {
     setPdfLoading(true);

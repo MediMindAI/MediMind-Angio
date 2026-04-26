@@ -509,8 +509,13 @@ async function main(): Promise<void> {
     if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
     if (typeof seg.diameterMm === 'number') {
       entry.apDiameterMm = seg.diameterMm;
-      // Approximate transverse diameter ≈ 90% of AP (mock only).
-      entry.transDiameterMm = Number((seg.diameterMm * 0.9).toFixed(1));
+      // Wave 4.3 — was `seg.diameterMm * 0.9`, a fake derivation that
+      // implied a real clinical relationship between AP and transverse
+      // diameters. Reviewers reading the sample PDF could be misled
+      // into thinking the renderer was inferring trans from AP. Use a
+      // hardcoded plausible value instead so the fixture is honest:
+      // it's just sample data, no math involved.
+      entry.transDiameterMm = 5.9;
     }
     if (seg.competency === 'incompetent') entry.compressibility = 'non-compressible';
     if (seg.competency === 'inconclusive') entry.compressibility = 'inconclusive';
