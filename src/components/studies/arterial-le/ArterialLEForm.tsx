@@ -177,8 +177,10 @@ function toFormState(s: ArterialFormStateV1): FormState {
     recommendations: s.recommendations,
     parameters: {
       // Stash findings + pressures on parameters so FHIR/PDF can retrieve them.
-      segmentFindings: s.findings as unknown as string,
-      pressures: s.pressures as unknown as string,
+      // Wave 2.5: `parameters` is now `Record<string, unknown>` so the per-study
+      // payload (`ArterialFormParameters`) flows through without casts.
+      segmentFindings: s.findings,
+      pressures: s.pressures,
     },
   };
 }

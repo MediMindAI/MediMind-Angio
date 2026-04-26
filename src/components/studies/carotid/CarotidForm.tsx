@@ -154,8 +154,10 @@ function toFormState(s: CarotidFormStateV1): FormState {
     },
     recommendations: s.recommendations,
     parameters: {
-      segmentFindings: s.findings as unknown as string,
-      nascet: s.nascet as unknown as string,
+      // Wave 2.5: `parameters` is now `Record<string, unknown>` so the per-study
+      // payload (`CarotidFormParameters`) flows through without casts.
+      segmentFindings: s.findings,
+      nascet: s.nascet,
     },
   };
 }

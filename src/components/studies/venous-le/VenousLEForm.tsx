@@ -322,11 +322,13 @@ function stateToFormState(s: VenousFormStateV1): FormState {
     segments: [],
     recommendations: s.recommendations,
     ceap: s.ceap,
-    // Findings travel as a JSON-stringifiable object on the loose parameter bag.
-    // The `parameters` record is typed for primitives; fhirBuilder narrows it back.
+    // Findings travel on the loose parameter bag. After Wave 2.5 the bag is
+    // typed `Record<string, unknown>`, so the per-study payload (here
+    // `VenousFormParameters`) flows through without any cast — fhirBuilder /
+    // narrativeService narrow it back via `isVenousFindings`.
     parameters: {
       segmentFindings: s.findings,
-    } as unknown as Record<string, string | number | boolean | undefined>,
+    },
   };
 }
 
