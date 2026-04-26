@@ -172,5 +172,77 @@
     "title": "გვერდი ვერ მოიძებნა",
     "message": "თქვენ მიერ მოთხოვნილი გვერდი არ არსებობს.",
     "home": "კვლევების გვერდზე დაბრუნება"
+  },
+  "encounter": {
+    "intake": {
+      "title": "პაციენტის მიღება",
+      "subtitle": "შეავსეთ ერთხელ — შემდეგ აირჩიეთ ჩასატარებელი კვლევები.",
+      "identity": {
+        "title": "პაციენტის იდენტიფიკაცია",
+        "patientName": "პაციენტის სახელი",
+        "patientNameRequired": "პაციენტის სახელი სავალდებულოა",
+        "patientId": "პირადი ნომერი",
+        "patientIdHelp": "ქართული 11-ნიშნა პირადი ნომერი",
+        "patientBirthDate": "დაბადების თარიღი",
+        "patientGender": "სქესი",
+        "genderMale": "მამრობითი",
+        "genderFemale": "მდედრობითი",
+        "genderOther": "სხვა",
+        "genderUnknown": "უცნობი"
+      },
+      "visit": {
+        "title": "ვიზიტის კონტექსტი",
+        "operatorName": "ოპერატორი (სონოგრაფი)",
+        "referringPhysician": "მიმმართველი ექიმი",
+        "institution": "დაწესებულება",
+        "encounterDate": "ვიზიტის თარიღი",
+        "medications": "მედიკამენტები",
+        "medicationsPlaceholder": "მიმდინარე მედიკამენტების თავისუფალი ჩამონათვალი",
+        "informedConsent": "ინფორმირებული თანხმობა მიღებულია",
+        "informedConsentSignedAt": "თანხმობის ხელმოწერის თარიღი"
+      },
+      "indication": {
+        "title": "ჩვენება",
+        "icd10Label": "ICD-10 კოდები",
+        "icd10Placeholder": "ძიება და არჩევა…",
+        "indicationNotes": "ჩვენების შენიშვნები (დამატებითი)",
+        "indicationNotesPlaceholder": "კლინიკური კონტექსტი (არასავალდებულო)"
+      },
+      "studies": {
+        "title": "ჩასატარებელი კვლევები",
+        "subtitle": "აირჩიეთ ამ ვიზიტის ყველა კვლევა. თითოეული შეივსება ცალკე გვერდზე.",
+        "selectAtLeastOne": "დასაწყებად აირჩიეთ მინიმუმ ერთი კვლევა"
+      },
+      "actions": {
+        "start": "კვლევების დაწყება",
+        "startDisabledNoName": "დასაწყებად შეიყვანეთ პაციენტის სახელი",
+        "startDisabledNoStudies": "აირჩიეთ მინიმუმ ერთი კვლევა",
+        "resume": "მიმდინარე ვიზიტის გაგრძელება"
+      }
+    },
+    "banner": {
+      "patientLabel": "პაციენტი",
+      "dateLabel": "ვიზიტის თარიღი",
+      "studiesLabel": "კვლევები",
+      "switchTo": "გადასვლა: {study}",
+      "addStudy": "+ კვლევის დამატება",
+      "editEncounter": "ვიზიტის დეტალების რედაქტირება",
+      "backToList": "ყველა ვიზიტის სიაში დაბრუნება"
+    },
+    "list": {
+      "title": "მიმდინარე ვიზიტები",
+      "empty": "შენახული ვიზიტები არ არის.",
+      "newEncounter": "+ ახალი ვიზიტი",
+      "resume": "გაგრძელება",
+      "discard": "უარყოფა",
+      "discardConfirmTitle": "უარვყოთ ვიზიტი?",
+      "discardConfirmBody": "ამ ვიზიტის ყველა მონაცემი სამუდამოდ წაიშლება.",
+      "discardConfirmAction": "უარყოფა",
+      "clearAll": "ყველა ვიზიტის წაშლა",
+      "clearAllConfirmTitle": "წავშალოთ ყველა ვიზიტი?",
+      "clearAllConfirmBody": "ეს წაშლის ყველა შენახულ ვიზიტს და კვლევის მონახაზს. ქმედება შეუქცევადია.",
+      "clearAllConfirmAction": "ყველას წაშლა",
+      "clearedToast": "ყველა ვიზიტი წაშლილია."
+    }
   }
 }

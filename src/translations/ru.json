@@ -172,5 +172,77 @@
     "title": "Страница не найдена",
     "message": "Запрашиваемая страница не существует.",
     "home": "Назад к списку исследований"
+  },
+  "encounter": {
+    "intake": {
+      "title": "Приём пациента",
+      "subtitle": "Заполните один раз — затем выберите исследования.",
+      "identity": {
+        "title": "Идентификация пациента",
+        "patientName": "Имя пациента",
+        "patientNameRequired": "Имя пациента обязательно",
+        "patientId": "Личный ID",
+        "patientIdHelp": "11-значный грузинский личный ID",
+        "patientBirthDate": "Дата рождения",
+        "patientGender": "Пол",
+        "genderMale": "Мужской",
+        "genderFemale": "Женский",
+        "genderOther": "Другой",
+        "genderUnknown": "Не указан"
+      },
+      "visit": {
+        "title": "Контекст визита",
+        "operatorName": "Оператор (сонографист)",
+        "referringPhysician": "Направивший врач",
+        "institution": "Учреждение",
+        "encounterDate": "Дата визита",
+        "medications": "Принимаемые препараты",
+        "medicationsPlaceholder": "Свободный список текущих препаратов",
+        "informedConsent": "Информированное согласие получено",
+        "informedConsentSignedAt": "Дата подписания согласия"
+      },
+      "indication": {
+        "title": "Показание",
+        "icd10Label": "Коды МКБ-10",
+        "icd10Placeholder": "Поиск и выбор…",
+        "indicationNotes": "Дополнительные заметки по показанию",
+        "indicationNotesPlaceholder": "Дополнительный клинический контекст"
+      },
+      "studies": {
+        "title": "Исследования к выполнению",
+        "subtitle": "Выберите все исследования для этого визита. Каждое заполняется на своей странице.",
+        "selectAtLeastOne": "Выберите хотя бы одно исследование, чтобы начать"
+      },
+      "actions": {
+        "start": "Начать исследования",
+        "startDisabledNoName": "Введите имя пациента, чтобы начать",
+        "startDisabledNoStudies": "Выберите хотя бы одно исследование",
+        "resume": "Продолжить незавершённый визит"
+      }
+    },
+    "banner": {
+      "patientLabel": "Пациент",
+      "dateLabel": "Дата визита",
+      "studiesLabel": "Исследования",
+      "switchTo": "Перейти к: {study}",
+      "addStudy": "+ Добавить исследование",
+      "editEncounter": "Изменить данные визита",
+      "backToList": "Назад к списку визитов"
+    },
+    "list": {
+      "title": "Незавершённые визиты",
+      "empty": "Сохранённых визитов нет.",
+      "newEncounter": "+ Новый визит",
+      "resume": "Продолжить",
+      "discard": "Удалить",
+      "discardConfirmTitle": "Удалить визит?",
+      "discardConfirmBody": "Все данные этого визита будут безвозвратно удалены.",
+      "discardConfirmAction": "Удалить",
+      "clearAll": "Удалить все визиты",
+      "clearAllConfirmTitle": "Удалить все визиты?",
+      "clearAllConfirmBody": "Это удалит все сохранённые визиты и черновики исследований. Действие нельзя отменить.",
+      "clearAllConfirmAction": "Удалить все",
+      "clearedToast": "Все визиты удалены."
+    }
   }
 }

@@ -172,5 +172,77 @@
     "title": "Page not found",
     "message": "The page you are looking for does not exist.",
     "home": "Back to studies"
+  },
+  "encounter": {
+    "intake": {
+      "title": "Patient intake",
+      "subtitle": "Fill once — then choose which studies to perform.",
+      "identity": {
+        "title": "Patient identity",
+        "patientName": "Patient name",
+        "patientNameRequired": "Patient name is required",
+        "patientId": "Personal ID",
+        "patientIdHelp": "Georgian 11-digit personal ID",
+        "patientBirthDate": "Date of birth",
+        "patientGender": "Sex",
+        "genderMale": "Male",
+        "genderFemale": "Female",
+        "genderOther": "Other",
+        "genderUnknown": "Unknown"
+      },
+      "visit": {
+        "title": "Visit context",
+        "operatorName": "Operator (sonographer)",
+        "referringPhysician": "Referring physician",
+        "institution": "Institution",
+        "encounterDate": "Encounter date",
+        "medications": "Medications",
+        "medicationsPlaceholder": "Free-text list of current medications",
+        "informedConsent": "Informed consent obtained",
+        "informedConsentSignedAt": "Consent signed at"
+      },
+      "indication": {
+        "title": "Indication",
+        "icd10Label": "ICD-10 codes",
+        "icd10Placeholder": "Search and pick…",
+        "indicationNotes": "Indication notes (supplemental)",
+        "indicationNotesPlaceholder": "Optional clinical context"
+      },
+      "studies": {
+        "title": "Studies to perform",
+        "subtitle": "Select all studies for this encounter. Each is filled on its own page.",
+        "selectAtLeastOne": "Select at least one study to start"
+      },
+      "actions": {
+        "start": "Start studies",
+        "startDisabledNoName": "Enter patient name to start",
+        "startDisabledNoStudies": "Select at least one study",
+        "resume": "Resume in-progress encounter"
+      }
+    },
+    "banner": {
+      "patientLabel": "Patient",
+      "dateLabel": "Encounter date",
+      "studiesLabel": "Studies",
+      "switchTo": "Switch to {study}",
+      "addStudy": "+ Add study",
+      "editEncounter": "Edit encounter details",
+      "backToList": "Back to all encounters"
+    },
+    "list": {
+      "title": "In-progress encounters",
+      "empty": "No saved encounters.",
+      "newEncounter": "+ New encounter",
+      "resume": "Resume",
+      "discard": "Discard",
+      "discardConfirmTitle": "Discard encounter?",
+      "discardConfirmBody": "All findings for this encounter will be permanently deleted.",
+      "discardConfirmAction": "Discard",
+      "clearAll": "Clear all encounters",
+      "clearAllConfirmTitle": "Clear all encounters?",
+      "clearAllConfirmBody": "This will delete every saved encounter and study draft. Cannot be undone.",
+      "clearAllConfirmAction": "Clear all",
+      "clearedToast": "All encounters cleared."
+    }
   }
 }
