@@ -369,7 +369,7 @@
 .emptyBody {
   font-size: var(--emr-font-sm);
   color: var(--emr-text-secondary);
-  max-width: 420px;
+  max-width: 480px;
   line-height: 1.5;
 }
 

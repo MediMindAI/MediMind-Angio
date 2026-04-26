@@ -55,7 +55,7 @@
   grid-template-columns: 220px 90px 90px 180px 120px 60px 90px;
   gap: 8px;
   align-items: center;
-  min-width: 900px;
+  min-width: 992px;
 }
 
 .headRow {

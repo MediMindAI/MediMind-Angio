@@ -83,7 +83,7 @@ export const PDF_LAYOUT = {
  * 1-inch (72 pt) margin used for Letter so layout code that anchors to
  * the content box stays correct across both presets.
  */
-export type PdfPageSize = 'A4' | 'Letter';
+export type PdfPageSize = 'A4' | 'LETTER';
 
 export const PDF_PAGE_PRESETS: Record<
   PdfPageSize,
@@ -98,8 +98,8 @@ export const PDF_PAGE_PRESETS: Record<
     contentWidthPt: 595.28 - 56.7 * 2,
     contentHeightPt: 841.89 - 56.7 * 2,
   },
-  Letter: {
-    pageSize: 'Letter',
+  LETTER: {
+    pageSize: 'LETTER',
     contentWidthPt: 612 - 72 * 2,
     contentHeightPt: 792 - 72 * 2,
   },

@@ -89,7 +89,7 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
       <Box className={className} style={style}>
         <Group
           component="label"
-          htmlFor={inputId}
+          {...({ htmlFor: inputId } as { htmlFor: string })}
           gap={config.gap}
           wrap="nowrap"
           style={{

@@ -57,7 +57,7 @@
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .container {
     padding: 28px 16px 40px;
   }
@@ -96,7 +96,7 @@
   min-width: 0;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .eyebrow {
     font-size: var(--emr-font-2xs);
     padding: 4px 10px 4px 8px;
@@ -151,7 +151,7 @@
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .header {
     text-align: left;
     align-items: flex-start;
@@ -176,7 +176,7 @@
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .grid {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -231,7 +231,7 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    420px circle at var(--pointer-x, 50%) var(--pointer-y, 0%),
+    480px circle at var(--pointer-x, 50%) var(--pointer-y, 0%),
     var(--emr-secondary-alpha-08),
     transparent 60%
   );
@@ -469,7 +469,7 @@
   stroke-width: 1.75;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .footnote {
     margin-top: 24px;
   }
@@ -479,7 +479,7 @@
 }
 
 /* ==================== MOBILE CARD REFINEMENTS ==================== */
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .card {
     min-height: 220px;
     padding: 20px;
@@ -555,7 +555,7 @@
   color: var(--emr-text-secondary);
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .draftsBanner {
     flex-wrap: wrap;
     gap: 10px;

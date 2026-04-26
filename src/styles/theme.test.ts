@@ -43,7 +43,8 @@ function collectDefinedVars(themeCss: string): Set<string> {
   const re = /^\s*(--emr-[a-z0-9-]+)\s*:/gim;
   let m: RegExpExecArray | null;
   while ((m = re.exec(themeCss)) !== null) {
-    defined.add(m[1]);
+    const name = m[1];
+    if (name) defined.add(name);
   }
   return defined;
 }
@@ -56,7 +57,8 @@ function collectReferencedVars(): Set<string> {
     const css = readFileSync(path, 'utf-8');
     let m: RegExpExecArray | null;
     while ((m = re.exec(css)) !== null) {
-      referenced.add(m[1]);
+      const name = m[1];
+      if (name) referenced.add(name);
     }
   }
   return referenced;
@@ -74,7 +76,7 @@ describe('theme.css token coverage (Wave 4.4)', () => {
     const theme = readThemeCss();
     const m = /--emr-info-light\s*:\s*([^;]+);/i.exec(theme);
     expect(m).not.toBeNull();
-    const value = m![1].trim().toLowerCase();
+    const value = (m?.[1] ?? '').trim().toLowerCase();
     expect(value).not.toBe('#63b3ed');
   });
 
