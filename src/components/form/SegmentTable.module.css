@@ -282,7 +282,7 @@
 }
 
 /* Very narrow: stack label and field vertically */
-@media (max-width: 420px) {
+@media (max-width: 576px) {
   .paramCell {
     grid-template-columns: 1fr;
     gap: 4px;

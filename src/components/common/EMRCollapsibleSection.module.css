@@ -134,7 +134,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .sectionHeader {
     padding: 8px 10px;
   }

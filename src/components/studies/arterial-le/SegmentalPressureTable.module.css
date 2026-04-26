@@ -167,7 +167,7 @@
   border: 1px solid var(--emr-border-color);
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .headRow,
   .row {
     grid-template-columns: minmax(70px, 1fr) 1fr 1fr;

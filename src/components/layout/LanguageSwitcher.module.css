@@ -81,7 +81,7 @@
   display: inline;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .labelShort {
     display: inline;
   }

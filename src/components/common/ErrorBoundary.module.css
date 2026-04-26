@@ -112,7 +112,7 @@
   overflow: auto;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .card {
     padding: var(--emr-space-4);
   }

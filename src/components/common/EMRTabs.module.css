@@ -265,7 +265,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .tab {
     padding: 0 10px !important;
   }

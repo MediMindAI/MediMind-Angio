@@ -129,7 +129,7 @@
   color: var(--emr-accent);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 992px) {
   .headRow {
     display: none;
   }

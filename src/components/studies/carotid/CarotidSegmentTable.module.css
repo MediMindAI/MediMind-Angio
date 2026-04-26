@@ -175,7 +175,7 @@
   border-color: var(--emr-error);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 992px) {
   .headRow {
     display: none;
   }

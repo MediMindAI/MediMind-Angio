@@ -45,7 +45,7 @@
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .headerInner {
     padding: 0 12px;
     gap: 8px;
@@ -136,7 +136,7 @@
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 576px) {
   .brandText {
     display: none;
   }
@@ -155,7 +155,7 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 576px) {
   .controls {
     gap: 6px;
   }
