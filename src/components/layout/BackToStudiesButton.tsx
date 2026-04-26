@@ -4,11 +4,16 @@
  * landing page (`/`). Wave 2.2 switched from `window.location.pathname = '/'`
  * (full reload, drops in-progress dictation / unsaved fields / focus / scroll)
  * to React Router's `useNavigate()` for an in-app SPA transition.
+ *
+ * Wave 5.3 — switched the raw Mantine `Button` for the standardised
+ * `EMRButton` so this control inherits the design-system focus ring,
+ * disabled state, hover styling, and gradient/border tokens used
+ * everywhere else in the app (Audit Part 06 LOW).
  */
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
+import { EMRButton } from '../common';
 import { useTranslation } from '../../contexts/TranslationContext';
 
 export const BackToStudiesButton = memo(function BackToStudiesButton(): React.ReactElement {
@@ -20,27 +25,16 @@ export const BackToStudiesButton = memo(function BackToStudiesButton(): React.Re
   }, [navigate]);
 
   return (
-    <Button
-      variant="default"
+    <EMRButton
+      variant="secondary"
       size="sm"
-      leftSection={<IconArrowLeft size={16} stroke={2} />}
+      icon={IconArrowLeft}
       onClick={handleBack}
-      styles={{
-        root: {
-          alignSelf: 'flex-start',
-          fontWeight: 600,
-          borderRadius: 10,
-          paddingInline: 14,
-          borderColor: 'var(--emr-border-color)',
-          color: 'var(--emr-primary)',
-          background: 'var(--emr-bg-card)',
-          transition: 'background 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
-        },
-      }}
+      style={{ alignSelf: 'flex-start' }}
       data-testid="back-to-studies"
     >
       {t('studyPicker.backToStudies', 'Back to studies')}
-    </Button>
+    </EMRButton>
   );
 });
 
