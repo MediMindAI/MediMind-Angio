@@ -72,8 +72,10 @@
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--emr-primary);
-  outline-offset: 2px;
+  /* Wave 5.3: use box-shadow instead of outline so the ring isn't clipped
+   * by the parent overflow-x:auto scroll container (Audit Part 08 MEDIUM). */
+  outline: none;
+  box-shadow: 0 0 0 2px var(--emr-primary);
 }
 
 .tab[data-grow="true"] {

@@ -42,7 +42,9 @@
 }
 
 .head:focus-visible {
-  outline: 2px solid #ffffff;
+  /* Wave 5.3: 3px theme focus ring for stronger contrast on dark gradient
+   * (Audit Part 08 MEDIUM — 2px white was hard to see at small DPI). */
+  outline: 3px solid var(--emr-border-focus);
   outline-offset: -3px;
 }
 
