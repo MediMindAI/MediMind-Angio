@@ -26,15 +26,11 @@ import {
   isArterialPressures,
   isCarotidFindings,
   isCarotidNascet,
-  isVenousFindings,
 } from '../types/parameters';
 import type {
   VenousLEFullSegmentId,
-  VenousLESegmentBase,
-  VenousSegmentFinding,
-  VenousSegmentFindings,
 } from '../components/studies/venous-le/config';
-import { hasPathologicalReflux, VENOUS_LE_SEGMENTS } from '../components/studies/venous-le/config';
+import { VENOUS_LE_SEGMENTS } from '../components/studies/venous-le/config';
 import type {
   ArterialLEFullSegmentId,
   ArterialLESegmentBase,
@@ -62,7 +58,6 @@ import type {
   EmittedResource,
   Observation,
   ObservationComponent,
-  Quantity,
   Reference,
 } from '../types/fhir';
 import {
@@ -95,6 +90,10 @@ import {
   pushCustomNumeric,
   pushLoincNumeric,
 } from './fhirBuilder/observations/shared';
+import {
+  appendVenousFindingObservations,
+  extractVenousFindings,
+} from './fhirBuilder/observations/venous';
 
 // ============================================================================
 // Public API
@@ -243,245 +242,6 @@ function buildSegmentObservationEntries(ctx: BuildContext): Array<BundleEntry<Ob
     appendGenericSegmentObservations(ctx, entries, s);
   }
   return entries;
-}
-
-function appendVenousFindingObservations(
-  ctx: BuildContext,
-  out: Array<BundleEntry<Observation>>,
-  segmentBase: VenousLESegmentBase,
-  side: 'left' | 'right',
-  finding: VenousSegmentFinding
-): void {
-  const bodySite = bodySiteForSegment(segmentBase);
-  const sideText = side === 'right' ? 'Right' : 'Left';
-
-  // Categorical fields — one Observation each.
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'compressibility',
-    'Vein compressibility',
-    finding.compressibility,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'thrombosis',
-    'Thrombosis',
-    finding.thrombosis,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'spontaneity',
-    'Spontaneity',
-    finding.spontaneity,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'phasicity',
-    'Phasicity',
-    finding.phasicity,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'augmentation',
-    'Augmentation',
-    finding.augmentation,
-    segmentBase,
-    side
-  );
-
-  // Numeric fields — one Observation each (with UCUM).
-  pushVenousNumeric(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'refluxDurationMs',
-    'Reflux duration',
-    finding.refluxDurationMs,
-    'ms',
-    hasPathologicalReflux(segmentBase, finding),
-    segmentBase,
-    side
-  );
-  pushVenousNumeric(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'apDiameterMm',
-    'Vein AP diameter',
-    finding.apDiameterMm,
-    'mm',
-    false,
-    segmentBase,
-    side
-  );
-  pushVenousNumeric(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'transDiameterMm',
-    'Vein transverse diameter',
-    finding.transDiameterMm,
-    'mm',
-    false,
-    segmentBase,
-    side
-  );
-  pushVenousNumeric(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'depthMm',
-    'Vein depth from skin',
-    finding.depthMm,
-    'mm',
-    false,
-    segmentBase,
-    side
-  );
-}
-
-function pushVenousCategorical(
-  ctx: BuildContext,
-  out: Array<BundleEntry<Observation>>,
-  bodySite: CodeableConcept,
-  sideText: string,
-  paramId: string,
-  paramLabel: string,
-  value: string | undefined,
-  segmentBase: VenousLESegmentBase,
-  side: 'left' | 'right'
-): void {
-  if (!value) return;
-  const obsId = newUuid();
-  const isAbnormal =
-    (paramId === 'compressibility' && value !== 'normal' && value !== 'inconclusive') ||
-    (paramId === 'thrombosis' && (value === 'acute' || value === 'chronic')) ||
-    (paramId === 'spontaneity' && value === 'absent') ||
-    (paramId === 'phasicity' && (value === 'absent' || value === 'continuous')) ||
-    (paramId === 'augmentation' && value === 'absent');
-
-  const obs: Observation = {
-    resourceType: 'Observation',
-    id: obsId,
-    status: 'final',
-    category: [observationCategory('imaging')],
-    code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
-      text: `${sideText} ${paramLabel}: ${value}`,
-    },
-    subject: { reference: ctx.patientRef },
-    effectiveDateTime: ctx.nowIso,
-    issued: ctx.nowIso,
-    bodySite,
-    valueCodeableConcept: {
-      text: value,
-      coding: [
-        { system: medimindParamSystem(paramId), code: value, display: value },
-      ],
-    },
-    interpretation: isAbnormal ? [interpretationAbnormal()] : undefined,
-    note: [
-      {
-        text: `segment=${segmentBase};side=${side};parameter=${paramId}`,
-      },
-    ],
-  };
-
-  out.push({
-    fullUrl: urnRef(obsId),
-    resource: obs,
-    request: { method: 'POST', url: 'Observation' },
-  });
-}
-
-function pushVenousNumeric(
-  ctx: BuildContext,
-  out: Array<BundleEntry<Observation>>,
-  bodySite: CodeableConcept,
-  sideText: string,
-  paramId: string,
-  paramLabel: string,
-  value: number | undefined,
-  unit: 'ms' | 'mm',
-  isAbnormal: boolean,
-  segmentBase: VenousLESegmentBase,
-  side: 'left' | 'right'
-): void {
-  if (value === undefined || Number.isNaN(value)) return;
-  const obsId = newUuid();
-  const quantity: Quantity = {
-    value,
-    unit,
-    system: STANDARD_FHIR_SYSTEMS.UCUM,
-    code: unit,
-  };
-
-  const obs: Observation = {
-    resourceType: 'Observation',
-    id: obsId,
-    status: 'final',
-    category: [observationCategory('imaging')],
-    code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
-      text: `${sideText} ${paramLabel}`,
-    },
-    subject: { reference: ctx.patientRef },
-    effectiveDateTime: ctx.nowIso,
-    issued: ctx.nowIso,
-    bodySite,
-    valueQuantity: quantity,
-    interpretation: isAbnormal ? [interpretationAbnormal()] : undefined,
-    note: [
-      {
-        text: `segment=${segmentBase};side=${side};parameter=${paramId}`,
-      },
-    ],
-  };
-
-  out.push({
-    fullUrl: urnRef(obsId),
-    resource: obs,
-    request: { method: 'POST', url: 'Observation' },
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1316,26 +1076,6 @@ function buildDiagnosticReportEntry(
 // ============================================================================
 // Helpers
 // ============================================================================
-
-/**
- * Pull the venous findings map out of the form, if this is a venous form.
- *
- * Wave 2.5: `parameters` is now `Record<string, unknown>`; the read boundary
- * uses the `is*Findings` type guards from `types/parameters.ts` instead of
- * `as unknown as <Type>` casts. Soft failure (return undefined) on missing /
- * wrong-shape data so callers can render empty bundles without crashing.
- */
-function extractVenousFindings(form: FormState): VenousSegmentFindings | undefined {
-  if (
-    form.studyType !== 'venousLEBilateral' &&
-    form.studyType !== 'venousLERight' &&
-    form.studyType !== 'venousLELeft'
-  ) {
-    return undefined;
-  }
-  const raw = form.parameters['segmentFindings'];
-  return isVenousFindings(raw) ? raw : undefined;
-}
 
 function extractArterialFindings(form: FormState): ArterialSegmentFindings | undefined {
   const raw = form.parameters['segmentFindings'];
