@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom/vitest';
+// jsdom doesn't implement IndexedDB. fake-indexeddb installs a Pure-JS
+// shim on the global so `idb-keyval` and any direct IDBFactory consumers
+// can run under Vitest. Importing the auto-install entry point is enough.
+import 'fake-indexeddb/auto';
 
 // jsdom doesn't implement matchMedia. Mantine's color-scheme manager calls
 // it in a useEffect on mount, which throws in jsdom without this stub.
