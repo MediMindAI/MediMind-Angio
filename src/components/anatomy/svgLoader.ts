@@ -43,8 +43,19 @@ export async function loadAnatomySvg(view: AnatomyView): Promise<string> {
         throw new Error(`Failed to load anatomy SVG "${view}": ${response.status} ${response.statusText}`);
       }
       const text = await response.text();
-      if (!text.includes('<svg')) {
+      // Strict-prefix check rejects HTML 404 / soft-error pages that happen
+      // to contain `<svg>` somewhere in the body. A real SVG asset starts
+      // with either an `<?xml ...?>` prolog or `<svg ...>` directly.
+      const trimmed = text.trimStart();
+      if (!(trimmed.startsWith('<?xml') || trimmed.startsWith('<svg'))) {
         throw new Error(`Invalid SVG content for view "${view}"`);
+      }
+      // Soft content-type sanity check — some static hosts serve `.svg`
+      // as `text/plain`, so we warn rather than throw.
+      const ct = response.headers.get('content-type');
+      if (ct && !ct.includes('image/svg+xml') && !ct.includes('text/xml') && !ct.includes('application/xml')) {
+        // eslint-disable-next-line no-console
+        console.warn('[svgLoader] unexpected content-type:', ct);
       }
       return text;
     } catch (err) {

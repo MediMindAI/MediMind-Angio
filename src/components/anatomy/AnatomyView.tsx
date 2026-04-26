@@ -124,7 +124,27 @@ function colorizeSvg(
     `$1${silhouetteStroke}$2`,
   );
 
-  // 2) Each <path id="..."> under #segments -- inject inline fill/stroke.
+  // 2) Side labels (R/L letters) -- the SVGs ship with `fill="#4a5568"`
+  //    (slate-600), which is nearly invisible against the dark page
+  //    background `--emr-bg-page` ≈ `#0f172a`. R/L confusion on a vascular
+  //    map is a clinical-safety smell; rewrite to the theme text token so
+  //    the letters track light/dark mode automatically.
+  out = out.replace(
+    /(<g id="side-labels"[^>]*fill=")[^"]*(")/,
+    `$1var(--emr-text-primary)$2`,
+  );
+
+  // 3) Junction dots (anatomical landmarks on arterial + carotid views)
+  //    ship with `fill="#1a365d"` (deep navy), which becomes nearly
+  //    invisible on the dark page. Use the secondary text token — slightly
+  //    less prominent than the R/L letters, which keeps the anatomical
+  //    hierarchy visually correct in both themes.
+  out = out.replace(
+    /(<g id="junction-dots"[^>]*fill=")[^"]*(")/,
+    `$1var(--emr-text-secondary)$2`,
+  );
+
+  // 4) Each <path id="..."> under #segments -- inject inline fill/stroke.
   out = out.replace(
     /<path\s+id="([a-z0-9-]+)"([^>]*)>/g,
     (_match: string, id: string, rest: string) => {
