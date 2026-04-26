@@ -12,6 +12,7 @@
  */
 
 import type { Language } from '../contexts/TranslationContext';
+import type { StudyType } from '../types/study';
 
 export interface VascularCptEntry {
   readonly code: string;
@@ -108,25 +109,40 @@ export const VASCULAR_CPT_CODES: ReadonlyArray<VascularCptEntry> = [
 ];
 
 /**
+ * Default CPT code per study type. Mapped by code (not array index) so that
+ * reordering or inserting entries in `VASCULAR_CPT_CODES` cannot silently
+ * shift a study to the wrong CPT — Wave 3.6 fix for Part 03 HIGH (the prior
+ * implementation used `VASCULAR_CPT_CODES[N]!`, which is a brittle positional
+ * coupling that produces wrong-billing on a future contributor's edit).
+ *
+ * Typed as `Readonly<Record<StudyType, string>>` so adding a new StudyType
+ * fails at COMPILE time if the contributor forgets to map a default CPT.
+ */
+const STUDY_TO_CPT: Readonly<Record<StudyType, string>> = {
+  venousLEBilateral: '93970',
+  venousLERight: '93971',
+  venousLELeft: '93971',
+  arterialLE: '93925',
+  carotid: '93880',
+  ivcDuplex: '93975',
+};
+
+/**
  * The default CPT code for a given study type. Looked up by the form's
  * reducer when setting the initial StudyHeader.
  */
-export function defaultCptForStudy(studyType: string): VascularCptEntry {
-  switch (studyType) {
-    case 'venousLEBilateral':
-      return VASCULAR_CPT_CODES[0]!; // 93970
-    case 'venousLERight':
-    case 'venousLELeft':
-      return VASCULAR_CPT_CODES[1]!; // 93971
-    case 'arterialLE':
-      return VASCULAR_CPT_CODES[3]!; // 93925
-    case 'carotid':
-      return VASCULAR_CPT_CODES[5]!; // 93880
-    case 'ivcDuplex':
-      return VASCULAR_CPT_CODES[7]!; // 93975
-    default:
-      return VASCULAR_CPT_CODES[0]!;
+export function defaultCptForStudy(studyType: StudyType): VascularCptEntry {
+  const code = STUDY_TO_CPT[studyType];
+  const entry = VASCULAR_CPT_CODES.find((e) => e.code === code);
+  if (!entry) {
+    // Static guard — only triggers if `VASCULAR_CPT_CODES` is edited so a
+    // mapped code disappears. Throwing rather than silently returning a wrong
+    // entry surfaces the bug at the boundary instead of in a billed Claim.
+    throw new Error(
+      `defaultCptForStudy: VASCULAR_CPT_CODES is missing entry for code "${code}" (studyType="${studyType}")`
+    );
   }
+  return entry;
 }
 
 /**
