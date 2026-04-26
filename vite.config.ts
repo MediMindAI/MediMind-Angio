@@ -40,7 +40,11 @@ export default defineConfig({
   },
   server: {
     port: 3001,
-    host: true,
+    // Bind to localhost only by default (was: `true`, which exposed the dev
+    // server on every network interface). For cross-device testing (mobile
+    // on the same LAN), use `npm run dev:lan` or `vite --host` explicitly.
+    // See audit-findings/angio-production-audit-2026-04-25.md Part 09 #1.
+    host: 'localhost',
   },
   preview: {
     port: 3001,
