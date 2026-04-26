@@ -56,8 +56,41 @@ export type TFunction = (key: string, fallbackOrParams?: string | Record<string,
  *     ship with the venous title)
  *   - re-derive the CPT-code display from `VASCULAR_CPT` using the active language
  *     (the form-stored display is frozen at form-init time in English)
+ *
+ * Overloads (Phase 4.b — multi-study unified PDF):
+ *   - `(t, form, lang) => ReportLabels` — single-study (existing call sites).
+ *   - `(t, forms, lang) => ReadonlyArray<ReportLabels>` — one bundle per form,
+ *     each tuned to that study's title + CPT display. Used by
+ *     `<UnifiedReportDocument>` to drive per-study findings sections.
  */
 export function buildReportLabels(
+  t: TFunction,
+  form?: FormState,
+  lang?: Language,
+): ReportLabels;
+export function buildReportLabels(
+  t: TFunction,
+  forms: ReadonlyArray<FormState>,
+  lang?: Language,
+): ReadonlyArray<ReportLabels>;
+export function buildReportLabels(
+  t: TFunction,
+  formOrForms?: FormState | ReadonlyArray<FormState>,
+  lang?: Language,
+): ReportLabels | ReadonlyArray<ReportLabels> {
+  // Array overload — fan out to the single-form impl, preserving order.
+  // `Array.isArray` narrows to `any[]` for `ReadonlyArray<FormState>` under
+  // strict mode, so re-cast to the readonly element type explicitly.
+  if (Array.isArray(formOrForms)) {
+    const forms = formOrForms as ReadonlyArray<FormState>;
+    return forms.map((f) => buildSingleReportLabels(t, f, lang));
+  }
+  // After the array branch, `formOrForms` is `FormState | undefined`.
+  const single = formOrForms as FormState | undefined;
+  return buildSingleReportLabels(t, single, lang);
+}
+
+function buildSingleReportLabels(
   t: TFunction,
   form?: FormState,
   lang?: Language,
