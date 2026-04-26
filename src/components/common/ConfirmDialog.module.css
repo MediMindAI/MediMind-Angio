@@ -25,7 +25,7 @@
 
 .iconChipInfo {
   background: linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 60%, var(--emr-accent) 100%);
-  color: #ffffff;
+  color: var(--emr-text-white);
 }
 
 .iconChipDanger {

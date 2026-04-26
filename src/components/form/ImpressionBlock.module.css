@@ -11,7 +11,7 @@
 .head {
   padding: 14px 20px;
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
   border-bottom: 0;
   position: relative;
 }
@@ -32,7 +32,7 @@
   height: 36px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  color: var(--emr-text-white);
   flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
   position: relative;
@@ -42,7 +42,7 @@
 .title {
   font-size: var(--emr-font-lg);
   font-weight: 600;
-  color: #ffffff;
+  color: var(--emr-text-white);
   letter-spacing: -0.01em;
   margin: 0;
   line-height: 1.2;

@@ -12,7 +12,7 @@
 .previewLabel {
   font-size: var(--emr-font-sm);
   font-weight: var(--emr-font-semibold);
-  color: #ffffff;
+  color: var(--emr-text-white);
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex-shrink: 0;
@@ -24,7 +24,7 @@
   align-items: center;
   padding: 3px 10px;
   background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  color: var(--emr-text-white);
   font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-semibold);
   letter-spacing: 0.02em;
