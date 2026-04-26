@@ -29,6 +29,7 @@ import {
   type PlaqueMorphology,
   type StenosisCategory,
 } from './config';
+import { defaultPlaqueLabel } from '../shared/labels';
 import classes from './ArterialSegmentTable.module.css';
 
 export type ArterialTableView = 'left' | 'right' | 'bilateral';
@@ -240,15 +241,6 @@ function defaultStenosisLabel(v: StenosisCategory): string {
     case 'moderate': return '50–69 %';
     case 'severe':   return '70–99 %';
     case 'occluded': return 'Occluded';
-  }
-}
-
-function defaultPlaqueLabel(v: PlaqueMorphology): string {
-  switch (v) {
-    case 'none':      return 'None';
-    case 'calcified': return 'Calcified';
-    case 'mixed':     return 'Mixed';
-    case 'soft':      return 'Soft';
   }
 }
 

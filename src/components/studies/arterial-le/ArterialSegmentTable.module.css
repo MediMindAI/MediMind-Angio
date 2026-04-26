@@ -11,7 +11,7 @@
 .head {
   padding: 14px 18px;
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
   position: relative;
 }
 
@@ -23,14 +23,14 @@
   height: 32px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  color: var(--emr-text-white);
   flex-shrink: 0;
 }
 
 .title {
   font-size: var(--emr-font-md);
   font-weight: 600;
-  color: #ffffff;
+  color: var(--emr-text-white);
   line-height: 1.2;
   margin: 0;
 }

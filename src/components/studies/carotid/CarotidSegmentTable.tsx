@@ -28,6 +28,7 @@ import {
   type PlaqueMorphology,
 } from './config';
 import { icaCcaRatio } from './stenosisCalculator';
+import { defaultPlaqueLabel } from '../shared/labels';
 import classes from './CarotidSegmentTable.module.css';
 
 export type CarotidTableView = 'left' | 'right' | 'bilateral';
@@ -286,15 +287,6 @@ function defaultFlowLabel(v: FlowDirection): string {
     case 'retrograde':    return 'Retrograde';
     case 'bidirectional': return 'Bidirectional';
     case 'absent':        return 'Absent';
-  }
-}
-
-function defaultPlaqueLabel(v: PlaqueMorphology): string {
-  switch (v) {
-    case 'none':      return 'None';
-    case 'calcified': return 'Calcified';
-    case 'mixed':     return 'Mixed';
-    case 'soft':      return 'Soft';
   }
 }
 
