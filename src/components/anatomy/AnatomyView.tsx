@@ -58,6 +58,17 @@ export interface AnatomyViewProps {
    * severity bands instead of the 4-state `Competency` enum.
    */
   colorFn?: (id: SegmentId) => { fill: string; stroke: string };
+  /**
+   * Optional tooltip status text resolver. When `colorFn` is in use the
+   * built-in `competency.<value>` translation lookup is misleading because
+   * the segments map is empty for non-venous studies (the venous Competency
+   * enum doesn't apply to severity bands). If both `colorFn` and
+   * `tooltipText` are provided, the tooltip status line uses this resolver.
+   * If `colorFn` is provided but `tooltipText` is not, the status line is
+   * hidden entirely (still shows the segment label). Venous studies
+   * (no `colorFn`) keep the existing competency-based status text.
+   */
+  tooltipText?: (id: SegmentId) => string;
 }
 
 // ---------------------------------------------------------------------------
@@ -131,7 +142,13 @@ function colorizeSvg(
       const filterAttr = isHighlighted
         ? ' filter="drop-shadow(0 0 4px rgba(49,130,206,0.6))"'
         : '';
-      return `<path id="${id}"${cleanRest} fill="${fill}" stroke="${stroke}" stroke-width="${widthToApply}"${filterAttr} data-segment-id="${id}" data-competency="${competency}">`;
+      // Drop the data-competency attribute when colorFn is in use — it would
+      // be misleading because the segments map is empty for non-venous
+      // studies; the visible color comes from severity bands, not competency
+      // (Area 01 BLOCKER). The data-segment-id attribute is preserved for
+      // event delegation.
+      const competencyAttr = colorFn ? '' : ` data-competency="${competency}"`;
+      return `<path id="${id}"${cleanRest} fill="${fill}" stroke="${stroke}" stroke-width="${widthToApply}"${filterAttr} data-segment-id="${id}"${competencyAttr}>`;
     },
   );
 
@@ -166,6 +183,7 @@ export function AnatomyView({
   className,
   ariaLabel,
   colorFn,
+  tooltipText,
 }: AnatomyViewProps): React.ReactElement {
   const { t } = useTranslation();
   const [rawSvg, setRawSvg] = useState<string | null>(null);
@@ -371,15 +389,37 @@ export function AnatomyView({
           <div style={{ fontWeight: 600 }}>
             {tooltip.label}
           </div>
-          <div
-            style={{
-              marginTop: '2px',
-              color: 'var(--emr-text-secondary)',
-              fontSize: 'var(--emr-font-xs)',
-            }}
-          >
-            {t(`competency.${tooltip.competency}`, tooltip.competency)}
-          </div>
+          {(() => {
+            // Status-line text resolution:
+            // - colorFn + tooltipText → caller-supplied severity label (arterial / carotid)
+            // - colorFn alone        → hide the line (competency would be misleading)
+            // - no colorFn (venous)  → translated competency value (existing behavior)
+            if (colorFn) {
+              if (!tooltipText) return null;
+              return (
+                <div
+                  style={{
+                    marginTop: '2px',
+                    color: 'var(--emr-text-secondary)',
+                    fontSize: 'var(--emr-font-xs)',
+                  }}
+                >
+                  {tooltipText(tooltip.id)}
+                </div>
+              );
+            }
+            return (
+              <div
+                style={{
+                  marginTop: '2px',
+                  color: 'var(--emr-text-secondary)',
+                  fontSize: 'var(--emr-font-xs)',
+                }}
+              >
+                {t(`competency.${tooltip.competency}`, tooltip.competency)}
+              </div>
+            );
+          })()}
         </div>
       )}
 

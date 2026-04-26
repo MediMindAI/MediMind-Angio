@@ -22,9 +22,21 @@ export function useAnatomyColors(): CompetencyColorMap {
 /**
  * Pure helper — returns `{ fill, stroke }` for a specific competency.
  * Safe outside React (used from `AnatomyView` during SVG injection).
+ *
+ * Falls back to the `inconclusive` palette for any value outside the
+ * 4-state `Competency` enum. A stale draft, a renamed enum after a
+ * schema migration, or a hand-edited localStorage payload would
+ * otherwise return `undefined` and crash the destructure on the
+ * caller side, unmounting the entire study form (Area 01 CRITICAL).
  */
 export function colorForCompetency(
   competency: Competency,
 ): { fill: string; stroke: string } {
-  return COMPETENCY_COLORS[competency];
+  const colors = COMPETENCY_COLORS[competency];
+  if (!colors) {
+    // eslint-disable-next-line no-console
+    console.warn('[anatomy] unknown competency value, falling back to inconclusive:', competency);
+    return COMPETENCY_COLORS.inconclusive;
+  }
+  return colors;
 }

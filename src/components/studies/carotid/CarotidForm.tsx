@@ -384,6 +384,21 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     [state.findings, state.nascet],
   );
 
+  // Tooltip status text — the venous Competency enum doesn't apply here, so
+  // surface the carotid severity band directly. Without this, AnatomyView
+  // would say "Normal" on every vessel (Area 01 BLOCKER). i18n keys are
+  // optional; falls back to the English band name if missing.
+  const carotidTooltipText = useCallback(
+    (id: string): string => {
+      const finding = state.findings[id as CarotidVesselFullId];
+      const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
+      const nascetCat = side ? state.nascet[side] : undefined;
+      const band = deriveCarotidCompetency(finding, nascetCat);
+      return t(`carotid.severity.${band}`, band);
+    },
+    [state.findings, state.nascet, t],
+  );
+
   return (
     <div className={classes.wrap}>
       <Stack gap="md">
@@ -454,6 +469,7 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
                 size="lg"
                 interactive={false}
                 colorFn={carotidColorFn}
+                tooltipText={carotidTooltipText}
                 ariaLabel={t('carotid.anatomy.title', 'Carotid anatomy')}
               />
             </Group>

@@ -437,6 +437,19 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     [state.findings],
   );
 
+  // Tooltip status text — the venous Competency enum doesn't apply here, so
+  // surface the arterial severity band directly. Without this, AnatomyView
+  // would say "Normal" on every segment (Area 01 BLOCKER). i18n keys are
+  // optional; falls back to the English band name if missing.
+  const arterialTooltipText = useCallback(
+    (id: string): string => {
+      const finding = state.findings[id as ArterialLEFullSegmentId];
+      const band = deriveArterialCompetency(finding);
+      return t(`arterialLE.severity.${band}`, band);
+    },
+    [state.findings, t],
+  );
+
   return (
     <div className={classes.wrap}>
       <Stack gap="md">
@@ -511,6 +524,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
                 size="lg"
                 interactive={false}
                 colorFn={arterialColorFn}
+                tooltipText={arterialTooltipText}
                 ariaLabel={t('arterialLE.anatomy.title', 'Arterial anatomy')}
               />
             </Group>
