@@ -11,9 +11,14 @@
  */
 
 import type { FormState } from '../types/form';
+import {
+  isArterialFindings,
+  isArterialPressures,
+  isCarotidFindings,
+  isCarotidNascet,
+  isVenousFindings,
+} from '../types/parameters';
 import type { VenousSegmentFindings, VenousSegmentFinding } from '../components/studies/venous-le/config';
-import type { ArterialSegmentFindings, SegmentalPressures } from '../components/studies/arterial-le/config';
-import type { CarotidFindings, CarotidNascetClassification } from '../components/studies/carotid/config';
 import {
   generateNarrative,
   type NarrativeOutput,
@@ -46,36 +51,34 @@ const EMPTY_NARRATIVE: NarrativeOutput = Object.freeze({
  * table. If absent we return an empty narrative.
  */
 export function narrativeFromFormState(form: FormState): NarrativeOutput {
+  // Wave 2.5: `parameters` is `Record<string, unknown>`; the read boundary
+  // uses `is*Findings` / `isCarotidNascet` / `isArterialPressures` type guards
+  // (from `types/parameters.ts`) instead of `as unknown as <Type>` casts.
+  // Soft failure (return EMPTY_NARRATIVE) on missing or wrong-shape data.
   if (
     form.studyType === 'venousLEBilateral' ||
     form.studyType === 'venousLERight' ||
     form.studyType === 'venousLELeft'
   ) {
     const raw = form.parameters['segmentFindings'];
-    if (!raw || typeof raw !== 'object') return EMPTY_NARRATIVE;
-    return generateNarrative(raw as unknown as VenousSegmentFindings);
+    if (!isVenousFindings(raw)) return EMPTY_NARRATIVE;
+    return generateNarrative(raw);
   }
 
   if (form.studyType === 'arterialLE') {
     const rawFindings = form.parameters['segmentFindings'];
     const rawPressures = form.parameters['pressures'];
-    if (!rawFindings || typeof rawFindings !== 'object') return EMPTY_NARRATIVE;
-    const findings = rawFindings as unknown as ArterialSegmentFindings;
-    const pressures = (rawPressures && typeof rawPressures === 'object'
-      ? rawPressures
-      : {}) as unknown as SegmentalPressures;
-    return generateArterialNarrative(findings, pressures);
+    if (!isArterialFindings(rawFindings)) return EMPTY_NARRATIVE;
+    const pressures = isArterialPressures(rawPressures) ? rawPressures : {};
+    return generateArterialNarrative(rawFindings, pressures);
   }
 
   if (form.studyType === 'carotid') {
     const rawFindings = form.parameters['segmentFindings'];
     const rawNascet = form.parameters['nascet'];
-    if (!rawFindings || typeof rawFindings !== 'object') return EMPTY_NARRATIVE;
-    const findings = rawFindings as unknown as CarotidFindings;
-    const nascet = (rawNascet && typeof rawNascet === 'object'
-      ? rawNascet
-      : {}) as unknown as CarotidNascetClassification;
-    return generateCarotidNarrative(findings, nascet);
+    if (!isCarotidFindings(rawFindings)) return EMPTY_NARRATIVE;
+    const nascet = isCarotidNascet(rawNascet) ? rawNascet : {};
+    return generateCarotidNarrative(rawFindings, nascet);
   }
 
   return EMPTY_NARRATIVE;

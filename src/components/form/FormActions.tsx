@@ -24,6 +24,12 @@ import type { FormState } from '../../types/form';
 import { downloadFhirBundle } from '../../services/fhirBuilder';
 import { buildReportLabels } from '../pdf/buildReportLabels';
 import { buildLocalizedNarrative } from '../../services/narrativeService';
+import {
+  isArterialFindings,
+  isCarotidFindings,
+  isCarotidNascet,
+  isVenousFindings,
+} from '../../types/parameters';
 import type { VenousSegmentFindings } from '../studies/venous-le/config';
 import classes from './FormActions.module.css';
 
@@ -89,11 +95,12 @@ export const FormActions = memo(function FormActions({
       // Findings live on `parameters.segmentFindings` — `form.segments[]` is
       // always empty for current venous studies. Reading from segments would
       // paint every leg "normal" regardless of disease (Area 10 BLOCKER).
+      // Wave 2.5: type-guard the parameters payload instead of casting via
+      // `as unknown as <Type>`.
       const rawFindings = form.parameters['segmentFindings'];
-      const findings: VenousSegmentFindings =
-        rawFindings && typeof rawFindings === 'object'
-          ? (rawFindings as unknown as VenousSegmentFindings)
-          : {};
+      const findings: VenousSegmentFindings = isVenousFindings(rawFindings)
+        ? rawFindings
+        : {};
       const [anterior, posterior] = await Promise.all([
         loadAnatomyForPdf('le-anterior', findings),
         loadAnatomyForPdf('le-posterior', findings),
@@ -104,15 +111,9 @@ export const FormActions = memo(function FormActions({
       localized = buildLocalizedNarrative(findings, t);
     } else if (form.studyType === 'arterialLE') {
       const rawFindings = form.parameters['segmentFindings'];
-      const arterialFindings =
-        rawFindings && typeof rawFindings === 'object'
-          ? (rawFindings as unknown as Record<
-              string,
-              Parameters<typeof deriveArterialCompetency>[0]
-            >)
-          : {};
+      const arterialFindings = isArterialFindings(rawFindings) ? rawFindings : {};
       const competencyFn = (fullId: string): { fill: string; stroke: string } => {
-        const band = deriveArterialCompetency(arterialFindings[fullId]);
+        const band = deriveArterialCompetency(arterialFindings[fullId as keyof typeof arterialFindings]);
         return SEVERITY_COLORS[band];
       };
       const anterior = await loadAnatomyForPdf(
@@ -123,25 +124,16 @@ export const FormActions = memo(function FormActions({
       anatomy = { anterior, posterior: null };
     } else if (form.studyType === 'carotid') {
       const rawFindings = form.parameters['segmentFindings'];
-      const carotidFindings =
-        rawFindings && typeof rawFindings === 'object'
-          ? (rawFindings as unknown as Record<
-              string,
-              Parameters<typeof deriveCarotidCompetency>[0]
-            >)
-          : {};
+      const carotidFindings = isCarotidFindings(rawFindings) ? rawFindings : {};
       const rawNascet = form.parameters['nascet'];
-      const nascet =
-        rawNascet && typeof rawNascet === 'object'
-          ? (rawNascet as unknown as {
-              right?: Parameters<typeof deriveCarotidCompetency>[1];
-              left?: Parameters<typeof deriveCarotidCompetency>[1];
-            })
-          : {};
+      const nascet = isCarotidNascet(rawNascet) ? rawNascet : {};
       const competencyFn = (fullId: string): { fill: string; stroke: string } => {
         const side = fullId.endsWith('-left') ? 'left' : fullId.endsWith('-right') ? 'right' : null;
         const nascetCat = side ? nascet[side] : undefined;
-        const band = deriveCarotidCompetency(carotidFindings[fullId], nascetCat);
+        const band = deriveCarotidCompetency(
+          carotidFindings[fullId as keyof typeof carotidFindings],
+          nascetCat,
+        );
         return SEVERITY_COLORS[band];
       };
       const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn });

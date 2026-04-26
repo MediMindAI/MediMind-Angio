@@ -23,6 +23,13 @@ import type {
   StudyHeader,
   StudyNarrative,
 } from '../types/form';
+import {
+  isArterialFindings,
+  isArterialPressures,
+  isCarotidFindings,
+  isCarotidNascet,
+  isVenousFindings,
+} from '../types/parameters';
 import type {
   VenousLEFullSegmentId,
   VenousLESegmentBase,
@@ -1896,7 +1903,14 @@ function buildDiagnosticReportEntry(
 // Helpers
 // ============================================================================
 
-/** Pull the venous findings map out of the form, if this is a venous form. */
+/**
+ * Pull the venous findings map out of the form, if this is a venous form.
+ *
+ * Wave 2.5: `parameters` is now `Record<string, unknown>`; the read boundary
+ * uses the `is*Findings` type guards from `types/parameters.ts` instead of
+ * `as unknown as <Type>` casts. Soft failure (return undefined) on missing /
+ * wrong-shape data so callers can render empty bundles without crashing.
+ */
 function extractVenousFindings(form: FormState): VenousSegmentFindings | undefined {
   if (
     form.studyType !== 'venousLEBilateral' &&
@@ -1906,32 +1920,27 @@ function extractVenousFindings(form: FormState): VenousSegmentFindings | undefin
     return undefined;
   }
   const raw = form.parameters['segmentFindings'];
-  if (!raw || typeof raw !== 'object') return undefined;
-  return raw as unknown as VenousSegmentFindings;
+  return isVenousFindings(raw) ? raw : undefined;
 }
 
 function extractArterialFindings(form: FormState): ArterialSegmentFindings | undefined {
   const raw = form.parameters['segmentFindings'];
-  if (!raw || typeof raw !== 'object') return undefined;
-  return raw as unknown as ArterialSegmentFindings;
+  return isArterialFindings(raw) ? raw : undefined;
 }
 
 function extractArterialPressures(form: FormState): SegmentalPressures | undefined {
   const raw = form.parameters['pressures'];
-  if (!raw || typeof raw !== 'object') return undefined;
-  return raw as unknown as SegmentalPressures;
+  return isArterialPressures(raw) ? raw : undefined;
 }
 
 function extractCarotidFindings(form: FormState): CarotidFindings | undefined {
   const raw = form.parameters['segmentFindings'];
-  if (!raw || typeof raw !== 'object') return undefined;
-  return raw as unknown as CarotidFindings;
+  return isCarotidFindings(raw) ? raw : undefined;
 }
 
 function extractCarotidNascet(form: FormState): CarotidNascetClassification | undefined {
   const raw = form.parameters['nascet'];
-  if (!raw || typeof raw !== 'object') return undefined;
-  return raw as unknown as CarotidNascetClassification;
+  return isCarotidNascet(raw) ? raw : undefined;
 }
 
 function bodySiteForSegment(segment: string): CodeableConcept {
