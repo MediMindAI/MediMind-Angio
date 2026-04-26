@@ -167,20 +167,56 @@ function runLegacyMigrationOnce(): void {
 // CustomTemplate CRUD
 // ---------------------------------------------------------------------------
 
+/**
+ * Wave 4.7 — light validation of `findings` / `extras` shape.
+ *
+ * Each study (venous LE / arterial LE / carotid) narrows `findings` and
+ * `extras` to its own strong type at the callsite (`isVenousFindings`,
+ * `isArterialFindings`, etc.). Here we just guard the outer shape — a
+ * plain object map — so a hand-edited localStorage entry containing a
+ * string, array, or `null` cannot crash the form on load.
+ *
+ * We deliberately do NOT inspect inner keys: the per-study type guards at
+ * the read boundary already handle wrong-shape internals gracefully (Wave
+ * 2.5 pattern), so a stricter check here would just duplicate that logic
+ * and tightly couple this service to every study's evolving finding shape.
+ */
+function isFindingsShapeValid(findings: unknown, extras: unknown): boolean {
+  if (typeof findings !== 'object' || findings === null || Array.isArray(findings)) {
+    return false;
+  }
+  if (
+    extras !== undefined &&
+    (typeof extras !== 'object' || extras === null || Array.isArray(extras))
+  ) {
+    return false;
+  }
+  return true;
+}
+
 function isCustomTemplate(value: unknown): value is CustomTemplate {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === 'string' &&
-    typeof v.name === 'string' &&
-    typeof v.description === 'string' &&
-    typeof v.kind === 'string' &&
-    typeof v.scope === 'string' &&
-    typeof v.findings === 'object' &&
-    v.findings !== null &&
-    typeof v.createdAt === 'string' &&
-    v.schemaVersion === 1
-  );
+  if (
+    typeof v.id !== 'string' ||
+    typeof v.name !== 'string' ||
+    typeof v.description !== 'string' ||
+    typeof v.kind !== 'string' ||
+    typeof v.scope !== 'string' ||
+    typeof v.createdAt !== 'string' ||
+    v.schemaVersion !== 1
+  ) {
+    return false;
+  }
+  // Wave 4.7 — scope must be one of the three allowed values (defends
+  // against hand-edited localStorage from older code paths).
+  if (v.scope !== 'right' && v.scope !== 'left' && v.scope !== 'bilateral') {
+    return false;
+  }
+  // Wave 4.7 — guard findings / extras shape so malformed entries are
+  // dropped at the load boundary instead of crashing the form (Part 05 MEDIUM).
+  if (!isFindingsShapeValid(v.findings, v.extras)) return false;
+  return true;
 }
 
 export function loadCustomTemplates(studyType: StudyType): ReadonlyArray<CustomTemplate> {

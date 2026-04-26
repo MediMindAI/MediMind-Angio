@@ -99,6 +99,33 @@ describe('SNOMED catalog integrity (Area 05 BLOCKER + CRITICAL)', () => {
     expect(pera).toBeDefined();
     expect(perv!.code).not.toBe(pera!.code);
   });
+
+  // Wave 4.7 — CEAP C0 (no clinical signs) was missing from the SNOMED
+  // catalog. Forms with C0 emitted CEAP Observation.component for C with no
+  // SNOMED coding at all. This guard pins the new entry (Part 05 MEDIUM).
+  it('CEAP C0 has a SNOMED entry that emits on the C-axis component (Part 05 MEDIUM)', () => {
+    expect(CEAP_SNOMED.C0).toBeDefined();
+    expect(CEAP_SNOMED.C0.code).not.toBe('-');
+    const form: FormState = {
+      ...minimalForm('venousLEBilateral'),
+      ceap: { c: 'C0', e: 'En', a: 'An', p: 'Pn', modifiers: [] },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    const ceapObs = bundle.entry?.find(
+      (e) =>
+        e.resource?.resourceType === 'Observation' &&
+        (e.resource as Observation).code?.text === 'CEAP 2020 Classification',
+    )?.resource as Observation | undefined;
+    expect(ceapObs).toBeDefined();
+    const cAxis = ceapObs?.component?.find(
+      (c) => c.code?.text === 'CEAP Clinical (C)',
+    );
+    expect(cAxis).toBeDefined();
+    expect(cAxis?.valueCodeableConcept?.coding?.[0]?.system).toBe(
+      STANDARD_FHIR_SYSTEMS.SNOMED,
+    );
+    expect(cAxis?.valueCodeableConcept?.coding?.[0]?.code).toBe(CEAP_SNOMED.C0.code);
+  });
 });
 
 describe('buildFhirBundle', () => {
@@ -157,6 +184,23 @@ describe('buildFhirBundle', () => {
       ?.resource as Encounter | undefined;
     expect(encounter).toBeDefined();
     expect(encounter?.period?.start).toBe('2026-04-20');
+  });
+
+  // Wave 4.7 — `Encounter.period.end` used to default to `studyDate` (same as
+  // start), encoding the visit as a zero-duration window. Without a real
+  // checkout timestamp on the form, leaving `end` undefined is the
+  // semantically correct FHIR shape (Part 05 MEDIUM).
+  it('leaves Encounter.period.end undefined when no checkout is captured (Part 05 MEDIUM)', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('venousLEBilateral', {
+        studyDate: '2026-04-20',
+        icd10Codes: [{ code: 'I83.90', display: 'Asymptomatic varicose veins' }],
+      }),
+    );
+    const encounter = bundle.entry?.find((e) => e.resource?.resourceType === 'Encounter')
+      ?.resource as Encounter | undefined;
+    expect(encounter).toBeDefined();
+    expect(encounter?.period?.end).toBeUndefined();
   });
 });
 

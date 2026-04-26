@@ -36,7 +36,9 @@ export function buildEncounterEntry(
       // bundle-build time. Without this, the report claimed "performed today"
       // even when written up the day after the actual scan (Area 05 HIGH).
       start: ctx.form.header.studyDate ?? ctx.nowIso,
-      end: ctx.form.header.studyDate ?? ctx.nowIso,
+      // Wave 4.7 — `end` left undefined: a duplex Encounter has no
+      // meaningful end-time until check-out is captured. Emitting end=start
+      // mis-represented the visit as zero-duration (Part 05 MEDIUM).
     },
     reasonCode: reasonCodes.length > 0 ? reasonCodes : undefined,
     // Wave 3.4 — institution flows into Encounter.serviceProvider as a typed

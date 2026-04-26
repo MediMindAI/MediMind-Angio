@@ -244,6 +244,13 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
 export const CEAP_SNOMED = {
   /** Chronic venous insufficiency of lower extremity. HIGH. */
   CHRONIC_VENOUS_INSUFFICIENCY: { code: '28695004', display: 'Chronic venous insufficiency' },
+  /** C0 - No visible or palpable signs of chronic venous disease. FALLBACK
+   * to parent CVI — SNOMED CT does not carry a precise "absence of CVI
+   * signs" concept; using the parent CVI concept tags the observation as
+   * relevant to the venous-disease axis without claiming a positive
+   * finding. The C-axis value string ("C0") on the Observation conveys the
+   * no-sign state. */
+  C0: { code: '28695004', display: 'No clinical signs of chronic venous disease' }, // FALLBACK: parent CVI
   /** C1 - Telangiectasia / reticular veins. */
   C1: { code: '247479008', display: 'Telangiectasia' }, // HIGH
   /** C2 - Varicose veins. */

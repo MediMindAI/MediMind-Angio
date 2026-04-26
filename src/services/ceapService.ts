@@ -188,6 +188,8 @@ function codingsForC(c: CeapC): ReadonlyArray<{
 
 function snomedForC(c: CeapC): { code: string; display: string } | undefined {
   switch (c) {
+    case 'C0':
+      return CEAP_SNOMED.C0;
     case 'C1':
       return CEAP_SNOMED.C1;
     case 'C2':
