@@ -19,7 +19,6 @@ if (!container) throw new Error('Root element #root not found');
 // surface in the banner. The migration keeps the localStorage copy as a
 // 30-day safety net so reducer-init `loadDraft` (sync) still works.
 void migrateLocalStorageDrafts().catch((err) => {
-  // eslint-disable-next-line no-console
   console.warn('[main] draft migration failed', err);
 });
 

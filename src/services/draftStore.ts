@@ -174,7 +174,6 @@ export async function migrateLocalStorageDrafts(): Promise<void> {
         // ignore — flag is a hint, not a guarantee.
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.warn('[draftStore] migration failed for', lsKey, err);
     }
   }

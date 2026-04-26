@@ -75,7 +75,6 @@ export function clearDraft(studyId: string): void {
     }
   }
   void idbClearDraft(studyId).catch((err) => {
-    // eslint-disable-next-line no-console
     console.warn('[useAutoSave] IDB clear failed', studyId, err);
   });
 }
@@ -94,7 +93,6 @@ export function clearDraft(studyId: string): void {
  */
 function writeDraft<T>(studyId: string, state: T): { ok: boolean; err: unknown } {
   void idbSaveDraft(studyId, state).catch((err) => {
-    // eslint-disable-next-line no-console
     console.warn('[useAutoSave] IDB mirror-write failed', studyId, err);
   });
 
@@ -203,7 +201,6 @@ export function useAutoSave<T>(
       const errObj =
         result.err instanceof Error ? result.err : new Error(String(result.err));
       setLastError(errObj);
-      // eslint-disable-next-line no-console
       console.warn('[useAutoSave] localStorage write failed', targetStudyId, result.err);
       onErrorRef.current?.(result.err);
     }
