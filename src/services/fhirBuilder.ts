@@ -58,15 +58,12 @@ import type {
   Bundle,
   BundleEntry,
   CodeableConcept,
-  Consent,
   DiagnosticReport,
   EmittedResource,
-  Encounter,
   Observation,
   ObservationComponent,
   Quantity,
   Reference,
-  ServiceRequest,
 } from '../types/fhir';
 import {
   CEAP_SNOMED,
@@ -75,8 +72,6 @@ import {
   MEDIMIND_EXTENSIONS,
   STANDARD_FHIR_SYSTEMS,
 } from '../constants/fhir-systems';
-import { ICD10_SYSTEM } from '../constants/vascular-icd10';
-import { CPT_SYSTEM } from '../constants/vascular-cpt';
 import { ceapObservationComponents, formatCeapClassification } from './ceapService';
 import { narrativeFromFormState } from './narrativeService';
 import {
@@ -91,6 +86,9 @@ import {
 } from './fhirBuilder/context';
 import { buildPatientEntry } from './fhirBuilder/patient';
 import { buildQuestionnaireResponseEntry } from './fhirBuilder/questionnaireResponse';
+import { buildEncounterEntry } from './fhirBuilder/encounter';
+import { buildServiceRequestEntry } from './fhirBuilder/serviceRequest';
+import { buildConsentEntry } from './fhirBuilder/consent';
 
 // ============================================================================
 // Public API
@@ -1232,110 +1230,6 @@ function pushGenericNumeric(
 // ---------------------------------------------------------------------------
 // Phase 1.5 additions — Encounter, ServiceRequest, Consent, per-performer Obs
 // ---------------------------------------------------------------------------
-
-function buildEncounterEntry(
-  ctx: BuildContext
-): BundleEntry<Encounter> | null {
-  if (!ctx.encounterId) return null;
-  const codes = ctx.form.header.icd10Codes ?? [];
-  const reasonCodes: CodeableConcept[] = codes.map((c) => ({
-    coding: [{ system: ICD10_SYSTEM, code: c.code, display: c.display }],
-    text: c.display,
-  }));
-  const encounter: Encounter = {
-    resourceType: 'Encounter',
-    id: ctx.encounterId,
-    status: 'finished',
-    class: {
-      system: STANDARD_FHIR_SYSTEMS.ENCOUNTER_CLASS,
-      code: 'AMB',
-      display: 'ambulatory',
-    },
-    subject: { reference: ctx.patientRef },
-    period: {
-      // Honor the user-supplied study date when available, else fall back to
-      // bundle-build time. Without this, the report claimed "performed today"
-      // even when written up the day after the actual scan (Area 05 HIGH).
-      start: ctx.form.header.studyDate ?? ctx.nowIso,
-      end: ctx.form.header.studyDate ?? ctx.nowIso,
-    },
-    reasonCode: reasonCodes.length > 0 ? reasonCodes : undefined,
-  };
-  return {
-    fullUrl: urnRef(ctx.encounterId),
-    resource: encounter,
-    request: { method: 'POST', url: 'Encounter' },
-  };
-}
-
-function buildServiceRequestEntry(
-  ctx: BuildContext
-): BundleEntry<ServiceRequest> | null {
-  if (!ctx.serviceRequestId) return null;
-  const cpt = ctx.form.header.cptCode;
-  if (!cpt) return null;
-  const sr: ServiceRequest = {
-    resourceType: 'ServiceRequest',
-    id: ctx.serviceRequestId,
-    status: 'completed',
-    intent: 'order',
-    code: {
-      coding: [{ system: CPT_SYSTEM, code: cpt.code, display: cpt.display }],
-      text: cpt.display,
-    },
-    subject: { reference: ctx.patientRef },
-    encounter: ctx.encounterRef ? { reference: ctx.encounterRef } : undefined,
-    authoredOn: ctx.nowIso,
-    occurrenceDateTime: ctx.nowIso,
-  };
-  return {
-    fullUrl: urnRef(ctx.serviceRequestId),
-    resource: sr,
-    request: { method: 'POST', url: 'ServiceRequest' },
-  };
-}
-
-function buildConsentEntry(ctx: BuildContext): BundleEntry<Consent> | null {
-  if (!ctx.consentId) return null;
-  const signedAt =
-    ctx.form.header.informedConsentSignedAt ?? ctx.nowIso;
-
-  const consent: Consent = {
-    resourceType: 'Consent',
-    id: ctx.consentId,
-    status: 'active',
-    scope: {
-      coding: [
-        {
-          system: 'http://terminology.hl7.org/CodeSystem/consentscope',
-          code: 'patient-privacy',
-          display: 'Privacy Consent',
-        },
-      ],
-      text: 'Privacy Consent',
-    },
-    category: [
-      {
-        coding: [
-          {
-            system: 'http://terminology.hl7.org/CodeSystem/consentcategorycodes',
-            code: 'dch',
-            display: 'Disclosure to Consumer/Healthcare Provider',
-          },
-        ],
-        text: 'Informed consent for imaging study',
-      },
-    ],
-    patient: { reference: ctx.patientRef },
-    dateTime: signedAt,
-    provision: { type: 'permit' },
-  };
-  return {
-    fullUrl: urnRef(ctx.consentId),
-    resource: consent,
-    request: { method: 'POST', url: 'Consent' },
-  };
-}
 
 function buildPatientPositionObservationEntry(
   ctx: BuildContext
