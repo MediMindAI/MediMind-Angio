@@ -284,6 +284,61 @@ export const MEDIMIND_EXTENSIONS = {
 } as const;
 
 // ============================================================================
+// Per-parameter LOINC codes (Wave 3.5)
+// ============================================================================
+
+/**
+ * LOINC codes for individual measured parameters emitted on per-segment
+ * Observations.
+ *
+ * Why this exists (Area 05 HIGH): every per-segment Observation used to set
+ * `code.coding[0] = <studyLevelLoinc>` (e.g. `39420-5` "Lower extremity vein
+ * bilateral") regardless of whether the row carried compressibility, phasicity,
+ * augmentation, a diameter, or reflux duration. The actual measured parameter
+ * was buried in `code.text` (un-searchable) and a free-text `note`. A consumer
+ * running `GET Observation?code=loinc|39420-5` would get 50+ rows that all
+ * looked identical — defeating the point of a code system.
+ *
+ * The fix: when a builder emits a per-segment Observation, `code.coding[0]`
+ * MUST be the parameter-specific LOINC; the study-level LOINC goes into
+ * `coding[1]` so cross-aggregation queries (`code=loinc|39420-5`) still find
+ * every observation in a study. Where no precise LOINC exists for a parameter
+ * (e.g. "spontaneity" — a subjective duplex finding), the call-site falls back
+ * to `medimindParamSystem(paramId)` for `coding[0]`.
+ *
+ * Verification policy: only include codes here that have been verified against
+ * https://loinc.org/<code>/. The arterial-LE PSV path already emits 11556-8 at
+ * `coding[0]` (verified in production), and carotid emits 20352-4 for EDV. For
+ * any code whose existence we cannot verify in this session, the sane default
+ * is to OMIT it from this map and let the existing fallback (medimindParamSystem)
+ * apply — that fallback still distinguishes parameters from each other, just
+ * via a MediMind CodeSystem URL instead of LOINC.
+ *
+ * Additions to this map should cite the LOINC URL in the comment, e.g.
+ * `// https://loinc.org/83002-5/`.
+ */
+export const PARAMETER_LOINC: Readonly<Record<string, { code: string; display: string }>> = {
+  // Verified from existing call-sites (already emitted in production prior to
+  // Wave 3.5):
+  /** Peak systolic velocity by US.doppler. https://loinc.org/11556-8/ */
+  psvCmS: { code: '11556-8', display: 'Peak systolic velocity' },
+  /** End diastolic velocity by US.doppler. https://loinc.org/20352-4/ */
+  edvCmS: { code: '20352-4', display: 'End diastolic velocity' },
+  /** Ankle-brachial index. https://loinc.org/76497-9/ */
+  abi: { code: '76497-9', display: 'Ankle-brachial index' },
+  /** Generic PSV alias used by the SegmentState fallback path. */
+  peakSystolicVelocityCmS: { code: '11556-8', display: 'Peak systolic velocity' },
+
+  // Other LOINC candidates were considered (compressibility, vein diameter,
+  // reflux duration, velocity ratio, NASCET, ICA/CCA ratio) but require manual
+  // verification against the LOINC browser before they can be added here. Until
+  // verified, those parameters intentionally fall through to
+  // medimindParamSystem(paramId) at the call-site, which still distinguishes
+  // them from each other (e.g. coding[0].code = "compressibility" with
+  // system = "http://medimind.ge/fhir/CodeSystem/venous-compressibility").
+} as const;
+
+// ============================================================================
 // Custom MediMind CodeSystems — per-parameter value sets
 // ============================================================================
 

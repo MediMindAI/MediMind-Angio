@@ -8,15 +8,51 @@
  * carotid, and CEAP modules all share.
  */
 
-import type { BundleEntry, CodeableConcept, Observation } from '../../../types/fhir';
-import { STANDARD_FHIR_SYSTEMS } from '../../../constants/fhir-systems';
+import type { BundleEntry, CodeableConcept, Coding, Observation } from '../../../types/fhir';
+import { PARAMETER_LOINC, STANDARD_FHIR_SYSTEMS } from '../../../constants/fhir-systems';
 import type { BuildContext } from '../context';
 import {
   interpretationAbnormal,
+  medimindParamSystem,
   newUuid,
   observationCategory,
   urnRef,
 } from '../context';
+
+/**
+ * Build the parameter-aware `code.coding` array for a per-segment Observation.
+ *
+ * Wave 3.5 — Area 05 HIGH. `coding[0]` MUST be parameter-specific (LOINC if
+ * mapped, MediMind per-parameter CodeSystem otherwise) so queries like
+ * `GET Observation?code=loinc|11556-8` return only PSV rows, not every row in
+ * the study. `coding[1]` carries the study-level LOINC so cross-aggregation
+ * queries still find every observation in a single study.
+ */
+export function buildParameterCoding(ctx: BuildContext, paramId: string): Coding[] {
+  const paramLoinc = PARAMETER_LOINC[paramId];
+  if (paramLoinc) {
+    return [
+      {
+        system: STANDARD_FHIR_SYSTEMS.LOINC,
+        code: paramLoinc.code,
+        display: paramLoinc.display,
+      },
+      {
+        system: STANDARD_FHIR_SYSTEMS.LOINC,
+        code: ctx.loincCode,
+        display: ctx.loincDisplay,
+      },
+    ];
+  }
+  return [
+    { system: medimindParamSystem(paramId), code: paramId, display: paramId },
+    {
+      system: STANDARD_FHIR_SYSTEMS.LOINC,
+      code: ctx.loincCode,
+      display: ctx.loincDisplay,
+    },
+  ];
+}
 
 export interface CodedCategoricalArgs {
   readonly bodySite: CodeableConcept;
@@ -42,13 +78,7 @@ export function pushCodedCategorical(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, args.paramId),
       text: `${args.sideText} ${args.paramLabel}: ${args.value}`,
     },
     subject: { reference: ctx.patientRef },
@@ -206,13 +236,7 @@ export function pushBooleanObservation(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, args.paramId),
       text: `${args.sideText} ${args.paramLabel}`,
     },
     subject: { reference: ctx.patientRef },

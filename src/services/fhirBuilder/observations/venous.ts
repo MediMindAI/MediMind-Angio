@@ -32,6 +32,7 @@ import {
   observationCategory,
   urnRef,
 } from '../context';
+import { buildParameterCoding } from './shared';
 
 export function extractVenousFindings(form: FormState): VenousSegmentFindings | undefined {
   if (
@@ -193,13 +194,7 @@ function pushVenousCategorical(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, paramId),
       text: `${sideText} ${paramLabel}: ${value}`,
     },
     subject: { reference: ctx.patientRef },
@@ -255,13 +250,7 @@ function pushVenousNumeric(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, paramId),
       text: `${sideText} ${paramLabel}`,
     },
     subject: { reference: ctx.patientRef },

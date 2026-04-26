@@ -26,6 +26,7 @@ import {
   observationCategory,
   urnRef,
 } from '../context';
+import { buildParameterCoding } from './shared';
 
 export function appendGenericSegmentObservations(
   ctx: BuildContext,
@@ -42,13 +43,7 @@ export function appendGenericSegmentObservations(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, 'competency'),
       text: `${s.segmentId} competency`,
     },
     subject: { reference: ctx.patientRef },
@@ -113,13 +108,7 @@ function pushGenericNumeric(
     status: 'final',
     category: [observationCategory('imaging')],
     code: {
-      coding: [
-        {
-          system: STANDARD_FHIR_SYSTEMS.LOINC,
-          code: ctx.loincCode,
-          display: ctx.loincDisplay,
-        },
-      ],
+      coding: buildParameterCoding(ctx, paramId),
       text: `${segmentId} ${paramId}`,
     },
     subject: { reference: ctx.patientRef },
