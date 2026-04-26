@@ -77,7 +77,6 @@ function writeSyncRaw(draft: EncounterDraft): void {
   } catch (err) {
     // Quota exceeded or mode-locked storage — surface to console; the IDB
     // copy still goes through, so the encounter isn't lost.
-    // eslint-disable-next-line no-console
     console.warn('[encounterStore] localStorage write failed', draft.encounterId, err);
   }
 }

@@ -96,7 +96,7 @@ describe('encounterMigration — legacy draft promotion', () => {
 
     const encounters = await listEncounters();
     expect(encounters).toHaveLength(1);
-    const enc = encounters[0];
+    const enc = encounters[0]!;
     expect(enc.selectedStudyTypes).toEqual(['venousLEBilateral']);
     expect(enc.schemaVersion).toBe(2);
 
@@ -179,7 +179,7 @@ describe('encounterMigration — legacy draft promotion', () => {
 
     const encounters = await listEncounters();
     expect(encounters).toHaveLength(1);
-    expect(encounters[0].selectedStudyTypes).toEqual(['venousLEBilateral']);
+    expect(encounters[0]!.selectedStudyTypes).toEqual(['venousLEBilateral']);
   });
 
   it('falls back to deprecated `indication` for indicationNotes when needed', async () => {
@@ -200,6 +200,6 @@ describe('encounterMigration — legacy draft promotion', () => {
 
     const encounters = await listEncounters();
     expect(encounters).toHaveLength(1);
-    expect(encounters[0].header.indicationNotes).toBe('Claudication, left calf');
+    expect(encounters[0]!.header.indicationNotes).toBe('Claudication, left calf');
   });
 });
