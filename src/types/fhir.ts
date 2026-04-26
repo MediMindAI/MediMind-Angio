@@ -204,6 +204,7 @@ export interface ObservationComponent {
 
 export interface DiagnosticReport extends ResourceBase {
   readonly resourceType: 'DiagnosticReport';
+  readonly identifier?: ReadonlyArray<Identifier>;
   readonly status: 'registered' | 'partial' | 'preliminary' | 'final' | 'amended' | 'corrected' | 'appended' | 'cancelled' | 'entered-in-error' | 'unknown';
   readonly category?: ReadonlyArray<CodeableConcept>;
   readonly code: CodeableConcept; // LOINC code for the study type

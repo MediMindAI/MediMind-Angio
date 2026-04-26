@@ -579,5 +579,34 @@ for (const [rt, n] of Object.entries(carotidCounts)) {
   console.log(`    ${rt.padEnd(24)} × ${n}`);
 }
 
+// ----------------------------------------------------------------------------
+// SNOMED catalog integrity (Wave 1.4 — Area 05 BLOCKER + CRITICAL)
+// ----------------------------------------------------------------------------
+import { VASCULAR_SEGMENTS_SNOMED, CEAP_SNOMED } from '../src/constants/fhir-systems';
+
+// Defensive runtime check — types prove no '-' codes exist today, but this
+// catches regressions if a placeholder is added back in a future PR.
+for (const [key, entry] of Object.entries(VASCULAR_SEGMENTS_SNOMED)) {
+  assert(
+    (entry.code as string) !== '-',
+    `VASCULAR_SEGMENTS_SNOMED has placeholder code for "${key}"`
+  );
+}
+for (const [key, entry] of Object.entries(CEAP_SNOMED)) {
+  assert(
+    (entry.code as string) !== '-',
+    `CEAP_SNOMED has placeholder code for "${key}"`
+  );
+}
+// Peroneal artery + peroneal vein must NOT share a code (the original BLOCKER).
+const perv = VASCULAR_SEGMENTS_SNOMED.perv;
+const pera = VASCULAR_SEGMENTS_SNOMED.pera;
+assert(perv !== undefined && pera !== undefined, 'perv and pera entries must exist');
+assert(
+  perv.code !== pera.code,
+  'perv (peroneal vein) and pera (peroneal artery) MUST have different SNOMED codes'
+);
+console.log('\nPASS: SNOMED catalog integrity (no placeholders, perv != pera)');
+
 console.log('\nAll 3 study-type bundles validated (venous-LE + arterial-LE + carotid).');
 process.exit(0);

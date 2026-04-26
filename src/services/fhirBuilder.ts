@@ -68,6 +68,7 @@ import type {
 } from '../types/fhir';
 import {
   CEAP_SNOMED,
+  IDENTIFIER_SYSTEMS,
   MEDIMIND_CODESYSTEMS,
   MEDIMIND_EXTENSIONS,
   STANDARD_FHIR_SYSTEMS,
@@ -190,6 +191,12 @@ interface BuildContext {
 function createContext(form: FormState): BuildContext {
   const nowIso = new Date().toISOString();
   const loinc = VASCULAR_LOINC[form.studyType];
+  // Runtime guard — typing makes this dead code under correct usage, but a
+  // freshly-added StudyType without a matching VASCULAR_LOINC entry would
+  // otherwise crash on the next .code access (Area 03 CRITICAL).
+  if (!loinc) {
+    throw new Error(`fhirBuilder: no VASCULAR_LOINC mapping for studyType "${form.studyType}"`);
+  }
   const patientId = newUuid();
   const panelId = newUuid();
   const qrId = newUuid();
@@ -254,10 +261,18 @@ function buildPatientEntry(ctx: BuildContext): BundleEntry<Patient> {
   const family = nameParts.length > 0 ? (nameParts[nameParts.length - 1] ?? '') : '';
   const given = nameParts.length > 1 ? nameParts.slice(0, -1) : [];
 
+  // Emit identifier(s) for the patient. Without these, every bundle creates
+  // a fresh anonymous Patient on import — re-importing the same patient
+  // would never match an existing record (Area 05 CRITICAL).
+  const identifier = header.patientId
+    ? [{ system: IDENTIFIER_SYSTEMS.PERSONAL_ID, value: header.patientId }]
+    : undefined;
+
   const patient: Patient = {
     resourceType: 'Patient',
     id: ctx.patientId,
     active: true,
+    identifier,
     name: header.patientName
       ? [
           {
@@ -1500,7 +1515,13 @@ function buildEncounterEntry(
       display: 'ambulatory',
     },
     subject: { reference: ctx.patientRef },
-    period: { start: ctx.nowIso, end: ctx.nowIso },
+    period: {
+      // Honor the user-supplied study date when available, else fall back to
+      // bundle-build time. Without this, the report claimed "performed today"
+      // even when written up the day after the actual scan (Area 05 HIGH).
+      start: ctx.form.header.studyDate ?? ctx.nowIso,
+      end: ctx.form.header.studyDate ?? ctx.nowIso,
+    },
     reasonCode: reasonCodes.length > 0 ? reasonCodes : undefined,
   };
   return {
@@ -1819,9 +1840,16 @@ function buildDiagnosticReportEntry(
     });
   }
 
+  // Emit identifier from accessionNumber so the report can be matched on
+  // re-import / cross-system search (Area 05 CRITICAL).
+  const reportIdentifier = ctx.form.header.accessionNumber
+    ? [{ system: IDENTIFIER_SYSTEMS.STUDY_ID, value: ctx.form.header.accessionNumber }]
+    : undefined;
+
   const report: DiagnosticReport = {
     resourceType: 'DiagnosticReport',
     id: ctx.reportId,
+    identifier: reportIdentifier,
     status: 'final',
     category: [
       {
@@ -1847,7 +1875,10 @@ function buildDiagnosticReportEntry(
     },
     subject: { reference: ctx.patientRef },
     encounter: ctx.encounterRef ? { reference: ctx.encounterRef } : undefined,
-    effectiveDateTime: ctx.nowIso,
+    // effectiveDateTime is when the study was performed, NOT when the bundle
+    // was generated. Use header.studyDate when set so a study written up the
+    // next day reports the correct timeline (Area 05 HIGH).
+    effectiveDateTime: ctx.form.header.studyDate ?? ctx.nowIso,
     issued: ctx.nowIso,
     result: results,
     conclusion: conclusionParts.length > 0 ? conclusionParts.join('\n') : undefined,

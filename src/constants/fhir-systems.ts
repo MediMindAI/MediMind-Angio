@@ -92,7 +92,14 @@ export const STANDARD_FHIR_SYSTEMS = {
  * release, re-verify each code and add a `deprecated` flag here if any
  * become replaced.
  */
-export const VASCULAR_LOINC = {
+// Typed as Readonly<Record<StudyType, ...>> so adding a new StudyType without a
+// matching entry fails at COMPILE time (Area 03 CRITICAL — previously a runtime
+// crash on Export silently aborted the whole bundle build).
+import type { StudyType } from '../types/study';
+
+export const VASCULAR_LOINC: Readonly<
+  Record<StudyType, { readonly code: string; readonly display: string }>
+> = {
   venousLEBilateral: {
     code: '39420-5',
     display: 'US.doppler Lower extremity vein - bilateral',
@@ -146,16 +153,16 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   'gsv-whole': { code: '181351006', display: 'Great saphenous vein structure' },
   /** Saphenofemoral junction. HIGH. */
   sfj: { code: '281075009', display: 'Saphenofemoral junction' },
-  /** GSV in thigh. TODO — no distinct SNOMED concept; use gsv-whole + laterality in practice. */
-  'gsv-thigh': { code: '-', display: 'Great saphenous vein, thigh' }, // TODO: verify
-  /** GSV in calf. TODO. */
-  'gsv-calf': { code: '-', display: 'Great saphenous vein, calf' }, // TODO: verify
+  /** GSV in thigh. FALLBACK to parent gsv-whole — sub-segment fidelity carried in bodySite.text. */
+  'gsv-thigh': { code: '181351006', display: 'Great saphenous vein, thigh' }, // FALLBACK: parent vessel
+  /** GSV in calf. FALLBACK to parent gsv-whole. */
+  'gsv-calf': { code: '181351006', display: 'Great saphenous vein, calf' }, // FALLBACK: parent vessel
   /** Small (short) saphenous vein. HIGH. */
   ssv: { code: '281076005', display: 'Small saphenous vein structure' },
   /** Saphenopopliteal junction. HIGH. */
   spj: { code: '281077001', display: 'Saphenopopliteal junction' },
-  /** Anterior accessory saphenous vein. TODO. */
-  aasv: { code: '-', display: 'Anterior accessory saphenous vein' }, // TODO: verify
+  /** Anterior accessory saphenous vein. FALLBACK to parent gsv-whole — AASV is anatomically a tributary of GSV. */
+  aasv: { code: '181351006', display: 'Anterior accessory saphenous vein' }, // FALLBACK: parent vessel
 
   // ------- Deep venous system (lower extremity) -----------------------------
 
@@ -171,15 +178,15 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   perv: { code: '8821006', display: 'Peroneal vein structure' },
   /** Gastrocnemius veins. HIGH. */
   gv: { code: '287529004', display: 'Gastrocnemius vein structure' },
-  /** Soleal veins. TODO. */
-  sv: { code: '-', display: 'Soleal vein' }, // TODO: verify
+  /** Soleal veins. FALLBACK to gastrocnemius vein — anatomically grouped as muscular calf veins. */
+  sv: { code: '287529004', display: 'Soleal vein' }, // FALLBACK: muscular calf vein group
 
   // ------- Perforators ------------------------------------------------------
 
-  /** Perforating vein of thigh (Hunterian / Dodd). TODO. */
-  'perf-thigh': { code: '-', display: 'Perforating vein, thigh' }, // TODO: verify
-  /** Perforating vein of calf (Cockett / Boyd). TODO. */
-  'perf-calf': { code: '-', display: 'Perforating vein, calf' }, // TODO: verify
+  /** Perforating vein of thigh (Hunterian / Dodd). FALLBACK to generic vein structure. */
+  'perf-thigh': { code: '29092000', display: 'Perforating vein, thigh' }, // FALLBACK: generic vein
+  /** Perforating vein of calf (Cockett / Boyd). FALLBACK to generic vein structure. */
+  'perf-calf': { code: '29092000', display: 'Perforating vein, calf' }, // FALLBACK: generic vein
 
   // ------- Arterial: lower extremity ---------------------------------------
 
@@ -193,8 +200,8 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   ata: { code: '68053000', display: 'Anterior tibial artery structure' },
   /** Posterior tibial artery. HIGH. */
   pta: { code: '13363002', display: 'Posterior tibial artery structure' },
-  /** Peroneal artery. HIGH. */
-  pera: { code: '8821006', display: 'Peroneal artery structure' },
+  /** Peroneal artery. HIGH — verified 2026-04-26 via SNOMED CT DICOM subset. Was incorrectly sharing 8821006 (peroneal vein) — Area 05 BLOCKER. */
+  pera: { code: '8836009', display: 'Peroneal artery structure' },
   /** Dorsalis pedis artery. HIGH. */
   dpa: { code: '36003003', display: 'Dorsalis pedis artery structure' },
 
@@ -206,8 +213,8 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   ica: { code: '86117002', display: 'Internal carotid artery structure' },
   /** External carotid artery. HIGH. */
   eca: { code: '78723005', display: 'External carotid artery structure' },
-  /** Carotid bulb / bifurcation. TODO — narrow concept; SNOMED has "Bifurcation of carotid artery". */
-  'carotid-bulb': { code: '-', display: 'Carotid bulb' }, // TODO: verify
+  /** Carotid bulb / bifurcation. FALLBACK to parent CCA — bulb is the distal-CCA dilation at bifurcation. */
+  'carotid-bulb': { code: '32062004', display: 'Carotid bulb' }, // FALLBACK: parent CCA
   /** Vertebral artery. HIGH. */
   va: { code: '85234005', display: 'Vertebral artery structure' },
 
@@ -243,20 +250,20 @@ export const CEAP_SNOMED = {
   C2: { code: '128060009', display: 'Varicose veins of lower extremity' }, // HIGH
   /** C3 - Edema from venous disease. */
   C3: { code: '423666004', display: 'Venous edema' }, // HIGH
-  /** C4a - Pigmentation / eczema. TODO. */
-  C4A: { code: '-', display: 'Venous pigmentation or eczema' }, // TODO: verify
+  /** C4a - Pigmentation / eczema. FALLBACK to parent CVI — C4 axis covers skin changes from CVI. */
+  C4A: { code: '28695004', display: 'Venous pigmentation or eczema' }, // FALLBACK: parent CVI
   /** C4b - Lipodermatosclerosis. */
   C4B: { code: '238759005', display: 'Lipodermatosclerosis' }, // HIGH
-  /** C4c - Corona phlebectatica. TODO. */
-  C4C: { code: '-', display: 'Corona phlebectatica' }, // TODO: verify
+  /** C4c - Corona phlebectatica. FALLBACK to parent CVI. */
+  C4C: { code: '28695004', display: 'Corona phlebectatica' }, // FALLBACK: parent CVI
   /** C5 - Healed venous ulcer. */
   C5: { code: '402866008', display: 'Healed venous ulcer' }, // HIGH
   /** C6 - Active venous ulcer. */
   C6: { code: '402863000', display: 'Venous ulcer of lower limb' }, // HIGH
   /** Reflux (Pr component). */
   REFLUX: { code: '9851009', display: 'Venous insufficiency (reflux)' }, // MED — closest SNOMED concept
-  /** Obstruction (Po component). TODO. */
-  OBSTRUCTION: { code: '-', display: 'Venous obstruction' }, // TODO: verify
+  /** Obstruction (Po component). FALLBACK to parent CVI — obstruction is one of two CVI etiologies (reflux/obstruction). */
+  OBSTRUCTION: { code: '28695004', display: 'Venous obstruction' }, // FALLBACK: parent CVI
 } as const;
 
 // ============================================================================
