@@ -68,18 +68,21 @@ export const STUDY_PLUGINS: ReadonlyArray<StudyPlugin> = [
 ];
 
 /**
- * Lookup helper: returns the plugin whose route matches the given
- * pathname (trailing slashes trimmed, `/studies/<key>` aliases accepted
- * for backward compatibility with earlier App.tsx routing).
+ * Lookup helper: returns the plugin whose route EXACTLY matches the given
+ * pathname (trailing slashes trimmed, `/studies/<plugin.route>` aliases
+ * accepted for backward compatibility).
+ *
+ * Wave 2.2: previously this used `endsWith(plugin.route)` which would
+ * silently hijack any future route ending in the same suffix
+ * (e.g. `/admin/edit-venous-le` would match `/venous-le`). Exact match
+ * closes the audit Part-03 HIGH finding.
  */
 export function findPluginByPath(pathname: string): StudyPlugin | null {
-  const path = pathname.replace(/\/+$/, '');
+  const path = pathname.replace(/\/+$/, '') || '/';
   for (const plugin of STUDY_PLUGINS) {
     if (!plugin.route) continue;
-    if (path.endsWith(plugin.route)) return plugin;
-    // Back-compat alias: /studies/<last-segment-of-route>
-    const routeTail = plugin.route.replace(/^\//, '');
-    if (path.endsWith(`/studies/${routeTail}`)) return plugin;
+    if (path === plugin.route) return plugin;
+    if (path === `/studies${plugin.route}`) return plugin;
   }
   return null;
 }

@@ -1,20 +1,23 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * BackToStudiesButton — chip that lands the user back on the StudyPicker
- * landing page (`/`). Mirrors the pathname-assignment navigation used by
- * `StudyPicker.handleStartStudy`.
+ * landing page (`/`). Wave 2.2 switched from `window.location.pathname = '/'`
+ * (full reload, drops in-progress dictation / unsaved fields / focus / scroll)
+ * to React Router's `useNavigate()` for an in-app SPA transition.
  */
 import { memo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useTranslation } from '../../contexts/TranslationContext';
 
 export const BackToStudiesButton = memo(function BackToStudiesButton(): React.ReactElement {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const handleBack = useCallback(() => {
-    window.location.pathname = '/';
-  }, []);
+    navigate('/');
+  }, [navigate]);
 
   return (
     <Button

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { memo, useCallback, useMemo, type MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IconArrowRight, IconStethoscope } from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
 import { useTranslation } from '../../contexts/TranslationContext';
@@ -16,6 +17,7 @@ import classes from './StudyPicker.module.css';
  */
 export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const cards = useMemo(() => STUDY_PLUGINS, []);
 
@@ -27,15 +29,18 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
     e.currentTarget.style.setProperty('--pointer-y', `${y}%`);
   }, []);
 
-  const handleStartStudy = useCallback((studyKey: string) => {
-    const plugin = STUDY_PLUGINS.find((p) => p.key === studyKey);
-    if (plugin?.route) {
-      window.location.pathname = plugin.route;
-      return;
-    }
-    // eslint-disable-next-line no-console
-    console.info('[StudyPicker] start study (not yet available):', studyKey);
-  }, []);
+  const handleStartStudy = useCallback(
+    (studyKey: string) => {
+      const plugin = STUDY_PLUGINS.find((p) => p.key === studyKey);
+      if (plugin?.route) {
+        navigate(plugin.route);
+        return;
+      }
+      // eslint-disable-next-line no-console
+      console.info('[StudyPicker] start study (not yet available):', studyKey);
+    },
+    [navigate],
+  );
 
   return (
     <div className={classes.backdrop}>

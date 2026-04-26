@@ -27,6 +27,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Grid, SimpleGrid, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -439,6 +440,7 @@ function isBuiltInTemplate(tpl: AnyTemplate): tpl is VenousLETemplate {
 
 export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [highlightId, setHighlightId] = useState<VenousLEFullSegmentId | null>(null);
   /** Template awaiting confirmation (set when user picks one on a non-empty form). */
@@ -545,10 +547,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   }, []);
 
   const handleBack = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.location.pathname = '/';
-    }
-  }, []);
+    navigate('/');
+  }, [navigate]);
 
   // ---- Template apply flow ----
 

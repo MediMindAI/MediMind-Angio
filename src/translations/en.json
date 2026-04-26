@@ -161,5 +161,10 @@
   "versionFooter": {
     "aria": "Build version",
     "buildPrefix": "build"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you are looking for does not exist.",
+    "home": "Back to studies"
   }
 }
