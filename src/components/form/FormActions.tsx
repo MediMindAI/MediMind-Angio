@@ -42,13 +42,21 @@ export interface FormActionsProps {
   readonly baseFilename: string;
 }
 
-/** Format a Date as HH:MM:SS. */
-function formatTime(d: Date): string {
-  return d.toLocaleTimeString(undefined, {
+/**
+ * Format a Date as HH:MM:SS using the active app locale.
+ *
+ * `Intl.DateTimeFormat` honours the supplied locale tag — passing the active
+ * `lang` from `TranslationContext` ensures Russian/Georgian/English UI all
+ * see a consistent 24-hour clock instead of falling back to the host
+ * locale's preference (which can flip to AM/PM on US English systems).
+ */
+function formatTime(d: Date, lang: string): string {
+  return new Intl.DateTimeFormat(lang, {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  });
+    hour12: false,
+  }).format(d);
 }
 
 export const FormActions = memo(function FormActions({
@@ -247,7 +255,7 @@ export const FormActions = memo(function FormActions({
   }, [form, baseFilename, t]);
 
   const savedText = lastSavedAt
-    ? `${t('venousLE.actions.lastSaved')} ${formatTime(lastSavedAt)}`
+    ? `${t('venousLE.actions.lastSaved')} ${formatTime(lastSavedAt, lang)}`
     : t('venousLE.actions.neverSaved');
 
   return (

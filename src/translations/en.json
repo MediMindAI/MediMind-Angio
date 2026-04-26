@@ -23,7 +23,12 @@
     "phase1Badge": "Available",
     "comingSoon": "Coming soon",
     "startStudy": "Start study",
-    "backToStudies": "Back to studies"
+    "backToStudies": "Back to studies",
+    "draftsBanner": "{count} draft(s) in progress on this device.",
+    "clearAllDrafts": "Clear all drafts",
+    "clearAllConfirm": "Clear all in-progress drafts on this device? Patient data in unsaved drafts will be permanently removed. This cannot be undone.",
+    "draftsCleared": "All drafts cleared.",
+    "idleTimeout": "Drafts auto-clear after 30 minutes of inactivity."
   },
   "studies": {
     "venousLE": {

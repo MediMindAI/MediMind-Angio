@@ -49,7 +49,9 @@ const getVariantStyles = (variant: EMRBadgeVariant): React.CSSProperties => {
         background: 'var(--emr-gradient-primary)',
         color: 'var(--emr-text-inverse)',
         border: 'none',
-        boxShadow: 'var(--emr-shadow-success)',
+        // Use the blue (info) shadow — `version` sits on the primary gradient,
+        // so the green-tinted `--emr-shadow-success` produced a mismatched glow.
+        boxShadow: 'var(--emr-shadow-info)',
       };
     case 'neutral':
       return {

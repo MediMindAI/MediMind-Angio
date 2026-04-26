@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { memo, useCallback, useMemo, type MouseEvent } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconArrowRight, IconStethoscope } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconStethoscope,
+  IconClockHour4,
+  IconTrash,
+} from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
+import { EMRButton } from '../common/EMRButton';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { STUDY_PLUGINS } from '../studies';
+import { listDrafts, clearAllDrafts } from '../../services/draftStore';
 import classes from './StudyPicker.module.css';
 
 /**
@@ -20,6 +28,37 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
   const navigate = useNavigate();
 
   const cards = useMemo(() => STUDY_PLUGINS, []);
+
+  // Wave 4.1 — drafts banner. Shows in-progress draft count and a
+  // destructive "Clear all drafts" button so a clinician arriving at a
+  // shared workstation can wipe leftover PHI before starting their case.
+  const [draftCount, setDraftCount] = useState(0);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const refreshDraftCount = useCallback(async () => {
+    try {
+      const drafts = await listDrafts();
+      setDraftCount(drafts.length);
+    } catch {
+      setDraftCount(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshDraftCount();
+  }, [refreshDraftCount]);
+
+  const handleConfirmClearAll = useCallback(async () => {
+    setClearing(true);
+    try {
+      await clearAllDrafts();
+      setDraftCount(0);
+    } finally {
+      setClearing(false);
+      setConfirmClearOpen(false);
+    }
+  }, []);
 
   const handlePointerMove = useCallback((e: MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -54,6 +93,36 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
           <h1 className={classes.title}>{t('studyPicker.title')}</h1>
           <p className={classes.subtitle}>{t('studyPicker.subtitle')}</p>
         </header>
+
+        {/* Wave 4.1 — drafts banner */}
+        {draftCount > 0 && (
+          <div
+            className={classes.draftsBanner}
+            role="status"
+            data-testid="drafts-banner"
+          >
+            <span className={classes.draftsBannerIcon} aria-hidden>
+              <IconClockHour4 size={18} stroke={1.75} />
+            </span>
+            <div className={classes.draftsBannerCopy}>
+              <span className={classes.draftsBannerTitle}>
+                {t('studyPicker.draftsBanner', { count: draftCount })}
+              </span>
+              <span className={classes.draftsBannerSubtitle}>
+                {t('studyPicker.idleTimeout')}
+              </span>
+            </div>
+            <EMRButton
+              variant="danger"
+              size="sm"
+              leftSection={<IconTrash size={16} stroke={1.75} />}
+              onClick={() => setConfirmClearOpen(true)}
+              data-testid="drafts-clear-all"
+            >
+              {t('studyPicker.clearAllDrafts')}
+            </EMRButton>
+          </div>
+        )}
 
         {/* Study card grid */}
         <div
@@ -138,6 +207,18 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
           </span>
         </div>
       </div>
+
+      <ConfirmDialog
+        opened={confirmClearOpen}
+        onClose={() => setConfirmClearOpen(false)}
+        title={t('studyPicker.clearAllDrafts')}
+        message={t('studyPicker.clearAllConfirm')}
+        confirmLabel={t('studyPicker.clearAllDrafts')}
+        cancelLabel={t('common.cancel')}
+        onConfirm={() => void handleConfirmClearAll()}
+        loading={clearing}
+        destructive
+      />
     </div>
   );
 });

@@ -80,15 +80,17 @@ export const ImpressionBlock = memo(function ImpressionBlock({
   }, [findings, t, rightHeading, leftHeading, conclusionsHeading]);
 
   // Auto-fill: if the user has not edited, keep value synced with auto.
+  // Compare against the actual stored `value` (not a ref) so we don't fire
+  // an extra onChange when a parent re-render produces an identical autoText.
   const lastAutoRef = useRef<string>(autoText);
   useEffect(() => {
-    if (!edited && autoText !== lastAutoRef.current) {
+    if (!edited && autoText !== value) {
       lastAutoRef.current = autoText;
       onChange(autoText, false);
     } else if (!edited) {
       lastAutoRef.current = autoText;
     }
-  }, [autoText, edited, onChange]);
+  }, [autoText, edited, value, onChange]);
 
   const handleChange = useCallback(
     (next: string): void => {

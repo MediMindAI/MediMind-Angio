@@ -508,6 +508,64 @@
   }
 }
 
+/* ==================== DRAFTS BANNER (Wave 4.1) ==================== */
+/* Surfaces "N drafts in progress" + a destructive "Clear all" action so a
+   clinician arriving at a shared workstation can wipe leftover PHI before
+   starting their own case. Sits between the header and the study grid. */
+.draftsBanner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  margin: 0 0 28px;
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-secondary-alpha-08);
+  border: 1px solid var(--emr-border-secondary);
+  color: var(--emr-text-primary);
+}
+
+.draftsBannerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--emr-secondary-alpha-08);
+  color: var(--emr-secondary);
+}
+
+.draftsBannerCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.draftsBannerTitle {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+}
+
+.draftsBannerSubtitle {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+}
+
+@media (max-width: 575px) {
+  .draftsBanner {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .draftsBannerCopy {
+    flex-basis: calc(100% - 50px);
+  }
+}
+
 /* ==================== ACCESSIBILITY ==================== */
 @media (prefers-reduced-motion: reduce) {
   .card,

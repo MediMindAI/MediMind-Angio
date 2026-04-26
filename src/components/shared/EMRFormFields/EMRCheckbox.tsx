@@ -63,7 +63,12 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
         if (disabled || readOnly) { return; }
 
         const newChecked = event.target.checked;
-        setInternalChecked(newChecked);
+        // Only mutate internal state in uncontrolled mode. Mirroring it in
+        // controlled mode would race with the parent and could re-fire the
+        // handler when the parent rebroadcasts the same value.
+        if (checked === undefined) {
+          setInternalChecked(newChecked);
+        }
 
         if (onChangeEvent) {
           onChangeEvent(event);
@@ -72,19 +77,8 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
           onChange(newChecked);
         }
       },
-      [onChange, onChangeEvent, disabled, readOnly]
+      [checked, onChange, onChangeEvent, disabled, readOnly]
     );
-
-    const handleClick = useCallback(() => {
-      if (disabled || readOnly) { return; }
-
-      const newChecked = !isChecked;
-      setInternalChecked(newChecked);
-
-      if (onChange) {
-        onChange(newChecked);
-      }
-    }, [isChecked, onChange, disabled, readOnly]);
 
     const hasError = !!error;
 
@@ -94,6 +88,8 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
     return (
       <Box className={className} style={style}>
         <Group
+          component="label"
+          htmlFor={inputId}
           gap={config.gap}
           wrap="nowrap"
           style={{
@@ -102,7 +98,6 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
             cursor: disabled ? 'not-allowed' : 'pointer',
             opacity: disabled ? 0.6 : 1,
           }}
-          onClick={handleClick}
         >
           {/* Hidden native checkbox for form submission */}
           <input

@@ -44,6 +44,63 @@ const minBodyHeightMap: Record<EMRModalSize, number | string> = {
   xxl: 'calc(92vh - 140px)',
 };
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Module-level style constants — hoisted out of the component because they
+   depend on nothing in render scope. Recomputing them per-render via
+   `useMemo(..., [])` allocates a fresh object on every modal mount, which
+   defeats memoization downstream. (Wave 4.5 — Area 06 MEDIUM.)
+   ───────────────────────────────────────────────────────────────────────── */
+
+const MODAL_BODY_STYLES: CSSProperties = {
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  overflow: 'hidden',
+};
+
+const NOISE_TEXTURE_STYLES: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  opacity: 0.03,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+  pointerEvents: 'none',
+};
+
+const HIGHLIGHT_LINE_STYLES: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 24,
+  right: 24,
+  height: 1,
+  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+  pointerEvents: 'none',
+};
+
+const TITLE_STYLES: CSSProperties = {
+  letterSpacing: '-0.01em',
+  lineHeight: 'var(--emr-line-height-snug)',
+};
+
+const HEADER_GROUP_STYLES: CSSProperties = {
+  position: 'relative',
+};
+
+const HEADER_INNER_GROUP_STYLES: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+};
+
+const TITLE_CONTAINER_STYLES: CSSProperties = {
+  minWidth: 0,
+  flex: 1,
+};
+
+const SUBTITLE_STYLES: CSSProperties = {
+  letterSpacing: '0.01em',
+};
+
 export interface EMRModalProps {
   opened: boolean;
   onClose: () => void;
@@ -138,15 +195,6 @@ export function EMRModal({
     [isFullScreen]
   );
 
-  const modalBodyStyles = useMemo<CSSProperties>(() => ({
-    padding: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflow: 'hidden',
-  }), []);
-
   const headerStyles = useMemo<CSSProperties>(() => ({
     padding: isFullScreen ? '16px 16px' : '20px 24px',
     background: 'var(--emr-gradient-primary)',
@@ -158,24 +206,6 @@ export function EMRModal({
     zIndex: 10,
     paddingTop: isMobile ? 'max(16px, env(safe-area-inset-top))' : '20px',
   }), [isFullScreen, isMobile]);
-
-  const noiseTextureStyles = useMemo<CSSProperties>(() => ({
-    position: 'absolute',
-    inset: 0,
-    opacity: 0.03,
-    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-    pointerEvents: 'none',
-  }), []);
-
-  const highlightLineStyles = useMemo<CSSProperties>(() => ({
-    position: 'absolute',
-    top: 0,
-    left: 24,
-    right: 24,
-    height: 1,
-    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-    pointerEvents: 'none',
-  }), []);
 
   const iconContainerStyles = useMemo<CSSProperties>(() => ({
     width: iconContainerSize,
@@ -190,11 +220,6 @@ export function EMRModal({
     justifyContent: 'center',
     boxShadow: 'var(--emr-shadow-sm)',
   }), [iconContainerSize]);
-
-  const titleStyles = useMemo<CSSProperties>(() => ({
-    letterSpacing: '-0.01em',
-    lineHeight: 'var(--emr-line-height-snug)',
-  }), []);
 
   const closeButtonStyles = useMemo<CSSProperties>(() => ({
     width: isMobile ? 44 : 36,
@@ -243,24 +268,6 @@ export function EMRModal({
     [isFullScreen]
   );
 
-  const headerGroupStyles = useMemo<CSSProperties>(() => ({
-    position: 'relative',
-  }), []);
-
-  const headerInnerGroupStyles = useMemo<CSSProperties>(() => ({
-    flex: 1,
-    minWidth: 0,
-  }), []);
-
-  const titleContainerStyles = useMemo<CSSProperties>(() => ({
-    minWidth: 0,
-    flex: 1,
-  }), []);
-
-  const subtitleStyles = useMemo<CSSProperties>(() => ({
-    letterSpacing: '0.01em',
-  }), []);
-
   return (
     <Modal
       opened={opened}
@@ -285,29 +292,29 @@ export function EMRModal({
       }}
       styles={{
         content: mobileContentStyles,
-        body: modalBodyStyles,
+        body: MODAL_BODY_STYLES,
       }}
       data-testid={testId}
     >
       {/* Header */}
       <Box style={headerStyles}>
-        <Box style={noiseTextureStyles} />
-        <Box style={highlightLineStyles} />
+        <Box style={NOISE_TEXTURE_STYLES} />
+        <Box style={HIGHLIGHT_LINE_STYLES} />
 
-        <Group justify="space-between" align="center" wrap="nowrap" style={headerGroupStyles}>
-          <Group gap="md" wrap="nowrap" style={headerInnerGroupStyles}>
+        <Group justify="space-between" align="center" wrap="nowrap" style={HEADER_GROUP_STYLES}>
+          <Group gap="md" wrap="nowrap" style={HEADER_INNER_GROUP_STYLES}>
             {Icon && (
               <Box style={iconContainerStyles}>
                 <Icon size={iconSize} color="var(--emr-text-inverse)" />
               </Box>
             )}
 
-            <Box style={titleContainerStyles}>
+            <Box style={TITLE_CONTAINER_STYLES}>
               <Text
                 fw={500}
                 size="md"
                 c="var(--emr-text-inverse)"
-                style={titleStyles}
+                style={TITLE_STYLES}
                 truncate
                 role="heading"
                 aria-level={2}
@@ -321,7 +328,7 @@ export function EMRModal({
                     c="var(--emr-text-inverse-secondary)"
                     mt={2}
                     truncate
-                    style={subtitleStyles}
+                    style={SUBTITLE_STYLES}
                   >
                     {subtitle}
                   </Text>

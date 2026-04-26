@@ -102,20 +102,52 @@ export const CEAPPicker = memo(function CEAPPicker({
 
   const update = useCallback(
     <K extends keyof CeapClassification>(key: K, v: CeapClassification[K]): void => {
-      onChange({ ...current, [key]: v });
+      const next: CeapClassification = { ...current, [key]: v };
+      // If any axis becomes non-"none", strip `n` from modifiers — `n` is
+      // valid only when c/e/a/p are all baseline.
+      const anyAxisActive =
+        next.c !== 'C0' ||
+        next.e !== 'En' ||
+        next.a !== 'An' ||
+        next.p !== 'Pn';
+      if (anyAxisActive && (next.modifiers ?? []).includes('n')) {
+        onChange({
+          ...next,
+          modifiers: (next.modifiers ?? []).filter((m) => m !== 'n'),
+        });
+        return;
+      }
+      onChange(next);
     },
     [current, onChange],
   );
 
   const toggleModifier = useCallback(
     (mod: CeapModifier, checked: boolean): void => {
-      const next = checked
-        ? Array.from(new Set<CeapModifier>([...(current.modifiers ?? []), mod]))
-        : (current.modifiers ?? []).filter((m) => m !== mod);
+      let next: CeapModifier[];
+      if (checked) {
+        next = Array.from(new Set<CeapModifier>([...(current.modifiers ?? []), mod]));
+        // CEAP 2020: `s` (symptomatic) and `a` (asymptomatic) are mutually
+        // exclusive — the patient is one or the other, never both.
+        if (mod === 's') next = next.filter((m) => m !== 'a');
+        if (mod === 'a') next = next.filter((m) => m !== 's');
+        // `n` (no venous pathology) is meaningful only when c/e/a/p are all
+        // "no..." — gated at the option level via `nDisabled` below.
+      } else {
+        next = (current.modifiers ?? []).filter((m) => m !== mod);
+      }
       onChange({ ...current, modifiers: next });
     },
     [current, onChange],
   );
+
+  // CEAP 2020: `n` modifier is only valid when the patient has no findings
+  // on any axis. Disable the checkbox whenever the picker shows otherwise.
+  const nDisabled =
+    current.c !== 'C0' ||
+    current.e !== 'En' ||
+    current.a !== 'An' ||
+    current.p !== 'Pn';
 
   const formatted = useMemo(() => formatCeapClassification(current), [current]);
 
@@ -206,6 +238,7 @@ export const CEAPPicker = memo(function CEAPPicker({
                     label={`${mod} — ${modifierLabels[mod]}`}
                     checked={(current.modifiers ?? []).includes(mod)}
                     onChange={(c) => toggleModifier(mod, c)}
+                    disabled={mod === 'n' ? nDisabled : false}
                     size="sm"
                     data-testid={`ceap-modifier-${mod}`}
                   />

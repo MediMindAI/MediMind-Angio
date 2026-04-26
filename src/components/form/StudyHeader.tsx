@@ -42,6 +42,20 @@ type StudyProtocol = 'standard' | 'dvt' | 'reflux' | 'preop';
 /** Extended header value used by VenousLEForm. Adds quality/protocol + time/indication. */
 export interface StudyHeaderValue extends StudyHeaderShape {
   readonly studyTime?: string;
+  /**
+   * Free-text supplemental indication note. Source-of-truth for the
+   * structured indication is `icd10Codes` (ICD-10-CM); this field captures
+   * narrative context the codes can't carry (e.g. "screening prior to GSV
+   * ablation, patient declines compression").
+   *
+   * Wave 4.9 — renamed from `indication` to `indicationNotes` so the field
+   * name matches the supplemental role and stops competing with the
+   * structured ICD-10 input (Part 10 MEDIUM). Read-side fallback to
+   * `indication` for back-compat with existing drafts; new writes go to
+   * `indicationNotes`.
+   */
+  readonly indicationNotes?: string;
+  /** @deprecated Wave 4.9 — read fallback only. Use `indicationNotes`. */
   readonly indication?: string;
   readonly quality?: StudyQuality;
   readonly protocol?: StudyProtocol;
@@ -105,9 +119,12 @@ export const StudyHeader = memo(function StudyHeader({
 
   const derivedAge = useMemo(() => ageFromBirthDate(value.patientBirthDate), [value.patientBirthDate]);
 
-  const update = <K extends keyof StudyHeaderValue>(key: K, v: StudyHeaderValue[K]): void => {
-    onChange({ ...value, [key]: v });
-  };
+  const update = useCallback(
+    <K extends keyof StudyHeaderValue>(key: K, v: StudyHeaderValue[K]): void => {
+      onChange({ ...value, [key]: v });
+    },
+    [value, onChange],
+  );
 
   const genderOptions = useMemo(
     () => [
@@ -485,17 +502,18 @@ export const StudyHeader = memo(function StudyHeader({
               />
             </Grid.Col>
 
-            {/* Row 8 — legacy free-text indication (kept as supplemental note) */}
+            {/* Row 8 — supplemental free-text indication notes. Source-of-truth
+                for the structured indication is the ICD-10 multi-select above. */}
             <Grid.Col span={12}>
               <EMRTextarea
                 label={t('venousLE.header.indicationNotes')}
-                value={value.indication ?? ''}
-                onChange={(v) => update('indication', v)}
+                value={value.indicationNotes ?? value.indication ?? ''}
+                onChange={(v) => update('indicationNotes', v)}
                 minRows={2}
                 maxRows={3}
                 autosize
                 size="md"
-                data-testid="header-indication"
+                data-testid="header-indicationNotes"
               />
             </Grid.Col>
           </Grid>
