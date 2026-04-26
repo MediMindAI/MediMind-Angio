@@ -7,8 +7,8 @@
  * TBI (Toe-Brachial Index)  = toe pressure ÷ higher brachial.
  *
  * Rutherford / ESVS 2024 bands:
- *   > 1.30   non-compressible (medial calcinosis — common in DM/ESRD)
- *   0.90–1.30 normal
+ *   ≥ 1.30   non-compressible (medial calcinosis — common in DM/ESRD)
+ *   0.90–1.29 normal
  *   0.70–0.89 mild PAD
  *   0.40–0.69 moderate PAD
  *   < 0.40   severe / CLI
@@ -53,9 +53,17 @@ function highestAnkle(p: SegmentalPressures, side: 'L' | 'R'): number | null {
   return Math.max(...candidates);
 }
 
-function bandForRatio(ratio: number | null): AbiBand {
+// Wave 3.7 (Part 03 HIGH) — ABI ≥ 1.30 indicates non-compressible vessels
+// (medial calcinosis, common in DM/ESRD). The threshold is named
+// `nonCompressible`, so per the threshold's own semantics the bound is
+// INCLUSIVE: a value of exactly 1.30 must classify as 'non-compressible',
+// not 'normal'. Some sources (e.g. ESVS 2024) use the harder ≥ 1.40 cutoff;
+// this app follows the broader vascular literature in using ≥ 1.30 to flag
+// medial calcinosis early, since misclassifying as 'normal' is a
+// treatment-class error in a patient with calcinosis.
+export function bandForRatio(ratio: number | null): AbiBand {
   if (ratio === null || !Number.isFinite(ratio)) return 'unknown';
-  if (ratio > ABI_THRESHOLDS.nonCompressible) return 'non-compressible';
+  if (ratio >= ABI_THRESHOLDS.nonCompressible) return 'non-compressible';
   if (ratio >= ABI_THRESHOLDS.normalLower) return 'normal';
   if (ratio >= ABI_THRESHOLDS.mildLower) return 'mild';
   if (ratio >= ABI_THRESHOLDS.moderateLower) return 'moderate';
