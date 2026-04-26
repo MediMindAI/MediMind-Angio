@@ -1,0 +1,261 @@
+/* EncounterIntake — landing-page intake form (Phase 2.b).
+ *
+ * Layout: 4 stacked cards (identity, visit, indication, studies) inside
+ * a centered container, with a sticky bottom action row. Mobile-first:
+ * 2-col study grid collapses to 1-col under 576px; cards reflow gracefully.
+ */
+
+/* ==================== PAGE BACKDROP ==================== */
+.backdrop {
+  position: relative;
+  min-height: calc(100vh - 64px);
+  background: var(--emr-bg-page);
+  padding-bottom: 120px; /* leave room for sticky action row */
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 28px 18px 16px;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 20px 14px 12px;
+    gap: 14px;
+  }
+  .backdrop {
+    padding-bottom: 110px;
+  }
+}
+
+/* ==================== HEADER ==================== */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pageTitle {
+  font-size: var(--emr-font-3xl);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: var(--emr-font-md);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-base);
+  margin: 0;
+}
+
+@media (max-width: 576px) {
+  .pageTitle {
+    font-size: var(--emr-font-2xl);
+  }
+}
+
+/* ==================== CARD ==================== */
+.card {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--emr-gradient-section-header);
+  color: var(--emr-text-white);
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.cardHeaderIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--emr-border-radius-md);
+  background: rgba(255, 255, 255, 0.18);
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.cardHeaderTitle {
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-semibold);
+  margin: 0;
+  letter-spacing: var(--emr-letter-spacing-tight);
+}
+
+.cardBody {
+  padding: 20px;
+}
+
+@media (max-width: 576px) {
+  .cardHeader {
+    padding: 12px 14px;
+  }
+  .cardBody {
+    padding: 14px;
+  }
+}
+
+/* ==================== ICD-10 MULTISELECT WRAPPER ==================== */
+.icd10Wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.icd10Label {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-primary);
+}
+
+/* ==================== STUDIES GRID ==================== */
+.studyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 576px) {
+  .studyGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studyCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-bg-card);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  min-height: 64px;
+}
+
+.studyCard:hover {
+  border-color: var(--emr-accent);
+  background: var(--emr-bg-hover);
+}
+
+.studyCardSelected {
+  border-color: var(--emr-secondary);
+  background: var(--emr-secondary-alpha-08);
+}
+
+.studyCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--emr-border-radius-md);
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+}
+
+.studyCardLabel {
+  flex: 1;
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-primary);
+  min-width: 0;
+}
+
+.studyCardCheckSlot {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.studyHelper {
+  margin-top: 12px;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+}
+
+/* ==================== STICKY ACTION ROW ==================== */
+.actionRow {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--emr-bg-card);
+  border-top: 1px solid var(--emr-border-color);
+  box-shadow: 0 -4px 12px -6px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.actionRowResume {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-secondary);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: var(--emr-font-medium);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.actionRowResume:hover {
+  color: var(--emr-primary);
+}
+
+.actionRowSpacer {
+  flex: 1;
+}
+
+.actionRowButton {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.actionRowHint {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-tertiary);
+  flex-basis: 100%;
+  text-align: right;
+  margin-top: -4px;
+}
+
+@media (max-width: 576px) {
+  .actionRow {
+    padding: 12px 14px;
+  }
+}
