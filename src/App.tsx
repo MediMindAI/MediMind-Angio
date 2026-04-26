@@ -8,6 +8,7 @@ import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { findPluginByPath } from './components/studies';
 import { VersionFooter } from './components/layout/VersionFooter';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 const colorSchemeManager = createAppColorSchemeManager(STORAGE_KEYS.THEME);
 const initialColorScheme = colorSchemeManager.get('auto');
@@ -44,7 +45,7 @@ export default function App() {
       <ThemeProvider>
         <TranslationProvider>
           <Notifications position="top-right" zIndex={2000} />
-          {renderRoute()}
+          <ErrorBoundary>{renderRoute()}</ErrorBoundary>
           <VersionFooter />
         </TranslationProvider>
       </ThemeProvider>

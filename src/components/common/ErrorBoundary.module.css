@@ -1,0 +1,125 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/*
+ * ErrorBoundary recovery card styles.
+ * Mobile-first: full-viewport flex centering with 44px tap targets.
+ * Uses theme.css tokens exclusively — NO hardcoded colors.
+ */
+
+.root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--emr-space-4);
+  background: var(--emr-bg-page);
+  color: var(--emr-text-primary);
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-default);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-xs);
+  padding: var(--emr-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--emr-space-4);
+}
+
+.iconRow {
+  display: flex;
+  align-items: center;
+  gap: var(--emr-space-3);
+  color: var(--emr-error);
+}
+
+.iconBubble {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--emr-border-radius-full);
+  background: var(--emr-error-lighter);
+  color: var(--emr-error-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--emr-font-2xl);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  line-height: 1.2;
+}
+
+.message {
+  margin: 0;
+  font-size: var(--emr-font-md);
+  color: var(--emr-text-secondary);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--emr-space-3);
+  margin-top: var(--emr-space-2);
+}
+
+.details {
+  border-top: 1px solid var(--emr-border-light);
+  padding-top: var(--emr-space-4);
+  margin-top: var(--emr-space-2);
+}
+
+.detailsSummary {
+  cursor: pointer;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  font-weight: var(--emr-font-medium);
+  user-select: none;
+  padding: var(--emr-space-2) 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.detailsSummary:focus-visible {
+  outline: 2px solid var(--emr-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--emr-border-radius-sm);
+}
+
+.detailsBlock {
+  margin-top: var(--emr-space-2);
+  padding: var(--emr-space-3);
+  background: var(--emr-bg-hover);
+  border: 1px solid var(--emr-border-light);
+  border-radius: var(--emr-border-radius);
+  font-family: var(--emr-font-mono);
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow: auto;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--emr-space-4);
+  }
+  .title {
+    font-size: var(--emr-font-xl);
+  }
+  .actions > * {
+    flex: 1 1 100%;
+  }
+}

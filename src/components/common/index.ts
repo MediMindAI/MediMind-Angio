@@ -36,3 +36,5 @@ export type { EMRCollapsibleSectionProps } from './EMRCollapsibleSection';
 
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+
+export { ErrorBoundary } from './ErrorBoundary';

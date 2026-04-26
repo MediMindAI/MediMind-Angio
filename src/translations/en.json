@@ -93,5 +93,11 @@
       "segmentCount": "Segments set:",
       "lastClick": "Last click:"
     }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "Your draft has been saved. You can reload the page to try again.",
+    "reload": "Reload page",
+    "copyDetails": "Show technical details"
   }
 }
