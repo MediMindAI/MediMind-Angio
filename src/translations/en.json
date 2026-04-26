@@ -99,5 +99,10 @@
     "message": "Your draft has been saved. You can reload the page to try again.",
     "reload": "Reload page",
     "copyDetails": "Show technical details"
+  },
+  "formActions": {
+    "pdfDownloadFailed": "Failed to download PDF",
+    "pdfPreviewFailed": "Failed to preview PDF",
+    "jsonExportFailed": "Failed to export FHIR JSON"
   }
 }

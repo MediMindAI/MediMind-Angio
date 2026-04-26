@@ -11,6 +11,7 @@
 
 import { memo, useCallback, useState } from 'react';
 import { Group, Text } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   IconCode,
   IconDeviceFloppy,
@@ -187,12 +188,22 @@ export const FormActions = memo(function FormActions({
       document.body.removeChild(anchor);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifications.show({
+        color: 'red',
+        title: t('formActions.pdfDownloadFailed'),
+        message,
+      });
       // eslint-disable-next-line no-console
-      console.error('[FormActions] PDF download failed', err);
+      console.error('[FormActions] PDF download failed', {
+        err,
+        patientId: form.header.patientId,
+        studyType: form.studyType,
+      });
     } finally {
       setPdfLoading(false);
     }
-  }, [renderPdfBlob, baseFilename]);
+  }, [renderPdfBlob, baseFilename, t, form.header.patientId, form.studyType]);
 
   const handlePreviewPdf = useCallback(async () => {
     setPdfPreviewing(true);
@@ -203,21 +214,41 @@ export const FormActions = memo(function FormActions({
       // Revoke a bit later so the new tab has time to pull the blob.
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifications.show({
+        color: 'red',
+        title: t('formActions.pdfPreviewFailed'),
+        message,
+      });
       // eslint-disable-next-line no-console
-      console.error('[FormActions] PDF preview failed', err);
+      console.error('[FormActions] PDF preview failed', {
+        err,
+        patientId: form.header.patientId,
+        studyType: form.studyType,
+      });
     } finally {
       setPdfPreviewing(false);
     }
-  }, [renderPdfBlob]);
+  }, [renderPdfBlob, t, form.header.patientId, form.studyType]);
 
   const handleExportJson = useCallback(() => {
     try {
       downloadFhirBundle(form, `${baseFilename}.json`);
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      notifications.show({
+        color: 'red',
+        title: t('formActions.jsonExportFailed'),
+        message,
+      });
       // eslint-disable-next-line no-console
-      console.error('[FormActions] JSON export failed', err);
+      console.error('[FormActions] JSON export failed', {
+        err,
+        patientId: form.header.patientId,
+        studyType: form.studyType,
+      });
     }
-  }, [form, baseFilename]);
+  }, [form, baseFilename, t]);
 
   const savedText = lastSavedAt
     ? `${t('venousLE.actions.lastSaved')} ${formatTime(lastSavedAt)}`
