@@ -37,7 +37,17 @@ export interface CptCode {
   readonly display: string;
 }
 
-/** Patient + encounter header shown at the top of the report. */
+/**
+ * Patient + encounter header shown at the top of the report.
+ *
+ * NOTE (encounter pivot, Phase 1): This shape currently mixes encounter-level
+ * fields (patient identity, operator, referring physician, institution,
+ * medications, informedConsent, icd10Codes, indicationNotes) with
+ * per-study fields (studyDate, accessionNumber, cptCode, patientPosition).
+ * Phase 3 will shrink `StudyHeader` to the per-study fields and move the
+ * encounter-level fields to `EncounterHeader` (see `./encounter.ts`).
+ * Until then this stays the way it is so per-study forms keep working.
+ */
 export interface StudyHeader {
   readonly patientName: string;
   readonly patientId?: string;
