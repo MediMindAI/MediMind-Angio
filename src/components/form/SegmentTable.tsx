@@ -486,7 +486,7 @@ export const SegmentTable = memo(function SegmentTable({
       <Box className={classes.tabsWrap}>
         <EMRTabs
           value={view}
-          onChange={(v) => onViewChange((v ?? 'right') as SegmentTableView)}
+          onChange={(v) => v && onViewChange(v as SegmentTableView)}
           variant="pills"
           size="sm"
           grow

@@ -633,11 +633,7 @@ function TemplateGalleryGenericInner<T extends GalleryTemplateLike>({
   );
 }
 
-// memo() loses the generic signature — cast back on export.
-export const TemplateGalleryGeneric = memo(TemplateGalleryGenericInner) as unknown as <
-  T extends GalleryTemplateLike,
->(
-  props: TemplateGalleryGenericProps<T>,
-) => React.ReactElement;
+// memo() loses the generic signature — re-cast to the inner type to preserve it.
+export const TemplateGalleryGeneric = memo(TemplateGalleryGenericInner) as typeof TemplateGalleryGenericInner;
 
 export default TemplateGalleryGeneric;

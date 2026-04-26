@@ -88,10 +88,8 @@ export function ceapEDescription(e: CeapE): string {
       return 'ceap.e.s';
     case 'En':
       return 'ceap.e.n';
-    default: {
-      const _exhaustive: never = e;
-      return _exhaustive;
-    }
+    default:
+      throw new Error(`unhandled CEAP code: ${e as string}`);
   }
 }
 
@@ -106,10 +104,8 @@ export function ceapADescription(a: CeapA): ReadonlyArray<string> {
       return ['ceap.a.d'];
     case 'An':
       return ['ceap.a.n'];
-    default: {
-      const _exhaustive: never = a;
-      return [_exhaustive];
-    }
+    default:
+      throw new Error(`unhandled CEAP code: ${a as string}`);
   }
 }
 
@@ -124,10 +120,8 @@ export function ceapPDescription(p: CeapP): ReadonlyArray<string> {
       return ['ceap.p.rO'];
     case 'Pn':
       return ['ceap.p.n'];
-    default: {
-      const _exhaustive: never = p;
-      return [_exhaustive];
-    }
+    default:
+      throw new Error(`unhandled CEAP code: ${p as string}`);
   }
 }
 
