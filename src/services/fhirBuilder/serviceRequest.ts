@@ -29,6 +29,12 @@ export function buildServiceRequestEntry(
     subject: { reference: ctx.patientRef },
     encounter: ctx.encounterRef ? { reference: ctx.encounterRef } : undefined,
     authoredOn: ctx.nowIso,
+    // Wave 3.4 — referring physician now flows into ServiceRequest.requester
+    // as a typed Reference to the contained Practitioner instead of being
+    // discarded after the QuestionnaireResponse copy (Area 05 HIGH).
+    requester: ctx.referrerPractitionerRef
+      ? { reference: ctx.referrerPractitionerRef }
+      : undefined,
     occurrenceDateTime: ctx.nowIso,
   };
   return {

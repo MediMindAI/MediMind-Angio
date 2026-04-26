@@ -16,13 +16,23 @@ import { describe, expect, it } from 'vitest';
 import { buildFhirBundle } from './fhirBuilder';
 import {
   IDENTIFIER_SYSTEMS,
+  PARAMETER_LOINC,
+  STANDARD_FHIR_SYSTEMS,
   VASCULAR_LOINC,
   VASCULAR_SEGMENTS_SNOMED,
   CEAP_SNOMED,
 } from '../constants/fhir-systems';
 import type { FormState, StudyHeader } from '../types/form';
 import type { StudyType } from '../types/study';
-import type { DiagnosticReport, Patient, Encounter } from '../types/fhir';
+import type {
+  DiagnosticReport,
+  Encounter,
+  Observation,
+  Organization,
+  Patient,
+  Practitioner,
+  ServiceRequest,
+} from '../types/fhir';
 
 const ALL_STUDY_TYPES: ReadonlyArray<StudyType> = [
   'venousLEBilateral',
@@ -164,7 +174,7 @@ describe('Wave 2.5 — parameters type-guard read boundary', () => {
       ...minimalForm('venousLEBilateral'),
       parameters: {
         segmentFindings: {
-          'pop-left': { compressibility: 'non-compressible' },
+          'cfv-left': { compressibility: 'non-compressible' },
         },
       },
     } as FormState;
@@ -219,5 +229,263 @@ describe('Wave 2.5 — parameters type-guard read boundary', () => {
       parameters: {}, // no segmentFindings, no nascet
     } as FormState;
     expect(() => buildFhirBundle(sparse)).not.toThrow();
+  });
+});
+
+// ============================================================================
+// Wave 3.4 — Practitioner / Organization references
+//
+// Before 3.4, `header.operatorName`, `header.referringPhysician`, and
+// `header.institution` were copied into a `QuestionnaireResponse` answer (free
+// text) and a per-Observation `note: 'performer=...'` annotation, but never
+// landed in a typed FHIR slot. Cross-system queries like "all reports
+// performed by Dr. X" returned nothing. These tests pin the new wiring:
+//
+//   header.operatorName       → contained Practitioner referenced from
+//                               DiagnosticReport.performer
+//   header.referringPhysician → contained Practitioner referenced from
+//                               ServiceRequest.requester (only when
+//                               header.cptCode is also set, since the
+//                               ServiceRequest itself is gated on CPT)
+//   header.institution        → contained Organization referenced from
+//                               Encounter.serviceProvider (only when an
+//                               Encounter is built — i.e. ICD-10 present)
+//
+// Each test also asserts the negative case (slot stays undefined when the
+// source field is empty) so byte-compatibility with pre-3.4 bundles is
+// guaranteed for forms that don't supply these headers.
+// ============================================================================
+
+describe('Wave 3.4 — Practitioner / Organization references', () => {
+  it('emits a Practitioner referenced by DiagnosticReport.performer when operatorName is set', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('venousLEBilateral', { operatorName: 'Dr. Maia Lomidze' }),
+    );
+    const report = bundle.entry?.find((e) => e.resource?.resourceType === 'DiagnosticReport')
+      ?.resource as DiagnosticReport;
+    expect(report.performer).toBeDefined();
+    expect(report.performer?.[0]?.reference).toMatch(/^urn:uuid:/);
+
+    // The reference must resolve to a Practitioner entry in the same bundle.
+    const performerRef = report.performer?.[0]?.reference;
+    const practitionerEntry = bundle.entry?.find(
+      (e) => e.fullUrl === performerRef && e.resource?.resourceType === 'Practitioner',
+    );
+    expect(practitionerEntry).toBeDefined();
+    const practitioner = practitionerEntry?.resource as Practitioner;
+    expect(practitioner.name?.[0]?.text).toBe('Dr. Maia Lomidze');
+    expect(practitioner.name?.[0]?.family).toBe('Lomidze');
+  });
+
+  it('emits a Practitioner referenced by ServiceRequest.requester when referringPhysician + cptCode are set', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('venousLEBilateral', {
+        referringPhysician: 'Dr. Smith',
+        cptCode: { code: '93970', display: 'Duplex scan, lower extremity, complete bilateral' },
+      }),
+    );
+    const sr = bundle.entry?.find((e) => e.resource?.resourceType === 'ServiceRequest')
+      ?.resource as ServiceRequest;
+    expect(sr).toBeDefined();
+    expect(sr.requester?.reference).toMatch(/^urn:uuid:/);
+
+    const requesterRef = sr.requester?.reference;
+    const practitionerEntry = bundle.entry?.find(
+      (e) => e.fullUrl === requesterRef && e.resource?.resourceType === 'Practitioner',
+    );
+    expect(practitionerEntry).toBeDefined();
+    const practitioner = practitionerEntry?.resource as Practitioner;
+    expect(practitioner.name?.[0]?.text).toBe('Dr. Smith');
+  });
+
+  it('emits an Organization referenced by Encounter.serviceProvider when institution + ICD-10 are set', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('venousLEBilateral', {
+        institution: 'MediMind Tbilisi',
+        icd10Codes: [{ code: 'I83.90', display: 'Asymptomatic varicose veins' }],
+      }),
+    );
+    const enc = bundle.entry?.find((e) => e.resource?.resourceType === 'Encounter')
+      ?.resource as Encounter;
+    expect(enc).toBeDefined();
+    expect(enc.serviceProvider?.reference).toMatch(/^urn:uuid:/);
+
+    const orgRef = enc.serviceProvider?.reference;
+    const orgEntry = bundle.entry?.find(
+      (e) => e.fullUrl === orgRef && e.resource?.resourceType === 'Organization',
+    );
+    expect(orgEntry).toBeDefined();
+    const org = orgEntry?.resource as Organization;
+    expect(org.name).toBe('MediMind Tbilisi');
+  });
+
+  it('does NOT emit Practitioner / Organization entries when header fields are absent (pre-3.4 byte-compat)', () => {
+    const bundle = buildFhirBundle(minimalForm('venousLEBilateral'));
+    const practitioners = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Practitioner',
+    );
+    const organizations = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Organization',
+    );
+    expect(practitioners?.length ?? 0).toBe(0);
+    expect(organizations?.length ?? 0).toBe(0);
+
+    const report = bundle.entry?.find((e) => e.resource?.resourceType === 'DiagnosticReport')
+      ?.resource as DiagnosticReport;
+    expect(report.performer).toBeUndefined();
+  });
+
+  it('does NOT emit Practitioner / Organization entries when header fields are blank/whitespace', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('venousLEBilateral', {
+        operatorName: '   ',
+        referringPhysician: '',
+        institution: '\t\n',
+      }),
+    );
+    const practitioners = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Practitioner',
+    );
+    const organizations = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Organization',
+    );
+    expect(practitioners?.length ?? 0).toBe(0);
+    expect(organizations?.length ?? 0).toBe(0);
+  });
+
+  it('emits all three resources at once when every header field is set', () => {
+    const bundle = buildFhirBundle(
+      minimalForm('arterialLE', {
+        operatorName: 'Dr. Operator',
+        referringPhysician: 'Dr. Referrer',
+        institution: 'Some Hospital',
+        cptCode: { code: '93925', display: 'Duplex scan, arterial, lower extremity, complete bilateral' },
+        icd10Codes: [{ code: 'I70.209', display: 'Atherosclerosis of native arteries of extremities' }],
+      }),
+    );
+    const practitioners = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Practitioner',
+    );
+    const organizations = bundle.entry?.filter(
+      (e) => e.resource?.resourceType === 'Organization',
+    );
+    expect(practitioners?.length).toBe(2);
+    expect(organizations?.length).toBe(1);
+
+    // Distinct Practitioners — the operator and the referrer must not collapse
+    // into the same resource even when both are emitted in the same bundle.
+    const operatorIds = practitioners?.map((p) => p.resource.id);
+    expect(new Set(operatorIds).size).toBe(2);
+  });
+});
+
+// ============================================================================
+// Wave 3.5 — per-segment Observation parameter-specific LOINC at coding[0]
+//
+// Audit Part 05 HIGH. Before Wave 3.5 every per-segment Observation set
+// `code.coding[0]` to the study-level LOINC (e.g. 39420-5 venous LE
+// bilateral) regardless of which parameter the row carried, so a query like
+// `GET Observation?code=loinc|39420-5` returned 50+ identical-looking rows.
+//
+// The fix:
+//   coding[0] = parameter-specific (LOINC if registered in PARAMETER_LOINC,
+//               MediMind per-parameter CodeSystem otherwise)
+//   coding[1] = study-level LOINC (preserves cross-aggregation queries)
+// ============================================================================
+
+function obsForParam(
+  bundle: ReturnType<typeof buildFhirBundle>,
+  paramId: string,
+): Observation | undefined {
+  // Tag-based lookup — every per-segment Observation includes
+  // `parameter=<paramId>` in `note[0].text`, set by the push helpers.
+  const entry = bundle.entry?.find((e) => {
+    if (e.resource?.resourceType !== 'Observation') return false;
+    const obs = e.resource as Observation;
+    return obs.note?.some((n) => n.text?.includes(`parameter=${paramId}`));
+  });
+  return entry?.resource as Observation | undefined;
+}
+
+describe('Wave 3.5 — parameter-specific LOINC at coding[0]', () => {
+  it('PARAMETER_LOINC contains at least the verified PSV/EDV/ABI entries', () => {
+    expect(PARAMETER_LOINC['psvCmS']?.code).toBe('11556-8');
+    expect(PARAMETER_LOINC['edvCmS']?.code).toBe('20352-4');
+    expect(PARAMETER_LOINC['abi']?.code).toBe('76497-9');
+  });
+
+  it('venous categorical Observations get distinct coding[0] per parameter (not the study LOINC)', () => {
+    const form = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: {
+        segmentFindings: {
+          'cfv-left': {
+            compressibility: 'non-compressible',
+            phasicity: 'continuous',
+          },
+        },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+
+    const compress = obsForParam(bundle, 'compressibility');
+    const phasicity = obsForParam(bundle, 'phasicity');
+    expect(compress).toBeDefined();
+    expect(phasicity).toBeDefined();
+
+    const compressFirst = compress!.code.coding?.[0];
+    const phasicityFirst = phasicity!.code.coding?.[0];
+    // Distinct parameter codes — the bug under audit.
+    expect(compressFirst?.code).not.toBe(phasicityFirst?.code);
+    // Neither should be the study-level LOINC.
+    expect(compressFirst?.code).not.toBe(VASCULAR_LOINC.venousLEBilateral.code);
+    expect(phasicityFirst?.code).not.toBe(VASCULAR_LOINC.venousLEBilateral.code);
+    // Study LOINC is preserved as coding[1] for cross-aggregation queries.
+    expect(compress!.code.coding?.[1]?.system).toBe(STANDARD_FHIR_SYSTEMS.LOINC);
+    expect(compress!.code.coding?.[1]?.code).toBe(VASCULAR_LOINC.venousLEBilateral.code);
+    expect(phasicity!.code.coding?.[1]?.code).toBe(VASCULAR_LOINC.venousLEBilateral.code);
+  });
+
+  it('carotid PSV / EDV Observations emit verified LOINC codes at coding[0]', () => {
+    const form = {
+      ...minimalForm('carotid'),
+      parameters: {
+        segmentFindings: {
+          'cca-prox-left': { psvCmS: 110, edvCmS: 30 },
+        },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+
+    const psv = obsForParam(bundle, 'psvCmS');
+    const edv = obsForParam(bundle, 'edvCmS');
+    expect(psv?.code.coding?.[0]?.system).toBe(STANDARD_FHIR_SYSTEMS.LOINC);
+    expect(psv?.code.coding?.[0]?.code).toBe('11556-8');
+    expect(edv?.code.coding?.[0]?.system).toBe(STANDARD_FHIR_SYSTEMS.LOINC);
+    expect(edv?.code.coding?.[0]?.code).toBe('20352-4');
+    // Study LOINC preserved at coding[1].
+    expect(psv?.code.coding?.[1]?.code).toBe(VASCULAR_LOINC.carotid.code);
+    expect(edv?.code.coding?.[1]?.code).toBe(VASCULAR_LOINC.carotid.code);
+    // PSV and EDV no longer share their primary code.
+    expect(psv?.code.coding?.[0]?.code).not.toBe(edv?.code.coding?.[0]?.code);
+  });
+
+  it('parameters without a LOINC fall through to a per-parameter MediMind CodeSystem', () => {
+    const form = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: {
+        segmentFindings: {
+          'cfv-left': { phasicity: 'continuous' },
+        },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    const phasicity = obsForParam(bundle, 'phasicity');
+    expect(phasicity).toBeDefined();
+    const first = phasicity!.code.coding?.[0];
+    // Fallback system — distinct from LOINC, distinct from study-level code.
+    expect(first?.system).not.toBe(STANDARD_FHIR_SYSTEMS.LOINC);
+    expect(first?.system).toContain('http://medimind.ge/fhir/CodeSystem/');
+    expect(first?.code).toBe('phasicity');
   });
 });

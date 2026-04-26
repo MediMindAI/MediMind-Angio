@@ -41,6 +41,17 @@ export interface BuildContext {
   readonly positionObsId: string | null;
   readonly sonographerObsId: string | null;
   readonly clinicianObsId: string | null;
+  // Wave 3.4 — Practitioner / Organization references so header.operatorName,
+  // header.referringPhysician, and header.institution flow into typed FHIR
+  // slots (DiagnosticReport.performer, ServiceRequest.requester,
+  // Encounter.serviceProvider) instead of dead-ending as free-text strings
+  // (Area 05 HIGH).
+  readonly operatorPractitionerId: string | null;
+  readonly operatorPractitionerRef: string | null;
+  readonly referrerPractitionerId: string | null;
+  readonly referrerPractitionerRef: string | null;
+  readonly institutionOrganizationId: string | null;
+  readonly institutionOrganizationRef: string | null;
   readonly loincCode: string;
   readonly loincDisplay: string;
 }
@@ -81,6 +92,19 @@ export function createContext(form: FormState): BuildContext {
   const sonographerObsId = hasSonographer ? newUuid() : null;
   const clinicianObsId = hasClinician ? newUuid() : null;
 
+  // Practitioner / Organization presence — gated on the source string being
+  // non-empty after trim so blank header fields don't spawn empty resources.
+  const hasOperator =
+    typeof header.operatorName === 'string' && header.operatorName.trim().length > 0;
+  const hasReferrer =
+    typeof header.referringPhysician === 'string' &&
+    header.referringPhysician.trim().length > 0;
+  const hasInstitution =
+    typeof header.institution === 'string' && header.institution.trim().length > 0;
+  const operatorPractitionerId = hasOperator ? newUuid() : null;
+  const referrerPractitionerId = hasReferrer ? newUuid() : null;
+  const institutionOrganizationId = hasInstitution ? newUuid() : null;
+
   return {
     form,
     nowIso,
@@ -103,6 +127,14 @@ export function createContext(form: FormState): BuildContext {
     positionObsId,
     sonographerObsId,
     clinicianObsId,
+    operatorPractitionerId,
+    operatorPractitionerRef: operatorPractitionerId ? urnRef(operatorPractitionerId) : null,
+    referrerPractitionerId,
+    referrerPractitionerRef: referrerPractitionerId ? urnRef(referrerPractitionerId) : null,
+    institutionOrganizationId,
+    institutionOrganizationRef: institutionOrganizationId
+      ? urnRef(institutionOrganizationId)
+      : null,
     loincCode: loinc.code,
     loincDisplay: loinc.display,
   };

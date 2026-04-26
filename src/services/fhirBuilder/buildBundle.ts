@@ -29,6 +29,11 @@ import type {
 } from '../../types/fhir';
 import { createContext } from './context';
 import { buildPatientEntry } from './patient';
+import {
+  buildInstitutionOrganizationEntry,
+  buildOperatorPractitionerEntry,
+  buildReferrerPractitionerEntry,
+} from './practitioner';
 import { buildQuestionnaireResponseEntry } from './questionnaireResponse';
 import { buildEncounterEntry } from './encounter';
 import { buildServiceRequestEntry } from './serviceRequest';
@@ -51,6 +56,13 @@ export function buildFhirBundle(form: FormState): Bundle {
   const ctx = createContext(form);
 
   const patientEntry = buildPatientEntry(ctx);
+  // Wave 3.4 — emit contained Practitioner / Organization resources first so
+  // downstream builders can reference them by `urn:uuid:` URN. Each returns
+  // null when the source header field is empty, keeping bundles produced
+  // without those fields byte-identical to the pre-3.4 output.
+  const operatorPractitionerEntry = buildOperatorPractitionerEntry(ctx);
+  const referrerPractitionerEntry = buildReferrerPractitionerEntry(ctx);
+  const institutionOrganizationEntry = buildInstitutionOrganizationEntry(ctx);
   const qrEntry = buildQuestionnaireResponseEntry(ctx);
   const encounterEntry = buildEncounterEntry(ctx);
   const serviceRequestEntry = buildServiceRequestEntry(ctx);
@@ -75,6 +87,14 @@ export function buildFhirBundle(form: FormState): Bundle {
     patientEntry,
     qrEntry,
   ];
+  // Wave 3.4 — Practitioner / Organization entries land between Patient and
+  // the resources that reference them so a streaming consumer sees the
+  // referenced resource before any reference. (FHIR transaction processing
+  // resolves urn:uuid: regardless of order, but stable ordering helps human
+  // diffing of bundles.)
+  if (operatorPractitionerEntry) entries.push(operatorPractitionerEntry);
+  if (referrerPractitionerEntry) entries.push(referrerPractitionerEntry);
+  if (institutionOrganizationEntry) entries.push(institutionOrganizationEntry);
   if (encounterEntry) entries.push(encounterEntry);
   if (serviceRequestEntry) entries.push(serviceRequestEntry);
   if (consentEntry) entries.push(consentEntry);

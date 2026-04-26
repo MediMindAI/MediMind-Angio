@@ -153,10 +153,21 @@ function reducer(state: ArterialFormStateV1, action: Action): ArterialFormStateV
         impression: action.impression,
         impressionEdited: true,
         sonographerComments: action.sonographerComments ?? state.sonographerComments,
+        // Wave 3.1 (Part 10 HIGH) — always reset clinicianComments so an
+        // interpretation typed for a previous patient cannot silently leak
+        // into the next case when a clinician picks a template.
+        clinicianComments: '',
       };
     }
     case 'RESET':
       return { ...initialState(), header: action.header };
+    default: {
+      // Wave 3.7 (Part 03 HIGH) — exhaustiveness check. If a new Action member
+      // is added without a corresponding case here, TypeScript will fail
+      // compilation on this assignment, preventing silent no-ops.
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
   }
 }
 

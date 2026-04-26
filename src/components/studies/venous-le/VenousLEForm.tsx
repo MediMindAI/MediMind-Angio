@@ -263,6 +263,11 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
           action.sonographerComments.length > 0
             ? action.sonographerComments
             : state.sonographerComments,
+        // Wave 3.1 (Part 10 HIGH) — always reset clinicianComments so an
+        // interpretation typed for a previous patient cannot silently leak
+        // into the next case when a clinician picks a template. Templates
+        // never carry clinician prose, so a hard empty-string reset is safe.
+        clinicianComments: '',
       };
     }
     case 'RESET':

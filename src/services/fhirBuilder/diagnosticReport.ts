@@ -121,6 +121,13 @@ export function buildDiagnosticReportEntry(
     // next day reports the correct timeline (Area 05 HIGH).
     effectiveDateTime: ctx.form.header.studyDate ?? ctx.nowIso,
     issued: ctx.nowIso,
+    // Wave 3.4 — operator/sonographer now flows into DiagnosticReport.performer
+    // as a typed Reference instead of being trapped in per-Observation note
+    // strings, so cross-system queries like "all reports performed by Dr. X"
+    // resolve (Area 05 HIGH).
+    performer: ctx.operatorPractitionerRef
+      ? [{ reference: ctx.operatorPractitionerRef }]
+      : undefined,
     result: results,
     conclusion: conclusionParts.length > 0 ? conclusionParts.join('\n') : undefined,
     conclusionCode: conclusionCodes.length > 0 ? conclusionCodes : undefined,

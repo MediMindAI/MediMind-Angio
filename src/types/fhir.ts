@@ -121,6 +121,35 @@ export interface Patient extends ResourceBase {
   readonly birthDate?: FhirDate;
 }
 
+// --- Practitioner -----------------------------------------------------------
+
+/**
+ * Narrow Practitioner — a person who delivered or referred care. We emit one
+ * per unique operator/sonographer + one per unique referring physician so
+ * "show me all reports performed by Dr. X" is queryable via
+ * `DiagnosticReport.performer` instead of free-text annotations (Area 05 HIGH).
+ */
+export interface Practitioner extends ResourceBase {
+  readonly resourceType: 'Practitioner';
+  readonly identifier?: ReadonlyArray<Identifier>;
+  readonly active?: boolean;
+  readonly name?: ReadonlyArray<HumanName>;
+}
+
+// --- Organization -----------------------------------------------------------
+
+/**
+ * Narrow Organization — the facility that hosted the study. We emit one per
+ * unique `header.institution` so `Encounter.serviceProvider` is a typed
+ * Reference instead of free text (Area 05 HIGH).
+ */
+export interface Organization extends ResourceBase {
+  readonly resourceType: 'Organization';
+  readonly identifier?: ReadonlyArray<Identifier>;
+  readonly active?: boolean;
+  readonly name?: string;
+}
+
 // --- Encounter --------------------------------------------------------------
 
 export interface Encounter extends ResourceBase {
@@ -130,6 +159,8 @@ export interface Encounter extends ResourceBase {
   readonly subject: Reference;
   readonly period?: Period;
   readonly reasonCode?: ReadonlyArray<CodeableConcept>;
+  /** The Organization that provided the encounter setting (Area 05 HIGH). */
+  readonly serviceProvider?: Reference;
 }
 
 // --- ServiceRequest ---------------------------------------------------------
@@ -278,6 +309,8 @@ export interface Bundle<T extends ResourceBase = ResourceBase> extends ResourceB
 
 export type EmittedResource =
   | Patient
+  | Practitioner
+  | Organization
   | Encounter
   | ServiceRequest
   | Consent

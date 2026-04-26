@@ -39,6 +39,12 @@ export function buildEncounterEntry(
       end: ctx.form.header.studyDate ?? ctx.nowIso,
     },
     reasonCode: reasonCodes.length > 0 ? reasonCodes : undefined,
+    // Wave 3.4 — institution flows into Encounter.serviceProvider as a typed
+    // Reference to the contained Organization instead of dead-ending in the
+    // QuestionnaireResponse free-text answers (Area 05 HIGH).
+    serviceProvider: ctx.institutionOrganizationRef
+      ? { reference: ctx.institutionOrganizationRef }
+      : undefined,
   };
   return {
     fullUrl: urnRef(ctx.encounterId),
