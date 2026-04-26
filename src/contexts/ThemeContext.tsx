@@ -22,12 +22,6 @@ function resolveTheme(mode: ThemeMode): ResolvedTheme {
   return mode === 'system' ? getSystemTheme() : mode;
 }
 
-function applyTheme(theme: ResolvedTheme): void {
-  if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-mantine-color-scheme', theme);
-  }
-}
-
 function mantineToMode(cs: string): ThemeMode {
   if (cs === 'auto') return 'system';
   if (cs === 'dark') return 'dark';
@@ -41,6 +35,23 @@ export interface ThemeProviderProps {
   initialMode?: ThemeMode;
 }
 
+/**
+ * ThemeProvider — single source of truth for color-scheme writes.
+ *
+ * Before Wave 2.7, this provider had two race conditions:
+ *   1. `applyTheme()` manually called `setAttribute('data-mantine-color-scheme', ...)`
+ *      while Mantine's color-scheme manager set the same attribute. On 'system'
+ *      mode the two writers raced — one wrote 'auto', the other the resolved
+ *      'light' / 'dark' — producing inconsistent CSS theming.
+ *   2. `setMode` wrote localStorage AND called `setColorScheme()`, which
+ *      triggered the bidirectional sync effect, which wrote localStorage
+ *      AGAIN. Per single setMode call, localStorage was written ≥2x.
+ *
+ * Fix: Mantine's `createAppColorSchemeManager` (from `styles/mantineTheme.ts`)
+ * is the SOLE writer of both `data-mantine-color-scheme` and the
+ * `STORAGE_KEYS.THEME` localStorage entry. This provider now only mirrors
+ * Mantine's state into our app-shape `ThemeMode` and exposes `setMode`.
+ */
 export function ThemeProvider({ children, initialMode }: ThemeProviderProps) {
   const [mode, setModeState] = useState<ThemeMode>(() => initialMode ?? getStoredTheme());
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(mode));
@@ -49,21 +60,15 @@ export function ThemeProvider({ children, initialMode }: ThemeProviderProps) {
   const setColorSchemeRef = useRef(setColorScheme);
   setColorSchemeRef.current = setColorScheme;
 
-  useEffect(() => {
-    applyTheme(resolvedTheme);
-  }, [resolvedTheme]);
-
-  // Sync FROM Mantine — when a child calls setColorScheme() directly
+  // Sync FROM Mantine — when a child calls setColorScheme() directly OR when
+  // our manager hydrates from localStorage on mount, mirror the value into
+  // our local `mode` state. We DO NOT write localStorage here — Mantine's
+  // colorSchemeManager already persisted it. Writing again would be a
+  // redundant double-write (one of the two MEDIUM bugs this fix addresses).
   useEffect(() => {
     const externalMode = mantineToMode(colorScheme);
-    if (externalMode !== mode) {
-      setModeState(externalMode);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, externalMode);
-      }
-      setResolvedTheme(resolveTheme(externalMode));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setModeState((prev) => (prev === externalMode ? prev : externalMode));
+    setResolvedTheme(resolveTheme(externalMode));
   }, [colorScheme]);
 
   // Listen for OS preference changes when in 'system' mode
@@ -77,15 +82,11 @@ export function ThemeProvider({ children, initialMode }: ThemeProviderProps) {
     return () => mediaQuery.removeEventListener('change', handler);
   }, [mode]);
 
-  useEffect(() => {
-    setResolvedTheme(resolveTheme(mode));
-  }, [mode]);
-
   const setMode = useCallback((newMode: ThemeMode) => {
-    setModeState(newMode);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, newMode);
-    }
+    // Single side-effect: tell Mantine to switch. Its colorSchemeManager
+    // writes localStorage; the sync-FROM-Mantine effect above mirrors the
+    // change back into our `mode` state. No manual localStorage.setItem,
+    // no manual data-mantine-color-scheme setAttribute.
     setColorSchemeRef.current(newMode === 'system' ? 'auto' : newMode);
   }, []);
 
