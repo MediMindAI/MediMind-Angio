@@ -23,6 +23,7 @@ import type { Competency, SegmentId } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { colorForCompetency } from './useAnatomyColors';
 import { loadAnatomySvg, type AnatomyView as AnatomyViewType } from './svgLoader';
+import classes from './AnatomyView.module.css';
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -321,12 +322,17 @@ export function AnatomyView({
 
   // ---------- Render ----------
 
+  // Wave 4.6 (Part 01 MEDIUM) — segment hover affordances live in
+  // `AnatomyView.module.css`. The dynamic stroke width still has to come
+  // from JS (depends on `size`), so we feed it through a CSS custom
+  // property and let the CSS module read `var(--anatomy-segment-hover-stroke)`.
   const wrapperStyle: CSSProperties = {
     position: 'relative',
     width: '100%',
     maxWidth: `${maxWidth}px`,
     margin: '0 auto',
     touchAction: 'manipulation',
+    ['--anatomy-segment-hover-stroke' as string]: `${segmentStrokeWidth + 1.5}px`,
   };
 
   const svgHostStyle: CSSProperties = {
@@ -369,10 +375,13 @@ export function AnatomyView({
 
   const resolvedAriaLabel = ariaLabel ?? t(`anatomy.view.${view}`, `Anatomy: ${view}`);
 
+  const wrapperClass = [classes.host, className].filter(Boolean).join(' ');
+
   return (
     <div
       ref={wrapperRef}
-      className={className}
+      className={wrapperClass}
+      data-interactive={isInteractive ? 'true' : 'false'}
       style={wrapperStyle}
       role={isInteractive ? 'group' : 'img'}
       aria-label={resolvedAriaLabel}
@@ -443,21 +452,7 @@ export function AnatomyView({
         </div>
       )}
 
-      {/* Hover style for segment paths -- slightly larger stroke + subtle glow. */}
-      <style>{`
-        [data-segment-id] {
-          transition: stroke-width 150ms ease, filter 150ms ease;
-        }
-        ${
-          isInteractive
-            ? `[data-segment-id]:hover {
-                stroke-width: ${segmentStrokeWidth + 1.5}px;
-                filter: drop-shadow(0 0 3px rgba(49,130,206,0.5));
-                cursor: pointer;
-              }`
-            : ''
-        }
-      `}</style>
+      {/* Hover affordance lives in AnatomyView.module.css (Wave 4.6). */}
     </div>
   );
 }

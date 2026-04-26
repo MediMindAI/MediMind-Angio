@@ -62,30 +62,56 @@ export const ABDOMINAL_PELVIC_SEGMENTS = [
 export type AbdominalPelvicSegment = (typeof ABDOMINAL_PELVIC_SEGMENTS)[number];
 
 // ---------------------------------------------------------------------------
-// Arterial lower-extremity (stub — Phase 1+)
+// Arterial lower-extremity
+//
+// Wave 4.6 (Part 03 MEDIUM) — synced with the tagged SVG paths under
+// `public/anatomy/le-arterial-anterior.svg` (14 sub-segments per side). The
+// previous 7-segment list was stale and let `verify-anatomy.ts` quietly miss
+// drift between the catalog and the SVG.
 // ---------------------------------------------------------------------------
 
 export const ARTERIAL_LE_SEGMENTS = [
-  'cfa', // common femoral artery
-  'sfa', // superficial femoral artery
-  'pop-art', // popliteal artery
-  'at', // anterior tibial artery
-  'pt', // posterior tibial artery
-  'per-art', // peroneal artery
-  'dp', // dorsalis pedis artery
+  'cia',        // common iliac artery
+  'eia',        // external iliac artery
+  'cfa',        // common femoral artery
+  'pfa',        // profunda femoris artery
+  'sfa-prox',   // superficial femoral artery, proximal
+  'sfa-mid',    // superficial femoral artery, mid
+  'sfa-dist',   // superficial femoral artery, distal (adductor canal)
+  'pop-ak',     // popliteal artery, above knee
+  'pop-bk',     // popliteal artery, below knee
+  'tpt',        // tibioperoneal trunk
+  'ata',        // anterior tibial artery
+  'pta',        // posterior tibial artery
+  'per',        // peroneal artery
+  'dp',         // dorsalis pedis artery
 ] as const;
 
 export type ArterialLESegment = (typeof ARTERIAL_LE_SEGMENTS)[number];
 
 // ---------------------------------------------------------------------------
-// Carotid/vertebral (stub — Phase 1+)
+// Carotid/vertebral/subclavian
+//
+// Wave 4.6 (Part 03 MEDIUM) — synced with `public/anatomy/neck-carotid.svg`
+// (13 sub-segments per side). The previous 4-vessel list (cca/ica/eca/va)
+// hid the proximal/mid/distal CCA + ICA + bulb + V1/V2/V3 + subclavian
+// granularity that the form, FHIR builder, and PDF already use.
 // ---------------------------------------------------------------------------
 
 export const CAROTID_SEGMENTS = [
-  'cca', // common carotid artery
-  'ica', // internal carotid artery
-  'eca', // external carotid artery
-  'va', // vertebral artery
+  'cca-prox',     // common carotid, proximal
+  'cca-mid',      // common carotid, mid
+  'cca-dist',     // common carotid, distal
+  'bulb',         // carotid bulb
+  'ica-prox',     // internal carotid, proximal
+  'ica-mid',      // internal carotid, mid
+  'ica-dist',     // internal carotid, distal
+  'eca',          // external carotid
+  'vert-v1',      // vertebral V1 (origin → C6 transverse foramen)
+  'vert-v2',      // vertebral V2 (C6 → C2 transverse foramina)
+  'vert-v3',      // vertebral V3 (atlas loop → dura)
+  'subclav-prox', // subclavian, proximal
+  'subclav-dist', // subclavian, distal
 ] as const;
 
 export type CarotidSegment = (typeof CAROTID_SEGMENTS)[number];
@@ -204,16 +230,27 @@ export function segmentLabel(segment: AnySegment, side: Side): string {
     eia: 'External iliac vein',
     iia: 'Internal iliac vein',
     cfa: 'Common femoral artery',
-    sfa: 'Superficial femoral artery',
-    'pop-art': 'Popliteal artery',
-    at: 'Anterior tibial artery',
-    pt: 'Posterior tibial artery',
-    'per-art': 'Peroneal artery',
+    pfa: 'Profunda femoris artery',
+    'sfa-prox': 'Superficial femoral artery (proximal)',
+    'sfa-mid': 'Superficial femoral artery (mid)',
+    'sfa-dist': 'Superficial femoral artery (distal)',
+    tpt: 'Tibioperoneal trunk',
+    ata: 'Anterior tibial artery',
+    pta: 'Posterior tibial artery',
     dp: 'Dorsalis pedis artery',
-    cca: 'Common carotid artery',
-    ica: 'Internal carotid artery',
+    'cca-prox': 'Common carotid artery (proximal)',
+    'cca-mid': 'Common carotid artery (mid)',
+    'cca-dist': 'Common carotid artery (distal)',
+    bulb: 'Carotid bulb',
+    'ica-prox': 'Internal carotid artery (proximal)',
+    'ica-mid': 'Internal carotid artery (mid)',
+    'ica-dist': 'Internal carotid artery (distal)',
     eca: 'External carotid artery',
-    va: 'Vertebral artery',
+    'vert-v1': 'Vertebral artery (V1)',
+    'vert-v2': 'Vertebral artery (V2)',
+    'vert-v3': 'Vertebral artery (V3)',
+    'subclav-prox': 'Subclavian artery (proximal)',
+    'subclav-dist': 'Subclavian artery (distal)',
     'avf-inflow': 'AVF inflow',
     'avf-anastomosis': 'AVF anastomosis',
     'avf-outflow': 'AVF outflow',
