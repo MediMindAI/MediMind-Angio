@@ -234,7 +234,7 @@
 }
 
 .cardIcon[data-severity='urgent'] {
-  background: var(--emr-warning-alpha-15, rgba(221, 107, 32, 0.15));
+  background: var(--emr-warning-alpha-15);
   color: var(--emr-warning);
 }
 
@@ -268,7 +268,7 @@
 }
 
 .severityBadge[data-severity='urgent'] {
-  background: var(--emr-warning-alpha-15, rgba(221, 107, 32, 0.15));
+  background: var(--emr-warning-alpha-15);
   color: var(--emr-warning);
 }
 

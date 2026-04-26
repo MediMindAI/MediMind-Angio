@@ -10,7 +10,7 @@
 
 .head {
   padding: 14px 18px;
-  background: var(--emr-gradient-section-header, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 55%, var(--emr-accent) 100%));
+  background: var(--emr-gradient-section-header);
   color: #ffffff;
 }
 
@@ -140,7 +140,7 @@
 .band-success {
   background: var(--emr-success-alpha-10);
   color: var(--emr-success);
-  border: 1px solid var(--emr-success-border, var(--emr-success));
+  border: 1px solid var(--emr-success-border);
 }
 
 .band-info {
@@ -150,15 +150,15 @@
 }
 
 .band-warning {
-  background: var(--emr-warning-bg, rgba(255, 193, 7, 0.1));
+  background: var(--emr-warning-bg);
   color: var(--emr-warning);
-  border: 1px solid var(--emr-warning-border, var(--emr-warning));
+  border: 1px solid var(--emr-warning-border);
 }
 
 .band-error {
   background: var(--emr-error-alpha-10);
   color: var(--emr-error);
-  border: 1px solid var(--emr-error-border, var(--emr-error));
+  border: 1px solid var(--emr-error-border);
 }
 
 .band-neutral {

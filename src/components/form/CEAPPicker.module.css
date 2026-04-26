@@ -72,7 +72,7 @@
   display: inline-block;
   width: 3px;
   height: 14px;
-  background: var(--emr-gradient-primary, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 50%, var(--emr-accent) 100%));
+  background: var(--emr-gradient-primary);
   border-radius: 2px;
   flex-shrink: 0;
 }

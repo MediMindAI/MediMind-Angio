@@ -10,7 +10,7 @@
 
 .head {
   padding: 14px 18px;
-  background: var(--emr-gradient-section-header, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 55%, var(--emr-accent) 100%));
+  background: var(--emr-gradient-section-header);
   color: #ffffff;
 }
 
@@ -124,7 +124,7 @@
 }
 
 .vesselSide[data-side='right'] {
-  background: var(--emr-accent-alpha-15, rgba(49, 130, 206, 0.15));
+  background: var(--emr-accent-alpha-15);
   color: var(--emr-accent);
 }
 

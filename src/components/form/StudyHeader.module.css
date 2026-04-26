@@ -20,7 +20,7 @@
   width: 100%;
   min-height: 70px;
   padding: 16px 20px;
-  background: var(--emr-gradient-section-header, linear-gradient(135deg, var(--emr-primary) 0%, var(--emr-secondary) 55%, var(--emr-accent) 100%));
+  background: var(--emr-gradient-section-header);
   color: #ffffff;
   border: 0;
   text-align: left;

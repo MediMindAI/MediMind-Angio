@@ -21,6 +21,7 @@
   /* ==================== ALPHA VARIANTS ==================== */
   --emr-primary-alpha-04: rgba(26, 54, 93, 0.04);
   --emr-primary-alpha-08: rgba(26, 54, 93, 0.08);
+  --emr-primary-alpha-10: rgba(26, 54, 93, 0.1);
   --emr-primary-alpha-12: rgba(26, 54, 93, 0.12);
   --emr-primary-alpha-20: rgba(26, 54, 93, 0.2);
   --emr-primary-alpha-40: rgba(26, 54, 93, 0.4);
@@ -95,6 +96,7 @@
   --emr-warning-text: #b45309;
   --emr-warning-bg: #fff7ed;
   --emr-warning-border: rgba(221, 107, 32, 0.2);
+  --emr-warning-alpha-15: rgba(221, 107, 32, 0.15);
 
   --emr-error: #e53e3e;
   --emr-error-light: #fc8181;

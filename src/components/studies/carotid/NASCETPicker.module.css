@@ -65,7 +65,7 @@
 }
 
 .suggestChip:hover {
-  background: var(--emr-secondary-alpha-20, var(--emr-secondary-alpha-10));
+  background: var(--emr-secondary-alpha-20);
 }
 
 .option {
@@ -89,7 +89,7 @@
 .optionSelected {
   box-shadow: inset 3px 0 0 var(--emr-primary);
   border-color: var(--emr-primary);
-  background: var(--emr-primary-alpha-10, rgba(26, 54, 93, 0.08));
+  background: var(--emr-primary-alpha-10);
 }
 
 .option[data-role='success'].optionSelected {
@@ -101,7 +101,7 @@
 .option[data-role='warning'].optionSelected {
   border-color: var(--emr-warning);
   box-shadow: inset 3px 0 0 var(--emr-warning);
-  background: var(--emr-warning-bg, rgba(255, 193, 7, 0.1));
+  background: var(--emr-warning-bg);
 }
 
 .option[data-role='error'].optionSelected {
