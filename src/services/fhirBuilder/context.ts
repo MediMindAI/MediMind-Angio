@@ -233,20 +233,15 @@ export function urnRef(id: string): string {
 }
 
 export function newUuid(): string {
-  // `crypto.randomUUID` exists in Node >=19 and all modern browsers. The
-  // runtime target for this app is both.
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
+  // `crypto.randomUUID` exists in Node >=19 and all modern browsers — both
+  // are explicit runtime targets for this app (`engines.node >=20.0.0`).
+  // No fallback: a missing WebCrypto impl indicates an unsupported environment.
+  if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+    throw new Error(
+      'crypto.randomUUID not available — modern browser or Node 19+ required',
+    );
   }
-  // Minimal fallback — only used in the vanishingly rare env without
-  // WebCrypto. Not cryptographically strong; acceptable for bundle IDs.
-  return Array.from({ length: 36 }, (_, i) => {
-    if (i === 8 || i === 13 || i === 18 || i === 23) return '-';
-    if (i === 14) return '4';
-    const r = (Math.random() * 16) | 0;
-    const v = i === 19 ? (r & 0x3) | 0x8 : r;
-    return v.toString(16);
-  }).join('');
+  return crypto.randomUUID();
 }
 
 // Re-export `MEDIMIND_EXTENSIONS` for the generic competency-tagged Observation

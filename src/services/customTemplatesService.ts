@@ -234,10 +234,12 @@ function writeCustomTemplates(
 }
 
 function newId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `custom-${crypto.randomUUID()}`;
+  if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+    throw new Error(
+      'crypto.randomUUID not available — modern browser or Node 19+ required',
+    );
   }
-  return `custom-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `custom-${crypto.randomUUID()}`;
 }
 
 export interface SaveCustomTemplateInput {
