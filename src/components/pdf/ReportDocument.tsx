@@ -39,6 +39,7 @@ import { RecommendationsSection } from './sections/RecommendationsSection';
 import type { RecommendationsSectionLabels } from './sections/RecommendationsSection';
 import { FooterSection } from './sections/FooterSection';
 import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
+import { formatIsoForDisplay, nowIsoTimestamp } from '../../services/dateHelpers';
 import type { FormState } from '../../types/form';
 import { isVenousForm } from '../../types/form';
 import type { VenousSegmentFindings, VenousLESegmentBase } from '../studies/venous-le/config';
@@ -194,21 +195,11 @@ function deriveCarotidNascet(form: FormState): CarotidNascetClassification {
   return raw as unknown as CarotidNascetClassification;
 }
 
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toISOString().slice(0, 10);
-}
-
-function formatDateTime(iso: string | undefined): string {
-  if (!iso) return '—';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  // YYYY-MM-DD HH:MM (local). Stable across timezones when ISO includes a Z.
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
+// formatDate / formatDateTime helpers were inlined here previously; both
+// have been replaced by `formatIsoForDisplay` from `services/dateHelpers`,
+// which routes through `Intl.DateTimeFormat` and includes the timezone
+// abbreviation in time-bearing output so distant readers can reconcile
+// timestamps unambiguously (Wave 2.1 - Pattern B).
 
 // ---------------------------------------------------------------------------
 // Document
@@ -227,8 +218,12 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
     generatedAt,
   } = props;
 
-  const issueDate = formatDate(generatedAt ?? form.header.studyDate);
-  const footerTimestamp = formatDateTime(generatedAt ?? new Date().toISOString());
+  const issueDate = formatIsoForDisplay(generatedAt ?? form.header.studyDate);
+  // Footer timestamp: include time + TZ abbreviation so a Tbilisi sonographer
+  // and a NY reviewer can reconcile the moment shown on the page.
+  const footerTimestamp = formatIsoForDisplay(generatedAt ?? nowIsoTimestamp(), {
+    includeTime: true,
+  });
 
   const findings = deriveVenousFindings(form);
   const isVenous = isVenousForm(form);
