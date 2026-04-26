@@ -204,7 +204,7 @@ function pushVenousCategorical(
     valueCodeableConcept: {
       text: value,
       coding: [
-        { system: medimindParamSystem(paramId), code: value, display: value },
+        { system: medimindParamSystem(ctx, paramId), code: value, display: value },
       ],
     },
     interpretation: isAbnormal ? [interpretationAbnormal()] : undefined,

@@ -9,9 +9,9 @@
  */
 
 import type { BundleEntry, Observation } from '../../../types/fhir';
-import { STANDARD_FHIR_SYSTEMS } from '../../../constants/fhir-systems';
+import { MEDIMIND_CODESYSTEMS, STANDARD_FHIR_SYSTEMS } from '../../../constants/fhir-systems';
 import type { BuildContext } from '../context';
-import { MEDIMIND_EXTENSIONS, observationCategory, urnRef } from '../context';
+import { observationCategory, urnRef } from '../context';
 
 export function buildPatientPositionObservationEntry(
   ctx: BuildContext
@@ -42,7 +42,11 @@ export function buildPatientPositionObservationEntry(
       text: pos,
       coding: [
         {
-          system: `${MEDIMIND_EXTENSIONS.STUDY_TYPE.replace('angio-study-type', 'patient-position')}`,
+          // Wave 3.6 (Part 05 HIGH): use a real CodeSystem URL. The previous
+          // implementation built a sibling URL by `STUDY_TYPE.replace(...)`,
+          // which produced a `/StructureDefinition/patient-position` system
+          // for a value-coding — wrong category (CodeSystem vs StructureDef).
+          system: MEDIMIND_CODESYSTEMS.PATIENT_POSITION,
           code: pos,
           display: pos,
         },

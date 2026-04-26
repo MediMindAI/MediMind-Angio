@@ -16,12 +16,17 @@ import { describe, expect, it } from 'vitest';
 import { buildFhirBundle } from './fhirBuilder';
 import {
   IDENTIFIER_SYSTEMS,
+  MEDIMIND_CODESYSTEMS,
   PARAMETER_LOINC,
   STANDARD_FHIR_SYSTEMS,
   VASCULAR_LOINC,
   VASCULAR_SEGMENTS_SNOMED,
   CEAP_SNOMED,
 } from '../constants/fhir-systems';
+import {
+  defaultCptForStudy,
+  VASCULAR_CPT_CODES,
+} from '../constants/vascular-cpt';
 import type { FormState, StudyHeader } from '../types/form';
 import type { StudyType } from '../types/study';
 import type {
@@ -487,5 +492,131 @@ describe('Wave 3.5 — parameter-specific LOINC at coding[0]', () => {
     expect(first?.system).not.toBe(STANDARD_FHIR_SYSTEMS.LOINC);
     expect(first?.system).toContain('http://medimind.ge/fhir/CodeSystem/');
     expect(first?.code).toBe('phasicity');
+  });
+});
+
+describe('Wave 3.6 — CPT lookup + study-namespaced param URLs', () => {
+  it('CPT lookup is by code, immune to VASCULAR_CPT_CODES reordering (Part 03 HIGH)', () => {
+    expect(defaultCptForStudy('venousLEBilateral').code).toBe('93970');
+    expect(defaultCptForStudy('venousLERight').code).toBe('93971');
+    expect(defaultCptForStudy('venousLELeft').code).toBe('93971');
+    expect(defaultCptForStudy('arterialLE').code).toBe('93925');
+    expect(defaultCptForStudy('carotid').code).toBe('93880');
+    expect(defaultCptForStudy('ivcDuplex').code).toBe('93975');
+  });
+
+  it('every mapped default CPT exists in VASCULAR_CPT_CODES', () => {
+    for (const studyType of ALL_STUDY_TYPES) {
+      const entry = defaultCptForStudy(studyType);
+      const found = VASCULAR_CPT_CODES.find((e) => e.code === entry.code);
+      expect(found, `code ${entry.code} for ${studyType} must exist in VASCULAR_CPT_CODES`).toBeDefined();
+    }
+  });
+
+  it('arterial Observations never carry a /CodeSystem/venous- system URL (Part 05 HIGH)', () => {
+    const form = {
+      ...minimalForm('arterialLE'),
+      parameters: {
+        segmentFindings: {
+          'sfa-mid-left': { stenosisPct: 60, plaqueLengthMm: 12 },
+        },
+        segmentalPressures: { brachialL: 130, brachialR: 132 },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    const obsEntries = (bundle.entry ?? []).filter(
+      (e) => e.resource?.resourceType === 'Observation'
+    );
+    expect(obsEntries.length).toBeGreaterThan(0);
+    let sawArterialPrefix = false;
+    for (const entry of obsEntries) {
+      const obs = entry.resource as Observation;
+      const codings = [
+        ...(obs.code?.coding ?? []),
+        ...(obs.valueCodeableConcept?.coding ?? []),
+      ];
+      for (const c of codings) {
+        if (!c.system) continue;
+        // No arterial Observation may emit a /CodeSystem/venous-* URL.
+        expect(c.system).not.toMatch(/\/CodeSystem\/venous-/);
+        if (/\/CodeSystem\/arterial-/.test(c.system)) sawArterialPrefix = true;
+      }
+    }
+    // At least one arterial-prefixed system URL should appear (e.g.
+    // arterial-stenosisPct or arterial-brachialPressure).
+    expect(sawArterialPrefix).toBe(true);
+  });
+
+  it('carotid Observations never carry a /CodeSystem/venous- system URL (Part 05 HIGH)', () => {
+    const form = {
+      ...minimalForm('carotid'),
+      parameters: {
+        segmentFindings: {
+          'cca-prox-left': { psvCmS: 110, edvCmS: 30, plaqueLengthMm: 8 },
+          'ica-prox-left': { psvCmS: 250, edvCmS: 80 },
+        },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    const obsEntries = (bundle.entry ?? []).filter(
+      (e) => e.resource?.resourceType === 'Observation'
+    );
+    let sawCarotidPrefix = false;
+    for (const entry of obsEntries) {
+      const obs = entry.resource as Observation;
+      const codings = [
+        ...(obs.code?.coding ?? []),
+        ...(obs.valueCodeableConcept?.coding ?? []),
+      ];
+      for (const c of codings) {
+        if (!c.system) continue;
+        expect(c.system).not.toMatch(/\/CodeSystem\/venous-/);
+        if (/\/CodeSystem\/carotid-/.test(c.system)) sawCarotidPrefix = true;
+      }
+    }
+    expect(sawCarotidPrefix).toBe(true);
+  });
+
+  it('venous bundles still use /CodeSystem/venous- for back-compat', () => {
+    const form = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: {
+        segmentFindings: {
+          'cfv-left': { phasicity: 'continuous' },
+        },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    let sawVenousPrefix = false;
+    for (const entry of bundle.entry ?? []) {
+      if (entry.resource?.resourceType !== 'Observation') continue;
+      const obs = entry.resource as Observation;
+      for (const c of [
+        ...(obs.code?.coding ?? []),
+        ...(obs.valueCodeableConcept?.coding ?? []),
+      ]) {
+        if (c.system && /\/CodeSystem\/venous-/.test(c.system)) {
+          sawVenousPrefix = true;
+        }
+      }
+    }
+    expect(sawVenousPrefix).toBe(true);
+  });
+
+  it('patient-position Observation uses /CodeSystem/, not /StructureDefinition/ (Part 05 HIGH)', () => {
+    const form = minimalForm('venousLEBilateral', { patientPosition: 'supine' });
+    const bundle = buildFhirBundle(form);
+    const positionEntry = (bundle.entry ?? []).find((e) => {
+      if (e.resource?.resourceType !== 'Observation') return false;
+      const obs = e.resource as Observation;
+      return obs.code?.coding?.some((c) => c.code === '8361-8');
+    });
+    expect(positionEntry, 'patient-position Observation must be emitted').toBeDefined();
+    const obs = positionEntry!.resource as Observation;
+    const valueCoding = obs.valueCodeableConcept?.coding?.[0];
+    expect(valueCoding).toBeDefined();
+    expect(valueCoding!.system).toBe(MEDIMIND_CODESYSTEMS.PATIENT_POSITION);
+    expect(valueCoding!.system).toMatch(/\/CodeSystem\/patient-position$/);
+    expect(valueCoding!.system).not.toMatch(/\/StructureDefinition\//);
   });
 });

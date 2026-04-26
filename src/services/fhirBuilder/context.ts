@@ -8,7 +8,9 @@
 
 import type { FormState } from '../../types/form';
 import type { CodeableConcept } from '../../types/fhir';
+import type { StudyType } from '../../types/study';
 import {
+  FHIR_BASE_URL,
   MEDIMIND_EXTENSIONS,
   STANDARD_FHIR_SYSTEMS,
   VASCULAR_LOINC,
@@ -54,6 +56,28 @@ export interface BuildContext {
   readonly institutionOrganizationRef: string | null;
   readonly loincCode: string;
   readonly loincDisplay: string;
+  /**
+   * Per-parameter CodeSystem URL prefix (e.g. `venous` → emits
+   * `/CodeSystem/venous-stenosisPct`). Wave 3.6 fix for Part 05 HIGH — the
+   * prior `medimindParamSystem` hard-coded `venous-` regardless of study,
+   * so an arterial Observation carried `system: ".../venous-stenosisPct"`.
+   */
+  readonly paramPrefix: 'venous' | 'arterial' | 'carotid' | 'ivc';
+}
+
+function paramPrefixForStudy(studyType: StudyType): 'venous' | 'arterial' | 'carotid' | 'ivc' {
+  switch (studyType) {
+    case 'venousLEBilateral':
+    case 'venousLERight':
+    case 'venousLELeft':
+      return 'venous';
+    case 'arterialLE':
+      return 'arterial';
+    case 'carotid':
+      return 'carotid';
+    case 'ivcDuplex':
+      return 'ivc';
+  }
 }
 
 export function createContext(form: FormState): BuildContext {
@@ -137,6 +161,7 @@ export function createContext(form: FormState): BuildContext {
       : null,
     loincCode: loinc.code,
     loincDisplay: loinc.display,
+    paramPrefix: paramPrefixForStudy(form.studyType),
   };
 }
 
@@ -188,14 +213,19 @@ export function interpretationAbnormal(): CodeableConcept {
   };
 }
 
-export function medimindParamSystem(paramId: string): string {
+export function medimindParamSystem(
+  ctx: Pick<BuildContext, 'paramPrefix'>,
+  paramId: string
+): string {
   // A lightweight per-parameter CodeSystem under the MediMind namespace — lets
   // the downstream consumer distinguish e.g. compressibility values from
   // phasicity values even though we reuse tokens like `normal`/`absent`.
-  // Prefix kept as `venous-` for back-compat with already-emitted venous
-  // bundles; arterial + carotid numerics use their own system URLs via
-  // `MEDIMIND_CODESYSTEMS` where a dedicated CodeSystem is warranted.
-  return `http://medimind.ge/fhir/CodeSystem/venous-${paramId}`;
+  //
+  // Wave 3.6 (Part 05 HIGH): the prefix is now study-derived (`venous` |
+  // `arterial` | `carotid` | `ivc`), not the legacy hard-coded `venous-`. An
+  // arterial Observation no longer claims to carry a `venous-stenosisPct`
+  // system URL.
+  return `${FHIR_BASE_URL}/CodeSystem/${ctx.paramPrefix}-${paramId}`;
 }
 
 export function urnRef(id: string): string {
@@ -219,7 +249,6 @@ export function newUuid(): string {
   }).join('');
 }
 
-// Re-export `MEDIMIND_EXTENSIONS` for the patient-position observation which
-// builds a sibling URL by string substitution. Keeps the import surface of
-// `observations/perPerformer.ts` symmetrical with the rest of the modules.
+// Re-export `MEDIMIND_EXTENSIONS` for the generic competency-tagged Observation
+// builder; keeps the import surface symmetrical with the rest of the modules.
 export { MEDIMIND_EXTENSIONS };

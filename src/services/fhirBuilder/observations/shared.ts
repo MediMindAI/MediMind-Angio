@@ -45,7 +45,7 @@ export function buildParameterCoding(ctx: BuildContext, paramId: string): Coding
     ];
   }
   return [
-    { system: medimindParamSystem(paramId), code: paramId, display: paramId },
+    { system: medimindParamSystem(ctx, paramId), code: paramId, display: paramId },
     {
       system: STANDARD_FHIR_SYSTEMS.LOINC,
       code: ctx.loincCode,

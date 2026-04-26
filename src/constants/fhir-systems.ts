@@ -368,4 +368,11 @@ export const MEDIMIND_CODESYSTEMS = {
   VELOCITY_RATIO: `${FHIR_BASE_URL}/CodeSystem/velocity-ratio`,
   /** Toe-Brachial Index — no standard LOINC, custom anchor. */
   TBI: `${FHIR_BASE_URL}/CodeSystem/tbi`,
+  /**
+   * Patient position during the study (supine | prone | standing | etc.).
+   * Wave 3.6 (Part 05 HIGH): the patient-position Observation previously
+   * used a `StructureDefinition/...` URL as a value-coding `system`, which is
+   * a category mismatch — `Coding.system` must point to a CodeSystem.
+   */
+  PATIENT_POSITION: `${FHIR_BASE_URL}/CodeSystem/patient-position`,
 } as const;
