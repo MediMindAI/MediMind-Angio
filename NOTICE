@@ -62,3 +62,19 @@ Segment nomenclature, parameter definitions, and reflux thresholds follow:
 
 LOINC codes (Regenstrief Institute) and SNOMED CT codes (SNOMED
 International) used as references are property of their respective owners.
+
+─────────────────────────────────────────────────────────────────────────
+Procedure Coding (CPT)
+─────────────────────────────────────────────────────────────────────────
+
+CPT (Current Procedural Terminology) codes are © American Medical
+Association (AMA). The CPT system is included in this software for
+non-billing reference only — for example, to populate a
+`ServiceRequest.code` payload in a FHIR bundle. Production deployments
+that bill US insurance using CPT codes require a separate license from
+the AMA. See https://www.ama-assn.org/practice-management/cpt for
+licensing details.
+
+For non-US deployments where CPT is not the local procedure-coding
+standard, substitute HCPCS Level II or SNOMED CT procedure codes via
+src/constants/vascular-cpt.ts.
