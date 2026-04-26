@@ -1,11 +1,10 @@
 /**
- * useAutoSave — debounced localStorage persistence for form state.
+ * useAutoSave — debounced persistence for form state.
  *
- * The hook writes `state` to `localStorage[keyStudyDraft(studyId)]` after
- * every change, debounced (default 2000 ms). It does **not** hydrate your
- * state — call `loadDraft(studyId)` at mount and seed your reducer /
- * `useState` initializer manually so the caller keeps control of the
- * "initial value" truth.
+ * The hook writes `state` after every change, debounced (default 2000 ms).
+ * It does **not** hydrate your state — call `loadDraft(studyId)` at mount
+ * and seed your reducer / `useState` initializer manually so the caller
+ * keeps control of the "initial value" truth.
  *
  * API mirrors MediMind EMR's hook shape so this can fold back into the
  * main app without a consumer-side rename.
@@ -22,10 +21,27 @@
  *      the new render schedules under the NEW key.
  *   E. beforeunload guard — best-effort flush + native confirm prompt
  *      when the user navigates away with unsaved changes.
+ *
+ * Wave 4.1 (Area 10 MEDIUM — PHI in plain-text localStorage):
+ *   F. Mirror writes to IndexedDB via `draftStore` so list / clear-all
+ *      flows have a real source of truth. localStorage is kept in sync
+ *      because reducer-init `loadDraft` is still synchronous.
+ *   G. Idle-timeout — 30 minutes of inactivity (no state change) auto-
+ *      clears the draft. Addresses the shared-workstation scenario where
+ *      clinician A walks away and clinician B sits down later without
+ *      explicitly closing the case. The timer resets on every state
+ *      change.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { keyStudyDraft } from '../constants/storage-keys';
+import {
+  saveDraft as idbSaveDraft,
+  clearDraftAsync as idbClearDraft,
+} from '../services/draftStore';
+
+/** Default idle window after which the draft is auto-cleared. 30 minutes. */
+export const DEFAULT_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 
 // ============================================================================
 // Standalone helpers (usable outside React)
@@ -43,14 +59,25 @@ export function loadDraft<T>(studyId: string): T | null {
   }
 }
 
-/** Remove any saved draft for `studyId`. No-op if none present. */
+/** Remove any saved draft for `studyId`. No-op if none present.
+ *
+ * Wave 4.1: wipes BOTH the legacy localStorage cache (sync) and the
+ * IndexedDB record (fire-and-forget). The async IDB delete is
+ * intentionally not awaited — callers (idle-timeout, clearDraftNow)
+ * need a sync surface and the worst case (IDB delete races a fresh
+ * save in the same tick) is recoverable. */
 export function clearDraft(studyId: string): void {
-  if (typeof localStorage === 'undefined') return;
-  try {
-    localStorage.removeItem(keyStudyDraft(studyId));
-  } catch {
-    // quota / security errors — draft sticks around harmlessly.
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem(keyStudyDraft(studyId));
+    } catch {
+      // quota / security errors — draft sticks around harmlessly.
+    }
   }
+  void idbClearDraft(studyId).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.warn('[useAutoSave] IDB clear failed', studyId, err);
+  });
 }
 
 /**
@@ -59,8 +86,18 @@ export function clearDraft(studyId: string): void {
  * Returns `{ ok, err }` rather than a bare boolean so the caller can
  * surface quota / security errors (Wave 2.4 C) instead of swallowing
  * them — clinicians otherwise see an "unsaved" badge with no idea why.
+ *
+ * Wave 4.1 F: mirrors to IndexedDB as a fire-and-forget async write so
+ * the new "Clear all drafts" / idle-timeout / drafts banner flows can
+ * use IDB as a source of truth, while reducer-init `loadDraft` keeps
+ * working against the synchronous localStorage cache.
  */
 function writeDraft<T>(studyId: string, state: T): { ok: boolean; err: unknown } {
+  void idbSaveDraft(studyId, state).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.warn('[useAutoSave] IDB mirror-write failed', studyId, err);
+  });
+
   if (typeof localStorage === 'undefined') return { ok: false, err: null };
   try {
     localStorage.setItem(keyStudyDraft(studyId), JSON.stringify(state));
@@ -84,6 +121,14 @@ export interface UseAutoSaveOptions {
    * exception, etc). The hook also exposes `lastError` for inline UI.
    */
   readonly onError?: (err: unknown) => void;
+  /**
+   * Inactivity window in ms after which the draft auto-clears (Wave 4.1).
+   * Set to 0 (or a negative value) to disable. Default 30 * 60 * 1000.
+   * Resets on every state change.
+   */
+  readonly idleTimeoutMs?: number;
+  /** Optional hook fired when the idle-timeout sweep clears the draft. */
+  readonly onIdleClear?: () => void;
 }
 
 export interface UseAutoSaveResult {
@@ -108,6 +153,7 @@ export function useAutoSave<T>(
 ): UseAutoSaveResult {
   const debounceMs = options?.debounceMs ?? 2000;
   const enabled = options?.enabled ?? true;
+  const idleTimeoutMs = options?.idleTimeoutMs ?? DEFAULT_IDLE_TIMEOUT_MS;
 
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
@@ -130,6 +176,11 @@ export function useAutoSave<T>(
   // the auto-save effect (which would reset firstRunRef).
   const onErrorRef = useRef<((err: unknown) => void) | undefined>(options?.onError);
   onErrorRef.current = options?.onError;
+  // Wave 4.1 G — idle-timeout sweeper. Same ref pattern so the
+  // callback can change without retriggering the auto-save effect.
+  const onIdleClearRef = useRef<(() => void) | undefined>(options?.onIdleClear);
+  onIdleClearRef.current = options?.onIdleClear;
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   stateRef.current = state;
   studyIdRef.current = studyId;
@@ -157,6 +208,32 @@ export function useAutoSave<T>(
       onErrorRef.current?.(result.err);
     }
   }, []);
+
+  // --- Wave 4.1 G: idle-timeout sweeper -----------------------------------
+  // Clear the draft after `idleTimeoutMs` of no state change. The auto-save
+  // effect calls `armIdleTimer()` on every render that processes a state
+  // change, so an active typist keeps pushing the deadline forward.
+  const armIdleTimer = useCallback(() => {
+    if (idleTimerRef.current !== null) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+    if (!(idleTimeoutMs > 0)) return;
+    idleTimerRef.current = setTimeout(() => {
+      idleTimerRef.current = null;
+      // Drop any pending debounce — its state is about to be wiped anyway.
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+        pendingStudyIdRef.current = null;
+      }
+      clearDraft(studyIdRef.current);
+      setLastSavedAt(null);
+      setHasUnsavedChanges(false);
+      setLastError(null);
+      onIdleClearRef.current?.();
+    }, idleTimeoutMs);
+  }, [idleTimeoutMs]);
 
   // --- Wave 2.4 D: studyId-change race fix ---------------------------------
   // If the consumer swaps studyId between renders, flush any pending timer
@@ -198,7 +275,10 @@ export function useAutoSave<T>(
       timerRef.current = null;
       pendingStudyIdRef.current = null;
     }, debounceMs);
-  }, [state, debounceMs, enabled, flushTo]);
+
+    // Wave 4.1 G — any state change is "activity"; reset the idle window.
+    armIdleTimer();
+  }, [state, debounceMs, enabled, flushTo, armIdleTimer]);
 
   // --- Wave 2.4 A: unmount-only flush --------------------------------------
   // Standalone effect with a `[]` dep array so its cleanup fires ONLY on
@@ -214,6 +294,11 @@ export function useAutoSave<T>(
         timerRef.current = null;
         pendingStudyIdRef.current = null;
         flushTo(targetStudyId, stateRef.current);
+      }
+      // Wave 4.1 G — idle timer must not outlive the hook.
+      if (idleTimerRef.current !== null) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,6 +334,10 @@ export function useAutoSave<T>(
       clearTimeout(timerRef.current);
       timerRef.current = null;
       pendingStudyIdRef.current = null;
+    }
+    if (idleTimerRef.current !== null) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
     }
     clearDraft(studyIdRef.current);
     setLastSavedAt(null);

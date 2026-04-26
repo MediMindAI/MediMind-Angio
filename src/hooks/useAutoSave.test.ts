@@ -223,6 +223,94 @@ describe('useAutoSave — Wave 2.4 hardening', () => {
     expect(result.current.hasUnsavedChanges).toBe(false);
   });
 
+  // -------------------------------------------------------------------------
+  // Wave 4.1 G — idle-timeout sweeper
+  // -------------------------------------------------------------------------
+  it('clears the draft after idleTimeoutMs of no state change (Wave 4.1 G)', () => {
+    const onIdleClear = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ state }) =>
+        useAutoSave('s1', state, {
+          debounceMs: 100,
+          idleTimeoutMs: 30 * 60 * 1000,
+          onIdleClear,
+        }),
+      { initialProps: { state: { v: 1 } as { v: number } } }
+    );
+
+    // Persist a draft so we have something to wipe
+    rerender({ state: { v: 2 } });
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(localStorage.getItem(keyStudyDraft('s1'))).toContain('"v":2');
+
+    // 30 min of inactivity — exactly the idle window
+    act(() => {
+      vi.advanceTimersByTime(30 * 60 * 1000);
+    });
+
+    expect(localStorage.getItem(keyStudyDraft('s1'))).toBeNull();
+    expect(onIdleClear).toHaveBeenCalledTimes(1);
+    expect(result.current.lastSavedAt).toBeNull();
+    expect(result.current.hasUnsavedChanges).toBe(false);
+  });
+
+  it('idle-timeout resets on each state change', () => {
+    const onIdleClear = vi.fn();
+    const { rerender } = renderHook(
+      ({ state }) =>
+        useAutoSave('s1', state, {
+          debounceMs: 100,
+          idleTimeoutMs: 30 * 60 * 1000,
+          onIdleClear,
+        }),
+      { initialProps: { state: { v: 1 } as { v: number } } }
+    );
+
+    // Edit at t=0
+    rerender({ state: { v: 2 } });
+    act(() => {
+      vi.advanceTimersByTime(20 * 60 * 1000); // 20 min in
+    });
+
+    // Edit at t=20min — should reset the idle window
+    rerender({ state: { v: 3 } });
+    act(() => {
+      vi.advanceTimersByTime(20 * 60 * 1000); // 40 min total, 20 since last edit
+    });
+
+    // We're 20 min past the latest edit; idle hasn't fired yet
+    expect(onIdleClear).not.toHaveBeenCalled();
+
+    // 10 more min (= 30 min since last edit) → fires
+    act(() => {
+      vi.advanceTimersByTime(10 * 60 * 1000 + 100);
+    });
+    expect(onIdleClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('idle-timeout disabled when idleTimeoutMs is 0', () => {
+    const onIdleClear = vi.fn();
+    const { rerender } = renderHook(
+      ({ state }) =>
+        useAutoSave('s1', state, {
+          debounceMs: 100,
+          idleTimeoutMs: 0,
+          onIdleClear,
+        }),
+      { initialProps: { state: { v: 1 } as { v: number } } }
+    );
+
+    rerender({ state: { v: 2 } });
+    act(() => {
+      vi.advanceTimersByTime(60 * 60 * 1000); // 1 hour
+    });
+
+    expect(onIdleClear).not.toHaveBeenCalled();
+    expect(localStorage.getItem(keyStudyDraft('s1'))).toContain('"v":2');
+  });
+
   it('respects enabled=false (no writes scheduled)', () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 
