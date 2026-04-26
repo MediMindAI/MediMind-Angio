@@ -36,7 +36,8 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../src/components/studies/carotid/config';
-import { buildFhirBundle } from '../src/services/fhirBuilder';
+import { buildEncounterBundle, buildFhirBundle } from '../src/services/fhirBuilder';
+import type { EncounterDraft } from '../src/types/encounter';
 
 // ---------------------------------------------------------------------------
 // Mock form state
@@ -608,5 +609,144 @@ assert(
 );
 console.log('\nPASS: SNOMED catalog integrity (no placeholders, perv != pera)');
 
-console.log('\nAll 3 study-type bundles validated (venous-LE + arterial-LE + carotid).');
+// ---------------------------------------------------------------------------
+// Phase 4a — multi-study encounter Bundle (venous + arterial + carotid).
+// ---------------------------------------------------------------------------
+//
+// One Patient, one Encounter, three DiagnosticReports. Reuses the same form
+// fixtures above — just rebinds them to one EncounterDraft and pumps them
+// through buildEncounterBundle.
+
+const sharedEncounter: EncounterDraft = {
+  schemaVersion: 2,
+  encounterId: 'enc-validate-sample',
+  header: {
+    patientName: 'Mock Patient',
+    patientId: '12345678901',
+    patientBirthDate: '1978-03-14',
+    patientGender: 'female',
+    operatorName: 'Dr. Mock',
+    referringPhysician: 'Dr. Referrer',
+    institution: 'MediMind Angio Clinic',
+    medications: 'Apixaban 5 mg BID',
+    informedConsent: true,
+    informedConsentSignedAt: '2026-04-25T08:30:00Z',
+    icd10Codes: [
+      { code: 'I83.91', display: 'Symptomatic varicose veins of lower extremities' },
+      { code: 'I87.2', display: 'Venous insufficiency (chronic) (peripheral)' },
+    ],
+    indicationNotes: 'Routine vascular workup, multiple territories.',
+    encounterDate: '2026-04-25',
+  },
+  selectedStudyTypes: ['venousLEBilateral', 'arterialLE', 'carotid'],
+  studies: {},
+  createdAt: '2026-04-25T08:00:00Z',
+  updatedAt: '2026-04-25T08:30:00Z',
+};
+
+const encounterBundle: Bundle = buildEncounterBundle({
+  encounter: sharedEncounter,
+  studyForms: [form, arterialForm, carotidForm],
+});
+const encounterEntries = (encounterBundle.entry ?? []) as ReadonlyArray<BundleEntry<EmittedResource>>;
+
+assert(encounterBundle.resourceType === 'Bundle', 'multi-study bundle resourceType');
+assert(encounterBundle.type === 'transaction', 'multi-study bundle type must be transaction');
+
+const encounterCounts = countByType(encounterEntries);
+assert(
+  encounterCounts.Patient === 1,
+  `multi-study: expected 1 Patient, got ${encounterCounts.Patient ?? 0}`,
+);
+assert(
+  encounterCounts.Encounter === 1,
+  `multi-study: expected 1 Encounter, got ${encounterCounts.Encounter ?? 0}`,
+);
+assert(
+  encounterCounts.DiagnosticReport === 3,
+  `multi-study: expected 3 DiagnosticReports, got ${encounterCounts.DiagnosticReport ?? 0}`,
+);
+assert(
+  encounterCounts.Consent === 1,
+  `multi-study: expected 1 Consent (encounter-level), got ${encounterCounts.Consent ?? 0}`,
+);
+assert(
+  encounterCounts.Organization === 1,
+  `multi-study: expected 1 Organization (encounter-level), got ${encounterCounts.Organization ?? 0}`,
+);
+
+// Practitioner de-dup: the three forms all share operator 'Dr. Mock' and
+// referrer 'Dr. Referrer' from the encounter header → exactly 2 Practitioners.
+assert(
+  encounterCounts.Practitioner === 2,
+  `multi-study: expected 2 Practitioners (operator + referrer, deduped), got ${encounterCounts.Practitioner ?? 0}`,
+);
+
+// Three distinct DR LOINC codes.
+const encounterDrs = encounterEntries
+  .filter((e) => isDiagnosticReport(e.resource))
+  .map((e) => e.resource as DiagnosticReport);
+const encounterLoincs = new Set(
+  encounterDrs.map((d) => d.code?.coding?.[0]?.code).filter((c): c is string => typeof c === 'string'),
+);
+assert(
+  encounterLoincs.size === 3,
+  `multi-study: expected 3 distinct DR LOINC codes, got ${encounterLoincs.size}`,
+);
+
+// Reference integrity — every urn:uuid: ref resolves.
+const encounterFullUrls = new Set<string>();
+for (const e of encounterEntries) {
+  if (typeof e.fullUrl === 'string') encounterFullUrls.add(e.fullUrl);
+}
+const collectRefs = (node: unknown, out: string[]): void => {
+  if (node === null || node === undefined) return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectRefs(item, out);
+    return;
+  }
+  if (typeof node === 'object') {
+    for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+      if (key === 'reference' && typeof value === 'string') out.push(value);
+      else collectRefs(value, out);
+    }
+  }
+};
+const encounterRefs: string[] = [];
+collectRefs(encounterEntries, encounterRefs);
+const danglingRefs = encounterRefs
+  .filter((r) => r.startsWith('urn:uuid:'))
+  .filter((r) => !encounterFullUrls.has(r));
+assert(
+  danglingRefs.length === 0,
+  `multi-study: dangling references (no fullUrl match): ${danglingRefs.slice(0, 3).join(', ')}`,
+);
+
+// All DiagnosticReports + Observations point at the same Patient + Encounter.
+const sharedPatient = encounterEntries.find((e) => isPatient(e.resource));
+const sharedEnc = encounterEntries.find((e) => e.resource.resourceType === 'Encounter');
+assert(sharedPatient !== undefined, 'multi-study: no Patient entry');
+assert(sharedEnc !== undefined, 'multi-study: no Encounter entry');
+const sharedPatientUrl = sharedPatient.fullUrl as string;
+const sharedEncUrl = sharedEnc.fullUrl as string;
+for (const dr of encounterDrs) {
+  assert(
+    dr.subject?.reference === sharedPatientUrl,
+    `multi-study: DR(${dr.id}) does not point at shared Patient`,
+  );
+  assert(
+    dr.encounter?.reference === sharedEncUrl,
+    `multi-study: DR(${dr.id}) does not point at shared Encounter`,
+  );
+}
+
+console.log('\nPASS: multi-study encounter Bundle (venous + arterial + carotid)');
+console.log(`  total entries: ${encounterEntries.length}`);
+for (const [rt, n] of Object.entries(encounterCounts)) {
+  console.log(`    ${rt.padEnd(24)} × ${n}`);
+}
+console.log(`  distinct DR LOINC codes: ${encounterLoincs.size}`);
+console.log(`  Practitioner de-dup: 3 forms × 2 names → ${encounterCounts.Practitioner} Practitioner(s)`);
+
+console.log('\nAll 3 study-type bundles + 1 multi-study encounter validated.');
 process.exit(0);
