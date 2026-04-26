@@ -112,6 +112,15 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
     return out;
   }, [findings, sidesToRender, showAllRows]);
 
+  // Wave 4.9 — implausibility hard-reject thresholds (Part 10 MEDIUM).
+  // Two-tier validation: an inline yellow-icon warning is already shown for
+  // pathological reflux (>500/1000 ms thresholds in `hasPathologicalReflux`).
+  // These thresholds add a SECOND confirm-on-commit gate for values so
+  // extreme they almost certainly indicate a typo (e.g. 30000 ms instead of
+  // 3000 ms) — the user has to acknowledge before the value lands in state.
+  const HARD_REJECT_REFLUX_MS = 3000;
+  const HARD_REJECT_DIAMETER_MM = 25;
+
   const makeHandler = useCallback(
     (fullId: VenousLEFullSegmentId, field: keyof VenousSegmentFinding) =>
       (v: number | string) => {
@@ -124,9 +133,35 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
           onFindingChange(fullId, { [field]: undefined } as Partial<VenousSegmentFinding>);
           return;
         }
+        // Two-tier validation — confirm extreme values before commit.
+        if (field === 'refluxDurationMs' && num > HARD_REJECT_REFLUX_MS) {
+          const ok =
+            typeof window === 'undefined'
+              ? true
+              : window.confirm(
+                  t('venousLE.reflux.implausibleConfirm', {
+                    value: String(num),
+                  }),
+                );
+          if (!ok) return;
+        }
+        if (
+          (field === 'apDiameterMm' || field === 'transDiameterMm') &&
+          num > HARD_REJECT_DIAMETER_MM
+        ) {
+          const ok =
+            typeof window === 'undefined'
+              ? true
+              : window.confirm(
+                  t('venousLE.diameter.implausibleConfirm', {
+                    value: String(num),
+                  }),
+                );
+          if (!ok) return;
+        }
         onFindingChange(fullId, { [field]: num } as Partial<VenousSegmentFinding>);
       },
-    [onFindingChange],
+    [onFindingChange, t],
   );
 
   const tableBody = (

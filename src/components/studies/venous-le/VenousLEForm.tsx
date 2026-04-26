@@ -329,7 +329,9 @@ function stateToFormState(s: VenousFormStateV1): FormState {
     studyType: 'venousLEBilateral',
     header: headerOut,
     narrative: {
-      indication: s.header.indication,
+      // Wave 4.9 — header.indicationNotes is the new field; fall back to the
+      // legacy `indication` for back-compat with existing drafts.
+      indication: s.header.indicationNotes ?? s.header.indication,
       impression: s.impression,
       sonographerComments: s.sonographerComments || undefined,
       clinicianComments: s.clinicianComments || undefined,
