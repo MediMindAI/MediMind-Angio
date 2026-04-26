@@ -22,7 +22,6 @@
  * Originally forked from `src/components/form/TemplateGallery.tsx` (venous)
  * as part of Wave 3 consolidation.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { memo, useMemo, useState } from 'react';
 import { Box } from '@mantine/core';

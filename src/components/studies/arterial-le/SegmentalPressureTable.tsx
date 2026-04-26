@@ -208,17 +208,29 @@ function TbiBadge({
   );
 }
 
+/**
+ * English defaults for every ABI band — used as the second-arg fallback to
+ * `t(arterialLE.abi.band.<band>, <english>)`. All three locales (en/ka/ru)
+ * already define every key under `arterialLE.abi.band.*`, so this is purely
+ * a resilience net; if a locale strips a key in the future, the English
+ * default still renders.
+ */
+const FALLBACK_BAND_LABELS: Readonly<Record<
+  'non-compressible' | 'normal' | 'mild' | 'moderate' | 'severe' | 'unknown',
+  string
+>> = {
+  'non-compressible': 'Non-compressible',
+  normal: 'Normal',
+  mild: 'Mild PAD',
+  moderate: 'Moderate PAD',
+  severe: 'Severe / CLI',
+  unknown: '—',
+};
+
 function fallbackBandLabel(
   band: 'non-compressible' | 'normal' | 'mild' | 'moderate' | 'severe' | 'unknown',
 ): string {
-  switch (band) {
-    case 'non-compressible': return 'Non-compressible';
-    case 'normal':           return 'Normal';
-    case 'mild':             return 'Mild PAD';
-    case 'moderate':         return 'Moderate PAD';
-    case 'severe':           return 'Severe / CLI';
-    default:                 return '—';
-  }
+  return FALLBACK_BAND_LABELS[band];
 }
 
 export default SegmentalPressureTable;
