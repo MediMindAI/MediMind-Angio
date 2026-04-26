@@ -22,6 +22,20 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
   });
 }
 
+// jsdom doesn't implement ResizeObserver. Mantine's ScrollArea (used inside
+// MultiSelect dropdowns) calls it in a layout effect, which throws under
+// jsdom without this stub. Phase 2.b — landed alongside EncounterIntake's
+// ICD-10 multiselect; reusable for any future Mantine dropdown.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserverStub {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  }
+  // @ts-expect-error - assign minimal stub on the test global
+  globalThis.ResizeObserver = ResizeObserverStub;
+}
+
 // jsdom doesn't always provide crypto.randomUUID — polyfill only when missing.
 if (typeof globalThis.crypto === 'undefined') {
   // @ts-expect-error - assign minimal stub on the test global
