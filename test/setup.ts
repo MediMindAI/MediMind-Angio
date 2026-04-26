@@ -1,5 +1,23 @@
 import '@testing-library/jest-dom/vitest';
 
+// jsdom doesn't implement matchMedia. Mantine's color-scheme manager calls
+// it in a useEffect on mount, which throws in jsdom without this stub.
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},        // legacy API still called by some libs
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 // jsdom doesn't always provide crypto.randomUUID — polyfill only when missing.
 if (typeof globalThis.crypto === 'undefined') {
   // @ts-expect-error - assign minimal stub on the test global
