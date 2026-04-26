@@ -74,7 +74,8 @@
     "previewPDF": "Предпросмотр PDF",
     "exportJSON": "Экспорт FHIR JSON",
     "clearInput": "Очистить",
-    "noOptionsFound": "Варианты не найдены"
+    "noOptionsFound": "Варианты не найдены",
+    "actionsRegion": "Действия"
   },
   "competency": {
     "normal": "Норма",

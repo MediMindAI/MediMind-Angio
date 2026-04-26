@@ -259,7 +259,7 @@ export const FormActions = memo(function FormActions({
     : t('venousLE.actions.neverSaved');
 
   return (
-    <div className={`${classes.bar} no-print`} role="region" aria-label="Actions">
+    <div className={`${classes.bar} no-print`} role="region" aria-label={t('common.actionsRegion', 'Actions')}>
       <div className={classes.inner}>
         <div className={classes.status}>
           <span className={`${classes.dot} ${hasUnsavedChanges ? classes.dotDirty : classes.dotClean}`} aria-hidden />

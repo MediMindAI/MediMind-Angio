@@ -259,7 +259,7 @@ function VertebralStealInline({
 }): React.ReactElement {
   const { t } = useTranslation();
   return (
-    <div className={classes.stealRow} role="radiogroup" aria-label="Subclavian steal phase">
+    <div className={classes.stealRow} role="radiogroup" aria-label={t('carotid.steal.aria', 'Subclavian steal phase')}>
       {[0, 1, 2, 3].map((p) => {
         const selected = value === p;
         return (

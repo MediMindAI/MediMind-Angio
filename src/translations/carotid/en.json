@@ -65,6 +65,7 @@
       "occluded": "Occluded"
     },
     "steal": {
+      "aria": "Subclavian steal phase",
       "phase0": "Normal antegrade",
       "phase1": "Phase I — mid-systolic deceleration",
       "phase2": "Phase II — alternating (partial retrograde)",

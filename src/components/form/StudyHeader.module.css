@@ -21,7 +21,7 @@
   min-height: 70px;
   padding: 16px 20px;
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
   border: 0;
   text-align: left;
   cursor: pointer;
@@ -54,7 +54,7 @@
   height: 36px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  color: var(--emr-text-white);
   flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
   position: relative;
@@ -64,7 +64,7 @@
 .title {
   font-size: var(--emr-font-lg) !important;
   font-weight: 600 !important;
-  color: #ffffff !important;
+  color: var(--emr-text-white) !important;
   letter-spacing: -0.01em;
   line-height: 1.2 !important;
   margin: 0;
@@ -98,7 +98,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #ffffff;
+  color: var(--emr-text-white);
 }
 
 .summaryLabel {
@@ -107,7 +107,7 @@
 }
 
 .summaryValue {
-  color: #ffffff;
+  color: var(--emr-text-white);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -125,7 +125,7 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  color: #ffffff;
+  color: var(--emr-text-white);
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);

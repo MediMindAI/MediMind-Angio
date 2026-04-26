@@ -74,7 +74,8 @@
     "previewPDF": "PDF-ის გადახედვა",
     "exportJSON": "FHIR JSON-ის ექსპორტი",
     "clearInput": "გასუფთავება",
-    "noOptionsFound": "ვარიანტები ვერ მოიძებნა"
+    "noOptionsFound": "ვარიანტები ვერ მოიძებნა",
+    "actionsRegion": "მოქმედებები"
   },
   "competency": {
     "normal": "ნორმალური",

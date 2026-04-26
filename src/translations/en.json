@@ -74,7 +74,8 @@
     "previewPDF": "Preview PDF",
     "exportJSON": "Export FHIR JSON",
     "clearInput": "Clear",
-    "noOptionsFound": "No options found"
+    "noOptionsFound": "No options found",
+    "actionsRegion": "Actions"
   },
   "competency": {
     "normal": "Normal",
