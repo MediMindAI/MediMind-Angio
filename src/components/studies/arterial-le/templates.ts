@@ -73,7 +73,10 @@ function fillAll(
     'pop-ak', 'pop-bk', 'tpt', 'ata', 'pta', 'per', 'dp',
   ] as const) {
     for (const side of sides) {
-      out[`${base}-${side}`] = finding;
+      // Wave 3.7 (Part 03 HIGH) — clone per slot so each slot owns its own
+      // finding object. Sharing the seed reference across 28+ slots was an
+      // in-place mutation away from cross-slot corruption.
+      out[`${base}-${side}`] = { ...finding };
     }
   }
   return out as ArterialSegmentFindings;

@@ -129,11 +129,16 @@ export const SRU_THRESHOLDS = {
 // Seed findings
 // ============================================================================
 
-export const CAROTID_NORMAL_FINDING: CarotidVesselFinding = {
+// Wave 3.7 (Part 03 HIGH) — `Object.freeze` prevents an in-place mutation of
+// this template seed from corrupting every slot that referenced the same
+// object (templates currently share the reference across 26+ vessel slots).
+// Combined with per-slot cloning in `templates.ts:allVessels`, this defends
+// against cross-template corruption today and silent corruption tomorrow.
+export const CAROTID_NORMAL_FINDING: CarotidVesselFinding = Object.freeze({
   flowDirection: 'antegrade',
   plaquePresent: false,
   plaqueMorphology: 'none',
-};
+}) as CarotidVesselFinding;
 
 // ============================================================================
 // Parameter definitions (for FHIR builder)

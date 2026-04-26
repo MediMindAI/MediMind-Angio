@@ -51,8 +51,11 @@ const VESSELS = [
 function allVessels(finding: CarotidVesselFinding): CarotidFindings {
   const out: Record<string, CarotidVesselFinding> = {};
   for (const v of VESSELS) {
-    out[`${v}-left`] = finding;
-    out[`${v}-right`] = finding;
+    // Wave 3.7 (Part 03 HIGH) — clone per slot so each slot owns its own
+    // finding object. Sharing the seed reference across 26+ slots was an
+    // in-place mutation away from cross-slot corruption.
+    out[`${v}-left`] = { ...finding };
+    out[`${v}-right`] = { ...finding };
   }
   return out as CarotidFindings;
 }

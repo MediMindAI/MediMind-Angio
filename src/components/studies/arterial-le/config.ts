@@ -265,18 +265,23 @@ export const ARTERIAL_LE_BILATERAL_CONFIG: StudyConfig = {
 // Canonical seed findings for template authoring
 // ============================================================================
 
-export const ARTERIAL_NORMAL_FINDING: ArterialSegmentFinding = {
+// Wave 3.7 (Part 03 HIGH) — `Object.freeze` prevents an in-place mutation of
+// these template seeds from corrupting every slot that referenced the same
+// object (templates currently share the reference across 28+ findings slots).
+// Combined with per-slot cloning in `templates.ts:fillAll`, this defends
+// against cross-template corruption today and silent corruption tomorrow.
+export const ARTERIAL_NORMAL_FINDING: ArterialSegmentFinding = Object.freeze({
   waveform: 'triphasic',
   stenosisCategory: 'none',
   occluded: false,
   plaqueMorphology: 'none',
-};
+}) as ArterialSegmentFinding;
 
-export const ARTERIAL_OCCLUSION_FINDING: ArterialSegmentFinding = {
+export const ARTERIAL_OCCLUSION_FINDING: ArterialSegmentFinding = Object.freeze({
   waveform: 'absent',
   stenosisCategory: 'occluded',
   occluded: true,
-};
+}) as ArterialSegmentFinding;
 
 // ============================================================================
 // Anatomy-diagram competency mapping
