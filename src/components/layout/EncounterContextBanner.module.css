@@ -1,0 +1,211 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/*
+ * EncounterContextBanner — compact horizontal strip rendered above the
+ * per-study findings (replaces the dropped collapsible <StudyHeader>).
+ *
+ * Layout:
+ *   - Desktop (≥768px): single row — identity · chips · actions.
+ *   - Mobile (<768px):  two rows — identity wraps, chips/actions wrap.
+ *
+ * Uses only `--emr-*` design tokens from theme.css (no hardcoded hex).
+ */
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--emr-space-3);
+  padding: var(--emr-space-3) var(--emr-space-4);
+  margin-bottom: var(--emr-space-4);
+  border: 1px solid var(--emr-border-default);
+  border-radius: var(--emr-border-radius-md);
+  background: var(--emr-bg-card);
+  box-shadow: var(--emr-shadow-xs);
+}
+
+/* Identity block — patient name · age · encounter date */
+.identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--emr-space-3);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.identityLabel {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-tertiary);
+  letter-spacing: var(--emr-letter-spacing-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.patientName {
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  white-space: nowrap;
+}
+
+.identityMeta {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  white-space: nowrap;
+}
+
+.identitySeparator {
+  margin: 0 var(--emr-space-1);
+  color: var(--emr-text-tertiary);
+}
+
+/* Study switcher chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--emr-space-2);
+  flex-shrink: 0;
+}
+
+.chipsLabel {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-tertiary);
+  letter-spacing: var(--emr-letter-spacing-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: var(--emr-space-1) var(--emr-space-3);
+  border: 1px solid var(--emr-border-default);
+  border-radius: var(--emr-border-radius-full);
+  background: var(--emr-bg-card);
+  color: var(--emr-text-secondary);
+  font-family: inherit;
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip:hover {
+  background: var(--emr-bg-hover);
+  border-color: var(--emr-border-secondary);
+  color: var(--emr-text-primary);
+}
+
+.chip:focus-visible {
+  outline: none;
+  box-shadow: var(--emr-shadow-focus);
+  border-color: var(--emr-border-focus);
+}
+
+.chipActive {
+  background: var(--emr-primary);
+  border-color: var(--emr-primary);
+  color: var(--emr-text-inverse);
+  cursor: default;
+}
+
+.chipActive:hover {
+  background: var(--emr-primary);
+  border-color: var(--emr-primary);
+  color: var(--emr-text-inverse);
+}
+
+/* Action cluster (Add study + Edit encounter) */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--emr-space-2);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* "+ Add study" inline dropdown.
+ * Anchored to the trigger via `position: relative` on the wrapper.
+ * Plan §3c calls this a minimal menu (Phase 5 polishes it); we deliberately
+ * skip Mantine `<Menu>` — its floating-ui popover doesn't render in jsdom. */
+.menuWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.menuDropdown {
+  position: absolute;
+  top: calc(100% + var(--emr-space-1));
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: var(--emr-space-1);
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-default);
+  border-radius: var(--emr-border-radius-md);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  padding: var(--emr-space-2) var(--emr-space-3);
+  border: none;
+  border-radius: var(--emr-border-radius-sm);
+  background: transparent;
+  color: var(--emr-text-primary);
+  font-family: inherit;
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-medium);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.menuItem:hover {
+  background: var(--emr-bg-hover);
+}
+
+.menuItem:focus-visible {
+  outline: none;
+  background: var(--emr-bg-hover);
+  box-shadow: var(--emr-shadow-focus);
+}
+
+/* Mobile (≤768px): collapse identity onto its own row */
+@media (max-width: 768px) {
+  .banner {
+    padding: var(--emr-space-3);
+    gap: var(--emr-space-2);
+  }
+
+  .identity {
+    flex-basis: 100%;
+  }
+
+  .actions {
+    margin-left: 0;
+  }
+
+  /* Lift chip + menu-item tap-target on touch devices to meet 44×44 floor */
+  .chip,
+  .menuItem {
+    min-height: 44px;
+    padding: var(--emr-space-2) var(--emr-space-4);
+  }
+}
