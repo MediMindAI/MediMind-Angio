@@ -76,6 +76,14 @@ import classes from './VenousLEForm.module.css';
 // ============================================================================
 
 interface VenousFormStateV1 {
+  /**
+   * Wave 3.2 (Part 03 MEDIUM) — runtime schema version. The interface name
+   * carries `V1`, but without a runtime field a release that bumps the
+   * state shape (rename, add required field, change findings shape) would
+   * silently hydrate yesterday's draft as the new shape and either crash
+   * or render wrong data. `loadDraft` initializers must validate this.
+   */
+  readonly schemaVersion: 1;
   readonly studyType: 'venousLEBilateral';
   readonly header: StudyHeaderValue;
   readonly findings: VenousSegmentFindings;
@@ -99,6 +107,7 @@ const TODAY_ISO = new Date().toISOString().slice(0, 10);
 const DEFAULT_CPT = defaultCptForStudy('venousLEBilateral');
 
 const INITIAL_STATE: VenousFormStateV1 = {
+  schemaVersion: 1,
   studyType: 'venousLEBilateral',
   header: {
     patientName: '',
@@ -466,9 +475,17 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   );
 
   // Hydrate from draft on mount (one-shot).
+  // Wave 3.2 (Part 03 MEDIUM) — validate `schemaVersion === 1` before
+  // hydrating. If a future release bumps the shape, drafts persisted under
+  // the old shape will be ignored (initial state used) instead of silently
+  // crashing or rendering stale data.
   useEffect(() => {
     const draft = loadDraft<VenousFormStateV1>(STUDY_ID);
-    if (draft && draft.studyType === 'venousLEBilateral') {
+    if (
+      draft &&
+      draft.schemaVersion === 1 &&
+      draft.studyType === 'venousLEBilateral'
+    ) {
       dispatch({ type: 'HYDRATE', value: draft });
     }
   }, []);

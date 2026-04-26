@@ -48,6 +48,14 @@ import classes from './CarotidForm.module.css';
 const STUDY_ID = 'carotid';
 
 interface CarotidFormStateV1 {
+  /**
+   * Wave 3.2 (Part 03 MEDIUM) — runtime schema version. The interface name
+   * carries `V1`, but without a runtime field a release that bumps the
+   * state shape (rename, add required field, change findings shape) would
+   * silently hydrate yesterday's draft as the new shape and either crash
+   * or render wrong data. `loadDraft` initializers must validate this.
+   */
+  readonly schemaVersion: 1;
   readonly studyType: 'carotid';
   readonly header: StudyHeaderValue;
   readonly findings: CarotidFindings;
@@ -91,6 +99,7 @@ function defaultHeader(): StudyHeaderValue {
 
 function initialState(): CarotidFormStateV1 {
   return {
+    schemaVersion: 1,
     studyType: 'carotid',
     header: defaultHeader(),
     findings: {},
@@ -177,8 +186,20 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   const { t } = useTranslation();
 
   const [state, dispatch] = useReducer(reducer, undefined, () => {
+    // Wave 3.2 (Part 03 MEDIUM + Part 10 HIGH) — validate `schemaVersion === 1`
+    // and `studyType === 'carotid'` before hydrating. Previously the carotid
+    // form hydrated any persisted blob without checks, so a release that
+    // bumped the shape (or a corrupted draft) would crash or silently render
+    // wrong data. On mismatch we fall back to fresh initial state.
     const persisted = loadDraft<CarotidFormStateV1>(STUDY_ID);
-    return persisted ?? initialState();
+    if (
+      persisted &&
+      persisted.schemaVersion === 1 &&
+      persisted.studyType === 'carotid'
+    ) {
+      return persisted;
+    }
+    return initialState();
   });
 
   const { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft } = useAutoSave<CarotidFormStateV1>(

@@ -62,6 +62,14 @@ const STUDY_ID = 'arterialLE';
 // ============================================================================
 
 interface ArterialFormStateV1 {
+  /**
+   * Wave 3.2 (Part 03 MEDIUM) — runtime schema version. The interface name
+   * carries `V1`, but without a runtime field a release that bumps the
+   * state shape (rename, add required field, change findings shape) would
+   * silently hydrate yesterday's draft as the new shape and either crash
+   * or render wrong data. `loadDraft` initializers must validate this.
+   */
+  readonly schemaVersion: 1;
   readonly studyType: 'arterialLE';
   readonly header: StudyHeaderValue;
   readonly findings: ArterialSegmentFindings;
@@ -109,6 +117,7 @@ function defaultHeader(): StudyHeaderValue {
 
 function initialState(): ArterialFormStateV1 {
   return {
+    schemaVersion: 1,
     studyType: 'arterialLE',
     header: defaultHeader(),
     findings: {},
@@ -204,8 +213,20 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   const { t } = useTranslation();
 
   const [state, dispatch] = useReducer(reducer, undefined, () => {
+    // Wave 3.2 (Part 03 MEDIUM + Part 10 HIGH) — validate `schemaVersion === 1`
+    // and `studyType === 'arterialLE'` before hydrating. Previously the
+    // arterial form hydrated any persisted blob without checks, so a release
+    // that bumped the shape (or a corrupted draft) would crash or silently
+    // render wrong data. On mismatch we fall back to fresh initial state.
     const persisted = loadDraft<ArterialFormStateV1>(STUDY_ID);
-    return persisted ?? initialState();
+    if (
+      persisted &&
+      persisted.schemaVersion === 1 &&
+      persisted.studyType === 'arterialLE'
+    ) {
+      return persisted;
+    }
+    return initialState();
   });
 
   const { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft } = useAutoSave<ArterialFormStateV1>(
