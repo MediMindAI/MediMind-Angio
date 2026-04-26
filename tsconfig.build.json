@@ -1,4 +1,7 @@
 {
+  // Production build typecheck — distinct from `tsconfig.json` because it
+  // narrows `include` to `src/**/*` only (excludes `scripts/`, `vite.config.ts`,
+  // `globals.d.ts`) and forces `noEmit: true`. Used by `npm run build`.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true

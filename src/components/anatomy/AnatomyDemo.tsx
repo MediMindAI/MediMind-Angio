@@ -47,9 +47,21 @@ const ALL_COMPETENCIES: readonly Competency[] = [
   'inconclusive',
 ] as const;
 
+/**
+ * Pick a uniformly-random element from a non-empty readonly array. The
+ * `arr.length > 0` runtime guard upgrades `T | undefined` (under
+ * `noUncheckedIndexedAccess`) to `T` without a defensive fallback value.
+ */
+function pickRandom<T>(arr: readonly T[]): T {
+  if (arr.length === 0) {
+    throw new Error('pickRandom called with empty array');
+  }
+  const idx = Math.floor(Math.random() * arr.length);
+  return arr[idx] as T;
+}
+
 function randomCompetency(): Competency {
-  const idx = Math.floor(Math.random() * ALL_COMPETENCIES.length);
-  return ALL_COMPETENCIES[idx] ?? 'normal';
+  return pickRandom(ALL_COMPETENCIES);
 }
 
 /** Seed a realistic-ish sample map for the initial render. */
@@ -94,10 +106,11 @@ export function AnatomyDemo(): React.ReactElement {
   }, []);
 
   const handleSegmentClick = useCallback((id: SegmentId, current: Competency) => {
-    // Cycle through the four competencies on click.
+    // Cycle through the four competencies on click. `ALL_COMPETENCIES` is
+    // a non-empty constant, so `nextIdx` always lands on a valid element.
     const idx = ALL_COMPETENCIES.indexOf(current);
     const nextIdx = (idx + 1) % ALL_COMPETENCIES.length;
-    const next = ALL_COMPETENCIES[nextIdx] ?? 'normal';
+    const next = ALL_COMPETENCIES[nextIdx] as Competency;
     setSegments((prev) => ({ ...prev, [id]: next }));
     setLastClicked(`${id} → ${next}`);
   }, []);
