@@ -153,7 +153,7 @@ type Action =
       impression: string;
       sonographerComments: string;
     }
-  | { type: 'RESET' }
+  | { type: 'RESET'; header?: VenousFormStateV1['header'] }
   | { type: 'HYDRATE'; value: VenousFormStateV1 };
 
 function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
@@ -283,9 +283,16 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       // shared object references (e.g. cptCode) don't leak across resets.
       // Explicitly clear impression + sonographerComments + clinicianComments
       // so no stale template prose survives a "New case" click.
+      //
+      // Phase 0 (encounter pivot prep): if `action.header` is supplied, use
+      // it verbatim — caller is responsible for preserving any visit-context
+      // fields (operatorName, institution) that should survive the reset.
+      // Mirrors arterial+carotid RESET semantics so all three studies behave
+      // identically. When `action.header` is omitted, falls back to the
+      // historic full-clear behavior.
       return {
         ...INITIAL_STATE,
-        header: { ...INITIAL_STATE.header },
+        header: action.header ?? { ...INITIAL_STATE.header },
         findings: {},
         recommendations: [],
         impression: '',
@@ -735,7 +742,15 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   }, []);
 
   const handleNewCaseConfirm = useCallback(() => {
-    dispatch({ type: 'RESET' });
+    // Phase 0: preserve visit-context fields that don't change between
+    // patients in the same shift — operatorName + institution. Matches
+    // arterial+carotid behavior so all three studies are consistent.
+    const keepHeader: VenousFormStateV1['header'] = {
+      ...INITIAL_STATE.header,
+      operatorName: state.header.operatorName,
+      institution: state.header.institution,
+    };
+    dispatch({ type: 'RESET', header: keepHeader });
     clearAutoSaveDraft();
     setHighlightId(null);
     setNewCaseOpen(false);
@@ -748,7 +763,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       color: 'teal',
       autoClose: 2500,
     });
-  }, [clearAutoSaveDraft, t]);
+  }, [clearAutoSaveDraft, t, state.header.operatorName, state.header.institution]);
 
   const handleNewCaseCancel = useCallback(() => {
     setNewCaseOpen(false);
