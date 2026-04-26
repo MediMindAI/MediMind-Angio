@@ -6,7 +6,7 @@
  * Right: Save draft · Preview PDF · Download PDF · Export FHIR JSON.
  *
  * Download PDF uses the existing `@react-pdf/renderer` pipeline via the
- * lazy-import pattern from PDFGenerator. Export JSON uses `downloadFhirBundle`.
+ * lazy-import pattern. Export JSON uses `downloadFhirBundle`.
  */
 
 import { memo, useCallback, useState } from 'react';
@@ -85,32 +85,22 @@ export const FormActions = memo(function FormActions({
     let anatomy: Parameters<typeof ReportDocument>[0]['anatomy'];
     let localized: ReturnType<typeof buildLocalizedNarrative> | undefined;
     if (isVenousForm(form)) {
-      const findings: Record<
-        string,
-        { refluxDurationMs?: number; apDiameterMm?: number }
-      > = {};
-      for (const seg of form.segments) {
-        if (seg.side !== 'left' && seg.side !== 'right') continue;
-        const key = `${seg.segmentId}-${seg.side}`;
-        findings[key] = {
-          refluxDurationMs: seg.refluxDurationMs,
-          apDiameterMm: seg.diameterMm,
-        };
-      }
+      // Findings live on `parameters.segmentFindings` — `form.segments[]` is
+      // always empty for current venous studies. Reading from segments would
+      // paint every leg "normal" regardless of disease (Area 10 BLOCKER).
+      const rawFindings = form.parameters['segmentFindings'];
+      const findings: VenousSegmentFindings =
+        rawFindings && typeof rawFindings === 'object'
+          ? (rawFindings as unknown as VenousSegmentFindings)
+          : {};
       const [anterior, posterior] = await Promise.all([
         loadAnatomyForPdf('le-anterior', findings),
         loadAnatomyForPdf('le-posterior', findings),
       ]);
       anatomy = { anterior, posterior };
 
-      // Build localized narrative for the PDF from the full findings map the
-      // form stashes on `parameters.segmentFindings`.
-      const rawFindings = form.parameters['segmentFindings'];
-      const narrativeFindings: VenousSegmentFindings =
-        rawFindings && typeof rawFindings === 'object'
-          ? (rawFindings as unknown as VenousSegmentFindings)
-          : {};
-      localized = buildLocalizedNarrative(narrativeFindings, t);
+      // Build localized narrative for the PDF from the same findings map.
+      localized = buildLocalizedNarrative(findings, t);
     } else if (form.studyType === 'arterialLE') {
       const rawFindings = form.parameters['segmentFindings'];
       const arterialFindings =
