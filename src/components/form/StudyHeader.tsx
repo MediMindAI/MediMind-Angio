@@ -33,6 +33,7 @@ import { PATIENT_POSITIONS } from '../../types/patient-position';
 import { VASCULAR_ICD10_CODES, icd10Display } from '../../constants/vascular-icd10';
 import { VASCULAR_CPT_CODES, cptDisplay } from '../../constants/vascular-cpt';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { localDateToIso, isoToLocalDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import classes from './StudyHeader.module.css';
 
 type StudyQuality = 'excellent' | 'good' | 'suboptimal' | 'limited';
@@ -63,17 +64,6 @@ function ageFromBirthDate(birthIso: string | undefined): number | null {
   const m = now.getMonth() - dob.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age -= 1;
   return age >= 0 ? age : null;
-}
-
-function isoDateToDate(iso: string | undefined): Date | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function dateToIso(d: Date | null): string | undefined {
-  if (!d) return undefined;
-  return d.toISOString().slice(0, 10);
 }
 
 function loadExpandedPref(): boolean {
@@ -209,9 +199,13 @@ export const StudyHeader = memo(function StudyHeader({
     const nextValue: StudyHeaderValue = {
       ...value,
       informedConsent: checked,
-      // Stamp the signed-at timestamp when the box is first checked.
+      // Stamp the signed-at timestamp when the box is first checked. Use a
+      // full ISO 8601 instant (with `Z`) so FHIR Consent.dateTime is a
+      // well-defined moment and cannot drift across day boundaries when
+      // re-interpreted by another timezone. Subsequent edits via the date
+      // picker write a YYYY-MM-DD string; FHIR `dateTime` accepts both.
       informedConsentSignedAt: checked
-        ? value.informedConsentSignedAt ?? new Date().toISOString().slice(0, 10)
+        ? value.informedConsentSignedAt ?? nowIsoTimestamp()
         : undefined,
     };
     onChange(nextValue);
@@ -298,8 +292,8 @@ export const StudyHeader = memo(function StudyHeader({
             <Grid.Col span={{ base: 6, sm: 3, lg: 2 }}>
               <EMRDatePicker
                 label={t('venousLE.header.birthDate')}
-                value={isoDateToDate(value.patientBirthDate)}
-                onChange={(d) => update('patientBirthDate', dateToIso(d))}
+                value={isoToLocalDate(value.patientBirthDate)}
+                onChange={(d) => update('patientBirthDate', localDateToIso(d))}
                 size="md"
                 data-testid="header-birthDate"
               />
@@ -330,8 +324,8 @@ export const StudyHeader = memo(function StudyHeader({
             <Grid.Col span={{ base: 6, sm: 4, lg: 3 }}>
               <EMRDatePicker
                 label={t('venousLE.header.studyDate')}
-                value={isoDateToDate(value.studyDate)}
-                onChange={(d) => update('studyDate', dateToIso(d) ?? '')}
+                value={isoToLocalDate(value.studyDate)}
+                onChange={(d) => update('studyDate', localDateToIso(d) ?? '')}
                 size="md"
                 data-testid="header-studyDate"
               />
@@ -483,8 +477,8 @@ export const StudyHeader = memo(function StudyHeader({
             <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
               <EMRDatePicker
                 label={t('venousLE.header.informedConsentSignedAt')}
-                value={isoDateToDate(value.informedConsentSignedAt)}
-                onChange={(d) => update('informedConsentSignedAt', dateToIso(d))}
+                value={isoToLocalDate(value.informedConsentSignedAt)}
+                onChange={(d) => update('informedConsentSignedAt', localDateToIso(d))}
                 size="md"
                 disabled={value.informedConsent !== true}
                 data-testid="header-informedConsentSignedAt"
