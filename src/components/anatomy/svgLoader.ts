@@ -54,7 +54,6 @@ export async function loadAnatomySvg(view: AnatomyView): Promise<string> {
       // as `text/plain`, so we warn rather than throw.
       const ct = response.headers.get('content-type');
       if (ct && !ct.includes('image/svg+xml') && !ct.includes('text/xml') && !ct.includes('application/xml')) {
-        // eslint-disable-next-line no-console
         console.warn('[svgLoader] unexpected content-type:', ct);
       }
       return text;
