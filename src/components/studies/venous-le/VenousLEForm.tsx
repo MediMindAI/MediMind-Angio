@@ -5,15 +5,15 @@
  *
  * Layout (desktop):
  *
- *   ┌────────────────────────── StudyHeader ────────────────────────────┐
- *   │                                                                   │
+ *   ┌───────────── EncounterContextBanner (Phase 3c) ──────────────────┐
+ *   │  Patient · age · encounter date | study chips | + Add | Edit     │
  *   ├──────────────────┬────────────────────────────────────────────────┤
  *   │  AnatomyView L/R │  SegmentTable (tabs: Right | Left | Bilateral) │
  *   │  (live recolor)  │  20 rows × 5 categorical columns               │
  *   ├──────────────────┴────────────────────────────────────────────────┤
- *   │  ReflexTimeTable — numeric ms / AP / depth                         │
- *   ├───────────────────────────────────────────────────────────────────┤
  *   │  ImpressionBlock — auto-generated + editable                      │
+ *   ├───────────────────────────────────────────────────────────────────┤
+ *   │  CommentsBlock                                                    │
  *   ├───────────────────────────────────────────────────────────────────┤
  *   │  CEAPPicker (collapsed)                                           │
  *   ├───────────────────────────────────────────────────────────────────┤
@@ -22,24 +22,48 @@
  *   │ FormActions — sticky footer                                       │
  *   └───────────────────────────────────────────────────────────────────┘
  *
- * State lives in a single useReducer keyed off `FormState`. A memoized
- * findings map drives the anatomy diagram coloring via `deriveCompetency`.
+ * State lives in a single useReducer keyed off `FormState`. Patient identity
+ * and visit context now live in the encounter (Phase 3b — the `<StudyHeader>`
+ * was dropped); per-study clinical fields (studyDate / studyTime / accession
+ * / cptCode / patientPosition / quality / protocol) stay in the local
+ * reducer. `stateToFormState` projects encounter header + per-study fields
+ * into the legacy `FormState.header` shape so downstream FHIR + PDF builders
+ * keep working unchanged until Phase 4a refactors them to take an
+ * `EncounterDraft` directly.
+ *
+ * Persistence (Phase 3b):
+ *   The reducer state is mirrored into `encounter.studies.venousLEBilateral`
+ *   on every change via `useEncounter().setStudyState()`. The encounter
+ *   store dual-writes to localStorage + IndexedDB, so reload survives. We
+ *   keep a small "lastSavedAt / hasUnsavedChanges" pair locally so the
+ *   sticky `<FormActions>` footer's saved-indicator UI keeps working —
+ *   but the source of truth is the encounter, not a per-study draft slot.
+ *   A legacy fallback path still reads pre-encounter `loadDraft(STUDY_ID)`
+ *   on first mount so existing single-study drafts hydrate cleanly.
  */
 
-import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Box, Grid, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
+import { useEncounter } from '../../../contexts/EncounterContext';
 import { AnatomyView, AnatomyLegend } from '../../anatomy';
 import type { Competency, SegmentId } from '../../../types/anatomy';
 import type { CeapClassification } from '../../../types/ceap';
-import type { FormState, Recommendation, StudyHeader as StudyHeaderShape } from '../../../types/form';
-import { useAutoSave, loadDraft } from '../../../hooks/useAutoSave';
+import type {
+  CptCode,
+  FormState,
+  Recommendation,
+  StudyHeader as StudyHeaderShape,
+} from '../../../types/form';
+import type { EncounterDraft } from '../../../types/encounter';
+import type { PatientPosition } from '../../../types/patient-position';
+import { loadDraft } from '../../../hooks/useAutoSave';
 import { ConfirmDialog } from '../../common';
-import { StudyHeader, type StudyHeaderValue } from '../../form/StudyHeader';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
+import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
 import { type SegmentTableView } from '../../form/SegmentTable';
 import { ImpressionBlock } from '../../form/ImpressionBlock';
@@ -74,6 +98,15 @@ import classes from './VenousLEForm.module.css';
 // Form state shape — superset of the shared FormState with Phase-1 extras
 // ============================================================================
 
+type StudyQuality = 'excellent' | 'good' | 'suboptimal' | 'limited';
+type StudyProtocol = 'standard' | 'dvt' | 'reflux' | 'preop';
+
+/**
+ * Phase 3b — encounter pivot. The header is gone; encounter-level fields
+ * (patient identity, operator, referring physician, institution, ICD-10s,
+ * indicationNotes, consent, medications) live on the encounter via
+ * `useEncounter()`. Per-study clinical fields stay top-level here.
+ */
 interface VenousFormStateV1 {
   /**
    * Wave 3.2 (Part 03 MEDIUM) — runtime schema version. The interface name
@@ -84,7 +117,15 @@ interface VenousFormStateV1 {
    */
   readonly schemaVersion: 1;
   readonly studyType: 'venousLEBilateral';
-  readonly header: StudyHeaderValue;
+  // Per-study clinical fields (Phase 3b — were nested under `header`).
+  readonly studyDate: string;
+  readonly studyTime?: string;
+  readonly accessionNumber?: string;
+  readonly cptCode?: CptCode;
+  readonly patientPosition?: PatientPosition;
+  readonly quality?: StudyQuality;
+  readonly protocol?: StudyProtocol;
+  // Per-study clinical state.
   readonly findings: VenousSegmentFindings;
   /** Current segment table tab. */
   readonly view: SegmentTableView;
@@ -108,12 +149,11 @@ const DEFAULT_CPT = defaultCptForStudy('venousLEBilateral');
 const INITIAL_STATE: VenousFormStateV1 = {
   schemaVersion: 1,
   studyType: 'venousLEBilateral',
-  header: {
-    patientName: '',
-    studyDate: TODAY_ISO,
-    // Default CPT matches the study type; user can override.
-    cptCode: { code: DEFAULT_CPT.code, display: cptDisplay(DEFAULT_CPT, 'en') },
-  },
+  studyDate: TODAY_ISO,
+  protocol: 'standard',
+  // Default CPT matches the study type; user can override (post Phase 5
+  // when per-study clinical fields get UI again).
+  cptCode: { code: DEFAULT_CPT.code, display: cptDisplay(DEFAULT_CPT, 'en') },
   findings: {},
   view: 'right',
   impression: '',
@@ -128,8 +168,25 @@ const INITIAL_STATE: VenousFormStateV1 = {
 // Reducer
 // ============================================================================
 
+/**
+ * Phase 3b — single discriminated `SET_STUDY_FIELD` action covers all
+ * per-study clinical scalar fields. The `field` discriminator pairs with a
+ * matching `value` payload so TS catches typos at the dispatch site. We
+ * picked the unified shape over six tiny `SET_*` variants because the
+ * fields are all "scalar field on the local reducer" — same handling, no
+ * per-field side effects.
+ */
+type StudyField =
+  | { field: 'studyDate'; value: string }
+  | { field: 'studyTime'; value: string | undefined }
+  | { field: 'accessionNumber'; value: string | undefined }
+  | { field: 'cptCode'; value: CptCode | undefined }
+  | { field: 'patientPosition'; value: PatientPosition | undefined }
+  | { field: 'quality'; value: StudyQuality | undefined }
+  | { field: 'protocol'; value: StudyProtocol | undefined };
+
 type Action =
-  | { type: 'SET_HEADER'; value: StudyHeaderValue }
+  | ({ type: 'SET_STUDY_FIELD' } & StudyField)
   | {
       type: 'SET_FINDING';
       id: VenousLEFullSegmentId;
@@ -153,15 +210,36 @@ type Action =
       impression: string;
       sonographerComments: string;
     }
-  | { type: 'RESET'; header?: VenousFormStateV1['header'] }
+  | { type: 'RESET' }
   | { type: 'HYDRATE'; value: VenousFormStateV1 };
 
 function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
   switch (action.type) {
     case 'HYDRATE':
       return { ...action.value };
-    case 'SET_HEADER':
-      return { ...state, header: action.value };
+    case 'SET_STUDY_FIELD': {
+      // Discriminated update — TS narrows action.value via action.field.
+      switch (action.field) {
+        case 'studyDate':
+          return { ...state, studyDate: action.value };
+        case 'studyTime':
+          return { ...state, studyTime: action.value };
+        case 'accessionNumber':
+          return { ...state, accessionNumber: action.value };
+        case 'cptCode':
+          return { ...state, cptCode: action.value };
+        case 'patientPosition':
+          return { ...state, patientPosition: action.value };
+        case 'quality':
+          return { ...state, quality: action.value };
+        case 'protocol':
+          return { ...state, protocol: action.value };
+        default: {
+          const _exhaustive: never = action;
+          return _exhaustive;
+        }
+      }
+    }
     case 'SET_FINDING': {
       const prev = state.findings[action.id] ?? {};
       const merged: VenousSegmentFinding = { ...prev, ...action.patch };
@@ -279,29 +357,12 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       };
     }
     case 'RESET':
-      // Return a fresh shallow clone of INITIAL_STATE so template-like
-      // shared object references (e.g. cptCode) don't leak across resets.
-      // Explicitly clear impression + sonographerComments + clinicianComments
-      // so no stale template prose survives a "New case" click.
-      //
-      // Phase 0 (encounter pivot prep): if `action.header` is supplied, use
-      // it verbatim — caller is responsible for preserving any visit-context
-      // fields (operatorName, institution) that should survive the reset.
-      // Mirrors arterial+carotid RESET semantics so all three studies behave
-      // identically. When `action.header` is omitted, falls back to the
-      // historic full-clear behavior.
-      return {
-        ...INITIAL_STATE,
-        header: action.header ?? { ...INITIAL_STATE.header },
-        findings: {},
-        recommendations: [],
-        impression: '',
-        impressionEdited: false,
-        sonographerComments: '',
-        clinicianComments: '',
-        ceap: undefined,
-        view: 'right',
-      };
+      // Phase 3b: encounter header is now untouched (lives outside this
+      // reducer) so RESET only clears the per-study clinical fields. Per-
+      // study scalars (studyDate, protocol, default cptCode) reset to their
+      // INITIAL_STATE values; quality / position / accession / cptCode
+      // overrides clear; findings / impressions / comments / ceap clear.
+      return { ...INITIAL_STATE };
     default: {
       const _exhaustive: never = action;
       return _exhaustive;
@@ -313,31 +374,45 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
 // FHIR FormState projection (for PDF + JSON export)
 // ============================================================================
 
-function stateToFormState(s: VenousFormStateV1): FormState {
+/**
+ * Phase 3b — composes encounter-level fields (read from the encounter
+ * context) with per-study clinical fields (read from local reducer state)
+ * into the legacy `FormState.header` shape. Phase 4a will refactor the
+ * downstream FHIR + PDF builders to take `EncounterDraft` directly and
+ * retire this projection.
+ */
+export function stateToFormState(
+  s: VenousFormStateV1,
+  encounter: EncounterDraft,
+): FormState {
+  const eh = encounter.header;
   const headerOut: StudyHeaderShape = {
-    patientName: s.header.patientName,
-    patientId: s.header.patientId,
-    patientBirthDate: s.header.patientBirthDate,
-    patientGender: s.header.patientGender,
-    studyDate: s.header.studyDate,
-    operatorName: s.header.operatorName,
-    referringPhysician: s.header.referringPhysician,
-    institution: s.header.institution,
-    accessionNumber: s.header.accessionNumber,
-    informedConsent: s.header.informedConsent,
-    informedConsentSignedAt: s.header.informedConsentSignedAt,
-    patientPosition: s.header.patientPosition,
-    medications: s.header.medications,
-    icd10Codes: s.header.icd10Codes,
-    cptCode: s.header.cptCode,
+    // Encounter-level fields
+    patientName: eh.patientName,
+    patientId: eh.patientId,
+    patientBirthDate: eh.patientBirthDate,
+    patientGender: eh.patientGender,
+    operatorName: eh.operatorName,
+    referringPhysician: eh.referringPhysician,
+    institution: eh.institution,
+    informedConsent: eh.informedConsent,
+    informedConsentSignedAt: eh.informedConsentSignedAt,
+    medications: eh.medications,
+    icd10Codes: eh.icd10Codes,
+    // Per-study fields — fall back to encounter date when local studyDate
+    // is unset (defensive; INITIAL_STATE sets studyDate so this is rare).
+    studyDate: s.studyDate || eh.encounterDate,
+    accessionNumber: s.accessionNumber,
+    patientPosition: s.patientPosition,
+    cptCode: s.cptCode,
   };
   return {
     studyType: 'venousLEBilateral',
     header: headerOut,
     narrative: {
-      // Wave 4.9 — header.indicationNotes is the new field; fall back to the
-      // legacy `indication` for back-compat with existing drafts.
-      indication: s.header.indicationNotes ?? s.header.indication,
+      // Encounter-level indication notes flow through as the legacy
+      // `narrative.indication` slot the PDF + FHIR builders read.
+      indication: eh.indicationNotes,
       impression: s.impression,
       sonographerComments: s.sonographerComments || undefined,
       clinicianComments: s.clinicianComments || undefined,
@@ -451,6 +526,50 @@ const CommentsBlock = memo(function CommentsBlock({
 });
 
 // ============================================================================
+// Reducer-init helper — hydrate from encounter.studies first, then legacy.
+// ============================================================================
+
+/**
+ * Reducer initializer. Order:
+ *   1. If the encounter has a snapshot under `studies.venousLEBilateral`
+ *      with the correct schema, use it.
+ *   2. Otherwise fall back to the pre-encounter per-study draft slot
+ *      (back-compat for users with in-flight work from before the encounter
+ *      pivot). Strip any legacy `header` field on read.
+ *   3. Otherwise INITIAL_STATE.
+ *
+ * Centralised so the per-encounter `useReducer` re-mount path uses the
+ * same precedence as the first mount.
+ */
+function initFromEncounter(
+  encounter: EncounterDraft | null,
+): VenousFormStateV1 {
+  if (encounter) {
+    const persisted = encounter.studies?.venousLEBilateral;
+    if (
+      persisted &&
+      typeof persisted === 'object' &&
+      (persisted as Partial<VenousFormStateV1>).schemaVersion === 1 &&
+      (persisted as Partial<VenousFormStateV1>).studyType === 'venousLEBilateral'
+    ) {
+      return persisted as VenousFormStateV1;
+    }
+  }
+  // Legacy fallback — strip any pre-encounter `header` field if present.
+  const legacy = loadDraft<VenousFormStateV1 & { header?: unknown }>(STUDY_ID);
+  if (
+    legacy &&
+    legacy.schemaVersion === 1 &&
+    legacy.studyType === 'venousLEBilateral'
+  ) {
+    const { header: _drop, ...rest } = legacy;
+    void _drop;
+    return { ...INITIAL_STATE, ...rest };
+  }
+  return INITIAL_STATE;
+}
+
+// ============================================================================
 // Main component
 // ============================================================================
 
@@ -462,7 +581,17 @@ function isBuiltInTemplate(tpl: AnyTemplate): tpl is VenousLETemplate {
 
 export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const { t } = useTranslation();
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const { encounter, setStudyState } = useEncounter();
+
+  // Lazy reducer init — read encounter snapshot OR legacy draft on first
+  // render. The encounter context's sync-hydration path (Phase 2a) gives us
+  // a populated encounter on the very first render when one already exists
+  // in localStorage / IDB cache.
+  const [state, dispatch] = useReducer(
+    reducer,
+    encounter,
+    initFromEncounter,
+  );
   const [highlightId, setHighlightId] = useState<VenousLEFullSegmentId | null>(null);
   /** Template awaiting confirmation (set when user picks one on a non-empty form). */
   const [pendingTemplate, setPendingTemplate] = useState<AnyTemplate | null>(null);
@@ -481,34 +610,105 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
     () => loadRecentTemplateIds('venousLEBilateral'),
   );
 
-  // Hydrate from draft on mount (one-shot).
-  // Wave 3.2 (Part 03 MEDIUM) — validate `schemaVersion === 1` before
-  // hydrating. If a future release bumps the shape, drafts persisted under
-  // the old shape will be ignored (initial state used) instead of silently
-  // crashing or rendering stale data.
-  useEffect(() => {
-    const draft = loadDraft<VenousFormStateV1>(STUDY_ID);
-    if (
-      draft &&
-      draft.schemaVersion === 1 &&
-      draft.studyType === 'venousLEBilateral'
-    ) {
-      dispatch({ type: 'HYDRATE', value: draft });
-    }
-  }, []);
+  // ---- Persistence: mirror state into encounter.studies.venousLEBilateral.
+  //
+  // Approach chosen (per Phase 3b brief): drop standalone `useAutoSave`,
+  // route persistence through `useEncounter().setStudyState()`. The
+  // encounter store already dual-writes localStorage + IDB on every
+  // mutation, so reload survives. We track `lastSavedAt` / `dirty` locally
+  // to keep the sticky `<FormActions>` saved-indicator UI working.
+  // Rationale: a single source of truth (encounter) avoids the IDB-key
+  // collision risk between encounters AND eliminates the legacy
+  // `angio-study-draft-venousLEBilateral` key as a long-lived artefact.
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [dirty, setDirty] = useState<boolean>(false);
 
-  // Auto-save.
-  const { lastSavedAt, hasUnsavedChanges, saveNow, clearDraft: clearAutoSaveDraft } =
-    useAutoSave<VenousFormStateV1>(STUDY_ID, state, { debounceMs: 1500 });
+  // Stable refs so the persistence effect can call setStudyState without
+  // depending on `encounter` (which mutates on every save and would create
+  // a feedback loop: save → encounter changes → effect re-runs → save).
+  const setStudyStateRef = useRef(setStudyState);
+  const encounterPresentRef = useRef<boolean>(encounter !== null);
+  useEffect(() => {
+    setStudyStateRef.current = setStudyState;
+    encounterPresentRef.current = encounter !== null;
+  }, [setStudyState, encounter]);
+
+  // Skip the very first sync — INITIAL_STATE / hydrated state shouldn't
+  // mark the form dirty until the user actually edits.
+  const firstSyncRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    if (!encounterPresentRef.current) return;
+    if (firstSyncRef.current) {
+      firstSyncRef.current = false;
+      return;
+    }
+    setStudyStateRef.current('venousLEBilateral', state as VenousFormStateV1);
+    setLastSavedAt(new Date());
+    setDirty(false);
+    // We intentionally depend on `state` only. The setStudyState callback
+    // and encounter presence are read through stable refs so each save
+    // doesn't re-arm this effect (which would loop because saving mutates
+    // the encounter reference).
+  }, [state]);
+
+  // Rehydrate when the encounter context resolves AFTER the reducer mounted
+  // with an empty cache — covers the async IDB-load path. Only fires when
+  // a real persisted snapshot lands and differs from the in-memory state.
+  const hasHydratedFromAsyncRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (!encounter || hasHydratedFromAsyncRef.current) return;
+    const persisted = encounter.studies?.venousLEBilateral;
+    if (
+      persisted &&
+      typeof persisted === 'object' &&
+      (persisted as Partial<VenousFormStateV1>).schemaVersion === 1 &&
+      (persisted as Partial<VenousFormStateV1>).studyType === 'venousLEBilateral' &&
+      persisted !== state
+    ) {
+      // Skip if the snapshot equals the current state by reference (the
+      // common case once we've synced once).
+      hasHydratedFromAsyncRef.current = true;
+      dispatch({ type: 'HYDRATE', value: persisted as VenousFormStateV1 });
+      // Suppress the next mirror-write (which would clobber the snapshot
+      // we just hydrated FROM with the same value).
+      firstSyncRef.current = true;
+    }
+    // Same rationale as above — we don't want this firing on every
+    // encounter mutation. Once we've hydrated once we never re-import.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encounter]);
+
+  // Manual save — no-op when state is already mirrored, but bumps the
+  // saved-indicator timestamp so the UI shows a fresh "saved just now".
+  const saveNow = useCallback(() => {
+    if (!encounterPresentRef.current) return;
+    setStudyStateRef.current('venousLEBilateral', state as VenousFormStateV1);
+    setLastSavedAt(new Date());
+    setDirty(false);
+  }, [state]);
+
+  // Marks the form dirty between auto-syncs. The persistence effect above
+  // is the canonical clean-state edge: every time it fires it calls
+  // `setDirty(false)`. Between fires (the brief window before the post-
+  // render flush) we'd be lying if we showed clean — but the persistence
+  // effect runs synchronously after every render, so the gap is too short
+  // to matter in the UI. We track a separate `firstDirtyRef` so the
+  // initial mount doesn't flash a dirty state while the first sync is
+  // still pending.
+  const firstDirtyRef = useRef<boolean>(true);
+  useEffect(() => {
+    if (firstDirtyRef.current) {
+      firstDirtyRef.current = false;
+      return;
+    }
+    setDirty(true);
+  }, [state]);
 
   // Derived anatomy segment map (memoized — only recomputes when findings change).
   const competencyMap = useMemo(() => competencyMapFromFindings(state.findings), [state.findings]);
 
   // ---------------- Callbacks ----------------
-
-  const handleHeader = useCallback((v: StudyHeaderValue) => {
-    dispatch({ type: 'SET_HEADER', value: v });
-  }, []);
 
   const handleView = useCallback((v: SegmentTableView) => {
     dispatch({ type: 'SET_VIEW', value: v });
@@ -742,16 +942,11 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   }, []);
 
   const handleNewCaseConfirm = useCallback(() => {
-    // Phase 0: preserve visit-context fields that don't change between
-    // patients in the same shift — operatorName + institution. Matches
-    // arterial+carotid behavior so all three studies are consistent.
-    const keepHeader: VenousFormStateV1['header'] = {
-      ...INITIAL_STATE.header,
-      operatorName: state.header.operatorName,
-      institution: state.header.institution,
-    };
-    dispatch({ type: 'RESET', header: keepHeader });
-    clearAutoSaveDraft();
+    // Phase 3b: encounter header is preserved automatically (it lives in
+    // the encounter context, not the per-study reducer). RESET clears
+    // findings + impressions + recommendations + per-study clinical fields
+    // back to INITIAL_STATE; the encounter banner stays put.
+    dispatch({ type: 'RESET' });
     setHighlightId(null);
     setNewCaseOpen(false);
     notifications.show({
@@ -763,7 +958,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       color: 'teal',
       autoClose: 2500,
     });
-  }, [clearAutoSaveDraft, t, state.header.operatorName, state.header.institution]);
+  }, [t]);
 
   const handleNewCaseCancel = useCallback(() => {
     setNewCaseOpen(false);
@@ -781,15 +976,19 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
     ['mod+shift+N', () => handleNewCaseRequest(), { preventDefault: true }],
   ]);
 
-  // Project to FormState for FHIR/PDF.
-  const formState = useMemo(() => stateToFormState(state), [state]);
+  // Project to FormState for FHIR/PDF. Returns null when encounter hasn't
+  // hydrated yet — renders a thin loading placeholder below in that case.
+  const formState = useMemo<FormState | null>(
+    () => (encounter ? stateToFormState(state, encounter) : null),
+    [state, encounter],
+  );
 
-  // Filename for exports.
+  // Filename for exports — combines encounter patient name + per-study date.
   const baseFilename = useMemo(() => {
-    const patient = (state.header.patientName || 'patient').replace(/\s+/g, '-');
-    const date = state.header.studyDate || TODAY_ISO;
+    const patient = (encounter?.header.patientName || 'patient').replace(/\s+/g, '-');
+    const date = state.studyDate || encounter?.header.encounterDate || TODAY_ISO;
     return `venous-le-${patient}-${date}`;
-  }, [state.header.patientName, state.header.studyDate]);
+  }, [encounter?.header.patientName, encounter?.header.encounterDate, state.studyDate]);
 
   // Highlight → single anatomy `highlightId` (anatomy only accepts one).
   const anatomyHighlight = highlightId ?? null;
@@ -801,7 +1000,13 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       <div className={classes.container}>
         <Stack gap="md">
           <BackToStudiesButton />
-          <StudyHeader value={state.header} onChange={handleHeader} />
+          {/*
+            Phase 3b — `<StudyHeader>` was removed. The compact
+            `<EncounterContextBanner>` replaces it visually; encounter-level
+            fields are now read from `useEncounter()` and edited on the
+            intake page.
+          */}
+          <EncounterContextBanner />
 
           <Group justify="flex-end" gap="xs" wrap="wrap">
             <button
@@ -896,13 +1101,15 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
         </Stack>
       </div>
 
-      <FormActions
-        form={formState}
-        lastSavedAt={lastSavedAt}
-        hasUnsavedChanges={hasUnsavedChanges}
-        onSaveDraft={saveNow}
-        baseFilename={baseFilename}
-      />
+      {formState && (
+        <FormActions
+          form={formState}
+          lastSavedAt={lastSavedAt}
+          hasUnsavedChanges={dirty}
+          onSaveDraft={saveNow}
+          baseFilename={baseFilename}
+        />
+      )}
 
       <ConfirmDialog
         opened={pendingTemplate !== null}
