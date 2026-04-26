@@ -111,8 +111,17 @@ interface FormStateBase {
   readonly narrative: StudyNarrative;
   readonly ceap?: CeapClassification;
   readonly recommendations: ReadonlyArray<Recommendation>;
-  /** Free-form parameter bag — indexed by ParameterDef.id, study-specific. */
-  readonly parameters: Readonly<Record<string, string | number | boolean | undefined>>;
+  /**
+   * Free-form parameter bag — indexed by ParameterDef.id, study-specific.
+   *
+   * Widened to `unknown` (Wave 2.5) so each study variant can carry its own
+   * complex findings/pressures/nascet payloads without `as unknown as string`
+   * casts at the storage boundary. Per-study payload shapes and runtime type
+   * guards live in `./parameters.ts` — consumers should use the guards
+   * (`isVenousFindings` / `isArterialFindings` / `isCarotidFindings` /
+   * `isCarotidNascet` / `isArterialPressures`) rather than blind casts.
+   */
+  readonly parameters: Readonly<Record<string, unknown>>;
 }
 
 export interface VenousLEBilateralFormState extends FormStateBase {
