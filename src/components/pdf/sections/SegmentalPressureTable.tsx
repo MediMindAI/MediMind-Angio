@@ -15,7 +15,7 @@
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
+import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY, PDF_BAND_COLORS } from '../pdfTheme';
 import type { SegmentalPressures } from '../../studies/arterial-le/config';
 import type { AbiBand } from '../../studies/arterial-le/config';
 import {
@@ -57,25 +57,9 @@ const COL_FLEX = {
   toe: 0.8,
 } as const;
 
-/**
- * Tint a band chip. Plain-language: same color role system as the form's
- * ABI badges, but flattened to @react-pdf inline styles.
- */
-const BAND_BG: Record<'success' | 'info' | 'warning' | 'error' | 'neutral', string> = {
-  success: '#bbf7d0',
-  info: '#bfdbfe',
-  warning: '#fde68a',
-  error: '#fecaca',
-  neutral: '#e5e7eb',
-};
-
-const BAND_FG: Record<'success' | 'info' | 'warning' | 'error' | 'neutral', string> = {
-  success: '#166534',
-  info: '#1e40af',
-  warning: '#92400e',
-  error: '#991b1b',
-  neutral: '#374151',
-};
+// Band tints sourced from `PDF_BAND_COLORS` (Wave 4.3 — single source of
+// truth in `pdfTheme.ts`). Same color role system as the form's ABI
+// badges, flattened to @react-pdf inline styles.
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -177,8 +161,8 @@ function PressureBadge({
   readonly bandLabel: string;
 }): ReactElement {
   const role = abiBandColorRole(band);
-  const bg = BAND_BG[role];
-  const fg = BAND_FG[role];
+  const bg = PDF_BAND_COLORS[role].bg;
+  const fg = PDF_BAND_COLORS[role].fg;
   return (
     <View style={styles.badge}>
       <Text style={styles.badgeLabel}>{label}</Text>

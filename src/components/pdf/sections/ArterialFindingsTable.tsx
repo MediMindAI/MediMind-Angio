@@ -15,7 +15,7 @@
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
+import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY, PDF_BAND_COLORS } from '../pdfTheme';
 import type {
   ArterialSegmentFindings,
   ArterialSegmentFinding,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     borderBottomStyle: 'solid',
   },
   rowRed: {
-    backgroundColor: '#fecaca',
+    backgroundColor: PDF_BAND_COLORS.error.bg,
   },
   emptyMessage: {
     fontSize: PDF_FONT_SIZES.footnote,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     fontSize: PDF_FONT_SIZES.label,
   },
   cellRed: {
-    color: '#991b1b',
+    color: PDF_BAND_COLORS.error.fg,
     fontWeight: 'bold',
   },
   headCell: {

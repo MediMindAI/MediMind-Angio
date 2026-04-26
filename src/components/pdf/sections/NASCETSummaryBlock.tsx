@@ -8,7 +8,7 @@
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
-import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
+import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY, PDF_BAND_COLORS } from '../pdfTheme';
 import type {
   CarotidNascetClassification,
   NascetCategory,
@@ -28,19 +28,8 @@ export interface NASCETSummaryBlockProps {
   readonly labels: NASCETSummaryLabels;
 }
 
-const BAND_BG: Record<'success' | 'warning' | 'error' | 'neutral', string> = {
-  success: '#bbf7d0',
-  warning: '#fde68a',
-  error: '#fecaca',
-  neutral: '#e5e7eb',
-};
-
-const BAND_FG: Record<'success' | 'warning' | 'error' | 'neutral', string> = {
-  success: '#166534',
-  warning: '#92400e',
-  error: '#991b1b',
-  neutral: '#374151',
-};
+// Band tints sourced from `PDF_BAND_COLORS` (Wave 4.3 — single source of
+// truth in `pdfTheme.ts`). NASCET only uses 4 of 5 bands (no `info`).
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -85,8 +74,8 @@ function chipFor(cat: NascetCategory | undefined, labels: NASCETSummaryLabels): 
       <Text
         style={{
           ...styles.chip,
-          backgroundColor: BAND_BG.neutral,
-          color: BAND_FG.neutral,
+          backgroundColor: PDF_BAND_COLORS.neutral.bg,
+          color: PDF_BAND_COLORS.neutral.fg,
         }}
       >
         {labels.noneLabel}
@@ -98,8 +87,8 @@ function chipFor(cat: NascetCategory | undefined, labels: NASCETSummaryLabels): 
     <Text
       style={{
         ...styles.chip,
-        backgroundColor: BAND_BG[role],
-        color: BAND_FG[role],
+        backgroundColor: PDF_BAND_COLORS[role].bg,
+        color: PDF_BAND_COLORS[role].fg,
       }}
     >
       {labels.categoryName[cat]}
