@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { STORAGE_KEYS, migratedGetItem } from '../constants/storage-keys';
 
 export type Language = 'ka' | 'en' | 'ru';
@@ -90,10 +90,13 @@ export function TranslationProvider({ children }: TranslationProviderProps) {
 
   const [translations, setTranslations] = useState<TranslationObject | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const mountedRef = useRef(true);
 
   useEffect(() => {
-    mountedRef.current = true;
+    // Per-effect cancellation flag. Unlike a shared mountedRef, this is captured
+    // by each effect run individually, so a STALE load (e.g. user toggled
+    // en → ka quickly and the older en load resolves AFTER ka finished) sees
+    // its own `cancelled === true` and no-ops instead of clobbering current state.
+    let cancelled = false;
 
     const load = async (): Promise<void> => {
       setIsLoading(true);
@@ -106,13 +109,14 @@ export function TranslationProvider({ children }: TranslationProviderProps) {
         }
 
         const loaded = await loadTranslations(lang);
-        if (mountedRef.current) {
+        if (!cancelled) {
           setTranslations(loaded);
           setIsLoading(false);
         }
       } catch (error) {
-        console.error(`Failed to load translations for ${lang}:`, error);
-        if (mountedRef.current) {
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.warn(`[TranslationContext] load failed for ${lang}:`, error);
           if (lang !== 'en' && translationsCache.en) {
             setTranslations(translationsCache.en);
           }
@@ -124,7 +128,7 @@ export function TranslationProvider({ children }: TranslationProviderProps) {
     void load();
 
     return () => {
-      mountedRef.current = false;
+      cancelled = true;
     };
   }, [lang]);
 
