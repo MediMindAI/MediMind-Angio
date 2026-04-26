@@ -30,6 +30,8 @@
       "vessel": "სისხლძარღვი"
     },
     "param": {
+      "psv": "PSV",
+      "edv": "EDV",
       "psvCmS": "PSV (სმ/წმ)",
       "edvCmS": "EDV (სმ/წმ)",
       "flowDirection": "ნაკადი",

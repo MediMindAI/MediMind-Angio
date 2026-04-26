@@ -91,6 +91,14 @@ describe('i18n parity (per-study namespaces)', () => {
     expect(flatten(ruCarotid)).toEqual(flatten(enCarotid));
   });
 
+  it('carotid: contains psv/edv column-header keys (Wave 4.8)', () => {
+    // Wave 4.8: PSV/EDV column headers were hardcoded English. Now they
+    // route through t() for consistency with neighboring headers.
+    const en = flatten(enCarotid);
+    expect(en).toContain('carotid.param.psv');
+    expect(en).toContain('carotid.param.edv');
+  });
+
   it('ceap: en/ka/ru parity', () => {
     expect(flatten(kaCeap)).toEqual(flatten(enCeap));
     expect(flatten(ruCeap)).toEqual(flatten(enCeap));

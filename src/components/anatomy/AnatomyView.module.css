@@ -1,0 +1,23 @@
+/*
+ * AnatomyView — segment hover affordances.
+ *
+ * Wave 4.6 (Part 01 MEDIUM) — moved off the inline `<style>` element inside
+ * the component tree. A module-level inline <style> string mounted into a
+ * SPA route fights React's render lifecycle and runs an extra HTML-injection
+ * pass on every `view`/`segments` change. CSS-module class scoping keeps the
+ * rule isolated and lets the bundler hash it.
+ *
+ * The `--anatomy-segment-hover-stroke` custom property is set inline by the
+ * component (it depends on the runtime `size` prop's `segmentStrokeWidth`),
+ * so the stylesheet stays static and the hit-strength stays dynamic.
+ */
+
+.host [data-segment-id] {
+  transition: stroke-width 150ms ease, filter 150ms ease;
+}
+
+.host[data-interactive='true'] [data-segment-id]:hover {
+  stroke-width: var(--anatomy-segment-hover-stroke);
+  filter: drop-shadow(0 0 3px rgba(49, 130, 206, 0.5));
+  cursor: pointer;
+}

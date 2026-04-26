@@ -128,8 +128,12 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
             <div className={`${classes.cell} ${classes.vesselCell} ${classes.headCell}`} role="columnheader">
               {t('carotid.segmentTable.vessel', 'Vessel')}
             </div>
-            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">PSV</div>
-            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">EDV</div>
+            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
+              {t('carotid.param.psv', 'PSV')}
+            </div>
+            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
+              {t('carotid.param.edv', 'EDV')}
+            </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
               {t('carotid.param.flowDirection', 'Flow')}
             </div>

@@ -30,6 +30,8 @@
       "vessel": "Vessel"
     },
     "param": {
+      "psv": "PSV",
+      "edv": "EDV",
       "psvCmS": "PSV (cm/s)",
       "edvCmS": "EDV (cm/s)",
       "flowDirection": "Flow",

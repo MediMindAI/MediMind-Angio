@@ -30,6 +30,8 @@
       "vessel": "Сосуд"
     },
     "param": {
+      "psv": "PSV",
+      "edv": "EDV",
       "psvCmS": "PSV (см/с)",
       "edvCmS": "EDV (см/с)",
       "flowDirection": "Поток",
