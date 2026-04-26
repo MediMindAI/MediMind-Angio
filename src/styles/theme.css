@@ -106,7 +106,7 @@
   --emr-error-alpha-20: rgba(229, 62, 62, 0.2);
 
   --emr-info: #3182ce;
-  --emr-info-light: #63b3ed;
+  --emr-info-light: var(--emr-light-accent);
   --emr-info-bg: #eff6ff;
   --emr-info-alpha-10: rgba(49, 130, 206, 0.1);
   --emr-info-alpha-15: rgba(49, 130, 206, 0.15);
@@ -128,6 +128,7 @@
 
   --emr-border-radius-sm: 4px;
   --emr-border-radius: 6px;
+  --emr-border-radius-md: 8px;
   --emr-border-radius-lg: 8px;
   --emr-border-radius-xl: 12px;
   --emr-border-radius-2xl: 16px;
@@ -195,6 +196,7 @@
   --emr-line-height-tight: 1.25;
   --emr-line-height-snug: 1.375;
   --emr-line-height-base: 1.5;
+  --emr-line-height-normal: 1.5;
   --emr-line-height-relaxed: 1.75;
 
   --emr-letter-spacing-tight: -0.03em;
