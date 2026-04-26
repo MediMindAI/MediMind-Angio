@@ -122,8 +122,10 @@ afterEach(async () => {
 
 // The form pulls in the full Mantine + reducer + template registry tree on
 // first render — under jsdom that easily blows past the 5 s default. Bump
-// the per-test cap to 30 s so the slow cold-start render isn't flaky.
-describe('ArterialLEForm — Phase 3b (encounter pivot)', { timeout: 30_000 }, () => {
+// the per-test cap to 60 s so the slow cold-start render isn't flaky under
+// parallel test runners (where CPU contention can stretch the cold start
+// well past 30 s).
+describe('ArterialLEForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, () => {
   it('does NOT render the legacy <StudyHeader> identity card', () => {
     const draft = buildDraft();
     localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
