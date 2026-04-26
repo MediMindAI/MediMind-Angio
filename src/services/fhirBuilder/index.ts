@@ -8,6 +8,10 @@
  */
 
 export { buildFhirBundle, downloadFhirBundle } from './buildBundle';
+export {
+  buildEncounterBundle,
+  type BuildEncounterBundleInput,
+} from './buildEncounterBundle';
 
 // Re-export the types so callers importing from `fhirBuilder` don't have to
 // reach into the narrow fhir types file separately.

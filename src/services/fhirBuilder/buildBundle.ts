@@ -49,8 +49,22 @@ import { buildCeapObservationEntry } from './observations/ceap';
 import { buildDiagnosticReportEntry } from './diagnosticReport';
 
 /**
- * Build the transaction Bundle for a form. Pure function — no network, no
- * side effects. Safe to call from anywhere.
+ * Build the transaction Bundle for a single study. Pure function — no
+ * network, no side effects. Safe to call from anywhere.
+ *
+ * Phase 4a relationship to `buildEncounterBundle`:
+ *   - This function stays as the canonical single-study path. It is the
+ *     back-compat surface for the Wave 1.4–1.6 + 2.5 + 3.4 + 4.7 + 5.1 test
+ *     suite (41 tests, byte-identical output guaranteed).
+ *   - Multi-study callers (Phase 4c FormActions when
+ *     `selectedStudyTypes.length >= 2`) call `buildEncounterBundle({
+ *     encounter, studyForms })` directly instead — the orchestrator mints
+ *     one Patient / Encounter / Practitioner / Organization across all the
+ *     study forms.
+ *   - The orchestrator and this single-study path share the same per-study
+ *     ID-minting helper inside `context.ts` (`mintPerStudyIds`), so optional-
+ *     resource gating (CEAP / Consent / position / sonographer / clinician /
+ *     ServiceRequest) stays consistent between the two entry points.
  */
 export function buildFhirBundle(form: FormState): Bundle {
   const ctx = createContext(form);
