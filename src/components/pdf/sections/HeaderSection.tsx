@@ -15,6 +15,8 @@ export interface HeaderSectionProps {
   readonly title: string;
   readonly subtitle?: string;
   readonly issueDate: string;
+  /** Localized "Issued" label rendered above the issue date. Defaults to "Issued". */
+  readonly issuedLabel?: string;
   readonly orgName?: string;
 }
 
@@ -80,7 +82,7 @@ export function HeaderSection(props: HeaderSectionProps): ReactElement {
           {props.orgName ? <Text style={styles.orgName}>{props.orgName}</Text> : null}
         </View>
         <View style={styles.right}>
-          <Text style={styles.dateLabel}>Issued</Text>
+          <Text style={styles.dateLabel}>{props.issuedLabel ?? 'Issued'}</Text>
           <Text style={styles.dateValue}>{props.issueDate}</Text>
         </View>
       </View>

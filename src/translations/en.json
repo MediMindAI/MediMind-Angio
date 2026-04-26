@@ -67,7 +67,9 @@
     "saveDraft": "Save draft",
     "downloadPDF": "Download PDF",
     "previewPDF": "Preview PDF",
-    "exportJSON": "Export FHIR JSON"
+    "exportJSON": "Export FHIR JSON",
+    "clearInput": "Clear",
+    "noOptionsFound": "No options found"
   },
   "competency": {
     "normal": "Normal",
@@ -92,6 +94,53 @@
       "reset": "Reset",
       "segmentCount": "Segments set:",
       "lastClick": "Last click:"
+    },
+    "segment": {
+      "cfv": "Common femoral vein",
+      "eiv": "External iliac vein",
+      "fv_prox": "Femoral vein (proximal)",
+      "fv_mid": "Femoral vein (mid)",
+      "fv_dist": "Femoral vein (distal)",
+      "pfv": "Profunda (deep femoral) vein",
+      "gsv_ak": "Great saphenous vein (above knee)",
+      "gsv_prox_calf": "Great saphenous vein (proximal calf)",
+      "gsv_mid_calf": "Great saphenous vein (mid calf)",
+      "gsv_dist_calf": "Great saphenous vein (distal calf)",
+      "pop_ak": "Popliteal vein (above knee)",
+      "pop_fossa": "Popliteal vein (fossa)",
+      "pop_bk": "Popliteal vein (below knee)",
+      "ptv": "Posterior tibial vein",
+      "per": "Peroneal vein",
+      "ssv": "Small saphenous vein",
+      "gastroc": "Gastrocnemius vein",
+      "soleal": "Soleal vein",
+      "sfj": "Saphenofemoral junction",
+      "spj": "Saphenopopliteal junction",
+      "ivc": "Inferior vena cava",
+      "lrv": "Left renal vein",
+      "cia": "Common iliac vein",
+      "eia": "External iliac vein",
+      "iia": "Internal iliac vein",
+      "cfa": "Common femoral artery",
+      "sfa": "Superficial femoral artery",
+      "pop_art": "Popliteal artery",
+      "at": "Anterior tibial artery",
+      "pt": "Posterior tibial artery",
+      "per_art": "Peroneal artery",
+      "dp": "Dorsalis pedis artery",
+      "cca": "Common carotid artery",
+      "ica": "Internal carotid artery",
+      "eca": "External carotid artery",
+      "va": "Vertebral artery",
+      "avf_inflow": "AVF inflow",
+      "avf_anastomosis": "AVF anastomosis",
+      "avf_outflow": "AVF outflow"
+    },
+    "side": {
+      "left": "left",
+      "right": "right",
+      "bilateral": "bilateral",
+      "midline": "midline"
     }
   },
   "errorBoundary": {
@@ -104,5 +153,13 @@
     "pdfDownloadFailed": "Failed to download PDF",
     "pdfPreviewFailed": "Failed to preview PDF",
     "jsonExportFailed": "Failed to export FHIR JSON"
+  },
+  "pdf": {
+    "issued": "Issued",
+    "pageLabel": "Page {current} / {total}"
+  },
+  "versionFooter": {
+    "aria": "Build version",
+    "buildPrefix": "build"
   }
 }

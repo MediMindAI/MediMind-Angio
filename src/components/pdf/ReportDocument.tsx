@@ -251,6 +251,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
           title={labels.title}
           subtitle={labels.subtitle ?? ''}
           issueDate={issueDate}
+          issuedLabel={labels.issueDateLabel}
           orgName={org?.name ?? ''}
         />
 
@@ -391,6 +392,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
           title={labels.title}
           subtitle={labels.subtitle ?? ''}
           issueDate={issueDate}
+          issuedLabel={labels.issueDateLabel}
           orgName={org?.name ?? ''}
         />
 

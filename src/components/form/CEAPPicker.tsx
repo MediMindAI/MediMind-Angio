@@ -39,43 +39,14 @@ const A_CODES: ReadonlyArray<CeapA> = ['As', 'Ap', 'Ad', 'An'];
 const P_CODES: ReadonlyArray<CeapP> = ['Pr', 'Po', 'Pro', 'Pn'];
 const MODIFIERS: ReadonlyArray<CeapModifier> = ['r', 's', 'a', 'n'];
 
-// C-axis descriptive labels (English fallback used if translation missing).
-const C_DESCRIPTIONS: Readonly<Record<CeapC, string>> = {
-  C0: 'No visible / palpable signs',
-  C1: 'Telangiectasies / reticular veins',
-  C2: 'Varicose veins',
-  C2r: 'Recurrent varicose veins',
-  C3: 'Edema',
-  C4a: 'Pigmentation / eczema',
-  C4b: 'Lipodermatosclerosis',
-  C4c: 'Corona phlebectatica',
-  C5: 'Healed venous ulcer',
-  C6: 'Active venous ulcer',
-  C6r: 'Recurrent active venous ulcer',
-};
-
-const E_DESCRIPTIONS: Readonly<Record<CeapE, string>> = {
-  Ec: 'Congenital',
-  Ep: 'Primary',
-  Es: 'Secondary',
-  Esi: 'Secondary intravenous',
-  Ese: 'Secondary extravenous',
-  En: 'No cause identified',
-};
-
-const A_DESCRIPTIONS: Readonly<Record<CeapA, string>> = {
-  As: 'Superficial',
-  Ap: 'Perforators',
-  Ad: 'Deep',
-  An: 'No anatomical location',
-};
-
-const P_DESCRIPTIONS: Readonly<Record<CeapP, string>> = {
-  Pr: 'Reflux',
-  Po: 'Obstruction',
-  Pro: 'Reflux + obstruction',
-  Pn: 'No pathophysiology',
-};
+// CEAP descriptive labels are sourced from `translations/ceap/{en,ka,ru}.json`.
+// Translation key suffixes are derived by stripping the leading axis letter and
+// lowercasing — e.g. `C4a` → `ceap.c.4a`, `Esi` → `ceap.e.si`. The single
+// exception is `Pro`, which maps to the historical key `ceap.p.rO` (kept for
+// backward compatibility with `ceapService.ts`).
+function pAxisKey(code: CeapP): string {
+  return code === 'Pro' ? 'rO' : code.slice(1).toLowerCase();
+}
 
 /** Empty default classification for first interaction. */
 const EMPTY: CeapClassification = {
@@ -97,36 +68,36 @@ export const CEAPPicker = memo(function CEAPPicker({
     () =>
       C_CODES.map((code) => ({
         value: code,
-        label: `${code} — ${C_DESCRIPTIONS[code]}`,
+        label: t(`ceap.c.${code.slice(1).toLowerCase()}`, code),
       })),
-    [],
+    [t],
   );
 
   const eOptions = useMemo<EMRRadioOption[]>(
     () =>
       E_CODES.map((code) => ({
         value: code,
-        label: `${code} — ${E_DESCRIPTIONS[code]}`,
+        label: t(`ceap.e.${code.slice(1).toLowerCase()}`, code),
       })),
-    [],
+    [t],
   );
 
   const aOptions = useMemo<EMRRadioOption[]>(
     () =>
       A_CODES.map((code) => ({
         value: code,
-        label: `${code} — ${A_DESCRIPTIONS[code]}`,
+        label: t(`ceap.a.${code.slice(1).toLowerCase()}`, code),
       })),
-    [],
+    [t],
   );
 
   const pOptions = useMemo<EMRRadioOption[]>(
     () =>
       P_CODES.map((code) => ({
         value: code,
-        label: `${code} — ${P_DESCRIPTIONS[code]}`,
+        label: t(`ceap.p.${pAxisKey(code)}`, code),
       })),
-    [],
+    [t],
   );
 
   const update = useCallback(

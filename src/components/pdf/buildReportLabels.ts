@@ -193,6 +193,7 @@ export function buildReportLabels(
   return {
     title: t(titleKey, 'Vascular Duplex Report'),
     subtitle: t(subtitleKey, ''),
+    issueDateLabel: t('pdf.issued', 'Issued'),
     preliminary: t('venousLE.status.preliminary', 'Preliminary'),
     patient: {
       patientName: t('venousLE.header.patientName', 'Patient name'),

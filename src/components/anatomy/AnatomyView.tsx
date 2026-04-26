@@ -260,14 +260,14 @@ export function AnatomyView({
       const y = wrapperRect ? event.clientY - wrapperRect.top : event.clientY;
       setTooltip({
         id,
-        label: humanLabelFromId(id),
+        label: humanLabelFromId(id, t),
         competency,
         x,
         y,
       });
       if (wrapperRef.current) wrapperRef.current.style.cursor = 'pointer';
     },
-    [isInteractive, findSegmentId, segmentsMap, defaultCompetency, tooltip],
+    [isInteractive, findSegmentId, segmentsMap, defaultCompetency, tooltip, t],
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -446,56 +446,54 @@ export function AnatomyView({
 // Label helper (decoupled from scripts/ to avoid bundling dev tooling).
 // ---------------------------------------------------------------------------
 
-const SEGMENT_BASE_LABELS: Record<string, string> = {
-  cfv: 'Common femoral vein',
-  eiv: 'External iliac vein',
-  'fv-prox': 'Femoral vein (proximal)',
-  'fv-mid': 'Femoral vein (mid)',
-  'fv-dist': 'Femoral vein (distal)',
-  pfv: 'Profunda (deep femoral) vein',
-  'gsv-ak': 'Great saphenous vein (above knee)',
-  'gsv-prox-calf': 'Great saphenous vein (proximal calf)',
-  'gsv-mid-calf': 'Great saphenous vein (mid calf)',
-  'gsv-dist-calf': 'Great saphenous vein (distal calf)',
-  'pop-ak': 'Popliteal vein (above knee)',
-  'pop-fossa': 'Popliteal vein (fossa)',
-  'pop-bk': 'Popliteal vein (below knee)',
-  ptv: 'Posterior tibial vein',
-  per: 'Peroneal vein',
-  ssv: 'Small saphenous vein',
-  gastroc: 'Gastrocnemius vein',
-  soleal: 'Soleal vein',
-  sfj: 'Saphenofemoral junction',
-  spj: 'Saphenopopliteal junction',
-  ivc: 'Inferior vena cava',
-  lrv: 'Left renal vein',
-  cia: 'Common iliac vein',
-  eia: 'External iliac vein',
-  iia: 'Internal iliac vein',
-  cfa: 'Common femoral artery',
-  sfa: 'Superficial femoral artery',
-  'pop-art': 'Popliteal artery',
-  at: 'Anterior tibial artery',
-  pt: 'Posterior tibial artery',
-  'per-art': 'Peroneal artery',
-  dp: 'Dorsalis pedis artery',
-  cca: 'Common carotid artery',
-  ica: 'Internal carotid artery',
-  eca: 'External carotid artery',
-  va: 'Vertebral artery',
-  'avf-inflow': 'AVF inflow',
-  'avf-anastomosis': 'AVF anastomosis',
-  'avf-outflow': 'AVF outflow',
-};
+/**
+ * Translation-key suffixes for every segment base id rendered in the anatomy
+ * tooltips. Mirrors the keys defined under `anatomy.segment.*` in the shared
+ * locale JSONs (`translations/{en,ka,ru}.json`).
+ *
+ * Keys are normalized (lowercase, dashes → underscores) so they remain valid
+ * JSON identifiers — e.g. `'fv-prox'` → `'fv_prox'`.
+ */
+function segmentTranslationKey(baseId: string): string {
+  return baseId.replace(/-/g, '_');
+}
 
-/** Given a full id like "gsv-ak-left" return "Great saphenous vein (above knee) (left)". */
-function humanLabelFromId(fullId: SegmentId): string {
+const SEGMENT_BASE_IDS: ReadonlyArray<string> = [
+  'cfv', 'eiv', 'fv-prox', 'fv-mid', 'fv-dist', 'pfv',
+  'gsv-ak', 'gsv-prox-calf', 'gsv-mid-calf', 'gsv-dist-calf',
+  'pop-ak', 'pop-fossa', 'pop-bk',
+  'ptv', 'per', 'ssv', 'gastroc', 'soleal', 'sfj', 'spj',
+  'ivc', 'lrv', 'cia', 'eia', 'iia',
+  'cfa', 'sfa', 'pop-art', 'at', 'pt', 'per-art', 'dp',
+  'cca', 'ica', 'eca', 'va',
+  'avf-inflow', 'avf-anastomosis', 'avf-outflow',
+];
+
+type AnatomyT = (key: string, fallback?: string | Record<string, unknown>) => string;
+
+/**
+ * Given a full id like "gsv-ak-left" return a localized label like
+ * "Great saphenous vein (above knee) (left)" (or the equivalent in the
+ * active language). Falls back to the raw base id when a translation key
+ * is missing so we never render an empty tooltip.
+ */
+function humanLabelFromId(fullId: SegmentId, t: AnatomyT): string {
   const sideMatch = fullId.match(/-(left|right|bilateral|midline)$/);
+  const lookupBase = (base: string): string => {
+    // Only attempt a translation lookup for ids we know about; otherwise the
+    // raw id is more useful than a `anatomy.segment.<unknown>` placeholder.
+    if (SEGMENT_BASE_IDS.includes(base)) {
+      return t(`anatomy.segment.${segmentTranslationKey(base)}`, base);
+    }
+    return base;
+  };
+
   if (!sideMatch) {
-    return SEGMENT_BASE_LABELS[fullId] ?? fullId;
+    return lookupBase(fullId);
   }
   const side = sideMatch[1] ?? '';
   const base = fullId.slice(0, fullId.length - side.length - 1);
-  const baseLabel = SEGMENT_BASE_LABELS[base] ?? base;
-  return `${baseLabel} (${side})`;
+  const baseLabel = lookupBase(base);
+  const sideLabel = t(`anatomy.side.${side}`, side);
+  return `${baseLabel} (${sideLabel})`;
 }

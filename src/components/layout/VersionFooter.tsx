@@ -6,18 +6,23 @@
  * Hidden in print media so it never lands on a downloaded PDF.
  */
 
+import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './VersionFooter.module.css';
 
 export function VersionFooter(): React.ReactElement {
+  const { t } = useTranslation();
   const hash = typeof __BUILD_HASH__ === 'string' ? __BUILD_HASH__ : 'dev';
   return (
-    <div className={`${classes.footer} no-print`} aria-label="Build version">
+    <div
+      className={`${classes.footer} no-print`}
+      aria-label={t('versionFooter.aria', 'Build version')}
+    >
       <span className={classes.label}>MediMind Angio</span>
       <span className={classes.dot} aria-hidden>
         ·
       </span>
       <span className={classes.hash} data-testid="build-hash">
-        build {hash}
+        {t('versionFooter.buildPrefix', 'build')} {hash}
       </span>
     </div>
   );
