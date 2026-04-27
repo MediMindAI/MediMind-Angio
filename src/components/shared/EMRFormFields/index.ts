@@ -13,6 +13,8 @@ export { EMRFieldWrapper } from './EMRFieldWrapper';
 // Input components
 export { EMRTextInput } from './EMRTextInput';
 export { EMRSelect } from './EMRSelect';
+export { EMRMultiSelect } from './EMRMultiSelect';
+export type { EMRMultiSelectProps } from './EMRMultiSelect';
 export { EMRNumberInput } from './EMRNumberInput';
 export { EMRTextarea } from './EMRTextarea';
 
