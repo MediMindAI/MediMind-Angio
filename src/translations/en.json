@@ -242,7 +242,17 @@
       "clearAllConfirmTitle": "Clear all encounters?",
       "clearAllConfirmBody": "This will delete every saved encounter and study draft. Cannot be undone.",
       "clearAllConfirmAction": "Clear all",
-      "clearedToast": "All encounters cleared."
+      "clearedToast": "All encounters cleared.",
+      "viewAll": "All encounters"
+    },
+    "listPage": {
+      "title": "In-progress encounters",
+      "subtitle": "Resume, discard, or clear saved encounters on this device.",
+      "emptyTitle": "No saved encounters",
+      "emptyBody": "Start a new encounter from the intake page.",
+      "emptyCta": "+ New encounter",
+      "backLink": "Back to intake",
+      "openCount": "{count} encounter(s) on this device"
     }
   }
 }

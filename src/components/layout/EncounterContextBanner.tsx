@@ -29,7 +29,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { IconEdit, IconPlus } from '@tabler/icons-react';
+import { IconEdit, IconList, IconPlus } from '@tabler/icons-react';
 import { EMRButton } from '../common/EMRButton';
 import { useEncounter } from '../../contexts/EncounterContext';
 import { useTranslation } from '../../contexts/TranslationContext';
@@ -284,6 +284,23 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
           aria-label={t('encounter.banner.editEncounter', 'Edit encounter details')}
         >
           {t('encounter.banner.editEncounter', 'Edit encounter details')}
+        </EMRButton>
+
+        {/*
+          Phase 5 Item 2 — quick jump to the dedicated /encounters
+          management page. Always rendered (not gated on multiple
+          encounters) so a clinician can review the full list without
+          first leaving the active study.
+        */}
+        <EMRButton
+          variant="subtle"
+          size="sm"
+          icon={IconList}
+          onClick={() => navigate('/encounters')}
+          data-testid="banner-view-all"
+          aria-label={t('encounter.list.viewAll', 'All encounters')}
+        >
+          {t('encounter.list.viewAll', 'All encounters')}
         </EMRButton>
       </div>
     </section>

@@ -10,6 +10,7 @@ import {
   IconTrash,
   IconPlayerPlay,
   IconPlus,
+  IconList,
 } from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
 import { EMRButton } from '../common/EMRButton';
@@ -191,15 +192,33 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
                 <IconClockHour4 size={18} stroke={1.75} aria-hidden />
                 {t('encounter.list.title')}
               </h2>
-              <EMRButton
-                variant="primary"
-                size="sm"
-                leftSection={<IconPlus size={16} stroke={1.75} />}
-                onClick={handleNewEncounter}
-                data-testid="encounter-list-new"
-              >
-                {t('encounter.list.newEncounter')}
-              </EMRButton>
+              <div style={{ display: 'inline-flex', gap: 8, flexWrap: 'wrap' }}>
+                {/*
+                  Phase 5 Item 2 — direct link to the dedicated
+                  /encounters page. Surfaced here (in addition to the
+                  banner) so a clinician returning to the landing page
+                  can jump to the full management view without
+                  scrolling through the inline list.
+                */}
+                <EMRButton
+                  variant="subtle"
+                  size="sm"
+                  leftSection={<IconList size={16} stroke={1.75} />}
+                  onClick={() => navigate('/encounters')}
+                  data-testid="encounter-list-view-all"
+                >
+                  {t('encounter.list.viewAll')}
+                </EMRButton>
+                <EMRButton
+                  variant="primary"
+                  size="sm"
+                  leftSection={<IconPlus size={16} stroke={1.75} />}
+                  onClick={handleNewEncounter}
+                  data-testid="encounter-list-new"
+                >
+                  {t('encounter.list.newEncounter')}
+                </EMRButton>
+              </div>
             </div>
 
             <ul className={classes.encounterList}>

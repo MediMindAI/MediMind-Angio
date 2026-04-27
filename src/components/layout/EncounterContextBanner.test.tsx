@@ -368,3 +368,27 @@ describe('EncounterContextBanner — edit-encounter action', () => {
     expect(navigateMock).toHaveBeenCalledWith(`/?edit=${draft.encounterId}`);
   });
 });
+
+// -------------------------------------------------------------------------
+// All-encounters quick link (Phase 5 Item 2)
+// -------------------------------------------------------------------------
+describe('EncounterContextBanner — all-encounters link', () => {
+  it('navigates to /encounters when the "All encounters" button is clicked', async () => {
+    const draft = buildDraft();
+    await act(async () => {
+      await saveEncounter(draft);
+    });
+
+    render(
+      <Harness
+        encounterId={draft.encounterId}
+        route={`/encounter/${draft.encounterId}/venousLEBilateral`}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('banner-view-all'));
+
+    expect(navigateMock).toHaveBeenCalledWith('/encounters');
+  });
+});

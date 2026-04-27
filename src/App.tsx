@@ -9,6 +9,7 @@ import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { STUDY_PLUGINS } from './components/studies';
 import { EncounterStudyWrapper } from './components/studies/EncounterStudyWrapper';
+import { EncountersPage } from './components/layout/EncountersPage';
 import { VersionFooter } from './components/layout/VersionFooter';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NotFound } from './components/layout/NotFound';
@@ -56,6 +57,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<AppShell />} />
               <Route path="/demo/anatomy" element={<AnatomyDemo />} />
+              <Route path="/encounters" element={<EncountersPage />} />
               <Route
                 path="/encounter/:encounterId/:studyType"
                 element={<EncounterStudyWrapper />}
