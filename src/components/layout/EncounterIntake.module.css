@@ -92,19 +92,20 @@
   z-index: 1;
   max-width: 1320px;
   margin: 0 auto;
+  /* Two-row vertical stack — text on top, progress strip on bottom.
+     Frees the right side entirely for the absolute-positioned controls. */
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  /* Reserve a small gap above so the absolutely-positioned controls
-     don't overlap the eyebrow chip on narrow screens. */
+  flex-direction: column;
+  gap: 12px;
+  /* Reserve room above so the absolutely-positioned controls don't
+     overlap the title on any breakpoint. */
   padding-top: 4px;
 }
 
 @media (max-width: 768px) {
   .heroInner {
     padding-top: 30px;
+    gap: 10px;
   }
 }
 
@@ -113,6 +114,15 @@
   flex-direction: column;
   gap: 4px;
   max-width: 720px;
+  /* Leave a clear gutter on the right so long titles can't run under
+     the absolute-positioned controls on narrow desktops. */
+  padding-right: 220px;
+}
+
+@media (max-width: 768px) {
+  .heroText {
+    padding-right: 0;
+  }
 }
 
 .heroEyebrow {
@@ -159,31 +169,31 @@
   max-width: 640px;
 }
 
-/* ----- Hero progress indicator ----- */
+/* ----- Hero progress indicator —
+   Now a single horizontal strip that sits centered below the title.
+   No card wrapper (it would compete visually with the toggles in the
+   top-right corner). The dots become a connected progress track via
+   ::before pseudo-elements drawing connector lines. */
 .heroProgress {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: var(--emr-border-radius-md);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  min-width: 240px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  flex-wrap: wrap;
 }
 
 .heroProgressMeta {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
-  gap: 8px;
-  width: 100%;
-  justify-content: flex-end;
+  gap: 6px;
 }
 
 .heroProgressCount {
-  font-size: var(--emr-font-lg);
+  font-size: var(--emr-font-md);
   font-weight: var(--emr-font-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -199,27 +209,46 @@
 }
 
 .heroProgressTrack {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
-  justify-content: flex-end;
+  gap: 0;
+  justify-content: center;
 }
 
 .heroProgressDot {
   position: relative;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: var(--emr-font-xs);
+  border: 1.5px solid rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--emr-font-2xs);
   font-weight: var(--emr-font-bold);
   transition: var(--emr-transition-base);
+  z-index: 1;
+}
+
+/* Connector line between dots — sits behind via z-index. The line is
+   solid white when the previous step is done, faded when it's not. */
+.heroProgressDot:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  right: calc(100% + 1px);
+  top: 50%;
+  width: 18px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.heroProgressDot.heroProgressDotDone:not(:first-child)::before,
+.heroProgressDotDone + .heroProgressDot::before {
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .heroProgressDotIndex {
