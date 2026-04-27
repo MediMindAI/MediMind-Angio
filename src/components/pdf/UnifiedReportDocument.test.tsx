@@ -195,7 +195,7 @@ describe('UnifiedReportDocument — composition (Phase 4.b)', () => {
     expect(patientBlocks).toHaveLength(1);
   });
 
-  it('renders one Page per study + cover + final-narrative — total 1 + (N-1) + 1', () => {
+  it('renders exactly one Page per study (no trailing aggregation page)', () => {
     const venous = makeForm('venousLEBilateral');
     const arterial = makeForm('arterialLE');
     const carotid = makeForm('carotid');
@@ -206,8 +206,11 @@ describe('UnifiedReportDocument — composition (Phase 4.b)', () => {
     }) as ReactElement<DocumentLikeProps>;
 
     const pages = getPages(el);
-    // 1 cover (study 1) + 2 follow-up study pages (study 2, 3) + 1 narrative page = 4
-    expect(pages.length).toBe(4);
+    // Each study owns one Page with title + findings + narrative + (CEAP if
+    // venous + has CEAP) + recommendations. The earlier final-narrative
+    // aggregation page was removed because it visually duplicated the
+    // first study's title.
+    expect(pages.length).toBe(3);
   });
 
   it('renders three distinct findings tables for a 3-study document', () => {
@@ -390,7 +393,7 @@ describe('mergeRecommendations — dedup by id (Phase 4.b)', () => {
 // ---------------------------------------------------------------------------
 
 describe('UnifiedReportDocument — narrative wiring (Phase 4.b)', () => {
-  it('renders one NarrativeSection per study on the final page', () => {
+  it('renders one NarrativeSection per study (under each study\'s own page)', () => {
     const venous = makeForm('venousLEBilateral');
     const arterial = makeForm('arterialLE');
     const el = UnifiedReportDocument({

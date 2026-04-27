@@ -34,13 +34,14 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Grid, MultiSelect } from '@mantine/core';
 import {
   IconUser,
   IconClipboardText,
   IconStethoscope,
   IconChecklist,
+  IconUserPlus,
 } from '@tabler/icons-react';
 import {
   EMRTextInput,
@@ -54,7 +55,12 @@ import { useTranslation } from '../../contexts/TranslationContext';
 import { localDateToIso, isoToLocalDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import { VASCULAR_ICD10_CODES, icd10Display } from '../../constants/vascular-icd10';
 import { STUDY_PLUGINS } from '../studies';
-import { saveEncounter, listEncounters } from '../../services/encounterStore';
+import {
+  saveEncounter,
+  listEncounters,
+  loadEncounter,
+  loadEncounterSync,
+} from '../../services/encounterStore';
 import type { EncounterDraft, EncounterHeader } from '../../types/encounter';
 import type { StudyType } from '../../types/study';
 import type { IndicationCode } from '../../types/form';
@@ -174,6 +180,32 @@ function clearIntakeDraft(): void {
 }
 
 /**
+ * Map a stored EncounterDraft back into the intake-form's mutable shape so
+ * the form pre-fills when the user navigates back via `?edit=<id>`. The
+ * inverse of `buildEncounterDraftFromIntake` for header fields, plus the
+ * `selectedStudyTypes` carry-over.
+ */
+function encounterToIntakeState(draft: EncounterDraft): IntakeFormState {
+  const h = draft.header;
+  return {
+    patientName: h.patientName ?? '',
+    patientId: h.patientId ?? '',
+    patientBirthDate: h.patientBirthDate,
+    patientGender: h.patientGender,
+    operatorName: h.operatorName ?? '',
+    referringPhysician: h.referringPhysician ?? '',
+    institution: h.institution ?? '',
+    encounterDate: h.encounterDate || (localDateToIso(new Date()) ?? ''),
+    medications: h.medications ?? '',
+    informedConsent: h.informedConsent ?? false,
+    informedConsentSignedAt: h.informedConsentSignedAt,
+    icd10Codes: [...(h.icd10Codes ?? [])],
+    indicationNotes: h.indicationNotes ?? '',
+    selectedStudyTypes: [...draft.selectedStudyTypes],
+  };
+}
+
+/**
  * Build an EncounterDraft from intake state. Trim trailing whitespace and
  * strip empty optionals so the persisted shape is clean.
  */
@@ -210,15 +242,63 @@ function buildEncounterDraftFromIntake(state: IntakeFormState): EncounterDraft {
 export const EncounterIntake = memo(function EncounterIntake(): React.ReactElement {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [state, dispatch] = useReducer(reducer, undefined, () => loadIntakeDraft() ?? defaultState());
+  // `?edit=<encounterId>` puts the form into edit mode: pre-fill from the
+  // stored encounter, and on Start update the existing encounter (preserving
+  // its `studies` map + `encounterId`) instead of minting a new one. Read
+  // once for the reducer's lazy initialiser; keep tracking via state so a
+  // route change while mounted (e.g. user clicks "+ New patient") can flip
+  // edit mode off without remounting.
+  const editIdFromUrl = searchParams.get('edit');
+
+  const [state, dispatch] = useReducer(reducer, undefined, () => {
+    if (editIdFromUrl) {
+      const enc = loadEncounterSync(editIdFromUrl);
+      if (enc) return encounterToIntakeState(enc);
+    }
+    return loadIntakeDraft() ?? defaultState();
+  });
+  const [editingEncounterId, setEditingEncounterId] = useState<string | null>(
+    editIdFromUrl,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [hasResumable, setHasResumable] = useState(false);
 
-  // Persist intake draft on every change (fire-and-forget, sync localStorage).
+  // When `?edit=<id>` changes (or appears after mount) we (a) flip the
+  // mode flag and (b) async-refresh from IDB which is the source of truth
+  // for the encounter store. The cancelled-flag pattern guards against a
+  // slow IDB resolve clobbering state after the user already navigated
+  // off the edit URL (e.g. clicked "+ New patient").
   useEffect(() => {
+    if (!editIdFromUrl) {
+      setEditingEncounterId(null);
+      return;
+    }
+    setEditingEncounterId(editIdFromUrl);
+    let cancelled = false;
+    loadEncounter(editIdFromUrl)
+      .then((enc) => {
+        if (cancelled || !enc) return;
+        dispatch({ type: 'HYDRATE', state: encounterToIntakeState(enc) });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.warn('[EncounterIntake] loadEncounter failed', editIdFromUrl, err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [editIdFromUrl]);
+
+  // Persist intake draft on every change — but ONLY in create mode.
+  // In edit mode the encounter store IS the source of truth; persisting
+  // intake-draft would leak field edits between encounters when the
+  // user clicks "+ New patient" later.
+  useEffect(() => {
+    if (editingEncounterId) return;
     persistIntakeDraft(state);
-  }, [state]);
+  }, [state, editingEncounterId]);
 
   // Probe the encounter store for any resumable encounters so we can show
   // the "Resume in-progress encounter" link.
@@ -310,6 +390,31 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
     if (!canStart || submitting) return;
     setSubmitting(true);
     try {
+      // EDIT MODE: update existing encounter, preserving encounterId,
+      // createdAt, and the per-study `studies` map (the clinician may
+      // have already filled findings on one of the studies).
+      if (editingEncounterId) {
+        const existing = await loadEncounter(editingEncounterId);
+        const built = buildEncounterDraftFromIntake(state);
+        const now = new Date().toISOString();
+        const merged: EncounterDraft = {
+          schemaVersion: 2,
+          encounterId: editingEncounterId,
+          header: built.header,
+          selectedStudyTypes: [...state.selectedStudyTypes],
+          studies: existing?.studies ?? {},
+          createdAt: existing?.createdAt ?? now,
+          updatedAt: now,
+        };
+        await saveEncounter(merged);
+        const firstStudy = merged.selectedStudyTypes[0];
+        // Don't clearIntakeDraft() in edit mode — the localStorage draft
+        // is for brand-new encounters only; we never wrote into it here.
+        navigate(`/encounter/${merged.encounterId}/${firstStudy}`);
+        return;
+      }
+
+      // CREATE MODE: mint a fresh UUID, save, navigate.
       const draft = buildEncounterDraftFromIntake(state);
       await saveEncounter(draft);
       // Per Phase 2.b plan: a study type is required by `canStart`, so the
@@ -321,7 +426,28 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
       console.warn('[EncounterIntake] saveEncounter failed', err);
       setSubmitting(false);
     }
-  }, [canStart, state, submitting, navigate]);
+  }, [canStart, state, submitting, editingEncounterId, navigate]);
+
+  /**
+   * "+ New patient" — discard the current intake (whether edit-mode or a
+   * partially-filled create-mode draft), drop the `?edit` query param, and
+   * reset the form to defaults. Doesn't delete the underlying encounter
+   * from the store; the user can still get back to it via the resume list.
+   */
+  const handleNewPatient = useCallback(() => {
+    dispatch({ type: 'RESET' });
+    clearIntakeDraft();
+    setEditingEncounterId(null);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
+
+  // Show the "+ New patient" button when:
+  //   - the user is editing an existing encounter (always offer the escape
+  //     hatch back to a fresh form), OR
+  //   - the user has typed something into a fresh form and wants to
+  //     start over without manually clearing each field.
+  const canResetIntake =
+    Boolean(editingEncounterId) || state.patientName.trim().length > 0;
 
   const handleResume = useCallback(() => {
     // For Phase 2.b we route to `/` — the StudyPicker upgrade will surface
@@ -611,6 +737,17 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             <span aria-hidden />
           )}
           <span className={classes.actionRowSpacer} />
+          {canResetIntake && (
+            <EMRButton
+              variant="secondary"
+              size="md"
+              icon={IconUserPlus}
+              onClick={handleNewPatient}
+              data-testid="intake-new-patient"
+            >
+              {t('encounter.intake.actions.newPatient', '+ New patient')}
+            </EMRButton>
+          )}
           <EMRButton
             variant="primary"
             size="md"
@@ -620,7 +757,9 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             className={classes.actionRowButton}
             data-testid="intake-start"
           >
-            {t('encounter.intake.actions.start')}
+            {editingEncounterId
+              ? t('encounter.intake.actions.continue', 'Continue')
+              : t('encounter.intake.actions.start')}
           </EMRButton>
           {!canStart && startHint && (
             <span className={classes.actionRowHint} data-testid="intake-start-hint">

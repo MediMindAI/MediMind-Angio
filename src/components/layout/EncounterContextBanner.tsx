@@ -157,9 +157,9 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
 
   const handleEditEncounter = useCallback(() => {
     if (!encounter) return;
-    // TODO(Phase 2b): the intake page should read `?edit={encounterId}`
-    // and pre-load the encounter into edit mode. Until that lands the
-    // user arrives on `/` and clicks "Resume" from the drafts banner.
+    // `?edit={encounterId}` puts EncounterIntake into edit mode — the
+    // form pre-fills from the saved encounter and Start updates the
+    // existing encounter instead of minting a new UUID.
     navigate(`/?edit=${encounter.encounterId}`);
   }, [encounter, navigate]);
 

@@ -4,14 +4,24 @@
  *
  * When a clinician runs ≥ 2 studies in one encounter (e.g. venous-LE
  * bilateral + arterial-LE + carotid in a single visit), this document
- * stitches them into a single PDF. Composition:
+ * stitches them into a single PDF. Composition (one page per study,
+ * everything for that study under that study's title):
  *
- *   - Page 1: HeaderSection · PatientBlock (rendered ONCE for the whole
- *     document) · first study's findings/diagram block · FooterSection.
- *   - Pages 2..N: HeaderSection · per-study findings · FooterSection.
- *   - Final page: combined NarrativeSection (per study, stacked) · CEAPSection
- *     (only if a venous form is present and has CEAP) · merged
- *     RecommendationsSection (deduped by `recommendation.id`) · FooterSection.
+ *   - Page 1 (first study): HeaderSection · PatientBlock (rendered ONCE
+ *     for the whole document) · first study's findings/diagram ·
+ *     NarrativeSection (this study) · CEAPSection (only if this study
+ *     is venous and has CEAP) · RecommendationsSection (this study's
+ *     recommendations) · FooterSection.
+ *   - Pages 2..N (each remaining study): same composition minus
+ *     PatientBlock — title + everything for that study, then move on.
+ *
+ * Why per-study (not a final aggregation page):
+ *   The earlier composition (Phase 4b initial) appended a final
+ *   "combined narrative + CEAP + recommendations" page that reused the
+ *   first study's HeaderSection title. Visually it looked like a
+ *   duplicated venous header tacked on after the arterial study, which
+ *   confused clinicians. Per-study composition keeps each study's
+ *   narrative + recommendations contextual under that study's title.
  *
  * Single-study case continues to use the existing `<ReportDocument>` — this
  * file is only invoked when `selectedStudyTypes.length >= 2`.
@@ -302,25 +312,6 @@ export function mergeRecommendations(
   return merged;
 }
 
-/**
- * Pick the first venous form (if any) whose CEAP is set. We render a single
- * CEAP block on the final narrative page when one exists. Mixed-encounter
- * semantics are documented in the plan §4b risk notes — venous-only.
- */
-function pickVenousCeap(
-  studyForms: ReadonlyArray<FormState>,
-  perStudyAssets: ReadonlyArray<UnifiedStudyAssets>,
-): { readonly form: FormState; readonly assets: UnifiedStudyAssets } | null {
-  for (let i = 0; i < studyForms.length; i += 1) {
-    const f = studyForms[i];
-    if (f && isVenousForm(f) && f.ceap) {
-      const a = perStudyAssets[i];
-      if (a) return { form: f, assets: a };
-    }
-  }
-  return null;
-}
-
 // ---------------------------------------------------------------------------
 // Document
 // ---------------------------------------------------------------------------
@@ -357,12 +348,35 @@ export function UnifiedReportDocument(
 
   const documentTitle = firstAssets?.labels.title ?? 'Vascular Ultrasound Report';
 
-  const venousCeapPick = pickVenousCeap(studyForms, perStudyAssets);
-  const mergedRecommendations = mergeRecommendations(studyForms);
-  // Recommendation labels — every study's bundle carries the same
-  // `recommendations` sub-bundle, so picking the first-form's labels is
-  // safe and consistent with the way translations resolve.
-  const recommendationsLabels = firstAssets?.labels.recommendations;
+  /**
+   * Render the trailing per-study blocks (narrative, optional CEAP for
+   * venous, recommendations) appended below the findings on every per-
+   * study page. Kept inline so we don't fragment the page composition
+   * across helpers.
+   */
+  const renderStudyTail = (
+    form: FormState,
+    assets: UnifiedStudyAssets,
+  ): ReactNode => (
+    <>
+      <NarrativeSection
+        narrative={form.narrative}
+        labels={assets.labels.narrative}
+        rightFindings={assets.localized?.rightFindings ?? ''}
+        leftFindings={assets.localized?.leftFindings ?? ''}
+        conclusions={assets.localized?.conclusions ?? []}
+      />
+      {isVenousForm(form) && form.ceap ? (
+        <CEAPSection ceap={form.ceap} labels={assets.labels.ceap} />
+      ) : null}
+      {form.recommendations.length > 0 ? (
+        <RecommendationsSection
+          recommendations={form.recommendations}
+          labels={assets.labels.recommendations}
+        />
+      ) : null}
+    </>
+  );
 
   return (
     <Document
@@ -373,7 +387,7 @@ export function UnifiedReportDocument(
       subject={documentTitle}
       language={lang}
     >
-      {/* ------------- Page 1 — Header · Patient · First study's findings ------ */}
+      {/* ------------- Page 1 — Header · Patient · First study (full) --------- */}
       {firstForm && firstAssets ? (
         <Page size={pageSize} style={baseStyles.page}>
           {preliminary ? (
@@ -398,6 +412,7 @@ export function UnifiedReportDocument(
           />
 
           {renderStudyFindings(firstForm, firstAssets, pageWidth)}
+          {renderStudyTail(firstForm, firstAssets)}
 
           <FooterSection
             orgName={org?.name ?? ''}
@@ -408,7 +423,7 @@ export function UnifiedReportDocument(
         </Page>
       ) : null}
 
-      {/* ------------- Pages 2..N — One Page per remaining study --------------- */}
+      {/* ------------- Pages 2..N — One Page per remaining study (full) ------- */}
       {Array.from({ length: Math.max(0, studyCount - 1) }, (_, i) => {
         const idx = i + 1;
         const form = studyForms[idx];
@@ -433,6 +448,7 @@ export function UnifiedReportDocument(
             />
 
             {renderStudyFindings(form, assets, pageWidth)}
+            {renderStudyTail(form, assets)}
 
             <FooterSection
               orgName={org?.name ?? ''}
@@ -443,60 +459,6 @@ export function UnifiedReportDocument(
           </Page>
         );
       })}
-
-      {/* ------------- Final page — Combined narrative · CEAP · Recs ----------- */}
-      {firstAssets ? (
-        <Page size={pageSize} style={baseStyles.page}>
-          {preliminary ? (
-            <PreliminaryWatermark label={firstAssets.labels.preliminary} />
-          ) : null}
-
-          <HeaderSection
-            title={firstAssets.labels.title}
-            subtitle={firstAssets.labels.subtitle ?? ''}
-            issueDate={issueDate}
-            issuedLabel={firstAssets.labels.issueDateLabel}
-            orgName={org?.name ?? ''}
-          />
-
-          {Array.from({ length: studyCount }, (_, i) => {
-            const form = studyForms[i];
-            const assets = perStudyAssets[i];
-            if (!form || !assets) return null;
-            return (
-              <NarrativeSection
-                key={`narr-${form.studyType}-${i}`}
-                narrative={form.narrative}
-                labels={assets.labels.narrative}
-                rightFindings={assets.localized?.rightFindings ?? ''}
-                leftFindings={assets.localized?.leftFindings ?? ''}
-                conclusions={assets.localized?.conclusions ?? []}
-              />
-            );
-          })}
-
-          {venousCeapPick && venousCeapPick.form.ceap ? (
-            <CEAPSection
-              ceap={venousCeapPick.form.ceap}
-              labels={venousCeapPick.assets.labels.ceap}
-            />
-          ) : null}
-
-          {recommendationsLabels ? (
-            <RecommendationsSection
-              recommendations={mergedRecommendations}
-              labels={recommendationsLabels}
-            />
-          ) : null}
-
-          <FooterSection
-            orgName={org?.name ?? ''}
-            orgAddress={org?.address ?? ''}
-            timestamp={footerTimestamp}
-            pageLabelTemplate={firstAssets.labels.footer.pageLabelTemplate}
-          />
-        </Page>
-      ) : null}
     </Document>
   );
 }
