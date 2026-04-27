@@ -211,13 +211,29 @@
       "studies": {
         "title": "Studies to perform",
         "subtitle": "Select all studies for this encounter. Each is filled on its own page.",
-        "selectAtLeastOne": "Select at least one study to start"
+        "selectAtLeastOne": "Select at least one study to start",
+        "selected": "Selected",
+        "tapToAdd": "Tap to include"
       },
       "actions": {
         "start": "Start studies",
         "startDisabledNoName": "Enter patient name to start",
         "startDisabledNoStudies": "Select at least one study",
-        "resume": "Resume in-progress encounter"
+        "resume": "Resume in-progress encounter",
+        "newPatient": "+ New patient",
+        "continue": "Continue encounter"
+      },
+      "stepLabel": "Step",
+      "summary": {
+        "eyebrow": "Live preview",
+        "title": "Encounter summary",
+        "ready": "Ready to start encounter",
+        "notReady": "Complete required fields to start",
+        "placeholderName": "New patient",
+        "ageYears": "{age} y/o",
+        "metaPlaceholder": "Identity pending",
+        "icdEmpty": "No ICD-10 codes yet",
+        "studiesEmpty": "Select at least one study"
       }
     },
     "banner": {

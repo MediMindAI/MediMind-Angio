@@ -49,6 +49,8 @@ import {
   EMRMultiSelect,
 } from '../shared/EMRFormFields';
 import { EMRButton } from '../common/EMRButton';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { ThemeToggle } from './ThemeToggle';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { localDateToIso, isoToLocalDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import { VASCULAR_ICD10_CODES, icd10Display } from '../../constants/vascular-icd10';
@@ -511,6 +513,14 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
       <div className={classes.hero}>
         <div className={classes.heroOrb} aria-hidden />
         <div className={classes.heroOrbAlt} aria-hidden />
+
+        {/* Floating controls — language + theme toggles. Already styled
+            for gradient backgrounds (white pill on translucent track). */}
+        <div className={classes.heroControls}>
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
+
         <div className={classes.heroInner}>
           <div className={classes.heroText}>
             <span className={classes.heroEyebrow}>

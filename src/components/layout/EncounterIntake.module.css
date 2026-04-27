@@ -66,6 +66,27 @@
   background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
 }
 
+/* Floating controls in the hero (top-right): language + theme toggles.
+   Sits above .heroInner so the page title can stretch the full width
+   underneath without the controls competing for horizontal space. */
+.heroControls {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .heroControls {
+    top: 12px;
+    right: 14px;
+    gap: 6px;
+  }
+}
+
 .heroInner {
   position: relative;
   z-index: 1;
@@ -76,6 +97,15 @@
   justify-content: space-between;
   gap: 32px;
   flex-wrap: wrap;
+  /* Reserve room above so the absolutely-positioned controls don't
+     overlap the eyebrow chip on narrow screens. */
+  padding-top: 28px;
+}
+
+@media (max-width: 768px) {
+  .heroInner {
+    padding-top: 36px;
+  }
 }
 
 .heroText {
