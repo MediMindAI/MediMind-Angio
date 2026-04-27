@@ -58,6 +58,42 @@ export async function registerFontsAsync(): Promise<void> {
     ],
   });
 
+  // ----- Hyphenation callback ----------------------------------------
+  //
+  // @react-pdf/renderer breaks lines only at break-points returned by
+  // this callback. Default behavior splits at spaces and hyphens, which
+  // is fine for Latin/Cyrillic text — but Georgian compound words like
+  // "ანტეგრადული" (antegrade), "სამფაზური" (triphasic), or
+  // "ჰიპოეჰოგენური" (hypoechogenic) have NO internal break points and
+  // are wider than a 240-pt half-page table column at 9 pt.
+  //
+  // Without break-points the word renders at its intrinsic width and
+  // either overflows into the neighbor cell (pre-fix) or gets clipped
+  // by `overflow: hidden` (current state — visible truncation).
+  //
+  // We supply a callback that, for any *single* word containing Georgian
+  // glyphs (U+10A0..U+10FF) and longer than 7 characters, returns 5-char
+  // chunks as soft break-points. Yoga can then break inside the word,
+  // wrapping to a second line within the cell instead of clipping.
+  //
+  // Latin/Cyrillic words and short Georgian words pass through unchanged
+  // (return the word as a single-element array → keep default behavior).
+  Font.registerHyphenationCallback((word: string): string[] => {
+    if (!word) return [word];
+    // Detect at least one Georgian-script codepoint.
+    if (!/[Ⴀ-ჿⴀ-⴯]/.test(word)) return [word];
+    // Short words fit fine — let the layout breathe.
+    if (word.length <= 7) return [word];
+    // Chunk every 5 chars so a 10-char word becomes ["ანტეგრ", "ადული"]
+    // and Yoga can break between the chunks.
+    const chunks: string[] = [];
+    const CHUNK = 5;
+    for (let i = 0; i < word.length; i += CHUNK) {
+      chunks.push(word.slice(i, i + CHUNK));
+    }
+    return chunks;
+  });
+
   fontsRegistered = true;
 }
 
