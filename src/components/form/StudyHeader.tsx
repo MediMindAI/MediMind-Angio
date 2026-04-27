@@ -50,13 +50,14 @@ export interface StudyHeaderValue extends StudyHeaderShape {
    *
    * Wave 4.9 — renamed from `indication` to `indicationNotes` so the field
    * name matches the supplemental role and stops competing with the
-   * structured ICD-10 input (Part 10 MEDIUM). Read-side fallback to
-   * `indication` for back-compat with existing drafts; new writes go to
-   * `indicationNotes`.
+   * structured ICD-10 input (Part 10 MEDIUM).
+   *
+   * Phase 5 — the back-compat read fallback to legacy `indication` was
+   * dropped here. Existing per-study drafts containing `indication` are
+   * migrated into encounters via `encounterMigration.ts`, which still
+   * reads the legacy alias and writes it into `EncounterHeader.indicationNotes`.
    */
   readonly indicationNotes?: string;
-  /** @deprecated Wave 4.9 — read fallback only. Use `indicationNotes`. */
-  readonly indication?: string;
   readonly quality?: StudyQuality;
   readonly protocol?: StudyProtocol;
 }
@@ -507,7 +508,7 @@ export const StudyHeader = memo(function StudyHeader({
             <Grid.Col span={12}>
               <EMRTextarea
                 label={t('venousLE.header.indicationNotes')}
-                value={value.indicationNotes ?? value.indication ?? ''}
+                value={value.indicationNotes ?? ''}
                 onChange={(v) => update('indicationNotes', v)}
                 minRows={2}
                 maxRows={3}

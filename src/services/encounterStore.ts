@@ -35,6 +35,29 @@ export function keyEncounter(id: EncounterId): string {
   return `${ENCOUNTER_KEY_PREFIX}${id}`;
 }
 
+/**
+ * Idle-timeout policy for encounter drafts.
+ *
+ * Phase 5 Item 4 reconciliation. The original Wave 4.1 per-study drafts
+ * auto-cleared after 30 minutes of inactivity (`useAutoSave`'s
+ * `idleTimeoutMs: 30 * 60 * 1000`). Encounters explicitly opt out:
+ * `EncounterContext` writes through `saveEncounter` on every mutation
+ * with no idle timer, so a clinician sitting on the venous form for 35
+ * minutes mid-encounter does NOT lose their work.
+ *
+ * Phase 3b dropped per-study `useAutoSave` instances in favor of
+ * `setStudyState` mirroring into the encounter draft. The per-study
+ * forms today only call `loadDraft(...)` for legacy migration reads;
+ * none constructs a `useAutoSave` hook with a non-zero idle timeout.
+ * The encounter store is the single persistence layer for live data.
+ *
+ * If a future feature wants automatic age-out (e.g. "auto-discard
+ * 24-hour-old encounters"), import this constant and gate the cleanup
+ * pass against `Date.now() - new Date(draft.updatedAt).getTime()`.
+ * Today the value is `0` (disabled) — no cleanup runs.
+ */
+export const MAX_ENCOUNTER_AGE_MS = 0;
+
 // Lazy-init the store so `fake-indexeddb/auto` (test setup) installs its
 // shim BEFORE we touch the IDBFactory. Top-level `createStore(...)` would
 // fire at import time and bind to the real (missing) factory in jsdom.
