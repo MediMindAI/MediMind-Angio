@@ -1,12 +1,23 @@
-/* CEAPPicker — collapsible classification axes */
+/* CEAPPicker — collapsible CEAP 2020 classification axes.
+ *
+ * Visual upgrade (2026-04-27): the four CEAP axes (C/E/A/P) are now
+ * color-coded — each axis card carries a left-edge accent strip in its
+ * brand colour, and each radio option renders as a compact "chip pill"
+ * that wraps onto multiple lines. The previous vertical lists with 11
+ * rows of "C0 — c0 description, C1 — c1 description, ..." were dense
+ * and hard to scan; the chip layout makes the active code unmistakable.
+ *
+ * Modifier checkboxes become inline pill toggles in their own row so
+ * they don't share visual weight with the axes above.
+ */
 
 .body {
-  padding: 12px 4px 4px 4px;
+  padding: 14px 4px 4px 4px;
 }
 
 /* ============================================================================
    Header preview pill — sits on the blue gradient header of the collapsible
-   section. Must use pure white text for contrast on the dark gradient.
+   section. Pure-white text for contrast on the dark gradient.
    ============================================================================ */
 
 .previewLabel {
@@ -22,31 +33,53 @@
 .previewChip {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.22);
   color: var(--emr-text-white);
   font-size: var(--emr-font-xs);
-  font-weight: var(--emr-font-semibold);
-  letter-spacing: 0.02em;
+  font-weight: var(--emr-font-bold);
+  letter-spacing: 0.04em;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   white-space: nowrap;
   line-height: 1.5;
+  font-family: var(--emr-font-mono);
 }
 
 /* ============================================================================
-   Axis cards — one per CEAP axis (C / E / A / P) + Modifiers
+   Axis cards — one per CEAP axis (C / E / A / P) + Modifiers.
+   Each axis gets a coloured left-edge accent strip via the data-axis attribute
+   to aid scannability. The accent colours come from the EMR semantic palette;
+   we deliberately stay inside theme blues + green/orange/red instead of
+   inventing new hues.
    ============================================================================ */
 
 .axis {
-  padding: 16px 18px;
+  position: relative;
+  padding: 16px 18px 16px 22px;
   background: var(--emr-bg-card);
   border: 1px solid var(--emr-border-color);
   border-radius: var(--emr-border-radius-lg);
   height: 100%;
   box-shadow: var(--emr-shadow-sm);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  overflow: hidden;
 }
+
+.axis::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--emr-secondary);
+}
+
+.axisC::before { background: var(--emr-primary); }
+.axisE::before { background: var(--emr-accent); }
+.axisA::before { background: var(--emr-success); }
+.axisP::before { background: var(--emr-warning); }
 
 .axis:hover {
   border-color: var(--emr-border-focus);
@@ -67,18 +100,187 @@
   border-bottom: 1px solid var(--emr-border-color);
 }
 
-.axisTitle::before {
-  content: '';
-  display: inline-block;
-  width: 3px;
-  height: 14px;
-  background: var(--emr-gradient-primary);
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
 @media (max-width: 576px) {
   .axis {
-    padding: 14px;
+    padding: 14px 14px 14px 18px;
   }
+}
+
+/* ============================================================================
+   Chip-pill radio layout — replaces the vertical EMRRadioGroup look.
+   The actual <input type="radio"> stays for accessibility; the visible chip
+   is rendered via :global(.mantine-Radio-label) styling so we don't have to
+   refactor EMRRadioGroup itself.
+   ============================================================================ */
+
+.chipGroup :global(.mantine-Stack-root),
+.chipGroup :global(.emr-radio-group),
+.chipGroup :global([role='radiogroup']) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-direction: row;
+}
+
+.chipGroup :global(.mantine-Radio-root),
+.chipGroup :global(.emr-radio-option) {
+  position: relative;
+  margin: 0;
+}
+
+.chipGroup :global(.mantine-Radio-body) {
+  align-items: center;
+  gap: 0;
+}
+
+/* Hide the native radio bullet — the chip itself is the visual control. */
+.chipGroup :global(.mantine-Radio-radio) {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+/* The label IS the chip. */
+.chipGroup :global(.mantine-Radio-label) {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  background: var(--emr-bg-page);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  line-height: 1.3;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.chipGroup :global(.mantine-Radio-label:hover) {
+  border-color: var(--emr-secondary);
+  color: var(--emr-text-primary);
+  background: var(--emr-bg-card);
+}
+
+.chipGroup :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
+  background: var(--emr-secondary);
+  color: var(--emr-text-white);
+  border-color: var(--emr-secondary);
+  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.25);
+}
+
+/* Per-axis active-chip colour — picked up via the parent `.axisX` class. */
+.axisC :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
+  background: var(--emr-primary);
+  border-color: var(--emr-primary);
+  box-shadow: 0 1px 4px rgba(26, 54, 93, 0.3);
+}
+.axisE :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
+  background: var(--emr-accent);
+  border-color: var(--emr-accent);
+  box-shadow: 0 1px 4px rgba(49, 130, 206, 0.3);
+}
+.axisA :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
+  background: var(--emr-success);
+  border-color: var(--emr-success);
+  box-shadow: 0 1px 4px rgba(34, 197, 94, 0.3);
+}
+.axisP :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
+  background: var(--emr-warning);
+  border-color: var(--emr-warning);
+  box-shadow: 0 1px 4px rgba(245, 158, 11, 0.3);
+}
+
+/* Keyboard focus outline — accessibility. */
+.chipGroup :global(.mantine-Radio-root:focus-within .mantine-Radio-label) {
+  outline: 2px solid var(--emr-secondary);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Modifier row — separate styling so it doesn't compete with the axes.
+   Lays out the four modifier checkboxes as inline pill toggles.
+   ============================================================================ */
+
+.modifierAxis {
+  position: relative;
+  padding: 14px 18px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  box-shadow: var(--emr-shadow-sm);
+  transition: border-color 0.18s ease;
+}
+
+.modifierAxis:hover {
+  border-color: var(--emr-border-focus);
+}
+
+.modifierTitle {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  margin: 0 0 10px 0;
+}
+
+.modifierRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modifierPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+}
+
+.modifierPill :global(.mantine-Checkbox-input) {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.modifierPill :global(.mantine-Checkbox-label) {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  background: var(--emr-bg-page);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  line-height: 1.3;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.modifierPill :global(.mantine-Checkbox-root:has(input:checked) .mantine-Checkbox-label) {
+  background: var(--emr-secondary);
+  color: var(--emr-text-white);
+  border-color: var(--emr-secondary);
+  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.25);
+}
+
+.modifierPill :global(.mantine-Checkbox-root:has(input:disabled) .mantine-Checkbox-label) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modifierPill :global(.mantine-Checkbox-root:focus-within .mantine-Checkbox-label) {
+  outline: 2px solid var(--emr-secondary);
+  outline-offset: 2px;
 }

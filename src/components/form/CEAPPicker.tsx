@@ -11,7 +11,7 @@
  */
 
 import { memo, useCallback, useMemo } from 'react';
-import { Box, Grid, Group, Stack, Text } from '@mantine/core';
+import { Box, Grid, Group, Text } from '@mantine/core';
 import { IconCategory2 } from '@tabler/icons-react';
 import { EMRCollapsibleSection } from '../common';
 import { EMRRadioGroup, EMRCheckbox } from '../shared/EMRFormFields';
@@ -177,7 +177,7 @@ export const CEAPPicker = memo(function CEAPPicker({
       <div className={classes.body}>
         <Grid gutter={{ base: 'sm', sm: 'md' }}>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Box className={classes.axis}>
+            <Box className={`${classes.axis} ${classes.axisC} ${classes.chipGroup}`}>
               <Text className={classes.axisTitle}>{t('venousLE.ceap.cSection')}</Text>
               <EMRRadioGroup
                 options={cOptions}
@@ -190,7 +190,7 @@ export const CEAPPicker = memo(function CEAPPicker({
             </Box>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Box className={classes.axis}>
+            <Box className={`${classes.axis} ${classes.axisE} ${classes.chipGroup}`}>
               <Text className={classes.axisTitle}>{t('venousLE.ceap.eSection')}</Text>
               <EMRRadioGroup
                 options={eOptions}
@@ -203,7 +203,7 @@ export const CEAPPicker = memo(function CEAPPicker({
             </Box>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Box className={classes.axis}>
+            <Box className={`${classes.axis} ${classes.axisA} ${classes.chipGroup}`}>
               <Text className={classes.axisTitle}>{t('venousLE.ceap.aSection')}</Text>
               <EMRRadioGroup
                 options={aOptions}
@@ -216,7 +216,7 @@ export const CEAPPicker = memo(function CEAPPicker({
             </Box>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Box className={classes.axis}>
+            <Box className={`${classes.axis} ${classes.axisP} ${classes.chipGroup}`}>
               <Text className={classes.axisTitle}>{t('venousLE.ceap.pSection')}</Text>
               <EMRRadioGroup
                 options={pOptions}
@@ -229,21 +229,24 @@ export const CEAPPicker = memo(function CEAPPicker({
             </Box>
           </Grid.Col>
           <Grid.Col span={12}>
-            <Box className={classes.axis}>
-              <Text className={classes.axisTitle}>{t('venousLE.ceap.modifiers')}</Text>
-              <Stack gap={8}>
+            <Box className={classes.modifierAxis}>
+              <Text className={classes.modifierTitle}>
+                {t('venousLE.ceap.modifiers')}
+              </Text>
+              <div className={classes.modifierRow}>
                 {MODIFIERS.map((mod) => (
-                  <EMRCheckbox
-                    key={mod}
-                    label={`${mod} — ${modifierLabels[mod]}`}
-                    checked={(current.modifiers ?? []).includes(mod)}
-                    onChange={(c) => toggleModifier(mod, c)}
-                    disabled={mod === 'n' ? nDisabled : false}
-                    size="sm"
-                    data-testid={`ceap-modifier-${mod}`}
-                  />
+                  <span key={mod} className={classes.modifierPill}>
+                    <EMRCheckbox
+                      label={`${mod} — ${modifierLabels[mod]}`}
+                      checked={(current.modifiers ?? []).includes(mod)}
+                      onChange={(c) => toggleModifier(mod, c)}
+                      disabled={mod === 'n' ? nDisabled : false}
+                      size="sm"
+                      data-testid={`ceap-modifier-${mod}`}
+                    />
+                  </span>
                 ))}
-              </Stack>
+              </div>
             </Box>
           </Grid.Col>
         </Grid>

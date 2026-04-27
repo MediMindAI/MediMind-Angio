@@ -80,7 +80,7 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
             </Text>
           </Box>
           <EMRButton
-            variant="onGradient"
+            variant="primary"
             size="xs"
             icon={IconPlus}
             onClick={add}
@@ -93,11 +93,23 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
 
       <div className={classes.body}>
         {items.length === 0 ? (
-          <div className={classes.empty}>{t('venousLE.recommendations.empty')}</div>
+          <div className={classes.empty}>
+            <IconClipboardList
+              size={24}
+              stroke={1.5}
+              aria-hidden
+              style={{ opacity: 0.55 }}
+            />
+            <span>{t('venousLE.recommendations.empty')}</span>
+          </div>
         ) : (
           <Stack gap="md">
             {items.map((r, idx) => (
-              <div key={r.id} className={classes.item}>
+              <div
+                key={r.id}
+                className={classes.item}
+                data-priority={r.priority ?? 'routine'}
+              >
                 <div className={classes.itemHeader}>
                   <span className={classes.itemIndex}>#{idx + 1}</span>
                   <EMRButton

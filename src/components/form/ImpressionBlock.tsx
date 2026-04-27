@@ -126,7 +126,7 @@ export const ImpressionBlock = memo(function ImpressionBlock({
               </EMRBadge>
             )}
             <EMRButton
-              variant="onGradient"
+              variant="outline"
               size="xs"
               icon={IconRefresh}
               onClick={handleRegenerate}
