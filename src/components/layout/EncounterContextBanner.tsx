@@ -1,53 +1,43 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * EncounterContextBanner — compact strip rendered above per-study findings.
+ * EncounterContextBanner — patient-context strip rendered above per-study
+ * findings.
  *
  * Phase 3c of the encounter-pivot plan. Replaces the visual real-estate
  * the dropped collapsible `<StudyHeader>` used to occupy on every per-
- * study form. Shows three blocks in a single horizontal row (desktop) or
- * a two-row stack (mobile ≤768px):
+ * study form.
  *
- *   [👤 Patient · age · encounter date]   [chip][chip][chip*]   [+ Add] [✏ Edit]
+ * Post-redesign layout (3 zones, all CSS-grid-driven):
  *
- * The active chip (matching the current `:studyType` route param) is
- * highlighted with `--emr-primary`; non-active chips navigate to the
- * matching study within the same encounter via `useNavigate()`.
+ *   ┌──────────────────────────────────────────────────────────────────┐
+ *   │  [👤 Avatar] Patient name              [Studies tabs]            │
+ *   │              date · age · ID                          [+ Add] [✏][⋮] │
+ *   └──────────────────────────────────────────────────────────────────┘
  *
- * `+ Add study` opens a Mantine `<Menu>` listing the supported StudyTypes
- * NOT yet in `selectedStudyTypes`; selecting one calls
- * `useEncounter().addStudy()` and navigates to the new study's route.
+ * Action hierarchy (one primary CTA per bar, the rest are icon-only):
+ *   - "+ Add study"         → primary gradient (only when studies remain)
+ *   - "Edit details"        → ghost icon-button with aria-label tooltip
+ *   - "All encounters"      → ghost icon-button with aria-label tooltip
  *
- * `✏ Edit encounter` returns the user to `/?edit={encounterId}` so the
- * intake page (Phase 2b) can re-open the encounter for editing. Until 2b
- * implements the `?edit` query handler, the user lands on `/` and resumes
- * the encounter via the drafts banner — the TODO below tracks that.
- *
- * Renders nothing when `encounter === null` — graceful fallback for the
- * brief gap before EncounterContext finishes hydrating; the wrapper
- * (Phase 3a) is also expected to redirect to `/` in that case.
+ * Renders nothing when `encounter === null`.
  */
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { IconEdit, IconList, IconPlus } from '@tabler/icons-react';
+import {
+  IconEdit,
+  IconList,
+  IconPlus,
+  IconCalendarEvent,
+  IconUser,
+} from '@tabler/icons-react';
 import { EMRButton } from '../common/EMRButton';
 import { useEncounter } from '../../contexts/EncounterContext';
 import { useTranslation } from '../../contexts/TranslationContext';
 import type { StudyType } from '../../types/study';
 import classes from './EncounterContextBanner.module.css';
 
-/**
- * Catalog of every StudyType the app supports — drives the "+ Add study"
- * menu and the chip→route mapping. Kept local to the banner because the
- * `STUDY_PLUGINS` registry is keyed by plugin (`venousLE`, not
- * `venousLEBilateral`); we need a per-StudyType view here.
- *
- * The translation-key column points to a plugin-level entry (e.g.
- * `studies.venousLE.short`) because `venousLEBilateral`, `venousLERight`,
- * and `venousLELeft` all share the venous-LE form and translation file.
- * For now they share the same chip label; Phase 5 can split them with a
- * laterality suffix once translation keys are added.
- */
+/** Per-StudyType metadata for chip labels and routes. */
 interface StudyTypeMeta {
   readonly route: string;
   readonly translationKey: string;
@@ -87,7 +77,7 @@ const STUDY_TYPE_META: Readonly<Record<StudyType, StudyTypeMeta>> = {
   },
 };
 
-/** Whole-year age from an ISO `YYYY-MM-DD` birth date (copy of StudyHeader helper). */
+/** Whole-year age from an ISO `YYYY-MM-DD` birth date. */
 function ageFromBirthDate(birthIso: string | undefined): number | null {
   if (!birthIso) return null;
   const dob = new Date(birthIso);
@@ -99,19 +89,23 @@ function ageFromBirthDate(birthIso: string | undefined): number | null {
   return age >= 0 ? age : null;
 }
 
+/** Extract up to 2 initials from a patient name (handles single-name entries). */
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return (parts[0]?.[0] ?? '').toUpperCase();
+  return ((parts[0]?.[0] ?? '') + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase();
+}
+
 export const EncounterContextBanner = memo(function EncounterContextBanner(): React.ReactElement | null {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams<{ encounterId?: string; studyType?: string }>();
   const { encounter, addStudy } = useEncounter();
-  // Lightweight controlled menu — Mantine `<Menu>` was the original pick
-  // but its Popover-anchored Dropdown doesn't render reliably under jsdom
-  // (no `getBoundingClientRect` for floating-ui). The plan tags this as
-  // "minimal; Phase 5 will polish" so a CSS-positioned dropdown is fine.
   const [addMenuOpened, setAddMenuOpened] = useState(false);
   const addMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Click-outside dismissal — same pattern as ConfirmDialog elsewhere.
+  // Click-outside dismissal.
   useEffect(() => {
     if (!addMenuOpened) return;
     const handleDocClick = (event: MouseEvent): void => {
@@ -126,20 +120,17 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
 
   const activeStudyType = params.studyType as StudyType | undefined;
 
-  // Studies available for the "+ Add" menu — every supported StudyType
-  // not already in selectedStudyTypes. Memoised so the menu doesn't
-  // rebuild unless the selection list changes. Hooks must run before the
-  // early-return null guard, so we coalesce a missing encounter to an
-  // empty selection here.
   const addableStudyTypes = useMemo<ReadonlyArray<StudyType>>(() => {
     const selected = new Set<StudyType>(encounter?.selectedStudyTypes ?? []);
-    return (Object.keys(STUDY_TYPE_META) as ReadonlyArray<StudyType>).filter((s) => !selected.has(s));
+    return (Object.keys(STUDY_TYPE_META) as ReadonlyArray<StudyType>).filter(
+      (s) => !selected.has(s),
+    );
   }, [encounter?.selectedStudyTypes]);
 
   const handleChipClick = useCallback(
     (studyType: StudyType) => {
       if (!encounter) return;
-      if (studyType === activeStudyType) return; // already on this study
+      if (studyType === activeStudyType) return;
       navigate(`/encounter/${encounter.encounterId}/${studyType}`);
     },
     [activeStudyType, encounter, navigate],
@@ -157,18 +148,30 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
 
   const handleEditEncounter = useCallback(() => {
     if (!encounter) return;
-    // `?edit={encounterId}` puts EncounterIntake into edit mode — the
-    // form pre-fills from the saved encounter and Start updates the
-    // existing encounter instead of minting a new UUID.
     navigate(`/?edit=${encounter.encounterId}`);
   }, [encounter, navigate]);
 
-  // Graceful no-render until the encounter has hydrated. The route wrapper
-  // (Phase 3a) is the canonical guard, this is belt-and-braces. Placed
-  // AFTER all hooks so we don't violate the rules-of-hooks.
+  const handleViewAll = useCallback(() => {
+    // The encounters list moved onto the landing page (OngoingVisitsPanel
+    // above the intake form). Navigating to `/` drops any `?edit=` context
+    // so the user sees a fresh intake form alongside the list.
+    navigate('/');
+  }, [navigate]);
+
   if (!encounter) return null;
 
   const age = ageFromBirthDate(encounter.header.patientBirthDate);
+  const patientName = encounter.header.patientName || t('encounter.banner.unnamedPatient', 'Unnamed');
+  const initials = initialsFromName(patientName) || '?';
+  const metaParts = [
+    encounter.header.encounterDate,
+    age !== null
+      ? t('encounter.banner.ageYears', '{age} y').replace('{age}', String(age))
+      : null,
+    encounter.header.patientId ? `ID: ${encounter.header.patientId}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <section
@@ -177,69 +180,77 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
       aria-label={t('encounter.banner.regionLabel', 'Encounter context')}
       data-testid="encounter-context-banner"
     >
-      {/* Identity block — read-only patient + encounter date */}
+      <span className={classes.bannerAccent} aria-hidden />
+
+      {/* ============== PATIENT IDENTITY (left) ============== */}
       <div className={classes.identity}>
-        <span className={classes.identityLabel}>
-          {t('encounter.banner.patientLabel', 'Patient')}
+        <span className={classes.avatar} aria-hidden>
+          {initials}
         </span>
-        <span className={classes.patientName} data-testid="banner-patient-name">
-          {encounter.header.patientName || t('encounter.banner.unnamedPatient', 'Unnamed')}
-        </span>
-        {age !== null && (
-          <span className={classes.identityMeta} data-testid="banner-patient-age">
-            <span className={classes.identitySeparator} aria-hidden>·</span>
-            {t('encounter.banner.ageYears', '{age} y')
-              .replace('{age}', String(age))}
+        <div className={classes.identityText}>
+          <span className={classes.patientName} data-testid="banner-patient-name">
+            {patientName}
           </span>
-        )}
-        <span className={classes.identityMeta} data-testid="banner-encounter-date">
-          <span className={classes.identitySeparator} aria-hidden>·</span>
-          <span className={classes.identityLabel} style={{ marginRight: 'var(--emr-space-2)' }}>
-            {t('encounter.banner.dateLabel', 'Encounter date')}
+          <span className={classes.identityMeta}>
+            <IconCalendarEvent
+              size={13}
+              stroke={1.75}
+              className={classes.identityMetaIcon}
+              aria-hidden
+            />
+            <span data-testid="banner-encounter-date">{metaParts || '—'}</span>
           </span>
-          {encounter.header.encounterDate}
-        </span>
+        </div>
       </div>
 
-      {/* Study switcher chips */}
+      {/* ============== STUDY SWITCHER (middle) ============== */}
       {encounter.selectedStudyTypes.length > 0 && (
         <div className={classes.chips} data-testid="banner-chip-row">
           <span className={classes.chipsLabel}>
             {t('encounter.banner.studiesLabel', 'Studies')}
           </span>
-          {encounter.selectedStudyTypes.map((studyType) => {
-            const meta = STUDY_TYPE_META[studyType];
-            const isActive = studyType === activeStudyType;
-            const label = t(meta.translationKey, meta.fallbackLabel);
-            return (
-              <button
-                key={studyType}
-                type="button"
-                className={`${classes.chip} ${isActive ? classes.chipActive : ''}`}
-                onClick={() => handleChipClick(studyType)}
-                disabled={isActive}
-                aria-current={isActive ? 'page' : undefined}
-                aria-label={
-                  isActive
-                    ? label
-                    : t('encounter.banner.switchTo', 'Switch to {study}').replace('{study}', label)
-                }
-                data-testid={`banner-chip-${studyType}`}
-                data-active={isActive ? 'true' : 'false'}
-              >
-                {label}
-              </button>
-            );
-          })}
+          <div className={classes.chipTrack} role="tablist" aria-label="Studies">
+            {encounter.selectedStudyTypes.map((studyType) => {
+              const meta = STUDY_TYPE_META[studyType];
+              const isActive = studyType === activeStudyType;
+              const label = t(meta.translationKey, meta.fallbackLabel);
+              return (
+                <button
+                  key={studyType}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={[classes.chip, isActive ? classes.chipActive : '']
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => handleChipClick(studyType)}
+                  disabled={isActive}
+                  aria-current={isActive ? 'page' : undefined}
+                  aria-label={
+                    isActive
+                      ? label
+                      : t('encounter.banner.switchTo', 'Switch to {study}').replace(
+                          '{study}',
+                          label,
+                        )
+                  }
+                  data-testid={`banner-chip-${studyType}`}
+                  data-active={isActive ? 'true' : 'false'}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Secondary actions */}
+      {/* ============== ACTIONS (right) ============== */}
       <div className={classes.actions}>
         {addableStudyTypes.length > 0 && (
           <div className={classes.menuWrap} ref={addMenuRef}>
             <EMRButton
-              variant="subtle"
+              variant="primary"
               size="sm"
               icon={IconPlus}
               onClick={() => setAddMenuOpened((o) => !o)}
@@ -255,6 +266,9 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
                 className={classes.menuDropdown}
                 data-testid="banner-add-study-menu"
               >
+                <span className={classes.menuHeader}>
+                  {t('encounter.banner.addStudy', '+ Add study')}
+                </span>
                 {addableStudyTypes.map((studyType) => {
                   const meta = STUDY_TYPE_META[studyType];
                   return (
@@ -266,7 +280,8 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
                       onClick={() => handleAddStudy(studyType)}
                       data-testid={`banner-add-option-${studyType}`}
                     >
-                      {t(meta.translationKey, meta.fallbackLabel)}
+                      <IconUser size={14} stroke={1.75} className={classes.menuItemIcon} aria-hidden />
+                      <span>{t(meta.translationKey, meta.fallbackLabel)}</span>
                     </button>
                   );
                 })}
@@ -275,33 +290,27 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
           </div>
         )}
 
-        <EMRButton
-          variant="subtle"
-          size="sm"
-          icon={IconEdit}
+        <button
+          type="button"
+          className={classes.iconButton}
           onClick={handleEditEncounter}
-          data-testid="banner-edit-encounter"
           aria-label={t('encounter.banner.editEncounter', 'Edit encounter details')}
+          title={t('encounter.banner.editEncounter', 'Edit encounter details')}
+          data-testid="banner-edit-encounter"
         >
-          {t('encounter.banner.editEncounter', 'Edit encounter details')}
-        </EMRButton>
+          <IconEdit size={16} stroke={1.75} aria-hidden />
+        </button>
 
-        {/*
-          Phase 5 Item 2 — quick jump to the dedicated /encounters
-          management page. Always rendered (not gated on multiple
-          encounters) so a clinician can review the full list without
-          first leaving the active study.
-        */}
-        <EMRButton
-          variant="subtle"
-          size="sm"
-          icon={IconList}
-          onClick={() => navigate('/encounters')}
-          data-testid="banner-view-all"
+        <button
+          type="button"
+          className={classes.iconButton}
+          onClick={handleViewAll}
           aria-label={t('encounter.list.viewAll', 'All encounters')}
+          title={t('encounter.list.viewAll', 'All encounters')}
+          data-testid="banner-view-all"
         >
-          {t('encounter.list.viewAll', 'All encounters')}
-        </EMRButton>
+          <IconList size={16} stroke={1.75} aria-hidden />
+        </button>
       </div>
     </section>
   );

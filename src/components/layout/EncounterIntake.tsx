@@ -62,6 +62,7 @@ import {
 import type { EncounterDraft, EncounterHeader } from '../../types/encounter';
 import type { StudyType } from '../../types/study';
 import type { IndicationCode } from '../../types/form';
+import { OngoingVisitsPanel } from './OngoingVisitsPanel';
 import classes from './EncounterIntake.module.css';
 
 /** localStorage key for the persisted intake draft. */
@@ -562,6 +563,17 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
       </div>
 
       <div className={classes.container}>
+        {/* ============== ONGOING VISITS (auto-hides when empty) ============== */}
+        <OngoingVisitsPanel
+          onChange={() => {
+            // Re-probe `hasResumable` so the sticky-footer Resume link
+            // disappears when the user clears all visits from the panel.
+            void listEncounters()
+              .then((list) => setHasResumable(list.length > 0))
+              .catch(() => setHasResumable(false));
+          }}
+        />
+
         <div className={classes.layout}>
           {/* ============== FORM COLUMN ============== */}
           <div className={classes.formColumn}>

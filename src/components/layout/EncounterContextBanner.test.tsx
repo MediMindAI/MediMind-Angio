@@ -373,7 +373,7 @@ describe('EncounterContextBanner — edit-encounter action', () => {
 // All-encounters quick link (Phase 5 Item 2)
 // -------------------------------------------------------------------------
 describe('EncounterContextBanner — all-encounters link', () => {
-  it('navigates to /encounters when the "All encounters" button is clicked', async () => {
+  it('navigates to / when the "All encounters" button is clicked (list moved to landing)', async () => {
     const draft = buildDraft();
     await act(async () => {
       await saveEncounter(draft);
@@ -389,6 +389,6 @@ describe('EncounterContextBanner — all-encounters link', () => {
     const user = userEvent.setup();
     await user.click(screen.getByTestId('banner-view-all'));
 
-    expect(navigateMock).toHaveBeenCalledWith('/encounters');
+    expect(navigateMock).toHaveBeenCalledWith('/');
   });
 });

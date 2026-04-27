@@ -9,7 +9,6 @@ import { AnatomyDemo } from './components/anatomy';
 import { STUDY_PLUGINS } from './components/studies';
 import { EncounterStudyWrapper } from './components/studies/EncounterStudyWrapper';
 import { EncounterIntake } from './components/layout/EncounterIntake';
-import { EncountersPage } from './components/layout/EncountersPage';
 import { VersionFooter } from './components/layout/VersionFooter';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { NotFound } from './components/layout/NotFound';
@@ -57,7 +56,13 @@ export default function App() {
             <Routes>
               <Route path="/" element={<EncounterIntake />} />
               <Route path="/demo/anatomy" element={<AnatomyDemo />} />
-              <Route path="/encounters" element={<EncountersPage />} />
+              {/*
+                `/encounters` was the standalone management view in Phase
+                5. The list moved onto the landing page (OngoingVisitsPanel
+                above the intake form), so the route now redirects to keep
+                old links + the existing banner button working.
+              */}
+              <Route path="/encounters" element={<Navigate to="/" replace />} />
               <Route
                 path="/encounter/:encounterId/:studyType"
                 element={<EncounterStudyWrapper />}

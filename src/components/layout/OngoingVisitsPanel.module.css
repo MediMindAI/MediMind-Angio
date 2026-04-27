@@ -1,0 +1,211 @@
+/* OngoingVisitsPanel — landing-page section showing in-progress visits.
+ *
+ * Visual language matches EncounterIntake.module.css cards: same border
+ * radius, same shadow weight, same surface tones. Sits between the hero
+ * banner and the form/summary two-column layout.
+ */
+
+.panel {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-sm);
+  padding: 18px 22px 14px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--emr-secondary) 0%,
+    var(--emr-accent) 100%
+  );
+  opacity: 0.85;
+}
+
+/* ---- Header --------------------------------------------------------- */
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panelHeaderIcon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--emr-border-radius-md);
+  background: var(--emr-secondary-alpha-08, rgba(43, 108, 176, 0.08));
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+}
+
+.panelHeaderText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panelHeaderEyebrow {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.panelHeaderTitle {
+  margin: 0;
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+}
+
+.panelHeaderCount {
+  flex-shrink: 0;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  background: var(--emr-bg-page);
+  border: 1px solid var(--emr-border-color);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---- List ----------------------------------------------------------- */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-bg-page);
+  transition: border-color 120ms ease, box-shadow 120ms ease,
+    transform 120ms ease;
+  flex-wrap: wrap;
+}
+
+.row:hover {
+  border-color: var(--emr-secondary);
+  box-shadow: 0 1px 6px rgba(43, 108, 176, 0.08);
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowPatient {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rowPatientName {
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  white-space: nowrap;
+}
+
+.rowDate {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+}
+
+.rowChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.rowActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* ---- Footer --------------------------------------------------------- */
+
+.panelFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px dashed var(--emr-border-color);
+}
+
+.clearAllButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 6px 8px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  cursor: pointer;
+  border-radius: var(--emr-border-radius-sm);
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.clearAllButton:hover,
+.clearAllButton:focus-visible {
+  color: var(--emr-error);
+  background: var(--emr-error-alpha-08, rgba(220, 38, 38, 0.06));
+  outline: none;
+}
+
+/* ---- Responsive ----------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .panel {
+    padding: 14px 16px 10px;
+    margin-bottom: 18px;
+  }
+  .row {
+    padding: 12px;
+  }
+  .rowActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
