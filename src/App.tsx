@@ -5,10 +5,10 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { TranslationProvider } from './contexts/TranslationContext';
 import { mantineTheme, cssVariablesResolver, createAppColorSchemeManager } from './styles/mantineTheme';
 import { STORAGE_KEYS } from './constants/storage-keys';
-import { AppShell } from './components/layout/AppShell';
 import { AnatomyDemo } from './components/anatomy';
 import { STUDY_PLUGINS } from './components/studies';
 import { EncounterStudyWrapper } from './components/studies/EncounterStudyWrapper';
+import { EncounterIntake } from './components/layout/EncounterIntake';
 import { EncountersPage } from './components/layout/EncountersPage';
 import { VersionFooter } from './components/layout/VersionFooter';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -30,7 +30,7 @@ const initialColorScheme = colorSchemeManager.get('auto');
  * encounter intake flow (Phase 2b owns the `/` element swap).
  *
  * Routes:
- *   /                                        → AppShell (Phase 2b: EncounterIntake)
+ *   /                                        → EncounterIntake (Phase 2b — swapped here)
  *   /demo/anatomy                            → AnatomyDemo smoke test
  *   /encounter/:encounterId/:studyType       → EncounterStudyWrapper
  *   <plugin.route>                           → redirect to /
@@ -55,7 +55,7 @@ export default function App() {
           <Notifications position="top-right" zIndex={2000} />
           <ErrorBoundary>
             <Routes>
-              <Route path="/" element={<AppShell />} />
+              <Route path="/" element={<EncounterIntake />} />
               <Route path="/demo/anatomy" element={<AnatomyDemo />} />
               <Route path="/encounters" element={<EncountersPage />} />
               <Route
