@@ -42,6 +42,7 @@ import type { FormState } from '../../types/form';
 import type { EncounterDraft } from '../../types/encounter';
 import type { StudyType } from '../../types/study';
 import { downloadFhirBundle } from '../../services/fhirBuilder';
+import { projectStudyToFormState } from '../../services/encounterProjection';
 import { buildReportLabels } from '../pdf/buildReportLabels';
 import { buildLocalizedNarrative } from '../../services/narrativeService';
 import {
@@ -256,15 +257,19 @@ export const FormActions = memo(function FormActions({
       isStudyComplete(encounter, type),
     );
     // Collect each study's mirrored state. The active study uses the live
-    // `form` prop (most up-to-date); others come from `encounter.studies`.
-    // Per-study reducer state currently mirrors a FormState-like shape; the
-    // merge gate after Phases 4a+4b lands will validate the exact contract.
-    const collected: FormState[] = encounter.selectedStudyTypes.map((type) => {
+    // `form` prop (already projected via the per-study form's toFormState);
+    // others come from `encounter.studies`. Those slots are RAW Phase-3b
+    // V1/V2 reducer state — `findings` is a top-level field, NOT inside a
+    // `parameters` bag. We project them through `projectStudyToFormState`
+    // so downstream PDF / FHIR builders see the unified `FormState` shape
+    // they expect (parameters.segmentFindings etc.).
+    //
+    // Without this projection, `resolveStudyAssets` blew up reading
+    // `studyForm.parameters['segmentFindings']` on the non-active studies.
+    const collected: Array<FormState | null> = encounter.selectedStudyTypes.map((type) => {
       if (type === form.studyType) return form;
       const slot = encounter.studies[type];
-      // Best-effort cast — Phase 4a may add a centralised adapter. For now
-      // any non-FormState slot is filtered out below.
-      return slot as FormState | undefined as FormState;
+      return projectStudyToFormState(type, slot, encounter);
     });
     const validForms = collected.filter((f): f is FormState => Boolean(f && f.studyType));
     return { isUnifiedMode: unified, allComplete: complete, studyForms: validForms };
