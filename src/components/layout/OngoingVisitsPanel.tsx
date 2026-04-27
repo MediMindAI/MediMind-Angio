@@ -29,6 +29,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '@mantine/notifications';
 import {
+  IconChevronDown,
   IconClockHour4,
   IconPencil,
   IconPlayerPlay,
@@ -92,6 +93,11 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
 
   const [encounters, setEncounters] = useState<EncounterDraft[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  // Collapsed-by-default: clinicians don't want a 5-row list pushing the
+  // intake form below the fold every time they open the page. The count
+  // badge in the header conveys "you have N open visits"; expanding is
+  // a deliberate "I want to manage them" action.
+  const [expanded, setExpanded] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [pendingDiscardId, setPendingDiscardId] = useState<string | null>(null);
@@ -167,11 +173,21 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
 
   return (
     <section
-      className={classes.panel}
+      className={[classes.panel, expanded ? classes.panelExpanded : '']
+        .filter(Boolean)
+        .join(' ')}
       aria-label={t('encounter.listPage.title')}
       data-testid="ongoing-visits-panel"
+      data-expanded={expanded ? 'true' : 'false'}
     >
-      <header className={classes.panelHeader}>
+      <button
+        type="button"
+        className={classes.panelHeader}
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls="ongoing-visits-body"
+        data-testid="ongoing-visits-toggle"
+      >
         <span className={classes.panelHeaderIcon} aria-hidden>
           <IconClockHour4 size={18} stroke={1.75} />
         </span>
@@ -192,8 +208,21 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
             String(encounters.length),
           )}
         </span>
-      </header>
+        <span
+          className={[
+            classes.panelHeaderChevron,
+            expanded ? classes.panelHeaderChevronOpen : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-hidden
+        >
+          <IconChevronDown size={16} stroke={2} />
+        </span>
+      </button>
 
+      {!expanded ? null : (
+      <div id="ongoing-visits-body" className={classes.panelBody}>
       <ul className={classes.list}>
         {encounters.map((enc) => {
           const age = ageFromBirthDate(enc.header.patientBirthDate);
@@ -277,6 +306,8 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
             <span>{t('encounter.list.clearAll')}</span>
           </button>
         </div>
+      )}
+      </div>
       )}
 
       <ConfirmDialog
