@@ -106,6 +106,10 @@ const styles = StyleSheet.create({
   cell: {
     fontSize: PDF_FONT_SIZES.label,
     textAlign: 'center',
+    lineHeight: 1.25,
+    // Clip text to flex-computed width so long Georgian compound words
+    // (which Yoga can't break mid-word) don't paint past the column.
+    overflow: 'hidden',
   },
   badgeRow: {
     flexDirection: 'row',

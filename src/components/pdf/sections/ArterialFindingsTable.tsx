@@ -52,12 +52,15 @@ export interface ArterialFindingsTableProps {
 type Side = 'left' | 'right';
 
 const COL_FLEX = {
-  segment: 2.4,
-  waveform: 1.3,
+  // Compound Georgian vessel names (e.g. "ტიბიო-პერონეალური ღერო") need more
+  // room than English equivalents — bump segment to 3.2 so they wrap inside
+  // the cell instead of overflowing into the next column.
+  segment: 3.2,
+  waveform: 1.2,
   psv: 1.0,
   stenosis: 1.1,
-  plaque: 1.3,
-  occluded: 0.8,
+  plaque: 1.4,
+  occluded: 0.7,
 } as const;
 
 const styles = StyleSheet.create({
@@ -102,6 +105,11 @@ const styles = StyleSheet.create({
   },
   cell: {
     fontSize: PDF_FONT_SIZES.label,
+    lineHeight: 1.25,
+    // Clip text to the cell's flex-computed width. Without this, long
+    // Georgian compound words (which Yoga can't break mid-word) paint past
+    // the column boundary and visually overlap the next cell's text.
+    overflow: 'hidden',
   },
   cellRed: {
     color: PDF_BAND_COLORS.error.fg,

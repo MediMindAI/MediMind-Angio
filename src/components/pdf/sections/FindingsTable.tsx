@@ -91,6 +91,11 @@ const styles = StyleSheet.create({
   },
   cell: {
     fontSize: PDF_FONT_SIZES.label,
+    lineHeight: 1.25,
+    // Clip rather than overflow into the neighbor column when a localization
+    // ends up longer than the allocated flex slot. Same defensive guard the
+    // header cell has — Georgian compound words don't break mid-word.
+    overflow: 'hidden',
   },
   headCell: {
     fontSize: 7.5,
