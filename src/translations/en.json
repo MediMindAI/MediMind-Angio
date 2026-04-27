@@ -233,7 +233,8 @@
         "ageYears": "{age} y/o",
         "metaPlaceholder": "Identity pending",
         "icdEmpty": "No ICD-10 codes yet",
-        "studiesEmpty": "Select at least one study"
+        "studiesEmpty": "Select at least one study",
+        "progressLabel": "Completed"
       }
     },
     "banner": {

@@ -541,7 +541,7 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                 {completedStepCount}/{progressSteps.length}
               </span>
               <span className={classes.heroProgressLabel}>
-                {t('encounter.intake.summary.eyebrow', 'Live preview')}
+                {t('encounter.intake.summary.progressLabel', 'Completed')}
               </span>
             </div>
             <div className={classes.heroProgressTrack}>
