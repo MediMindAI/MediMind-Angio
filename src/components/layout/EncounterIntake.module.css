@@ -36,7 +36,7 @@
   background: var(--emr-gradient-section-header);
   color: var(--emr-text-inverse);
   border-bottom: 1px solid var(--emr-secondary-alpha-30);
-  padding: 44px 24px 56px;
+  padding: 18px 24px 22px;
   isolation: isolate;
 }
 
@@ -51,16 +51,16 @@
 }
 
 .heroOrb {
-  width: 380px;
-  height: 380px;
-  top: -120px;
+  width: 280px;
+  height: 280px;
+  top: -150px;
   right: 8%;
   background: radial-gradient(circle, rgba(190, 227, 248, 0.45), transparent 70%);
 }
 
 .heroOrbAlt {
-  width: 320px;
-  height: 320px;
+  width: 220px;
+  height: 220px;
   bottom: -160px;
   left: 6%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
@@ -93,38 +93,39 @@
   max-width: 1320px;
   margin: 0 auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: 24px;
   flex-wrap: wrap;
-  /* Reserve room above so the absolutely-positioned controls don't
-     overlap the eyebrow chip on narrow screens. */
-  padding-top: 28px;
+  /* Reserve a small gap above so the absolutely-positioned controls
+     don't overlap the eyebrow chip on narrow screens. */
+  padding-top: 4px;
 }
 
 @media (max-width: 768px) {
   .heroInner {
-    padding-top: 36px;
+    padding-top: 30px;
   }
 }
 
 .heroText {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
   max-width: 720px;
 }
 
 .heroEyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   align-self: flex-start;
-  padding: 5px 12px 5px 8px;
+  padding: 3px 10px 3px 7px;
+  margin-bottom: 4px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.1);
   border-radius: var(--emr-border-radius-full);
-  font-size: var(--emr-font-xs);
+  font-size: var(--emr-font-2xs);
   font-weight: var(--emr-font-semibold);
   letter-spacing: var(--emr-letter-spacing-uppercase);
   text-transform: uppercase;
@@ -142,8 +143,8 @@
 }
 
 .heroTitle {
-  font-size: var(--emr-font-5xl);
-  font-weight: var(--emr-font-extrabold);
+  font-size: var(--emr-font-3xl);
+  font-weight: var(--emr-font-bold);
   line-height: var(--emr-line-height-tight);
   letter-spacing: var(--emr-letter-spacing-tight);
   margin: 0;
@@ -151,8 +152,8 @@
 }
 
 .heroSubtitle {
-  font-size: var(--emr-font-lg);
-  line-height: var(--emr-line-height-base);
+  font-size: var(--emr-font-sm);
+  line-height: var(--emr-line-height-snug);
   margin: 0;
   color: rgba(255, 255, 255, 0.78);
   max-width: 640px;
@@ -163,26 +164,26 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: var(--emr-border-radius-xl);
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--emr-border-radius-md);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  min-width: 280px;
+  min-width: 240px;
 }
 
 .heroProgressMeta {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   justify-content: flex-end;
 }
 
 .heroProgressCount {
-  font-size: var(--emr-font-2xl);
+  font-size: var(--emr-font-lg);
   font-weight: var(--emr-font-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -190,7 +191,7 @@
 }
 
 .heroProgressLabel {
-  font-size: var(--emr-font-xs);
+  font-size: var(--emr-font-2xs);
   text-transform: uppercase;
   letter-spacing: var(--emr-letter-spacing-uppercase);
   color: rgba(255, 255, 255, 0.7);
@@ -200,15 +201,15 @@
 .heroProgressTrack {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   width: 100%;
   justify-content: flex-end;
 }
 
 .heroProgressDot {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -216,7 +217,7 @@
   background: rgba(255, 255, 255, 0.1);
   border: 1.5px solid rgba(255, 255, 255, 0.28);
   color: rgba(255, 255, 255, 0.7);
-  font-size: var(--emr-font-sm);
+  font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-bold);
   transition: var(--emr-transition-base);
 }
@@ -245,13 +246,13 @@
 
 @media (max-width: 768px) {
   .hero {
-    padding: 32px 18px 40px;
+    padding: 14px 18px 18px;
   }
   .heroTitle {
-    font-size: var(--emr-font-4xl);
+    font-size: var(--emr-font-2xl);
   }
   .heroSubtitle {
-    font-size: var(--emr-font-md);
+    font-size: var(--emr-font-xs);
   }
   .heroProgress {
     width: 100%;
