@@ -76,10 +76,13 @@
   background: var(--emr-secondary);
 }
 
+/* Axis accent strips — theme blues only.
+   C = primary (deepest navy), E = secondary, A = accent, P = light-accent
+   so the four axes still feel distinct without leaving the blue family. */
 .axisC::before { background: var(--emr-primary); }
-.axisE::before { background: var(--emr-accent); }
-.axisA::before { background: var(--emr-success); }
-.axisP::before { background: var(--emr-warning); }
+.axisE::before { background: var(--emr-secondary); }
+.axisA::before { background: var(--emr-accent); }
+.axisP::before { background: var(--emr-light-accent); }
 
 .axis:hover {
   border-color: var(--emr-border-focus);
@@ -142,7 +145,11 @@
   height: 0;
 }
 
-/* The label IS the chip. */
+/* The label IS the chip.
+   `color` carries `!important` because Mantine's Radio.label ships its
+   own color declaration that wins specificity against a plain class
+   override — without `!important` the selected chip's text inherits the
+   default dark color and becomes invisible on the dark-blue background. */
 .chipGroup :global(.mantine-Radio-label) {
   display: inline-flex;
   align-items: center;
@@ -150,7 +157,7 @@
   padding: 6px 10px;
   font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-secondary);
+  color: var(--emr-text-secondary) !important;
   background: var(--emr-bg-page);
   border: 1px solid var(--emr-border-color);
   border-radius: 999px;
@@ -163,37 +170,18 @@
 
 .chipGroup :global(.mantine-Radio-label:hover) {
   border-color: var(--emr-secondary);
-  color: var(--emr-text-primary);
+  color: var(--emr-text-primary) !important;
   background: var(--emr-bg-card);
 }
 
+/* Selected chip — single theme-blue treatment for every axis.
+   Background = secondary blue, text = pure white (forced via !important
+   so it always reads on top of the navy fill). */
 .chipGroup :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
-  background: var(--emr-secondary);
-  color: var(--emr-text-white);
-  border-color: var(--emr-secondary);
-  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.25);
-}
-
-/* Per-axis active-chip colour — picked up via the parent `.axisX` class. */
-.axisC :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
-  background: var(--emr-primary);
-  border-color: var(--emr-primary);
-  box-shadow: 0 1px 4px rgba(26, 54, 93, 0.3);
-}
-.axisE :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
-  background: var(--emr-accent);
-  border-color: var(--emr-accent);
-  box-shadow: 0 1px 4px rgba(49, 130, 206, 0.3);
-}
-.axisA :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
-  background: var(--emr-success);
-  border-color: var(--emr-success);
-  box-shadow: 0 1px 4px rgba(34, 197, 94, 0.3);
-}
-.axisP :global(.mantine-Radio-root:has(input:checked) .mantine-Radio-label) {
-  background: var(--emr-warning);
-  border-color: var(--emr-warning);
-  box-shadow: 0 1px 4px rgba(245, 158, 11, 0.3);
+  background: var(--emr-secondary) !important;
+  color: var(--emr-text-white) !important;
+  border-color: var(--emr-secondary) !important;
+  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.3);
 }
 
 /* Keyboard focus outline — accessibility. */
@@ -257,7 +245,7 @@
   padding: 6px 12px;
   font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-secondary);
+  color: var(--emr-text-secondary) !important;
   background: var(--emr-bg-page);
   border: 1px solid var(--emr-border-color);
   border-radius: 999px;
@@ -269,10 +257,10 @@
 }
 
 .modifierPill :global(.mantine-Checkbox-root:has(input:checked) .mantine-Checkbox-label) {
-  background: var(--emr-secondary);
-  color: var(--emr-text-white);
-  border-color: var(--emr-secondary);
-  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.25);
+  background: var(--emr-secondary) !important;
+  color: var(--emr-text-white) !important;
+  border-color: var(--emr-secondary) !important;
+  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.3);
 }
 
 .modifierPill :global(.mantine-Checkbox-root:has(input:disabled) .mantine-Checkbox-label) {

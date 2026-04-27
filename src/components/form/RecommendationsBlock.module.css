@@ -126,14 +126,16 @@
   left: 0;
   width: 3px;
   border-radius: 0 2px 2px 0;
-  background: var(--emr-secondary);
+  background: var(--emr-light-accent);
   transition: background 160ms ease;
 }
 
-/* Priority-coloured left strip — set via data-priority on the item div. */
-.item[data-priority='routine']::before { background: var(--emr-secondary); }
-.item[data-priority='urgent']::before { background: var(--emr-warning); }
-.item[data-priority='stat']::before { background: var(--emr-error); }
+/* Priority strip — theme-blue intensity ramp (routine = lightest,
+   stat = deepest navy). Keeps urgency scannable without leaving the
+   blue family. */
+.item[data-priority='routine']::before { background: var(--emr-light-accent); }
+.item[data-priority='urgent']::before { background: var(--emr-secondary); }
+.item[data-priority='stat']::before { background: var(--emr-primary); }
 
 .item:hover {
   border-color: var(--emr-secondary);
