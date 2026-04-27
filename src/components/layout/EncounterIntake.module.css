@@ -208,69 +208,83 @@
   font-weight: var(--emr-font-semibold);
 }
 
+/* The track is a relative container holding (in z-stack order):
+     1. heroProgressTrackBase  — full-width faded line (the "rail")
+     2. heroProgressTrackFill  — left-aligned line that fills as steps complete
+     3. heroProgressDot × N    — the checkpoints, sitting on top
+*/
 .heroProgressTrack {
-  display: inline-flex;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 0;
-  justify-content: center;
+  justify-content: space-between;
+  width: 200px;
+  height: 28px;
+}
+
+.heroProgressTrackBase,
+.heroProgressTrackFill {
+  position: absolute;
+  top: 50%;
+  left: 14px;          /* half of dot width — anchor on first dot's center */
+  right: 14px;         /* anchor on last dot's center */
+  height: 2px;
+  transform: translateY(-50%);
+  border-radius: var(--emr-border-radius-full);
+  z-index: 0;
+}
+
+.heroProgressTrackBase {
+  background: rgba(255, 255, 255, 0.18);
+  width: auto;
+}
+
+.heroProgressTrackFill {
+  background: #ffffff;
+  /* Width is set inline via calc() — see TSX. Anchors at left:14px so
+     the fill grows rightward across the inter-dot segments. */
+  right: auto;
+  transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .heroProgressDot {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.32);
-  color: rgba(255, 255, 255, 0.85);
+  background: var(--emr-secondary);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.78);
   font-size: var(--emr-font-2xs);
   font-weight: var(--emr-font-bold);
+  font-variant-numeric: tabular-nums;
   transition: var(--emr-transition-base);
   z-index: 1;
 }
 
-/* Connector line between dots — sits behind via z-index. The line is
-   solid white when the previous step is done, faded when it's not. */
-.heroProgressDot:not(:first-child)::before {
-  content: '';
-  position: absolute;
-  right: calc(100% + 1px);
-  top: 50%;
-  width: 18px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.18);
-  transform: translateY(-50%);
-  z-index: 0;
-}
-
-.heroProgressDot.heroProgressDotDone:not(:first-child)::before,
-.heroProgressDotDone + .heroProgressDot::before {
-  background: rgba(255, 255, 255, 0.85);
-}
-
 .heroProgressDotIndex {
-  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  line-height: 1;
 }
 
+/* Done — solid white pill, primary-blue check icon, no shadow blob */
 .heroProgressDotDone {
   background: #ffffff;
   border-color: #ffffff;
   color: var(--emr-secondary);
-  box-shadow: 0 6px 16px -4px rgba(255, 255, 255, 0.4);
 }
 
-.heroProgressDotDone .heroProgressDotIndex {
-  display: none;
-}
-
-.heroProgressDotCheck {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--emr-secondary);
+/* Current (next-to-be-completed) — solid white with primary-blue
+   number, plus a subtle 4px ring to draw the eye without the
+   old shadow blob. */
+.heroProgressDotCurrent {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--emr-primary);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
 @media (max-width: 768px) {

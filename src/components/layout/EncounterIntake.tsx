@@ -545,28 +545,54 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
               </span>
             </div>
             <div className={classes.heroProgressTrack}>
-              {progressSteps.map((step, idx) => {
-                const done = stepCompletion[step.key];
-                return (
+              {/* Continuous base line + filled progress segment behind all dots. */}
+              <span className={classes.heroProgressTrackBase} aria-hidden />
+              <span
+                className={classes.heroProgressTrackFill}
+                style={{
+                  // The line spans dot-center to dot-center; with 4 dots
+                  // there are 3 inter-dot segments. Each completed step
+                  // fills one segment. Width math accounts for the dot
+                  // diameter eating the container edges.
+                  width: `calc((100% - 28px) * ${Math.min(
+                    completedStepCount / Math.max(progressSteps.length - 1, 1),
+                    1,
+                  )})`,
+                }}
+                aria-hidden
+              />
+              {(() => {
+                // The "current" dot is the first not-yet-done step in
+                // visual order. Steps complete out-of-sequence (e.g.
+                // visit can be done before identity), so match by the
+                // first undone index in the ordered steps array.
+                const firstUndoneIdx = progressSteps.findIndex(
+                  (s) => !stepCompletion[s.key],
+                );
+                return progressSteps.map((step, idx) => {
+                  const done = stepCompletion[step.key];
+                  const isCurrent = idx === firstUndoneIdx;
+                  return (
                   <div
                     key={step.key}
                     className={[
                       classes.heroProgressDot,
                       done ? classes.heroProgressDotDone : '',
+                      isCurrent ? classes.heroProgressDotCurrent : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
                     title={step.label}
                   >
-                    <span className={classes.heroProgressDotIndex}>{idx + 1}</span>
-                    {done && (
-                      <span className={classes.heroProgressDotCheck} aria-hidden>
-                        <IconCheck size={12} stroke={3} />
-                      </span>
+                    {done ? (
+                      <IconCheck size={12} stroke={3} aria-hidden />
+                    ) : (
+                      <span className={classes.heroProgressDotIndex}>{idx + 1}</span>
                     )}
                   </div>
                 );
-              })}
+                });
+              })()}
             </div>
           </div>
         </div>
