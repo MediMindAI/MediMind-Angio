@@ -25,10 +25,8 @@ import { EMRTabs, EMRButton } from '../common';
 import { EMRSelect } from '../shared/EMRFormFields';
 import type { EMRSelectOption } from '../shared/EMRFormFields';
 import {
-  AUGMENTATION_VALUES,
   COMPRESSIBILITY_VALUES,
   PHASICITY_VALUES,
-  SPONTANEITY_VALUES,
   THROMBOSIS_VALUES,
   VENOUS_LE_SEGMENTS,
 } from '../studies/venous-le/config';
@@ -42,12 +40,12 @@ import type { Competency } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
 import classes from './SegmentTable.module.css';
 
-const COMPETENCY_VALUES: ReadonlyArray<Competency | 'auto'> = [
-  'auto',
+const COMPETENCY_VALUES: ReadonlyArray<Competency> = [
   'normal',
+  'occluded',
   'incompetent',
-  'ablated',
   'inconclusive',
+  'ablated',
 ];
 
 export type SegmentTableView = 'left' | 'right' | 'bilateral';
@@ -72,47 +70,34 @@ const PARAMS: ReadonlyArray<{
     options: THROMBOSIS_VALUES,
   },
   {
-    id: 'spontaneity',
-    titleKey: 'venousLE.param.spontaneity',
-    helpKey: 'venousLE.help.spontaneity',
-    options: SPONTANEITY_VALUES,
-  },
-  {
     id: 'phasicity',
     titleKey: 'venousLE.param.phasicity',
     helpKey: 'venousLE.help.phasicity',
     options: PHASICITY_VALUES,
-  },
-  {
-    id: 'augmentation',
-    titleKey: 'venousLE.param.augmentation',
-    helpKey: 'venousLE.help.augmentation',
-    options: AUGMENTATION_VALUES,
   },
 ];
 
 /** Short column label for the segment column (visible at narrow widths). */
 const SEGMENT_SHORT_LABELS: Readonly<Record<VenousLESegmentBase, string>> = {
   cfv: 'CFV',
-  eiv: 'EIV',
-  'fv-prox': 'FV-P',
-  'fv-mid': 'FV-M',
-  'fv-dist': 'FV-D',
+  'fv-prox': 'FV Prox',
+  'fv-mid': 'FV Mid',
+  'fv-dist': 'FV Dist',
   pfv: 'PFV',
-  'gsv-ak': 'GSV-AK',
-  'gsv-prox-calf': 'GSV-PC',
-  'gsv-mid-calf': 'GSV-MC',
-  'gsv-dist-calf': 'GSV-DC',
-  'pop-ak': 'POP-AK',
-  'pop-fossa': 'POP-F',
-  'pop-bk': 'POP-BK',
+  'pop-ak': 'POP AK',
+  'pop-bk': 'POP BK',
   ptv: 'PTV',
   per: 'PER',
-  ssv: 'SSV',
-  gastroc: 'GAST',
-  soleal: 'SOL',
+  gastroc: 'GASTROC',
+  soleal: 'SOLEAL',
   sfj: 'SFJ',
+  'gsv-prox-thigh': 'GSV Prox Thigh',
+  'gsv-mid-thigh': 'GSV Mid Thigh',
+  'gsv-dist-thigh': 'GSV Dist Thigh',
+  'gsv-knee': 'GSV Knee',
+  'gsv-calf': 'GSV Calf',
   spj: 'SPJ',
+  ssv: 'SSV',
 };
 
 // ---------------------------------------------------------------------------
@@ -245,7 +230,7 @@ const SegmentRow = memo(function SegmentRow({
 
   const handleCompetencyChange = useCallback(
     (next: string | undefined) => {
-      if (!next || next === 'auto') {
+      if (!next) {
         onFindingChange(fullId, { competencyOverride: undefined });
         return;
       }
@@ -262,7 +247,7 @@ const SegmentRow = memo(function SegmentRow({
     .filter(Boolean)
     .join(' ');
 
-  const competencyValue = finding?.competencyOverride ?? 'auto';
+  const competencyValue = finding?.competencyOverride;
 
   return (
     <div

@@ -7,7 +7,7 @@
  * async data must be resolved into props before mounting the Document.
  */
 import type { ReactElement } from 'react';
-import { View, Text, Svg, Path, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Svg, Path, Image, StyleSheet } from '@react-pdf/renderer';
 import type { AnatomyToPdfResult } from '../anatomyToPdfSvg';
 import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 import { COMPETENCY_COLORS } from '../../../constants/theme-colors';
@@ -81,26 +81,85 @@ function renderAnatomy(
   if (!data) return null;
   // viewBox is "minX minY width height".
   const parts = data.viewBox.split(/\s+/).map((n) => Number(n));
+  const vbX = Number.isFinite(parts[0]) ? parts[0] : 0;
+  const vbY = Number.isFinite(parts[1]) ? parts[1] : 0;
   const vbWidth = Number.isFinite(parts[2]) ? parts[2] : 600;
   const vbHeight = Number.isFinite(parts[3]) ? parts[3] : 900;
   const aspect = vbHeight && vbWidth ? vbHeight / vbWidth : 1.5;
   const heightPt = widthPt * aspect;
 
+  // Resolve the backdrop image URL. The SVG ships with an absolute path
+  // (e.g. `/anatomy/le-reference.png`) so the browser can also render the
+  // SVG directly via dangerouslySetInnerHTML. We hand that path straight
+  // to `resolveAssetUrl`, which prepends origin + base so @react-pdf can
+  // fetch it. Also tolerate older SVGs that ship a bare filename.
+  const backdropSrc = data.backdropHref
+    ? resolveAssetUrl(
+        data.backdropHref.startsWith('/')
+          ? data.backdropHref
+          : `anatomy/${data.backdropHref}`,
+      )
+    : undefined;
+
   return (
-    <Svg width={widthPt} height={heightPt} viewBox={data.viewBox}>
-      {data.elements.map((el, idx) => (
-        <Path
-          key={`${el.kind}-${el.id ?? idx}`}
-          d={el.d}
-          fill={el.fill}
-          stroke={el.stroke}
-          strokeWidth={el.strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <View style={{ position: 'relative', width: widthPt, height: heightPt }}>
+      {backdropSrc ? (
+        <Image
+          src={backdropSrc}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: widthPt,
+            height: heightPt,
+          }}
         />
-      ))}
-    </Svg>
+      ) : null}
+      <Svg
+        width={widthPt}
+        height={heightPt}
+        viewBox={`${vbX} ${vbY} ${vbWidth} ${vbHeight}`}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      >
+        {data.elements.map((el, idx) => (
+          <Path
+            key={`${el.kind}-${el.id ?? idx}`}
+            d={el.d}
+            fill={el.fill}
+            stroke={el.stroke}
+            strokeWidth={el.strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ))}
+      </Svg>
+    </View>
   );
+}
+
+/**
+ * Resolve a public-folder asset to an absolute URL the PDF renderer can fetch.
+ * In the browser, public assets live at the site root (or under
+ * `import.meta.env.BASE_URL` for GitHub-Pages deploys); in Node, we read
+ * directly from disk via a `file://` URL.
+ */
+function resolveAssetUrl(relativePath: string): string {
+  // Strip any leading slash so we don't end up with `///` after concat.
+  const clean = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+  if (typeof window !== 'undefined') {
+    const meta = import.meta as unknown as { env?: { BASE_URL?: string } };
+    const base = meta.env?.BASE_URL ?? '/';
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+    // Prepend window.location.origin so @react-pdf/renderer's <Image> can
+    // fetch the asset. Its render pipeline doesn't auto-resolve root-
+    // relative URLs against the page origin the way an HTML <img> does;
+    // without the origin, the backdrop fails to load and the PDF shows
+    // only the SVG paths over a blank page.
+    return `${window.location.origin}${normalizedBase}${clean}`;
+  }
+  // Node — used by scripts/test-pdf.ts. Match anatomyToPdfSvg's path logic.
+  const segments = clean.split('/');
+  return ['file://', process.cwd(), 'public', ...segments].join('/');
 }
 
 export function DiagramSection({
@@ -109,7 +168,7 @@ export function DiagramSection({
   labels,
   viewWidthPt = 150,
 }: DiagramSectionProps): ReactElement {
-  const competencies: Array<Competency> = ['normal', 'ablated', 'incompetent', 'inconclusive'];
+  const competencies: Array<Competency> = ['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'];
 
   return (
     <View style={styles.wrapper}>

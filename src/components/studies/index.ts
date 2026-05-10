@@ -52,18 +52,25 @@ export const STUDY_PLUGINS: ReadonlyArray<StudyPlugin> = [
     translationKey: 'studies.carotid',
   },
   {
-    key: 'abdominalVenous',
+    key: 'upperExtremityVascular',
+    route: null,
+    available: false,
+    icon: IconWaveSawTool,
+    translationKey: 'studies.upperExtremityVascular',
+  },
+  {
+    key: 'abdominalAorticIliac',
     route: null,
     available: false,
     icon: IconHeartbeat,
-    translationKey: 'studies.abdominalVenous',
+    translationKey: 'studies.abdominalAorticIliac',
   },
   {
-    key: 'dialysisAortic',
+    key: 'iliacPelvicVenous',
     route: null,
     available: false,
     icon: IconShieldCheckered,
-    translationKey: 'studies.dialysisAortic',
+    translationKey: 'studies.iliacPelvicVenous',
   },
 ];
 

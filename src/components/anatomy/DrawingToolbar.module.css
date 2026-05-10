@@ -1,0 +1,105 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  box-shadow: var(--emr-shadow-sm);
+  margin-bottom: 12px;
+}
+
+.subgroup {
+  padding: 4px 10px;
+  background: var(--emr-bg-page);
+  border-radius: var(--emr-border-radius);
+  border: 1px solid var(--emr-border-color);
+}
+
+.subgroup[data-disabled='true'] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: transform var(--emr-transition-fast), border-color var(--emr-transition-base);
+}
+
+.swatch:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.swatch[data-active='true'] {
+  border-color: var(--emr-text-primary);
+  transform: scale(1.12);
+}
+
+.swatch:disabled {
+  cursor: not-allowed;
+}
+
+.sizePill {
+  width: 28px;
+  height: 24px;
+  border: 1.5px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius);
+  background: var(--emr-bg-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--emr-transition-base), background var(--emr-transition-base);
+}
+
+.sizePill:hover:not(:disabled) {
+  border-color: var(--emr-secondary);
+}
+
+.sizePill[data-active='true'] {
+  border-color: var(--emr-secondary);
+  background: var(--emr-secondary-alpha-08);
+}
+
+.sizePill:disabled {
+  cursor: not-allowed;
+}
+
+.sizeDot {
+  background: var(--emr-text-primary);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.toolBtn {
+  width: 30px;
+  height: 28px;
+  border: 1.5px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius);
+  background: var(--emr-bg-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--emr-text-primary);
+  transition: border-color var(--emr-transition-base), background var(--emr-transition-base);
+}
+
+.toolBtn:hover:not(:disabled) {
+  border-color: var(--emr-secondary);
+  background: var(--emr-bg-hover);
+}
+
+.toolBtn[data-active='true'] {
+  border-color: var(--emr-secondary);
+  background: var(--emr-secondary-alpha-08);
+}
+
+.toolBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

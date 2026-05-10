@@ -32,29 +32,34 @@
   },
   "studies": {
     "venousLE": {
-      "title": "Lower Extremity Venous Duplex",
+      "title": "Lower Extremity Venous Ultrasonography",
       "short": "Venous LE",
       "description": "Bilateral reflux + DVT assessment"
     },
-    "abdominalVenous": {
-      "title": "Abdominal-Pelvic Venous",
-      "short": "Abdomen/Pelvis",
-      "description": "IVC · renal veins · iliacs"
-    },
     "arterialLE": {
-      "title": "Lower Extremity Arterial Duplex",
+      "title": "Lower Extremity Arterial Ultrasonography",
       "short": "Arterial LE",
       "description": "ABI + segmental pressures"
     },
     "carotid": {
-      "title": "Carotid Duplex",
+      "title": "Extracranial Vascular Ultrasonography",
       "short": "Carotid",
       "description": "Bilateral carotid + vertebral"
     },
-    "dialysisAortic": {
-      "title": "Dialysis Access / Aortic",
-      "short": "AVF / AAA",
-      "description": "AVF surveillance + AAA screen"
+    "upperExtremityVascular": {
+      "title": "Upper Extremity Vascular Ultrasonography",
+      "short": "Upper extremity",
+      "description": "Coming soon"
+    },
+    "abdominalAorticIliac": {
+      "title": "Abdominal Aorta and Iliac Arteries Ultrasonography",
+      "short": "Abdominal aorta",
+      "description": "Coming soon"
+    },
+    "iliacPelvicVenous": {
+      "title": "Iliac and Pelvic Veins Ultrasonography",
+      "short": "Iliac/Pelvic",
+      "description": "Coming soon"
     }
   },
   "common": {
@@ -79,9 +84,10 @@
   },
   "competency": {
     "normal": "Normal",
-    "ablated": "Ablated",
+    "occluded": "Occlusion",
     "incompetent": "Incompetent",
-    "inconclusive": "Inconclusive"
+    "inconclusive": "Inconclusive",
+    "ablated": "Ablated"
   },
   "anatomy": {
     "view": {
@@ -103,17 +109,16 @@
     },
     "segment": {
       "cfv": "Common femoral vein",
-      "eiv": "External iliac vein",
       "fv_prox": "Femoral vein (proximal)",
       "fv_mid": "Femoral vein (mid)",
       "fv_dist": "Femoral vein (distal)",
       "pfv": "Profunda (deep femoral) vein",
-      "gsv_ak": "Great saphenous vein (above knee)",
-      "gsv_prox_calf": "Great saphenous vein (proximal calf)",
-      "gsv_mid_calf": "Great saphenous vein (mid calf)",
-      "gsv_dist_calf": "Great saphenous vein (distal calf)",
+      "gsv_prox_thigh": "Great saphenous vein (proximal thigh)",
+      "gsv_mid_thigh": "Great saphenous vein (mid thigh)",
+      "gsv_dist_thigh": "Great saphenous vein (distal thigh)",
+      "gsv_knee": "Great saphenous vein (at the knee)",
+      "gsv_calf": "Great saphenous vein (calf)",
       "pop_ak": "Popliteal vein (above knee)",
-      "pop_fossa": "Popliteal vein (fossa)",
       "pop_bk": "Popliteal vein (below knee)",
       "ptv": "Posterior tibial vein",
       "per": "Peroneal vein",
@@ -196,8 +201,6 @@
         "referringPhysician": "Referring physician",
         "institution": "Institution",
         "encounterDate": "Encounter date",
-        "medications": "Medications",
-        "medicationsPlaceholder": "Free-text list of current medications",
         "informedConsent": "Informed consent obtained",
         "informedConsentSignedAt": "Consent signed at"
       },
@@ -205,8 +208,8 @@
         "title": "Indication",
         "icd10Label": "ICD-10 codes",
         "icd10Placeholder": "Search and pick…",
-        "indicationNotes": "Indication notes (supplemental)",
-        "indicationNotesPlaceholder": "Optional clinical context"
+        "indicationNotes": "Symptoms and signs (optional)",
+        "indicationNotesPlaceholder": "Describe presenting symptoms and clinical signs"
       },
       "studies": {
         "title": "Studies to perform",

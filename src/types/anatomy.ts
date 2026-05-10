@@ -26,8 +26,24 @@ export type Side = 'left' | 'right' | 'bilateral' | 'midline';
  */
 export type SegmentId = string;
 
-/** Venous competency state (and generic state used by diagram overlay). */
-export type Competency = 'normal' | 'ablated' | 'incompetent' | 'inconclusive';
+/**
+ * Clinical state for a venous segment (and generic state used by every
+ * diagram overlay). One canonical palette lives in
+ * `src/constants/theme-colors.ts` (`COMPETENCY_COLORS`) and is consumed
+ * by:
+ *   - the on-screen overlay (`overlayStrokeFor` in AnatomyView.tsx),
+ *   - the segment-table competency dropdown,
+ *   - `pdfTheme.ts` for the printed report,
+ *   - the freehand drawing toolbar palette (so a pen colour and a
+ *     template-applied colour mean the same thing).
+ *
+ *   - normal       — patent, blue
+ *   - occluded     — thrombus / non-compressible vein, red
+ *   - incompetent  — reflux, amber
+ *   - inconclusive — insufficient data, gray
+ *   - ablated      — post-procedural, green
+ */
+export type Competency = 'normal' | 'occluded' | 'incompetent' | 'inconclusive' | 'ablated';
 
 /**
  * Arterial stenosis grade — NASCET-style categories used for carotid and

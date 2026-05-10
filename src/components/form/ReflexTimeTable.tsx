@@ -97,12 +97,9 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
           const hasAny =
             f.compressibility !== undefined ||
             f.thrombosis !== undefined ||
-            f.spontaneity !== undefined ||
             f.phasicity !== undefined ||
-            f.augmentation !== undefined ||
             f.refluxDurationMs !== undefined ||
             f.apDiameterMm !== undefined ||
-            f.transDiameterMm !== undefined ||
             f.depthMm !== undefined;
           if (!hasAny) continue;
         }
@@ -145,10 +142,7 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
                 );
           if (!ok) return;
         }
-        if (
-          (field === 'apDiameterMm' || field === 'transDiameterMm') &&
-          num > HARD_REJECT_DIAMETER_MM
-        ) {
+        if (field === 'apDiameterMm' && num > HARD_REJECT_DIAMETER_MM) {
           const ok =
             typeof window === 'undefined'
               ? true
@@ -184,9 +178,6 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
         </div>
         <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
           {t('venousLE.refluxTable.ap')}
-        </div>
-        <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-          {t('venousLE.refluxTable.trans')}
         </div>
         <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
           {t('venousLE.refluxTable.depth')}
@@ -244,20 +235,6 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
                 decimalScale={1}
                 size="sm"
                 data-testid={`num-${r.fullId}-apDiameterMm`}
-              />
-            </div>
-
-            <div className={classes.cell} data-label={t('venousLE.refluxTable.trans')}>
-              <EMRNumberInput
-                aria-label={`${t('venousLE.param.transDiameterMm')} — ${r.fullId}`}
-                value={r.finding?.transDiameterMm ?? ''}
-                onChange={makeHandler(r.fullId, 'transDiameterMm')}
-                min={0}
-                max={50}
-                step={0.1}
-                decimalScale={1}
-                size="sm"
-                data-testid={`num-${r.fullId}-transDiameterMm`}
               />
             </div>
 

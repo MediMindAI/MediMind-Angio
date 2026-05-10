@@ -1,0 +1,39 @@
+.panel {
+  width: 100%;
+}
+
+.viewLabel {
+  font-size: var(--emr-font-sm);
+  font-weight: 600;
+  color: var(--emr-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 600 / 1453;
+  margin: 0 auto;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* AnatomyView lives at z=1, drawing canvas overlays at z=2.
+   Both layers fill the stage so coordinates align exactly. */
+.stage > div:first-of-type {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.stage > svg {
+  z-index: 2;
+}
+
+.stage[data-mode='draw'] {
+  cursor: crosshair;
+}

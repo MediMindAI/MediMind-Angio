@@ -1,49 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" role="img" aria-labelledby="title-le-anterior">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1453" role="img" aria-labelledby="title-le-anterior">
   <title id="title-le-anterior">Lower-extremity venous system — anterior view</title>
-  <desc>Anatomically-approximate line-art of the lower-extremity venous system. Every vein segment carries a canonical id (cfv-left, gsv-ak-right, etc.) matching the IAC/SVU venous duplex protocol.</desc>
-  <g id="silhouette" fill="#f7fafc" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
-    <path d="M 140,55 C 136,175 160,380 166,440 C 160,480 156,595 156,625 C 162,705 193,810 197,850 L 233,850 C 237,810 238,705 244,625 C 244,595 240,480 234,440 C 240,380 264,175 260,55 Z" />
-    <path d="M 340,55 C 336,175 360,380 366,440 C 360,480 356,595 356,625 C 362,705 363,810 367,850 L 403,850 C 407,810 438,705 444,625 C 444,595 440,480 434,440 C 440,380 464,175 460,55 Z" />
-  </g>
-  <g id="pelvis-hint" fill="none" stroke="#cbd5e0" stroke-width="1.25" stroke-linejoin="round">
-    <path d="M 120,40 Q 300,20 480,40" />
-  </g>
-  <line x1="300" y1="30" x2="300" y2="60" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3" />
-  <g id="side-labels" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="14" fill="#4a5568" text-anchor="middle">
-    <text x="200" y="40">R</text>
-    <text x="400" y="40">L</text>
-  </g>
-  <g id="segments" fill="none" stroke="#1a365d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <path id="eiv-right" d="M 220,60 Q 200,77.5 200,95" data-label="External iliac vein (right)"><title>External iliac vein (right)</title></path>
-    <path id="cfv-right" d="M 200,95 L 200,165" data-label="Common femoral vein (right)"><title>Common femoral vein (right)</title></path>
-    <path id="sfj-right" d="M 230,130 Q 215,122 200,125" data-label="Saphenofemoral junction (right)"><title>Saphenofemoral junction (right)</title></path>
-    <path id="pfv-right" d="M 200,165 Q 179.5,202.5 175,240" data-label="Profunda (deep femoral) vein (right)"><title>Profunda (deep femoral) vein (right)</title></path>
-    <path id="fv-prox-right" d="M 200,165 L 200,240" data-label="Femoral vein (proximal) (right)"><title>Femoral vein (proximal) (right)</title></path>
-    <path id="fv-mid-right" d="M 200,240 L 200,330" data-label="Femoral vein (mid) (right)"><title>Femoral vein (mid) (right)</title></path>
-    <path id="fv-dist-right" d="M 200,330 L 200,405" data-label="Femoral vein (distal) (right)"><title>Femoral vein (distal) (right)</title></path>
-    <path id="pop-ak-right" d="M 200,405 L 200,440" data-label="Popliteal vein (above knee) (right)"><title>Popliteal vein (above knee) (right)</title></path>
-    <path id="pop-bk-right" d="M 200,440 L 200,490" data-label="Popliteal vein (below knee) (right)"><title>Popliteal vein (below knee) (right)</title></path>
-    <path id="ptv-right" d="M 200,490 Q 213,655 214,820" data-label="Posterior tibial vein (right)"><title>Posterior tibial vein (right)</title></path>
-    <path id="per-right" d="M 200,490 Q 187,645 186,800" data-label="Peroneal vein (right)"><title>Peroneal vein (right)</title></path>
-    <path id="gsv-ak-right" d="M 230,130 C 260,240 260,330 244,430" data-label="Great saphenous vein (above knee) (right)"><title>Great saphenous vein (above knee) (right)</title></path>
-    <path id="gsv-prox-calf-right" d="M 244,430 C 250,520 246,535 246,565" data-label="Great saphenous vein (proximal calf) (right)"><title>Great saphenous vein (proximal calf) (right)</title></path>
-    <path id="gsv-mid-calf-right" d="M 246,565 C 246,625 236,645 236,685" data-label="Great saphenous vein (mid calf) (right)"><title>Great saphenous vein (mid calf) (right)</title></path>
-    <path id="gsv-dist-calf-right" d="M 236,685 C 234,745 222,790 222,830" data-label="Great saphenous vein (distal calf) (right)"><title>Great saphenous vein (distal calf) (right)</title></path>
-    <path id="eiv-left" d="M 380,60 Q 400,77.5 400,95" data-label="External iliac vein (left)"><title>External iliac vein (left)</title></path>
-    <path id="cfv-left" d="M 400,95 L 400,165" data-label="Common femoral vein (left)"><title>Common femoral vein (left)</title></path>
-    <path id="sfj-left" d="M 370,130 Q 385,122 400,125" data-label="Saphenofemoral junction (left)"><title>Saphenofemoral junction (left)</title></path>
-    <path id="pfv-left" d="M 400,165 Q 420.5,202.5 425,240" data-label="Profunda (deep femoral) vein (left)"><title>Profunda (deep femoral) vein (left)</title></path>
-    <path id="fv-prox-left" d="M 400,165 L 400,240" data-label="Femoral vein (proximal) (left)"><title>Femoral vein (proximal) (left)</title></path>
-    <path id="fv-mid-left" d="M 400,240 L 400,330" data-label="Femoral vein (mid) (left)"><title>Femoral vein (mid) (left)</title></path>
-    <path id="fv-dist-left" d="M 400,330 L 400,405" data-label="Femoral vein (distal) (left)"><title>Femoral vein (distal) (left)</title></path>
-    <path id="pop-ak-left" d="M 400,405 L 400,440" data-label="Popliteal vein (above knee) (left)"><title>Popliteal vein (above knee) (left)</title></path>
-    <path id="pop-bk-left" d="M 400,440 L 400,490" data-label="Popliteal vein (below knee) (left)"><title>Popliteal vein (below knee) (left)</title></path>
-    <path id="ptv-left" d="M 400,490 Q 387,655 386,820" data-label="Posterior tibial vein (left)"><title>Posterior tibial vein (left)</title></path>
-    <path id="per-left" d="M 400,490 Q 413,645 414,800" data-label="Peroneal vein (left)"><title>Peroneal vein (left)</title></path>
-    <path id="gsv-ak-left" d="M 370,130 C 340,240 340,330 356,430" data-label="Great saphenous vein (above knee) (left)"><title>Great saphenous vein (above knee) (left)</title></path>
-    <path id="gsv-prox-calf-left" d="M 356,430 C 350,520 354,535 354,565" data-label="Great saphenous vein (proximal calf) (left)"><title>Great saphenous vein (proximal calf) (left)</title></path>
-    <path id="gsv-mid-calf-left" d="M 354,565 C 354,625 364,645 364,685" data-label="Great saphenous vein (mid calf) (left)"><title>Great saphenous vein (mid calf) (left)</title></path>
-    <path id="gsv-dist-calf-left" d="M 364,685 C 366,745 378,790 378,830" data-label="Great saphenous vein (distal calf) (left)"><title>Great saphenous vein (distal calf) (left)</title></path>
+  <desc>Reference-image backdrop with invisible click-overlay paths. Each segment carries a canonical id (cfv-left, gsv-prox-thigh-right, etc.) matching the IAC/SVU venous duplex protocol. Path coordinates are calibrated to the line-art veins in le-reference.png; deep-vein columns taper medially as the thigh narrows toward the knee.</desc>
+  <image id="backdrop" href="/anatomy/le-reference.png" x="0" y="0" width="600" height="1453" preserveAspectRatio="xMidYMid meet" />
+  <!-- Empty placeholder groups so colorizeSvg's regex transforms find them. -->
+  <g id="silhouette" stroke="transparent"></g>
+  <g id="pelvis-hint" stroke="transparent"></g>
+  <g id="side-labels" fill="transparent"></g>
+  <!-- Click-overlay paths. fill=transparent + stroke=transparent makes them invisible until colored. -->
+  <g id="segments" fill="transparent" stroke="transparent" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" pointer-events="all">
+    <!-- ===== RIGHT LEG (anatomical right = visual left half of image) ===== -->
+    <path id="cfv-right" d="M 238,224 L 224,245 L 190,281 L 169,308 L 162,324 L 157,328" data-label="Common femoral vein (right)"><title>Common femoral vein (right)</title></path>
+    <path id="sfj-right" d="M 174,324 L 174,336 L 185,366 L 191,391 L 194,395" data-label="Saphenofemoral junction (right)"><title>Saphenofemoral junction (right)</title></path>
+    <path id="pfv-right" d="M 148,332 L 130,347 L 116,372 L 107,416 L 93,456 L 81,513 L 50,628" data-label="Profunda (deep femoral) vein (right)"><title>Profunda (deep femoral) vein (right)</title></path>
+    <path id="fv-prox-right" d="M 156,346 L 153,358 L 140,385 L 139,400 L 140,451" data-label="Femoral vein (proximal) (right)"><title>Femoral vein (proximal) (right)</title></path>
+    <path id="fv-mid-right" d="M 140,451 L 145,494 L 149,595 L 150,602 L 153,600 L 153,586 L 147,559 L 144,509 L 146,501 L 147,650 L 149,657 L 150,649 L 150,610 L 152,603 L 153,646 L 157,698 L 157,673" data-label="Femoral vein (mid) (right)"><title>Femoral vein (mid) (right)</title></path>
+    <path id="fv-dist-right" d="M 153,646 L 160,706 L 160,732 L 157,698 L 157,673 L 163,772 L 162,797 L 156,807 L 152,811 L 151,809 L 153,803 L 156,709 L 150,684" data-label="Femoral vein (distal) (right)"><title>Femoral vein (distal) (right)</title></path>
+    <path id="gsv-prox-thigh-right" d="M 200,414 L 200,436" data-label="Great saphenous vein (proximal thigh) (right)"><title>Great saphenous vein (proximal thigh) (right)</title></path>
+    <path id="gsv-mid-thigh-right" d="M 200,436 L 213,495 L 219,539 L 219,628" data-label="Great saphenous vein (mid thigh) (right)"><title>Great saphenous vein (mid thigh) (right)</title></path>
+    <path id="gsv-dist-thigh-right" d="M 219,628 L 204,721 L 204,796 L 204,809 L 204,866" data-label="Great saphenous vein (distal thigh) (right)"><title>Great saphenous vein (distal thigh) (right)</title></path>
+    <path id="gsv-knee-right" d="M 204,866 L 188,925" data-label="Great saphenous vein (at the knee) (right)"><title>Great saphenous vein (at the knee) (right)</title></path>
+    <path id="gsv-calf-right" d="M 188,925 L 184,948 L 185,1009 L 195,1049 L 198,1078 L 196,1086 L 196,1109 L 187,1144 L 173,1228 L 172,1297 L 162,1366 L 158,1422 L 153,1426" data-label="Great saphenous vein (calf) (right)"><title>Great saphenous vein (calf) (right)</title></path>
+    <path id="pop-ak-right" d="M 151,820 L 149,838" data-label="Popliteal vein (above knee) (right)"><title>Popliteal vein (above knee) (right)</title></path>
+    <path id="pop-bk-right" d="M 149,838 L 132,896 L 131,914" data-label="Popliteal vein (below knee) (right)"><title>Popliteal vein (below knee) (right)</title></path>
+    <path id="ptv-right" d="M 146,897 L 138,949 L 134,1067 L 134,1082 L 139,1110 L 139,1158 L 130,1226 L 132,1204 L 132,1249 L 126,1289 L 116,1326 L 125,1280 L 125,1335 L 123,1344" data-label="Posterior tibial vein (right)"><title>Posterior tibial vein (right)</title></path>
+    <path id="per-right" d="M 146,897 L 138,949 L 134,1067 L 134,1082 L 139,1110 L 139,1158 L 130,1226 L 132,1204 L 132,1249 L 126,1289 L 116,1326 L 125,1280 L 125,1335 L 123,1344" data-label="Peroneal vein (right)"><title>Peroneal vein (right)</title></path>
+    <!-- ===== LEFT LEG (anatomical left = visual right half of image) ===== -->
+    <path id="cfv-left" d="M 348,216 L 373,255 L 427,321" data-label="Common femoral vein (left)"><title>Common femoral vein (left)</title></path>
+    <path id="sfj-left" d="M 425,326 L 422,342 L 408,368 L 397,400 L 393,398" data-label="Saphenofemoral junction (left)"><title>Saphenofemoral junction (left)</title></path>
+    <path id="pfv-left" d="M 438,323 L 456,337 L 467,353 L 483,387 L 503,442 L 533,536 L 542,616" data-label="Profunda (deep femoral) vein (left)"><title>Profunda (deep femoral) vein (left)</title></path>
+    <path id="fv-prox-left" d="M 441,342 L 452,374 L 456,397 L 456,437" data-label="Femoral vein (proximal) (left)"><title>Femoral vein (proximal) (left)</title></path>
+    <path id="fv-mid-left" d="M 456,437 L 443,601 L 443,644" data-label="Femoral vein (mid) (left)"><title>Femoral vein (mid) (left)</title></path>
+    <path id="fv-dist-left" d="M 443,644 L 436,710 L 435,751 L 441,788" data-label="Femoral vein (distal) (left)"><title>Femoral vein (distal) (left)</title></path>
+    <path id="gsv-prox-thigh-left" d="M 397,410 L 397,425 L 384,458" data-label="Great saphenous vein (proximal thigh) (left)"><title>Great saphenous vein (proximal thigh) (left)</title></path>
+    <path id="gsv-mid-thigh-left" d="M 384,458 L 379,489 L 379,564 L 375,612" data-label="Great saphenous vein (mid thigh) (left)"><title>Great saphenous vein (mid thigh) (left)</title></path>
+    <path id="gsv-dist-thigh-left" d="M 375,612 L 375,686 L 380,739 L 384,750 L 388,765 L 390,814 L 396,858 L 403,889" data-label="Great saphenous vein (distal thigh) (left)"><title>Great saphenous vein (distal thigh) (left)</title></path>
+    <path id="gsv-knee-left" d="M 387,895 Q 390,920 393,940" data-label="Great saphenous vein (at the knee) (left)"><title>Great saphenous vein (at the knee) (left)</title></path>
+    <path id="gsv-calf-left" d="M 403,889 L 408,956 L 408,1021 L 402,1046 L 401,1071 L 399,1079 L 399,1139 L 423,1209 L 426,1228 L 425,1330 L 430,1369 L 430,1405 L 434,1423 L 440,1427" data-label="Great saphenous vein (calf) (left)"><title>Great saphenous vein (calf) (left)</title></path>
+    <path id="pop-ak-left" d="M 442,795 L 443,839" data-label="Popliteal vein (above knee) (left)"><title>Popliteal vein (above knee) (left)</title></path>
+    <path id="pop-bk-left" d="M 443,839 L 460,902" data-label="Popliteal vein (below knee) (left)"><title>Popliteal vein (below knee) (left)</title></path>
+    <path id="ptv-left" d="M 459,895 L 459,1166 L 468,1261 L 468,1331 L 471,1346 L 474,1349" data-label="Posterior tibial vein (left)"><title>Posterior tibial vein (left)</title></path>
+    <path id="per-left" d="M 459,895 L 459,1166 L 468,1261 L 468,1331 L 471,1346 L 474,1349" data-label="Peroneal vein (left)"><title>Peroneal vein (left)</title></path>
+    <!-- ===== Posterior-only segments merged into the single combined view ===== -->
+    <path id="spj-right" d="M 222,895 Q 213,895 205,895" data-label="Saphenopopliteal junction (right)"><title>Saphenopopliteal junction (right)</title></path>
+    <path id="ssv-right" d="M 126,911 L 125,926 L 111,963 L 104,999 L 104,1046 L 91,1117 L 82,1237" data-label="Small saphenous vein (right)"><title>Small saphenous vein (right)</title></path>
+    <path id="gastroc-right" d="M 188,990 Q 175,1060 180,1140" data-label="Gastrocnemius vein (right)"><title>Gastrocnemius vein (right)</title></path>
+    <path id="spj-left" d="M 378,895 Q 387,895 395,895" data-label="Saphenopopliteal junction (left)"><title>Saphenopopliteal junction (left)</title></path>
+    <path id="ssv-left" d="M 467,904 L 467,908 L 479,933 L 488,967 L 501,1110 L 502,1168 L 510,1204 L 512,1225" data-label="Small saphenous vein (left)"><title>Small saphenous vein (left)</title></path>
+    <path id="gastroc-left" d="M 412,990 Q 425,1060 420,1140" data-label="Gastrocnemius vein (left)"><title>Gastrocnemius vein (left)</title></path>
   </g>
 </svg>

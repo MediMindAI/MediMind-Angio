@@ -80,7 +80,6 @@ interface IntakeFormState {
   referringPhysician: string;
   institution: string;
   encounterDate: string;
-  medications: string;
   informedConsent: boolean;
   informedConsentSignedAt: string | undefined;
   icd10Codes: IndicationCode[];
@@ -105,7 +104,6 @@ function defaultState(): IntakeFormState {
     referringPhysician: '',
     institution: '',
     encounterDate: localDateToIso(new Date()) ?? '',
-    medications: '',
     informedConsent: false,
     informedConsentSignedAt: undefined,
     icd10Codes: [],
@@ -191,7 +189,6 @@ function encounterToIntakeState(draft: EncounterDraft): IntakeFormState {
     referringPhysician: h.referringPhysician ?? '',
     institution: h.institution ?? '',
     encounterDate: h.encounterDate || (localDateToIso(new Date()) ?? ''),
-    medications: h.medications ?? '',
     informedConsent: h.informedConsent ?? false,
     informedConsentSignedAt: h.informedConsentSignedAt,
     icd10Codes: [...(h.icd10Codes ?? [])],
@@ -210,7 +207,6 @@ function buildEncounterDraftFromIntake(state: IntakeFormState): EncounterDraft {
     operatorName: state.operatorName.trim() || undefined,
     referringPhysician: state.referringPhysician.trim() || undefined,
     institution: state.institution.trim() || undefined,
-    medications: state.medications.trim() || undefined,
     informedConsent: state.informedConsent || undefined,
     informedConsentSignedAt: state.informedConsent ? state.informedConsentSignedAt : undefined,
     icd10Codes: state.icd10Codes.length > 0 ? state.icd10Codes : undefined,
@@ -379,6 +375,10 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
 
   const availableStudies = useMemo(
     () => STUDY_PLUGINS.filter((p) => p.available && p.FormComponent),
+    [],
+  );
+  const comingSoonStudies = useMemo(
+    () => STUDY_PLUGINS.filter((p) => !p.available),
     [],
   );
 
@@ -740,19 +740,6 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                     />
                   </div>
                   <div className={`${classes.field} ${classes.fieldFull}`}>
-                    <EMRTextarea
-                      label={t('encounter.intake.visit.medications')}
-                      placeholder={t('encounter.intake.visit.medicationsPlaceholder')}
-                      value={state.medications}
-                      onChange={(v) => setField('medications', v)}
-                      minRows={2}
-                      maxRows={4}
-                      autosize
-                      size="md"
-                      data-testid="intake-medications"
-                    />
-                  </div>
-                  <div className={`${classes.field} ${classes.fieldFull}`}>
                     <div className={classes.consentRow}>
                       <EMRCheckbox
                         label={t('encounter.intake.visit.informedConsent')}
@@ -900,6 +887,31 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                           data-checked={checked}
                         >
                           <IconCheck size={14} stroke={3} />
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {comingSoonStudies.map((plugin) => {
+                    const Icon = plugin.icon;
+                    return (
+                      <button
+                        key={plugin.key}
+                        type="button"
+                        className={`${classes.studyCard} ${classes.studyCardComingSoon}`}
+                        disabled
+                        aria-disabled="true"
+                        data-testid={`intake-study-coming-soon-${plugin.key}`}
+                      >
+                        <span className={classes.studyCardIcon} aria-hidden>
+                          <Icon size={22} stroke={1.75} />
+                        </span>
+                        <span className={classes.studyCardBody}>
+                          <span className={classes.studyCardLabel}>
+                            {t(`${plugin.translationKey}.title`)}
+                          </span>
+                          <span className={classes.studyCardHint}>
+                            {t('studyPicker.comingSoon', 'Coming soon')}
+                          </span>
                         </span>
                       </button>
                     );

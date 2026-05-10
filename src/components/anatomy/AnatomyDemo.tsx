@@ -17,23 +17,23 @@ import { AnatomyLegend } from './AnatomyLegend';
 
 // Segments present in each view — derived from the SVG `<path id>` list.
 const ANTERIOR_SEGMENTS: readonly SegmentId[] = [
-  'eiv-right', 'cfv-right', 'sfj-right', 'pfv-right',
+  'cfv-right', 'sfj-right', 'pfv-right',
   'fv-prox-right', 'fv-mid-right', 'fv-dist-right',
   'pop-ak-right', 'pop-bk-right', 'ptv-right', 'per-right',
-  'gsv-ak-right', 'gsv-prox-calf-right', 'gsv-mid-calf-right', 'gsv-dist-calf-right',
-  'eiv-left', 'cfv-left', 'sfj-left', 'pfv-left',
+  'gsv-prox-thigh-right', 'gsv-mid-thigh-right', 'gsv-dist-thigh-right', 'gsv-knee-right', 'gsv-calf-right',
+  'cfv-left', 'sfj-left', 'pfv-left',
   'fv-prox-left', 'fv-mid-left', 'fv-dist-left',
   'pop-ak-left', 'pop-bk-left', 'ptv-left', 'per-left',
-  'gsv-ak-left', 'gsv-prox-calf-left', 'gsv-mid-calf-left', 'gsv-dist-calf-left',
+  'gsv-prox-thigh-left', 'gsv-mid-thigh-left', 'gsv-dist-thigh-left', 'gsv-knee-left', 'gsv-calf-left',
 ] as const;
 
 const POSTERIOR_SEGMENTS: readonly SegmentId[] = [
-  'pop-ak-right', 'pop-fossa-right', 'pop-bk-right', 'spj-right',
+  'pop-ak-right', 'pop-bk-right', 'spj-right',
   'ssv-right', 'gastroc-right', 'soleal-right', 'ptv-right', 'per-right',
-  'gsv-mid-calf-right', 'gsv-dist-calf-right',
-  'pop-ak-left', 'pop-fossa-left', 'pop-bk-left', 'spj-left',
+  'gsv-calf-right',
+  'pop-ak-left', 'pop-bk-left', 'spj-left',
   'ssv-left', 'gastroc-left', 'soleal-left', 'ptv-left', 'per-left',
-  'gsv-mid-calf-left', 'gsv-dist-calf-left',
+  'gsv-calf-left',
 ] as const;
 
 const ALL_DEMO_SEGMENTS: readonly SegmentId[] = Array.from(
@@ -67,8 +67,8 @@ function randomCompetency(): Competency {
 /** Seed a realistic-ish sample map for the initial render. */
 function initialSample(): Record<SegmentId, Competency> {
   return {
-    'gsv-ak-left': 'incompetent',
-    'gsv-prox-calf-left': 'incompetent',
+    'gsv-prox-thigh-left': 'incompetent',
+    'gsv-calf-left': 'incompetent',
     'ssv-right': 'ablated',
     'sfj-left': 'incompetent',
     'pop-ak-right': 'inconclusive',

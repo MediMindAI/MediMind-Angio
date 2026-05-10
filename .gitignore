@@ -44,3 +44,6 @@ test-results/
 
 # Production audit reports (regenerated; not source-of-truth)
 audit-findings/
+
+# Claude Code local config (per-user; not project state)
+.claude/

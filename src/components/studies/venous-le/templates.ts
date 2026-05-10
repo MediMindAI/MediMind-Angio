@@ -91,27 +91,21 @@ export interface VenousLETemplate {
 const NORMAL_FINDING: VenousSegmentFinding = Object.freeze({
   compressibility: 'normal',
   thrombosis: 'none',
-  spontaneity: 'normal',
-  phasicity: 'normal',
-  augmentation: 'normal',
+  phasicity: 'respirophasic',
 });
 
 /** An "acute occlusive DVT" finding shape. */
 const ACUTE_DVT_FINDING: VenousSegmentFinding = Object.freeze({
   compressibility: 'non-compressible',
   thrombosis: 'acute',
-  spontaneity: 'absent',
-  phasicity: 'absent',
-  augmentation: 'absent',
+  phasicity: 'reduced',
 });
 
 /** A "chronic post-thrombotic" finding shape. */
 const CHRONIC_POST_THROMBOTIC_FINDING: VenousSegmentFinding = Object.freeze({
   compressibility: 'partial',
   thrombosis: 'chronic',
-  spontaneity: 'reduced',
-  phasicity: 'continuous',
-  augmentation: 'reduced',
+  phasicity: 'monophasic',
 });
 
 function sidesForScope(scope: TemplateScope): ReadonlyArray<Side> {
@@ -190,7 +184,6 @@ function acuteDvtFemoropoplitealFindings(side: Side): VenousSegmentFindings {
     'fv-mid',
     'fv-dist',
     'pop-ak',
-    'pop-fossa',
     'pop-bk',
   ];
   const normalBases: ReadonlyArray<VenousLESegmentBase> = VENOUS_LE_SEGMENTS.filter(
@@ -211,16 +204,14 @@ function acuteDvtFemoropoplitealFindings(side: Side): VenousSegmentFindings {
     [`fv-mid-${side}` as VenousLEFullSegmentId, 9],
     [`fv-dist-${side}` as VenousLEFullSegmentId, 8],
     [`pop-ak-${side}` as VenousLEFullSegmentId, 8],
-    [`pop-fossa-${side}` as VenousLEFullSegmentId, 9],
     [`pop-bk-${side}` as VenousLEFullSegmentId, 7],
   ];
   return withDiameters(mergeFindings(normal, abnormal), diameters);
 }
 
-/** Acute iliofemoral DVT on one side (EIV + CFV + FV-prox + FV-mid). */
+/** Acute iliofemoral DVT on one side (CFV + FV-prox + FV-mid). */
 function acuteDvtIliofemoralFindings(side: Side): VenousSegmentFindings {
   const abnormalBases: ReadonlyArray<VenousLESegmentBase> = [
-    'eiv',
     'cfv',
     'fv-prox',
     'fv-mid',
@@ -238,7 +229,6 @@ function acuteDvtIliofemoralFindings(side: Side): VenousSegmentFindings {
   );
   // Markedly dilated iliofemoral calibers.
   const diameters: ReadonlyArray<readonly [VenousLEFullSegmentId, number]> = [
-    [`eiv-${side}` as VenousLEFullSegmentId, 16],
     [`cfv-${side}` as VenousLEFullSegmentId, 15],
     [`fv-prox-${side}` as VenousLEFullSegmentId, 12],
     [`fv-mid-${side}` as VenousLEFullSegmentId, 10],
@@ -310,24 +300,22 @@ function chronicPostThromboticRightFindings(): VenousSegmentFindings {
  */
 function chronicGsvRefluxBilateralFindings(): VenousSegmentFindings {
   const refluxBases: ReadonlyArray<VenousLESegmentBase> = [
-    'gsv-ak',
-    'gsv-prox-calf',
-    'gsv-mid-calf',
+    'gsv-prox-thigh',
+    'gsv-mid-thigh',
+    'gsv-dist-thigh',
+    'gsv-knee',
+    'gsv-calf',
   ];
   const refluxFinding: VenousSegmentFinding = {
     compressibility: 'normal',
     thrombosis: 'none',
-    spontaneity: 'normal',
-    phasicity: 'normal',
-    augmentation: 'normal',
+    phasicity: 'respirophasic',
     refluxDurationMs: 1500,
   };
   const sfjFinding: VenousSegmentFinding = {
     compressibility: 'normal',
     thrombosis: 'none',
-    spontaneity: 'normal',
-    phasicity: 'normal',
-    augmentation: 'normal',
+    phasicity: 'respirophasic',
     competencyOverride: 'incompetent',
   };
   const handledBases = new Set<VenousLESegmentBase>([
@@ -349,12 +337,12 @@ function chronicGsvRefluxBilateralFindings(): VenousSegmentFindings {
   );
   // Dilated varicose calibers.
   const diameters: ReadonlyArray<readonly [VenousLEFullSegmentId, number]> = [
-    ['gsv-ak-left' as VenousLEFullSegmentId, 6.5],
-    ['gsv-ak-right' as VenousLEFullSegmentId, 6.5],
-    ['gsv-prox-calf-left' as VenousLEFullSegmentId, 5.5],
-    ['gsv-prox-calf-right' as VenousLEFullSegmentId, 5.5],
-    ['gsv-mid-calf-left' as VenousLEFullSegmentId, 4.5],
-    ['gsv-mid-calf-right' as VenousLEFullSegmentId, 4.5],
+    ['gsv-prox-thigh-left' as VenousLEFullSegmentId, 6.5],
+    ['gsv-prox-thigh-right' as VenousLEFullSegmentId, 6.5],
+    ['gsv-mid-thigh-left' as VenousLEFullSegmentId, 5.5],
+    ['gsv-mid-thigh-right' as VenousLEFullSegmentId, 5.5],
+    ['gsv-calf-left' as VenousLEFullSegmentId, 4.5],
+    ['gsv-calf-right' as VenousLEFullSegmentId, 4.5],
   ];
   return withDiameters(mergeFindings(normal, reflux, sfj), diameters);
 }
@@ -364,17 +352,13 @@ function chronicSsvRefluxRightFindings(): VenousSegmentFindings {
   const ssvFinding: VenousSegmentFinding = {
     compressibility: 'normal',
     thrombosis: 'none',
-    spontaneity: 'normal',
-    phasicity: 'normal',
-    augmentation: 'normal',
+    phasicity: 'respirophasic',
     refluxDurationMs: 800,
   };
   const spjFinding: VenousSegmentFinding = {
     compressibility: 'normal',
     thrombosis: 'none',
-    spontaneity: 'normal',
-    phasicity: 'normal',
-    augmentation: 'normal',
+    phasicity: 'respirophasic',
     competencyOverride: 'incompetent',
   };
   const handledBases = new Set<VenousLESegmentBase>(['ssv', 'spj']);
@@ -402,19 +386,15 @@ function svtGsvRightFindings(): VenousSegmentFindings {
   const svtFinding: VenousSegmentFinding = {
     compressibility: 'partial',
     thrombosis: 'acute',
-    spontaneity: 'absent',
-    phasicity: 'absent',
-    augmentation: 'absent',
+    phasicity: 'reduced',
   };
   const sfjFinding: VenousSegmentFinding = {
     compressibility: 'normal',
     thrombosis: 'none',
-    spontaneity: 'normal',
-    phasicity: 'normal',
-    augmentation: 'normal',
+    phasicity: 'respirophasic',
     competencyOverride: 'incompetent',
   };
-  const svtBases: ReadonlyArray<VenousLESegmentBase> = ['gsv-ak', 'gsv-prox-calf'];
+  const svtBases: ReadonlyArray<VenousLESegmentBase> = ['gsv-prox-thigh', 'gsv-calf'];
   const handled = new Set<VenousLESegmentBase>([...svtBases, 'sfj']);
   const normalBases: ReadonlyArray<VenousLESegmentBase> = VENOUS_LE_SEGMENTS.filter(
     (b) => !handled.has(b),
@@ -429,8 +409,8 @@ function svtGsvRightFindings(): VenousSegmentFindings {
   );
   const sfj = findingMap([['sfj', sfjFinding]], ['right']);
   const diameters: ReadonlyArray<readonly [VenousLEFullSegmentId, number]> = [
-    ['gsv-ak-right' as VenousLEFullSegmentId, 6],
-    ['gsv-prox-calf-right' as VenousLEFullSegmentId, 5],
+    ['gsv-prox-thigh-right' as VenousLEFullSegmentId, 6],
+    ['gsv-calf-right' as VenousLEFullSegmentId, 5],
   ];
   return withDiameters(mergeFindings(normal, svt, sfj), diameters);
 }
@@ -438,10 +418,11 @@ function svtGsvRightFindings(): VenousSegmentFindings {
 /** Post-ablation GSV (right): GSV AK + calves marked ablated via override. */
 function postAblationGsvRightFindings(): VenousSegmentFindings {
   const ablatedBases: ReadonlyArray<VenousLESegmentBase> = [
-    'gsv-ak',
-    'gsv-prox-calf',
-    'gsv-mid-calf',
-    'gsv-dist-calf',
+    'gsv-prox-thigh',
+    'gsv-mid-thigh',
+    'gsv-dist-thigh',
+    'gsv-knee',
+    'gsv-calf',
   ];
   const ablatedFinding: VenousSegmentFinding = {
     compressibility: 'normal',
@@ -469,7 +450,7 @@ function postAblationGsvRightFindings(): VenousSegmentFindings {
 const SONO_DVT_RULEOUT = {
   key: 'venousLE.templates.sonographerProtocol.dvtRuleOut',
   fallback:
-    'Bilateral venous duplex protocol per IAC standards. Compression evaluation every 2 cm from common femoral through tibial and peroneal veins. Colour and spectral Doppler assessment of spontaneity, phasicity, and augmentation. Patient supine with reverse Trendelenburg tilt.',
+    'Bilateral venous duplex protocol per IAC standards. Compression evaluation every 2 cm from common femoral through tibial and peroneal veins. Colour and spectral Doppler assessment of spontaneity and phasicity. Patient supine with reverse Trendelenburg tilt.',
 };
 
 const SONO_IFDVT = {
@@ -481,13 +462,13 @@ const SONO_IFDVT = {
 const SONO_CALF_DVT = {
   key: 'venousLE.templates.sonographerProtocol.calfDvt',
   fallback:
-    'Calf-targeted DVT protocol with transverse compression of paired tibial and peroneal veins every 1–2 cm, plus gastrocnemius and soleal muscular branches. Colour Doppler augmentation applied to confirm patency where compression is technically limited.',
+    'Calf-targeted DVT protocol with transverse compression of paired tibial and peroneal veins every 1–2 cm, plus gastrocnemius and soleal muscular branches. Colour Doppler applied to confirm patency where compression is technically limited.',
 };
 
 const SONO_CHRONIC_REFLUX = {
   key: 'venousLE.templates.sonographerProtocol.chronicReflux',
   fallback:
-    'Chronic venous insufficiency protocol: reverse Trendelenburg / standing position for reflux. Distal manual augmentation or pneumatic cuff release. Reflux duration measured at SFJ, SPJ, and mid-segments per ESVS 2022 — pathological threshold > 500 ms superficial / > 1000 ms deep.',
+    'Chronic venous insufficiency protocol: reverse Trendelenburg / standing position for reflux. Distal manual compression or pneumatic cuff release. Reflux duration measured at SFJ, SPJ, and mid-segments per ESVS 2022 — pathological threshold > 500 ms superficial / > 1000 ms deep.',
 };
 
 const SONO_ACUTE_SVT = {
@@ -531,7 +512,7 @@ const T_NORMAL_BILATERAL: VenousLETemplate = {
   findings: allNormalMap('bilateral'),
   impressionKey: 'venousLE.templates.normalBilateral.impression',
   impressionFallback:
-    'Bilateral lower-extremity venous duplex examination is within normal limits. All deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
+    'Bilateral lower-extremity venous duplex examination is within normal limits. All deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
   sonographerCommentsKey: SONO_DVT_RULEOUT.key,
   sonographerCommentsFallback: SONO_DVT_RULEOUT.fallback,
   schemaVersion: 1,
@@ -549,7 +530,7 @@ const T_NORMAL_RIGHT: VenousLETemplate = {
   findings: allNormalMap('right'),
   impressionKey: 'venousLE.templates.normalRight.impression',
   impressionFallback:
-    'Right lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
+    'Right lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
   sonographerCommentsKey: SONO_DVT_RULEOUT.key,
   sonographerCommentsFallback: SONO_DVT_RULEOUT.fallback,
   schemaVersion: 1,
@@ -567,7 +548,7 @@ const T_NORMAL_LEFT: VenousLETemplate = {
   findings: allNormalMap('left'),
   impressionKey: 'venousLE.templates.normalLeft.impression',
   impressionFallback:
-    'Left lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
+    'Left lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified.',
   sonographerCommentsKey: SONO_DVT_RULEOUT.key,
   sonographerCommentsFallback: SONO_DVT_RULEOUT.fallback,
   schemaVersion: 1,
@@ -585,7 +566,7 @@ const T_ACUTE_DVT_RIGHT_FEMOROPOPLITEAL: VenousLETemplate = {
   findings: acuteDvtFemoropoplitealFindings('right'),
   impressionKey: 'venousLE.templates.acuteDvtRightFemoropopliteal.impression',
   impressionFallback:
-    'Acute occlusive deep vein thrombosis involving the right common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent.',
+    'Acute occlusive deep vein thrombosis involving the right common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent.',
   sonographerCommentsKey: SONO_DVT_RULEOUT.key,
   sonographerCommentsFallback: SONO_DVT_RULEOUT.fallback,
   recommendations: [
@@ -611,7 +592,7 @@ const T_ACUTE_DVT_LEFT_FEMOROPOPLITEAL: VenousLETemplate = {
   findings: acuteDvtFemoropoplitealFindings('left'),
   impressionKey: 'venousLE.templates.acuteDvtLeftFemoropopliteal.impression',
   impressionFallback:
-    'Acute occlusive deep vein thrombosis involving the left common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent.',
+    'Acute occlusive deep vein thrombosis involving the left common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent.',
   sonographerCommentsKey: SONO_DVT_RULEOUT.key,
   sonographerCommentsFallback: SONO_DVT_RULEOUT.fallback,
   recommendations: [
@@ -637,7 +618,7 @@ const T_ACUTE_DVT_LEFT_ILIOFEMORAL: VenousLETemplate = {
   findings: acuteDvtIliofemoralFindings('left'),
   impressionKey: 'venousLE.templates.acuteDvtLeftIliofemoral.impression',
   impressionFallback:
-    'Acute iliofemoral deep vein thrombosis. Non-compressible segments with absent phasicity and augmentation extending from the external iliac vein through the mid-femoral vein of the left lower extremity. Markedly dilated venous calipers. Distribution raises suspicion for May-Thurner syndrome — recommend cross-sectional imaging of the iliac venous outflow. Distal femoral, popliteal, and calf veins are patent.',
+    'Acute iliofemoral deep vein thrombosis. Non-compressible segments with absent phasicity extending from the external iliac vein through the mid-femoral vein of the left lower extremity. Markedly dilated venous calipers. Distribution raises suspicion for May-Thurner syndrome — recommend cross-sectional imaging of the iliac venous outflow. Distal femoral, popliteal, and calf veins are patent.',
   sonographerCommentsKey: SONO_IFDVT.key,
   sonographerCommentsFallback: SONO_IFDVT.fallback,
   recommendations: [

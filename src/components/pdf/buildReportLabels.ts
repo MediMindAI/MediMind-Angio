@@ -44,7 +44,6 @@ import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
 import type { FormState } from '../../types/form';
 import type { Language } from '../../contexts/TranslationContext';
-import { cptDisplay as formatCptDisplay, findCptByCode } from '../../constants/vascular-cpt';
 
 export type TFunction = (key: string, fallbackOrParams?: string | Record<string, unknown>) => string;
 
@@ -93,7 +92,7 @@ export function buildReportLabels(
 function buildSingleReportLabels(
   t: TFunction,
   form?: FormState,
-  lang?: Language,
+  _lang?: Language,
 ): ReportLabels {
   const titleKey =
     form?.studyType === 'arterialLE'
@@ -108,11 +107,6 @@ function buildSingleReportLabels(
       ? 'carotid.form.subtitle'
       : 'venousLE.form.subtitle';
 
-  // Re-derive localized CPT display from the lookup table using the active language.
-  const cptCode = form?.header.cptCode?.code;
-  const cptEntry = cptCode ? findCptByCode(cptCode) : undefined;
-  const cptLocalizedDisplay =
-    cptEntry && lang ? formatCptDisplay(cptEntry, lang) : undefined;
   // Per-segment names keyed by base id — the FindingsTable walks VENOUS_LE_SEGMENTS.
   const segmentName: Record<VenousLESegmentBase, string> = VENOUS_LE_SEGMENTS.reduce(
     (acc, base) => {
@@ -124,9 +118,10 @@ function buildSingleReportLabels(
 
   const legend: Record<Competency, string> = {
     normal: t('competency.normal', 'Normal'),
-    ablated: t('competency.ablated', 'Ablated'),
+    occluded: t('competency.occluded', 'Occlusion'),
     incompetent: t('competency.incompetent', 'Incompetent'),
     inconclusive: t('competency.inconclusive', 'Inconclusive'),
+    ablated: t('competency.ablated', 'Ablated'),
   };
 
   const positionLabels: Record<string, string> = PATIENT_POSITIONS.reduce(
@@ -240,14 +235,18 @@ function buildSingleReportLabels(
       institution: t('venousLE.header.institution', 'Institution'),
       accession: t('venousLE.header.accession', 'Accession #'),
       patientPosition: t('venousLE.header.patientPosition', 'Patient position'),
-      medications: t('venousLE.header.medications', 'Medications'),
       icd10Codes: t('venousLE.header.icd10Codes', 'ICD-10 indications'),
-      cptCode: t('venousLE.header.cptCode', 'CPT code'),
       informedConsent: t('venousLE.header.informedConsent', 'Informed consent'),
       informedConsentYes: t('venousLE.header.informedConsentYes', 'Yes'),
       informedConsentNo: t('venousLE.header.informedConsentNo', 'No'),
       positionLabels,
-      cptLocalizedDisplay,
+      ageSuffix: t('venousLE.header.ageSuffix', 'y'),
+      genderValueLabels: {
+        male: t('venousLE.header.genderMale', 'Male'),
+        female: t('venousLE.header.genderFemale', 'Female'),
+        other: t('venousLE.header.genderOther', 'Other'),
+        unknown: t('venousLE.header.genderUnknown', 'Unknown'),
+      },
     },
     diagram: {
       anterior: t('anatomy.view.le-anterior', 'Anterior view'),
@@ -259,9 +258,8 @@ function buildSingleReportLabels(
       right: t('venousLE.tabs.right', 'Right'),
       left: t('venousLE.tabs.left', 'Left'),
       segment: t('venousLE.segmentTable.segment', 'Segment'),
-      refluxMs: t('venousLE.refluxTable.msShort', 'Dur. (ms)'),
-      apMm: t('venousLE.refluxTable.ap', 'AP (mm)'),
-      transMm: t('venousLE.refluxTable.trans', 'Trans (mm)'),
+      refluxMs: t('venousLE.refluxTable.msShort', 'Dur. (cm/s)'),
+      apMm: t('venousLE.refluxTable.ap', 'Diameter (mm)'),
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),
       segmentName,
       emptyDash: '—',

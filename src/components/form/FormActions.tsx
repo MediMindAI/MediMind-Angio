@@ -173,9 +173,13 @@ async function resolveStudyAssets(
   if (isVenousForm(studyForm)) {
     const rawFindings = studyForm.parameters['segmentFindings'];
     const findings: VenousSegmentFindings = isVenousFindings(rawFindings) ? rawFindings : {};
+    const rawDrawings = studyForm.parameters['drawings'];
+    const drawings = Array.isArray(rawDrawings)
+      ? (rawDrawings as ReadonlyArray<import('../../types/drawing').DrawingStroke>)
+      : [];
     const [anterior, posterior] = await Promise.all([
-      loadAnatomyForPdf('le-anterior', findings),
-      loadAnatomyForPdf('le-posterior', findings),
+      loadAnatomyForPdf('le-anterior', findings, { drawings }),
+      loadAnatomyForPdf('le-posterior', findings, { drawings }),
     ]);
     anatomy = { anterior, posterior };
     localized = buildLocalizedNarrative(findings, t);

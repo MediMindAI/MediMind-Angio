@@ -43,13 +43,15 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Box, Grid, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Box, Grid, Group, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useEncounter } from '../../../contexts/EncounterContext';
-import { AnatomyView, AnatomyLegend } from '../../anatomy';
+import { AnatomyLegend } from '../../anatomy';
+import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
+import { migrateLegacyDrawingColor, type DrawingStroke } from '../../../types/drawing';
 import type { Competency, SegmentId } from '../../../types/anatomy';
 import type { CeapClassification } from '../../../types/ceap';
 import type {
@@ -139,6 +141,8 @@ interface VenousFormStateV1 {
   readonly sonographerComments: string;
   /** Clinician interpretive comments. */
   readonly clinicianComments: string;
+  /** Hand-drawn marks layered over the anatomy diagrams. */
+  readonly drawings: ReadonlyArray<DrawingStroke>;
 }
 
 const STUDY_ID = 'venousLEBilateral';
@@ -162,6 +166,7 @@ const INITIAL_STATE: VenousFormStateV1 = {
   recommendations: [],
   sonographerComments: '',
   clinicianComments: '',
+  drawings: [],
 };
 
 // ============================================================================
@@ -211,7 +216,13 @@ type Action =
       sonographerComments: string;
     }
   | { type: 'RESET' }
-  | { type: 'HYDRATE'; value: VenousFormStateV1 };
+  | { type: 'HYDRATE'; value: VenousFormStateV1 }
+  | { type: 'COMMIT_STROKE'; stroke: DrawingStroke }
+  | { type: 'ERASE_STROKE'; strokeId: string }
+  | { type: 'UNDO_STROKE' }
+  | { type: 'CLEAR_DRAWINGS' }
+  | { type: 'SET_SEGMENT_PATH_OVERRIDE'; segmentId: VenousLEFullSegmentId; d: string }
+  | { type: 'CLEAR_SEGMENT_PATH_OVERRIDE'; segmentId: VenousLEFullSegmentId };
 
 function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
   switch (action.type) {
@@ -287,9 +298,7 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
           nextFindings[fullId] = {
             compressibility: 'normal',
             thrombosis: 'none',
-            spontaneity: 'normal',
-            phasicity: 'normal',
-            augmentation: 'normal',
+            phasicity: 'respirophasic',
           };
         }
       }
@@ -363,6 +372,39 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       // INITIAL_STATE values; quality / position / accession / cptCode
       // overrides clear; findings / impressions / comments / ceap clear.
       return { ...INITIAL_STATE };
+    case 'COMMIT_STROKE':
+      return { ...state, drawings: [...state.drawings, action.stroke] };
+    case 'ERASE_STROKE':
+      return {
+        ...state,
+        drawings: state.drawings.filter((s) => s.id !== action.strokeId),
+      };
+    case 'UNDO_STROKE': {
+      if (state.drawings.length === 0) return state;
+      return { ...state, drawings: state.drawings.slice(0, -1) };
+    }
+    case 'CLEAR_DRAWINGS':
+      return { ...state, drawings: [] };
+    case 'SET_SEGMENT_PATH_OVERRIDE': {
+      const current = state.findings[action.segmentId] ?? {};
+      return {
+        ...state,
+        findings: {
+          ...state.findings,
+          [action.segmentId]: { ...current, pathOverride: action.d },
+        },
+      };
+    }
+    case 'CLEAR_SEGMENT_PATH_OVERRIDE': {
+      const current = state.findings[action.segmentId];
+      if (!current) return state;
+      const { pathOverride: _drop, ...rest } = current;
+      void _drop;
+      return {
+        ...state,
+        findings: { ...state.findings, [action.segmentId]: rest },
+      };
+    }
     default: {
       const _exhaustive: never = action;
       return _exhaustive;
@@ -426,6 +468,7 @@ export function stateToFormState(
     // narrativeService narrow it back via `isVenousFindings`.
     parameters: {
       segmentFindings: s.findings,
+      drawings: s.drawings,
     },
   };
 }
@@ -552,7 +595,15 @@ function initFromEncounter(
       (persisted as Partial<VenousFormStateV1>).schemaVersion === 1 &&
       (persisted as Partial<VenousFormStateV1>).studyType === 'venousLEBilateral'
     ) {
-      return persisted as VenousFormStateV1;
+      // Migrate older drafts that pre-date the `drawings` field, plus
+      // remap legacy stroke colours (black/red/blue/green → clinical
+      // palette).
+      const cast = persisted as Partial<VenousFormStateV1>;
+      const drawings = (cast.drawings ?? []).map((s) => ({
+        ...s,
+        color: migrateLegacyDrawingColor(s.color),
+      })) as DrawingStroke[];
+      return { ...(persisted as VenousFormStateV1), drawings };
     }
   }
   // Legacy fallback — strip any pre-encounter `header` field if present.
@@ -564,7 +615,11 @@ function initFromEncounter(
   ) {
     const { header: _drop, ...rest } = legacy;
     void _drop;
-    return { ...INITIAL_STATE, ...rest };
+    const drawings = (rest.drawings ?? []).map((s) => ({
+      ...s,
+      color: migrateLegacyDrawingColor(s.color),
+    })) as DrawingStroke[];
+    return { ...INITIAL_STATE, ...rest, drawings };
   }
   return INITIAL_STATE;
 }
@@ -707,6 +762,15 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
   // Derived anatomy segment map (memoized — only recomputes when findings change).
   const competencyMap = useMemo(() => competencyMapFromFindings(state.findings), [state.findings]);
+  // Collect any user-redrawn segment paths so the diagram can render
+  // them instead of the static SVG geometry.
+  const pathOverridesMap = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const [id, f] of Object.entries(state.findings)) {
+      if (f?.pathOverride) out[id] = f.pathOverride;
+    }
+    return out;
+  }, [state.findings]);
 
   // ---------------- Callbacks ----------------
 
@@ -773,6 +837,32 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
 
   const handleRowHighlight = useCallback((id: VenousLEFullSegmentId | null) => {
     setHighlightId(id);
+  }, []);
+
+  // ---- Drawing handlers ----
+
+  const handleCommitStroke = useCallback((stroke: DrawingStroke) => {
+    dispatch({ type: 'COMMIT_STROKE', stroke });
+  }, []);
+
+  const handleEraseStroke = useCallback((strokeId: string) => {
+    dispatch({ type: 'ERASE_STROKE', strokeId });
+  }, []);
+
+  const handleUndoStroke = useCallback(() => {
+    dispatch({ type: 'UNDO_STROKE' });
+  }, []);
+
+  const handleClearDrawings = useCallback(() => {
+    dispatch({ type: 'CLEAR_DRAWINGS' });
+  }, []);
+
+  const handleCommitSegmentEdit = useCallback((segmentId: SegmentId, d: string) => {
+    dispatch({ type: 'SET_SEGMENT_PATH_OVERRIDE', segmentId: segmentId as VenousLEFullSegmentId, d });
+  }, []);
+
+  const handleClearSegmentEdit = useCallback((segmentId: SegmentId) => {
+    dispatch({ type: 'CLEAR_SEGMENT_PATH_OVERRIDE', segmentId: segmentId as VenousLEFullSegmentId });
   }, []);
 
   // ---- Template apply flow ----
@@ -1048,32 +1138,19 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
               </Text>
             </Box>
             <div className={classes.anatomyBody}>
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                <Stack gap={4} align="center">
-                  <Text className={classes.anatomyViewLabel}>
-                    {t('anatomy.view.le-anterior', 'Anterior view')}
-                  </Text>
-                  <AnatomyView
-                    view="le-anterior"
-                    segments={competencyMap}
-                    size="md"
-                    onSegmentClick={handleAnatomySegmentClick}
-                    highlightId={anatomyHighlight}
-                  />
-                </Stack>
-                <Stack gap={4} align="center">
-                  <Text className={classes.anatomyViewLabel}>
-                    {t('anatomy.view.le-posterior', 'Posterior view')}
-                  </Text>
-                  <AnatomyView
-                    view="le-posterior"
-                    segments={competencyMap}
-                    size="md"
-                    onSegmentClick={handleAnatomySegmentClick}
-                    highlightId={anatomyHighlight}
-                  />
-                </Stack>
-              </SimpleGrid>
+              <AnatomyDiagramSection
+                segments={competencyMap}
+                pathOverrides={pathOverridesMap}
+                drawings={state.drawings}
+                highlightId={anatomyHighlight}
+                onSegmentClick={handleAnatomySegmentClick}
+                onCommitStroke={handleCommitStroke}
+                onEraseStroke={handleEraseStroke}
+                onUndo={handleUndoStroke}
+                onClear={handleClearDrawings}
+                onCommitSegmentEdit={handleCommitSegmentEdit}
+                onClearSegmentEdit={handleClearSegmentEdit}
+              />
               <Box className={classes.anatomyLegend}>
                 <AnatomyLegend />
               </Box>

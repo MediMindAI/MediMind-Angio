@@ -21,9 +21,10 @@ export interface AnatomyLegendProps {
 
 const COMPETENCIES: readonly Competency[] = [
   'normal',
-  'ablated',
+  'occluded',
   'incompetent',
   'inconclusive',
+  'ablated',
 ] as const;
 
 export function AnatomyLegend({

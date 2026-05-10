@@ -92,17 +92,24 @@ export const GRADIENTS = {
 
 /**
  * Colors for vein segment competency overlay on anatomical diagrams.
- * Matches the Corestudycast-style reporting convention:
- *   - Normal       → solid black (filled)
- *   - Ablated      → white (hollow, black outline)
- *   - Incompetent  → red (filled)
- *   - Inconclusive → gray (filled)
+ * Clinical 5-state palette (production):
+ *   - Normal       → sky-blue   (patent, evaluated)
+ *   - Occluded     → red        (thrombus / non-compressible vein)
+ *   - Incompetent  → amber      (reflux)
+ *   - Inconclusive → gray       (insufficient data)
+ *   - Ablated      → green      (post-procedural)
+ *
+ * `fill` is the solid swatch color used for segment-table dropdowns,
+ * legends, and PDF. `stroke` is the outline. `overlay` is the translucent
+ * variant used to paint segment overlays on top of the printed PNG
+ * anatomy (see `overlayStrokeFor` in AnatomyView.tsx).
  */
 export const COMPETENCY_COLORS = {
-  normal: { fill: '#1f2937', stroke: '#1f2937' },
-  ablated: { fill: '#ffffff', stroke: '#1f2937' },
-  incompetent: { fill: '#e53e3e', stroke: '#e53e3e' },
-  inconclusive: { fill: '#9ca3af', stroke: '#9ca3af' },
+  normal:       { fill: '#0ea5e9', stroke: '#0369a1', overlay: 'rgba(14, 165, 233, 0.65)' },
+  occluded:     { fill: '#dc2626', stroke: '#991b1b', overlay: 'rgba(220, 38, 38, 0.70)' },
+  incompetent:  { fill: '#f59e0b', stroke: '#b45309', overlay: 'rgba(245, 158, 11, 0.70)' },
+  inconclusive: { fill: '#9ca3af', stroke: '#4b5563', overlay: 'rgba(156, 163, 175, 0.60)' },
+  ablated:      { fill: '#16a34a', stroke: '#166534', overlay: 'rgba(22, 163, 74, 0.60)' },
 } as const;
 
 // =============================================================================
@@ -160,5 +167,15 @@ export type ThemeColor = keyof typeof THEME_COLORS;
 export type SemanticColor = keyof typeof SEMANTIC_COLORS;
 export type StatusColor = keyof typeof STATUS_COLORS;
 export type GradientName = keyof typeof GRADIENTS;
-export type Competency = keyof typeof COMPETENCY_COLORS;
+// `Competency` is canonically declared in `src/types/anatomy.ts`. It is
+// kept in sync with the keys of `COMPETENCY_COLORS` above; the type-check
+// guard below catches any drift between the two at compile time.
+import type { Competency } from '../types/anatomy';
+type _CompetencyKeysMatchPalette = Exclude<Competency, keyof typeof COMPETENCY_COLORS> extends never
+  ? Exclude<keyof typeof COMPETENCY_COLORS, Competency> extends never
+    ? true
+    : never
+  : never;
+const _competencyKeysMatchPalette: _CompetencyKeysMatchPalette = true;
+void _competencyKeysMatchPalette;
 

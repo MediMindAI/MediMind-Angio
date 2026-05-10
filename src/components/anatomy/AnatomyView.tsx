@@ -20,6 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { Box, Loader, Text } from '@mantine/core';
 import type { Competency, SegmentId } from '../../types/anatomy';
+import { COMPETENCY_COLORS } from '../../constants/theme-colors';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { colorForCompetency } from './useAnatomyColors';
 import { loadAnatomySvg, type AnatomyView as AnatomyViewType } from './svgLoader';
@@ -70,6 +71,21 @@ export interface AnatomyViewProps {
    * (no `colorFn`) keep the existing competency-based status text.
    */
   tooltipText?: (id: SegmentId) => string;
+  /**
+   * Overlay mode: the SVG contains an `<image>` backdrop and segment
+   * paths are invisible until colored. When true, finding-driven colors
+   * are painted as translucent strokes over the backdrop instead of solid
+   * fills. Used by the venous-LE reference-image diagram.
+   */
+  overlay?: boolean;
+  /**
+   * Per-segment SVG path-d override. When a segment id is present in
+   * this map, its `<path d>` is replaced with the supplied string —
+   * letting the user reshape an overlay path without editing the
+   * shipped SVG asset. Captured by the "Edit segment" mode of the
+   * drawing toolbar.
+   */
+  pathOverrides?: Map<SegmentId, string> | Record<SegmentId, string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,9 +130,45 @@ function colorizeSvg(
   segmentStrokeWidth: number,
   highlightId: SegmentId | null,
   colorFn: ((id: SegmentId) => { fill: string; stroke: string }) | undefined,
+  overlay: boolean = false,
+  pathOverrides?: Map<SegmentId, string>,
 ): string {
+  // 0) Backdrop image href — rewrite to respect Vite's BASE_URL so the
+  //    image resolves correctly when the app is hosted under a sub-path
+  //    (GH Pages). The SVG ships with `/anatomy/le-reference.png` (root-
+  //    relative), which is fine for normal deploys; under a base path
+  //    we need to prepend it.
+  const meta = import.meta as unknown as { env?: { BASE_URL?: string } };
+  const baseUrl = meta.env?.BASE_URL ?? '/';
+  let out: string;
+  if (baseUrl !== '/' && baseUrl) {
+    const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    out = raw.replace(
+      /(<image[^>]*\bhref=")\/anatomy\//,
+      `$1${normalizedBase}/anatomy/`,
+    );
+  } else {
+    out = raw;
+  }
+
+  // 0a) Force the root <svg> to fill its host. The source SVGs ship with
+  //     only a `viewBox` (no `width`/`height`), and a few browsers fall
+  //     back to the 300×150 default in that case — which would make the
+  //     anatomy render at a different size than the sibling DrawingCanvas
+  //     and break stroke alignment. Inject explicit 100%/100% so the box
+  //     geometry is identical to the canvas overlay across all browsers.
+  out = out.replace(
+    /^(\s*<svg\b)([^>]*?)(>)/,
+    (_match, head: string, attrs: string, tail: string) => {
+      let next = attrs;
+      if (!/\swidth=/.test(next)) next = ` width="100%"${next}`;
+      if (!/\sheight=/.test(next)) next = ` height="100%"${next}`;
+      return `${head}${next}${tail}`;
+    },
+  );
+
   // 1) Silhouette leg outline stroke -- theme-aware so it reads in dark mode.
-  let out = raw.replace(
+  out = out.replace(
     /(<g id="silhouette"[^>]*stroke=")[^"]*(")/,
     `$1${silhouetteStroke}$2`,
   );
@@ -146,9 +198,13 @@ function colorizeSvg(
   );
 
   // 4) Each <path id="..."> under #segments -- inject inline fill/stroke.
+  //    Match the WHOLE element (opening tag + optional inner content +
+  //    closing tag, OR self-closing form) so we can replace it cleanly
+  //    with one or more sibling elements (overlay mode emits two paths).
   out = out.replace(
-    /<path\s+id="([a-z0-9-]+)"([^>]*)>/g,
-    (_match: string, id: string, rest: string) => {
+    /<path\s+id="([a-z0-9-]+)"([^>]*?)(?:>([\s\S]*?)<\/path>|\/>)/g,
+    (_match: string, id: string, rest: string, inner: string | undefined) => {
+      const innerContent = inner ?? '';
       const competency = segmentsMap.get(id) ?? defaultCompetency;
       const { fill, stroke } = colorFn
         ? colorFn(id)
@@ -169,12 +225,64 @@ function colorizeSvg(
       // (Area 01 BLOCKER). The data-segment-id attribute is preserved for
       // event delegation.
       const competencyAttr = colorFn ? '' : ` data-competency="${competency}"`;
-      return `<path id="${id}"${cleanRest} fill="${fill}" stroke="${stroke}" stroke-width="${widthToApply}"${filterAttr} data-segment-id="${id}"${competencyAttr}>`;
+      // Overlay mode: emit TWO paths per segment.
+      //   1. A wide TRANSPARENT path that owns the `id` and `data-segment-id`
+      //      attributes — this is the click-target. ~20px in viewBox space
+      //      gives a forgiving hit area on a line-art backdrop.
+      //   2. A narrow COLORED path that renders the actual visible mask. At
+      //      ~7px in viewBox space (~5px on a 480-px panel) the colored
+      //      stroke sits tightly on the printed vein instead of bleeding
+      //      ±11px on either side, which is what made small alignment
+      //      offsets look much worse than they were.
+      //
+      // Both paths share the same `d` so the geometry is identical; only
+      // the first one carries the segment id (event delegation matches the
+      // first ancestor with `[data-segment-id]`).
+      //
+      // Calibration: append `?anatomy-debug=1` to the URL to make the
+      // wide hit-zone path visible as a faint red mask — useful for
+      // re-tracing path coordinates against a reference image.
+      if (overlay) {
+        const isFilled = segmentsMap.has(id);
+        const debugMode =
+          typeof window !== 'undefined' &&
+          window.location.search.includes('anatomy-debug=1');
+        const visibleColor = isFilled
+          ? overlayStrokeFor(competency)
+          : 'transparent';
+        const hitZoneColor = debugMode ? 'rgba(220, 38, 38, 0.32)' : 'transparent';
+        const hitZoneWidth = 20;
+        const visibleWidth = isHighlighted ? 9 : 6;
+        const dMatch = cleanRest.match(/\sd="([^"]*)"/);
+        const staticD = dMatch ? dMatch[1] : '';
+        const overrideD = pathOverrides?.get(id);
+        const d = overrideD && overrideD.length > 0 ? overrideD : staticD;
+        const cleanedNoD = cleanRest.replace(/\sd="[^"]*"/, '');
+        // 1. Hit-zone path (carries id + data-segment-id) — keeps the
+        //    original inner content (<title>) for accessibility.
+        const hitZone = `<path id="${id}"${cleanedNoD} d="${d}" fill="transparent" stroke="${hitZoneColor}" stroke-width="${hitZoneWidth}" data-segment-id="${id}"${competencyAttr} pointer-events="stroke">${innerContent}</path>`;
+        // 2. Visible color path — sibling of the hit-zone, no events.
+        const colored = `<path d="${d}" fill="transparent" stroke="${visibleColor}" stroke-width="${visibleWidth}"${filterAttr} stroke-linecap="round" stroke-linejoin="round" pointer-events="none" />`;
+        return hitZone + colored;
+      }
+      return `<path id="${id}"${cleanRest} fill="${fill}" stroke="${stroke}" stroke-width="${widthToApply}"${filterAttr} data-segment-id="${id}"${competencyAttr}>${innerContent}</path>`;
     },
   );
 
   return out;
 }
+
+/**
+ * Translucent stroke color used to paint the segment overlay on top of
+ * the printed PNG anatomy. Sourced directly from the canonical
+ * `COMPETENCY_COLORS` table so the segment-table swatch, pen palette,
+ * PDF, and overlay all agree.
+ */
+function overlayStrokeFor(competency: Competency): string {
+  const entry = COMPETENCY_COLORS[competency as keyof typeof COMPETENCY_COLORS];
+  return entry?.overlay ?? 'transparent';
+}
+
 
 // ---------------------------------------------------------------------------
 // Tooltip
@@ -205,6 +313,8 @@ export function AnatomyView({
   ariaLabel,
   colorFn,
   tooltipText,
+  overlay = false,
+  pathOverrides,
 }: AnatomyViewProps): React.ReactElement {
   const { t } = useTranslation();
   const [rawSvg, setRawSvg] = useState<string | null>(null);
@@ -241,6 +351,13 @@ export function AnatomyView({
 
   // Normalize segments once per render.
   const segmentsMap = useMemo(() => normalizeSegments(segments), [segments]);
+  const pathOverrideMap = useMemo(() => {
+    if (!pathOverrides) return undefined;
+    if (pathOverrides instanceof Map) return pathOverrides;
+    const m = new Map<SegmentId, string>();
+    for (const [k, v] of Object.entries(pathOverrides)) if (v) m.set(k, v);
+    return m;
+  }, [pathOverrides]);
 
   // Colorize SVG whenever inputs change.
   const colorizedSvg = useMemo(() => {
@@ -254,8 +371,10 @@ export function AnatomyView({
       segmentStrokeWidth,
       highlightId ?? null,
       colorFn,
+      overlay,
+      pathOverrideMap,
     );
-  }, [rawSvg, segmentsMap, defaultCompetency, segmentStrokeWidth, highlightId, colorFn]);
+  }, [rawSvg, segmentsMap, defaultCompetency, segmentStrokeWidth, highlightId, colorFn, overlay, pathOverrideMap]);
 
   // ---------- Pointer event delegation ----------
 
@@ -326,19 +445,29 @@ export function AnatomyView({
   // `AnatomyView.module.css`. The dynamic stroke width still has to come
   // from JS (depends on `size`), so we feed it through a CSS custom
   // property and let the CSS module read `var(--anatomy-segment-hover-stroke)`.
-  const wrapperStyle: CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    maxWidth: `${maxWidth}px`,
-    margin: '0 auto',
-    touchAction: 'manipulation',
-    ['--anatomy-segment-hover-stroke' as string]: `${segmentStrokeWidth + 1.5}px`,
-  };
+  // In overlay mode (drawing canvas stacked above), the wrapper must
+  // fill the parent `.stage` exactly so its coordinate system matches the
+  // sibling DrawingCanvas SVG. In standalone mode, keep the original
+  // in-flow sizing so the component still works wherever it's rendered.
+  const wrapperStyle: CSSProperties = overlay
+    ? {
+        position: 'absolute',
+        inset: 0,
+        touchAction: 'manipulation',
+        ['--anatomy-segment-hover-stroke' as string]: `${segmentStrokeWidth + 1.5}px`,
+      }
+    : {
+        position: 'relative',
+        width: '100%',
+        maxWidth: `${maxWidth}px`,
+        margin: '0 auto',
+        touchAction: 'manipulation',
+        ['--anatomy-segment-hover-stroke' as string]: `${segmentStrokeWidth + 1.5}px`,
+      };
 
-  const svgHostStyle: CSSProperties = {
-    width: '100%',
-    display: 'block',
-  };
+  const svgHostStyle: CSSProperties = overlay
+    ? { width: '100%', height: '100%', display: 'block' }
+    : { width: '100%', display: 'block' };
 
   if (loadError) {
     return (
@@ -474,9 +603,9 @@ function segmentTranslationKey(baseId: string): string {
 }
 
 const SEGMENT_BASE_IDS: ReadonlyArray<string> = [
-  'cfv', 'eiv', 'fv-prox', 'fv-mid', 'fv-dist', 'pfv',
-  'gsv-ak', 'gsv-prox-calf', 'gsv-mid-calf', 'gsv-dist-calf',
-  'pop-ak', 'pop-fossa', 'pop-bk',
+  'cfv', 'fv-prox', 'fv-mid', 'fv-dist', 'pfv',
+  'gsv-prox-thigh', 'gsv-mid-thigh', 'gsv-dist-thigh', 'gsv-knee', 'gsv-calf',
+  'pop-ak', 'pop-bk',
   'ptv', 'per', 'ssv', 'gastroc', 'soleal', 'sfj', 'spj',
   'ivc', 'lrv', 'cia', 'eia', 'iia',
   'cfa', 'sfa', 'pop-art', 'at', 'pt', 'per-art', 'dp',

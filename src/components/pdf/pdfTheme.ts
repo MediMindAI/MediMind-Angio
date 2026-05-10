@@ -40,12 +40,14 @@ export const PDF_THEME = {
   success: SEMANTIC_COLORS.success,
   warning: SEMANTIC_COLORS.warning,
   error: SEMANTIC_COLORS.error,
-  // Competency overlay (for anatomy diagrams rendered inside PDF)
+  // Competency overlay (for anatomy diagrams rendered inside PDF). Mirrors
+  // the on-screen overlay via the canonical `COMPETENCY_COLORS` table.
   competencyNormal: COMPETENCY_COLORS.normal.fill,
-  competencyAblated: COMPETENCY_COLORS.ablated.fill,
-  competencyAblatedStroke: COMPETENCY_COLORS.ablated.stroke,
+  competencyOccluded: COMPETENCY_COLORS.occluded.fill,
   competencyIncompetent: COMPETENCY_COLORS.incompetent.fill,
   competencyInconclusive: COMPETENCY_COLORS.inconclusive.fill,
+  competencyAblated: COMPETENCY_COLORS.ablated.fill,
+  competencyAblatedStroke: COMPETENCY_COLORS.ablated.stroke,
 } as const;
 
 /**

@@ -466,20 +466,6 @@ export const StudyHeader = memo(function StudyHeader({
               </Box>
             </Grid.Col>
 
-            {/* Row 6 — Medications */}
-            <Grid.Col span={12}>
-              <EMRTextarea
-                label={t('venousLE.header.medications')}
-                value={value.medications ?? ''}
-                onChange={(v) => update('medications', v)}
-                minRows={2}
-                maxRows={3}
-                autosize
-                size="md"
-                data-testid="header-medications"
-              />
-            </Grid.Col>
-
             {/* Row 7 — Informed Consent checkbox + signed-at */}
             <Grid.Col span={{ base: 12, sm: 6, lg: 6 }}>
               <Box className={classes.consentRow}>

@@ -143,7 +143,6 @@ function deriveVenousFindings(form: FormState): VenousSegmentFindings {
   const out: Partial<Record<`${VenousLESegmentBase}-left` | `${VenousLESegmentBase}-right`, {
     readonly refluxDurationMs?: number;
     readonly apDiameterMm?: number;
-    readonly transDiameterMm?: number;
     readonly depthMm?: number;
   }>> = {};
 
@@ -156,18 +155,14 @@ function deriveVenousFindings(form: FormState): VenousSegmentFindings {
     const entry: {
       refluxDurationMs?: number;
       apDiameterMm?: number;
-      transDiameterMm?: number;
       depthMm?: number;
     } = {};
     if (typeof seg.refluxDurationMs === 'number') entry.refluxDurationMs = seg.refluxDurationMs;
     if (typeof seg.diameterMm === 'number') entry.apDiameterMm = seg.diameterMm;
-    // trans + depth live on `parameters` keyed by `<name>-<fullId>` in Phase 1 forms.
+    // depth lives on `parameters` keyed by `<name>-<fullId>` in Phase 1 forms.
     const depthKey = `depth-${key}`;
     const depthVal = form.parameters[depthKey];
     if (typeof depthVal === 'number') entry.depthMm = depthVal;
-    const transKey = `trans-${key}`;
-    const transVal = form.parameters[transKey];
-    if (typeof transVal === 'number') entry.transDiameterMm = transVal;
     if (Object.keys(entry).length > 0) out[key] = entry;
   }
 

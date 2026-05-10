@@ -109,11 +109,14 @@ interface ClassifiedSegments {
   readonly normalDeep: VenousLESegmentBase[];
   readonly normalSuperficial: VenousLESegmentBase[];
   readonly pathologicalReflux: Array<{ segment: VenousLESegmentBase; ms: number }>;
+  readonly subthresholdReflux: Array<{ segment: VenousLESegmentBase; ms: number }>;
   readonly nonCompressible: VenousLESegmentBase[];
   readonly partialCompressibility: VenousLESegmentBase[];
   readonly acuteThrombosis: VenousLESegmentBase[];
   readonly chronicThrombosis: VenousLESegmentBase[];
   readonly inconclusive: VenousLESegmentBase[];
+  readonly incompetentValve: VenousLESegmentBase[];
+  readonly postAblation: VenousLESegmentBase[];
 }
 
 function buildSideNarrative(
@@ -125,11 +128,14 @@ function buildSideNarrative(
     classified.normalDeep.length > 0 ||
     classified.normalSuperficial.length > 0 ||
     classified.pathologicalReflux.length > 0 ||
+    classified.subthresholdReflux.length > 0 ||
     classified.nonCompressible.length > 0 ||
     classified.partialCompressibility.length > 0 ||
     classified.acuteThrombosis.length > 0 ||
     classified.chronicThrombosis.length > 0 ||
-    classified.inconclusive.length > 0;
+    classified.inconclusive.length > 0 ||
+    classified.incompetentValve.length > 0 ||
+    classified.postAblation.length > 0;
 
   if (!hasAny) {
     return {
@@ -161,11 +167,10 @@ function buildSideNarrative(
       key: `venousLE.narrative.normalCompressibilityDeep.${side}`,
     });
 
-    // Normal spontaneous phasic augmented flow — emit only when at least one deep
-    // segment shows all three (spontaneity/phasicity/augmentation) as normal.
+    // Normal flow — emit when at least one deep segment shows respirophasic flow.
     if (anyDeepFlowNormal(findings, side)) {
       sentences.push(
-        `Normal spontaneous phasic augmented flow in the ${sideLabel} lower extremity.`
+        `Normal respirophasic flow in the ${sideLabel} lower extremity.`
       );
       sentenceKeys.push(`venousLE.narrative.normalFlowDeep.${side}`);
       sentenceEntries.push({
@@ -275,7 +280,52 @@ function buildSideNarrative(
     });
   }
 
-  // (d) Inconclusive — flag as a study limitation.
+  // (d.1) Sub-threshold reflux — measured but below pathological cutoff.
+  for (const { segment, ms } of classified.subthresholdReflux) {
+    const vein = segmentDisplay(segment);
+    sentences.push(`Reflux measured in the ${vein} (${ms} cm/s).`);
+    sentenceKeys.push(`venousLE.narrative.refluxMeasured.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.refluxMeasured',
+      params: { vein: segmentDisplayKey(segment), ms, side },
+    });
+  }
+
+  // (d.2) Manually marked incompetent valves.
+  for (const segment of classified.incompetentValve) {
+    const vein = segmentDisplay(segment);
+    sentences.push(`Incompetent valves noted — ${vein}.`);
+    sentenceKeys.push(`venousLE.narrative.incompetent.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.incompetent',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+    conclusions.push(`Valvular incompetence — ${sideLabel} ${vein}.`);
+    conclusionsKeys.push(`venousLE.conclusion.incompetent.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.incompetent',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+  }
+
+  // (d.3) Post-ablation status.
+  for (const segment of classified.postAblation) {
+    const vein = segmentDisplay(segment);
+    sentences.push(`Post-ablation status — ${vein}.`);
+    sentenceKeys.push(`venousLE.narrative.postAblation.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.postAblation',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+    conclusions.push(`Post-ablation — ${sideLabel} ${vein}.`);
+    conclusionsKeys.push(`venousLE.conclusion.postAblation.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.postAblation',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+  }
+
+  // (e) Inconclusive — flag as a study limitation.
   for (const segment of classified.inconclusive) {
     const vein = segmentDisplay(segment);
     sentences.push(`Study limited — inconclusive compressibility of the ${vein}.`);
@@ -308,11 +358,14 @@ function classifySide(findings: VenousSegmentFindings, side: Side): ClassifiedSe
   const normalDeep: VenousLESegmentBase[] = [];
   const normalSuperficial: VenousLESegmentBase[] = [];
   const pathologicalReflux: Array<{ segment: VenousLESegmentBase; ms: number }> = [];
+  const subthresholdReflux: Array<{ segment: VenousLESegmentBase; ms: number }> = [];
   const nonCompressible: VenousLESegmentBase[] = [];
   const partialCompressibility: VenousLESegmentBase[] = [];
   const acuteThrombosis: VenousLESegmentBase[] = [];
   const chronicThrombosis: VenousLESegmentBase[] = [];
   const inconclusive: VenousLESegmentBase[] = [];
+  const incompetentValve: VenousLESegmentBase[] = [];
+  const postAblation: VenousLESegmentBase[] = [];
 
   for (const segment of VENOUS_LE_SEGMENTS) {
     const fullId = `${segment}-${side}` as VenousLEFullSegmentId;
@@ -333,38 +386,42 @@ function classifySide(findings: VenousSegmentFindings, side: Side): ClassifiedSe
     if (finding.thrombosis === 'acute') acuteThrombosis.push(segment);
     if (finding.thrombosis === 'chronic') chronicThrombosis.push(segment);
 
-    if (hasPathologicalReflux(segment, finding)) {
+    if (finding.refluxDurationMs !== undefined) {
       const ms = finding.refluxDurationMs;
-      if (ms !== undefined) {
+      if (hasPathologicalReflux(segment, finding)) {
         pathologicalReflux.push({ segment, ms });
+      } else {
+        subthresholdReflux.push({ segment, ms });
       }
     }
+
+    if (finding.competencyOverride === 'incompetent') incompetentValve.push(segment);
+    if (finding.competencyOverride === 'ablated') postAblation.push(segment);
   }
 
   return {
     normalDeep,
     normalSuperficial,
     pathologicalReflux,
+    subthresholdReflux,
     nonCompressible,
     partialCompressibility,
     acuteThrombosis,
     chronicThrombosis,
     inconclusive,
+    incompetentValve,
+    postAblation,
   };
 }
 
-/** At least one deep segment with normal spontaneity, phasicity, and augmentation. */
+/** At least one deep segment with respirophasic flow. */
 function anyDeepFlowNormal(findings: VenousSegmentFindings, side: Side): boolean {
   for (const segment of VENOUS_LE_SEGMENTS) {
     if (!isDeepSegment(segment)) continue;
     const fullId = `${segment}-${side}` as VenousLEFullSegmentId;
     const f: VenousSegmentFinding | undefined = findings[fullId];
     if (!f) continue;
-    if (
-      f.spontaneity === 'normal' &&
-      f.phasicity === 'normal' &&
-      f.augmentation === 'normal'
-    ) {
+    if (f.phasicity === 'respirophasic') {
       return true;
     }
   }
@@ -376,8 +433,6 @@ function segmentDisplay(segment: VenousLESegmentBase): string {
   switch (segment) {
     case 'cfv':
       return 'common femoral vein';
-    case 'eiv':
-      return 'external iliac vein';
     case 'fv-prox':
       return 'femoral vein, proximal';
     case 'fv-mid':
@@ -386,18 +441,18 @@ function segmentDisplay(segment: VenousLESegmentBase): string {
       return 'femoral vein, distal';
     case 'pfv':
       return 'profunda femoral vein';
-    case 'gsv-ak':
-      return 'great saphenous vein, above knee';
-    case 'gsv-prox-calf':
-      return 'great saphenous vein, proximal calf';
-    case 'gsv-mid-calf':
-      return 'great saphenous vein, mid calf';
-    case 'gsv-dist-calf':
-      return 'great saphenous vein, distal calf';
+    case 'gsv-prox-thigh':
+      return 'great saphenous vein, proximal thigh';
+    case 'gsv-mid-thigh':
+      return 'great saphenous vein, mid thigh';
+    case 'gsv-dist-thigh':
+      return 'great saphenous vein, distal thigh';
+    case 'gsv-knee':
+      return 'great saphenous vein, at the knee';
+    case 'gsv-calf':
+      return 'great saphenous vein, calf';
     case 'pop-ak':
       return 'popliteal vein, above knee';
-    case 'pop-fossa':
-      return 'popliteal vein, fossa';
     case 'pop-bk':
       return 'popliteal vein, below knee';
     case 'ptv':

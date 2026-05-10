@@ -84,31 +84,9 @@ export function appendVenousFindingObservations(
     out,
     bodySite,
     sideText,
-    'spontaneity',
-    'Spontaneity',
-    finding.spontaneity,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
     'phasicity',
     'Phasicity',
     finding.phasicity,
-    segmentBase,
-    side
-  );
-  pushVenousCategorical(
-    ctx,
-    out,
-    bodySite,
-    sideText,
-    'augmentation',
-    'Augmentation',
-    finding.augmentation,
     segmentBase,
     side
   );
@@ -145,19 +123,6 @@ export function appendVenousFindingObservations(
     out,
     bodySite,
     sideText,
-    'transDiameterMm',
-    'Vein transverse diameter',
-    finding.transDiameterMm,
-    'mm',
-    false,
-    segmentBase,
-    side
-  );
-  pushVenousNumeric(
-    ctx,
-    out,
-    bodySite,
-    sideText,
     'depthMm',
     'Vein depth from skin',
     finding.depthMm,
@@ -184,9 +149,7 @@ function pushVenousCategorical(
   const isAbnormal =
     (paramId === 'compressibility' && value !== 'normal' && value !== 'inconclusive') ||
     (paramId === 'thrombosis' && (value === 'acute' || value === 'chronic')) ||
-    (paramId === 'spontaneity' && value === 'absent') ||
-    (paramId === 'phasicity' && (value === 'absent' || value === 'continuous')) ||
-    (paramId === 'augmentation' && value === 'absent');
+    (paramId === 'phasicity' && (value === 'monophasic' || value === 'reduced'));
 
   const obs: Observation = {
     resourceType: 'Observation',

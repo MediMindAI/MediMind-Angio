@@ -24,7 +24,6 @@ export interface FindingsTableLabels {
   readonly segment: string;
   readonly refluxMs: string;
   readonly apMm: string;
-  readonly transMm: string;
   readonly depthMm: string;
   readonly segmentName: Record<VenousLESegmentBase, string>;
   readonly emptyDash: string;
@@ -47,9 +46,8 @@ type Side = 'left' | 'right';
 const COL_FLEX = {
   segment: 2.4,
   reflux: 1.3,
-  ap: 1.05,
-  trans: 1.05,
-  depth: 1.05,
+  ap: 1.4,
+  depth: 1.4,
 } as const;
 
 const styles = StyleSheet.create({
@@ -117,7 +115,6 @@ interface RenderRow {
   readonly segmentBase: VenousLESegmentBase;
   readonly refluxMs: number | undefined;
   readonly apMm: number | undefined;
-  readonly transMm: number | undefined;
   readonly depthMm: number | undefined;
   readonly pathological: boolean;
 }
@@ -128,18 +125,16 @@ function buildRows(findings: VenousSegmentFindings, side: Side): ReadonlyArray<R
     const key = `${base}-${side}` as keyof typeof findings;
     const f = findings[key];
     if (!f) continue;
-    const { refluxDurationMs, apDiameterMm, transDiameterMm, depthMm } = f;
+    const { refluxDurationMs, apDiameterMm, depthMm } = f;
     const anyValue =
       refluxDurationMs !== undefined ||
       apDiameterMm !== undefined ||
-      transDiameterMm !== undefined ||
       depthMm !== undefined;
     if (!anyValue) continue;
     rows.push({
       segmentBase: base,
       refluxMs: refluxDurationMs,
       apMm: apDiameterMm,
-      transMm: transDiameterMm,
       depthMm,
       pathological: hasPathologicalReflux(base, f),
     });
@@ -199,16 +194,6 @@ function SideTable({
         <Text
           style={{
             flexBasis: 0,
-            flexGrow: COL_FLEX.trans,
-            ...styles.headCell,
-            ...styles.cellRight,
-          }}
-        >
-          {labels.transMm}
-        </Text>
-        <Text
-          style={{
-            flexBasis: 0,
             flexGrow: COL_FLEX.depth,
             ...styles.headCell,
             ...styles.cellRight,
@@ -242,16 +227,6 @@ function SideTable({
                 }}
               >
                 {formatMm(r.apMm, labels.emptyDash)}
-              </Text>
-              <Text
-                style={{
-                  flexBasis: 0,
-                  flexGrow: COL_FLEX.trans,
-                  ...styles.cell,
-                  ...styles.cellRight,
-                }}
-              >
-                {formatMm(r.transMm, labels.emptyDash)}
               </Text>
               <Text
                 style={{

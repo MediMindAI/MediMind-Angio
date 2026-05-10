@@ -1,8 +1,8 @@
 {
   "venousLE": {
-    "title": "Lower Extremity Venous Duplex",
+    "title": "Lower Extremity Venous Ultrasonography",
     "form": {
-      "title": "Lower Extremity Venous Duplex",
+      "title": "Lower Extremity Venous Ultrasonography",
       "subtitle": "Bilateral reflux + DVT assessment"
     },
     "sides": {
@@ -12,25 +12,24 @@
     },
     "segmentShort": {
       "cfv": "CFV",
-      "eiv": "EIV",
-      "fv-prox": "FV (prox)",
-      "fv-mid": "FV (mid)",
-      "fv-dist": "FV (dist)",
+      "fv-prox": "FV Prox",
+      "fv-mid": "FV Mid",
+      "fv-dist": "FV Dist",
       "pfv": "PFV",
-      "gsv-ak": "GSV (AK)",
-      "gsv-prox-calf": "GSV (prox calf)",
-      "gsv-mid-calf": "GSV (mid calf)",
-      "gsv-dist-calf": "GSV (dist calf)",
-      "pop-ak": "POP (AK)",
-      "pop-fossa": "POP (fossa)",
-      "pop-bk": "POP (BK)",
+      "pop-ak": "POP AK",
+      "pop-bk": "POP BK",
       "ptv": "PTV",
       "per": "PER",
-      "ssv": "SSV",
-      "gastroc": "Gastroc",
-      "soleal": "Soleal",
+      "gastroc": "GASTROC",
+      "soleal": "SOLEAL",
       "sfj": "SFJ",
-      "spj": "SPJ"
+      "gsv-prox-thigh": "GSV Prox Thigh",
+      "gsv-mid-thigh": "GSV Mid Thigh",
+      "gsv-dist-thigh": "GSV Dist Thigh",
+      "gsv-knee": "GSV Knee",
+      "gsv-calf": "GSV Calf",
+      "spj": "SPJ",
+      "ssv": "SSV"
     },
     "status": {
       "draft": "Draft",
@@ -55,15 +54,12 @@
     },
     "help": {
       "refluxDurationMs": "Pathological: >1000 ms deep, >500 ms superficial",
-      "apDiameterMm": "Anterior-posterior diameter in B-mode (grey-scale)",
-      "transDiameterMm": "Transverse diameter in B-mode (grey-scale)",
+      "apDiameterMm": "Vein diameter in B-mode (grey-scale)",
       "depthMm": "Depth from skin to vessel centre — used for endovenous ablation planning",
       "compressibility": "Complete coaptation under gentle transducer pressure indicates normal patency. Non-compressibility is the primary sign of DVT.",
       "thrombosis": "Presence and chronicity of intraluminal thrombus (acute = echo-lucent, chronic = echogenic).",
-      "spontaneity": "Spontaneous venous flow at rest — reduced or absent flow suggests obstruction upstream.",
       "phasicity": "Respiratory variation in flow velocity. Loss of phasicity = proximal obstruction.",
-      "augmentation": "Flow increase with distal compression — absent augmentation suggests obstruction between probe and squeeze site.",
-      "competency": "Auto = derived from findings. Pick a value to override the diagram color."
+      "competency": "Manual valve-state marker — also drives the diagram color."
     },
     "narrativeSections": {
       "rightFindings": "Right lower extremity — findings",
@@ -81,6 +77,7 @@
       "patientId": "Medical record #",
       "birthDate": "Date of birth",
       "age": "Age",
+      "ageSuffix": "y",
       "gender": "Gender",
       "genderMale": "Male",
       "genderFemale": "Female",
@@ -93,7 +90,7 @@
       "institution": "Institution",
       "accession": "Accession #",
       "indication": "Indication",
-      "indicationNotes": "Additional indication notes",
+      "indicationNotes": "Symptoms and signs (optional)",
       "quality": "Study quality",
       "qualityExcellent": "Excellent",
       "qualityGood": "Good",
@@ -129,29 +126,26 @@
     },
     "segment": {
       "cfv": "Common femoral vein",
-      "eiv": "External iliac vein",
       "fv-prox": "Femoral vein (proximal)",
       "fv-mid": "Femoral vein (mid)",
       "fv-dist": "Femoral vein (distal)",
       "pfv": "Profunda femoral vein",
-      "gsv-ak": "Great saphenous vein (above knee)",
-      "gsv-prox-calf": "Great saphenous vein (proximal calf)",
-      "gsv-mid-calf": "Great saphenous vein (mid calf)",
-      "gsv-dist-calf": "Great saphenous vein (distal calf)",
       "pop-ak": "Popliteal vein (above knee)",
-      "pop-fossa": "Popliteal fossa",
       "pop-bk": "Popliteal vein (below knee)",
       "ptv": "Posterior tibial vein",
       "per": "Peroneal vein",
-      "ssv": "Small saphenous vein",
       "gastroc": "Gastrocnemius vein",
       "soleal": "Soleal vein",
       "sfj": "Saphenofemoral junction",
+      "gsv-prox-thigh": "Great saphenous vein (proximal thigh)",
+      "gsv-mid-thigh": "Great saphenous vein (mid thigh)",
+      "gsv-dist-thigh": "Great saphenous vein (distal thigh)",
+      "gsv-knee": "Great saphenous vein (at the knee)",
+      "gsv-calf": "Great saphenous vein (calf)",
       "spj": "Saphenopopliteal junction",
+      "ssv": "Small saphenous vein",
       "cfv-left": "Common femoral vein (left)",
       "cfv-right": "Common femoral vein (right)",
-      "eiv-left": "External iliac vein (left)",
-      "eiv-right": "External iliac vein (right)",
       "fv-prox-left": "Femoral vein, proximal (left)",
       "fv-prox-right": "Femoral vein, proximal (right)",
       "fv-mid-left": "Femoral vein, mid (left)",
@@ -160,53 +154,48 @@
       "fv-dist-right": "Femoral vein, distal (right)",
       "pfv-left": "Profunda femoral vein (left)",
       "pfv-right": "Profunda femoral vein (right)",
-      "gsv-ak-left": "Great saphenous vein, above knee (left)",
-      "gsv-ak-right": "Great saphenous vein, above knee (right)",
-      "gsv-prox-calf-left": "Great saphenous vein, proximal calf (left)",
-      "gsv-prox-calf-right": "Great saphenous vein, proximal calf (right)",
-      "gsv-mid-calf-left": "Great saphenous vein, mid calf (left)",
-      "gsv-mid-calf-right": "Great saphenous vein, mid calf (right)",
-      "gsv-dist-calf-left": "Great saphenous vein, distal calf (left)",
-      "gsv-dist-calf-right": "Great saphenous vein, distal calf (right)",
       "pop-ak-left": "Popliteal vein, above knee (left)",
       "pop-ak-right": "Popliteal vein, above knee (right)",
-      "pop-fossa-left": "Popliteal vein, fossa (left)",
-      "pop-fossa-right": "Popliteal vein, fossa (right)",
       "pop-bk-left": "Popliteal vein, below knee (left)",
       "pop-bk-right": "Popliteal vein, below knee (right)",
       "ptv-left": "Posterior tibial vein (left)",
       "ptv-right": "Posterior tibial vein (right)",
       "per-left": "Peroneal vein (left)",
       "per-right": "Peroneal vein (right)",
-      "ssv-left": "Small saphenous vein (left)",
-      "ssv-right": "Small saphenous vein (right)",
       "gastroc-left": "Gastrocnemius vein (left)",
       "gastroc-right": "Gastrocnemius vein (right)",
       "soleal-left": "Soleal vein (left)",
       "soleal-right": "Soleal vein (right)",
       "sfj-left": "Saphenofemoral junction (left)",
       "sfj-right": "Saphenofemoral junction (right)",
+      "gsv-prox-thigh-left": "Great saphenous vein, proximal thigh (left)",
+      "gsv-prox-thigh-right": "Great saphenous vein, proximal thigh (right)",
+      "gsv-mid-thigh-left": "Great saphenous vein, mid thigh (left)",
+      "gsv-mid-thigh-right": "Great saphenous vein, mid thigh (right)",
+      "gsv-dist-thigh-left": "Great saphenous vein, distal thigh (left)",
+      "gsv-dist-thigh-right": "Great saphenous vein, distal thigh (right)",
+      "gsv-knee-left": "Great saphenous vein, at the knee (left)",
+      "gsv-knee-right": "Great saphenous vein, at the knee (right)",
+      "gsv-calf-left": "Great saphenous vein, calf (left)",
+      "gsv-calf-right": "Great saphenous vein, calf (right)",
       "spj-left": "Saphenopopliteal junction (left)",
-      "spj-right": "Saphenopopliteal junction (right)"
+      "spj-right": "Saphenopopliteal junction (right)",
+      "ssv-left": "Small saphenous vein (left)",
+      "ssv-right": "Small saphenous vein (right)"
     },
     "param": {
       "compressibility": "Compressibility",
       "thrombosis": "Thrombosis",
-      "spontaneity": "Spontaneity",
-      "phasicity": "Phasicity",
-      "augmentation": "Augmentation",
+      "phasicity": "Flow phasicity",
       "competency": "Competency",
-      "refluxDurationMs": "Reflux duration (ms)",
-      "apDiameterMm": "AP diameter (mm)",
-      "transDiameterMm": "Transverse diameter (mm)",
+      "refluxDurationMs": "Reflux duration (cm/s)",
+      "apDiameterMm": "Diameter (mm)",
       "depthMm": "Depth (mm)"
     },
     "competency": {
-      "auto": "Auto (from findings)",
-      "normal": "Normal",
+      "normal": "Competent",
       "incompetent": "Incompetent",
-      "ablated": "Ablated",
-      "inconclusive": "Inconclusive"
+      "ablated": "Post-ablation"
     },
     "bulk": {
       "allNormal": "All normal",
@@ -228,10 +217,13 @@
         "left": "Normal compressibility of the deep veins in the left lower extremity."
       },
       "normalFlowDeep": {
-        "right": "Normal spontaneous phasic augmented flow in the right lower extremity.",
-        "left": "Normal spontaneous phasic augmented flow in the left lower extremity."
+        "right": "Normal spontaneous phasic flow in the right lower extremity.",
+        "left": "Normal spontaneous phasic flow in the left lower extremity."
       },
-      "refluxNoted": "Marked reflux ({ms} ms) — {vein}.",
+      "refluxNoted": "Marked reflux ({ms} cm/s) — {vein}.",
+      "refluxMeasured": "Reflux at {vein} — {ms} cm/s.",
+      "incompetent": "Incompetent valves noted — {vein}.",
+      "postAblation": "Post-ablation status — {vein}.",
       "nonCompressible": "Non-compressible segment — {vein}. Finding suggestive of acute DVT.",
       "partialCompressibility": "Partial compressibility — {vein}. Consistent with chronic post-thrombotic changes.",
       "acuteThrombus": "Acute intraluminal thrombus — {vein}.",
@@ -239,32 +231,33 @@
       "inconclusive": "Study limited — inconclusive compressibility assessment ({vein})."
     },
     "conclusion": {
-      "reflux": "Pathological reflux ({ms} ms) — {side} {vein}.",
+      "reflux": "Pathological reflux ({ms} cm/s) — {side} {vein}.",
       "acuteDvt": "Acute DVT suspected — {side} {vein}.",
       "chronicPostThrombotic": "Chronic post-thrombotic changes — {side} {vein}.",
-      "inconclusive": "Study limitation — inconclusive assessment of {side} {vein}."
+      "inconclusive": "Study limitation — inconclusive assessment of {side} {vein}.",
+      "incompetent": "Valvular incompetence — {side} {vein}.",
+      "postAblation": "Post-ablation — {side} {vein}."
     },
     "segments": {
       "cfv": "common femoral vein",
-      "eiv": "external iliac vein",
       "fv-prox": "femoral vein, proximal",
       "fv-mid": "femoral vein, mid",
       "fv-dist": "femoral vein, distal",
       "pfv": "profunda femoral vein",
-      "gsv-ak": "great saphenous vein, above knee",
-      "gsv-prox-calf": "great saphenous vein, proximal calf",
-      "gsv-mid-calf": "great saphenous vein, mid calf",
-      "gsv-dist-calf": "great saphenous vein, distal calf",
       "pop-ak": "popliteal vein, above knee",
-      "pop-fossa": "popliteal vein, fossa",
       "pop-bk": "popliteal vein, below knee",
       "ptv": "posterior tibial vein",
       "per": "peroneal vein",
-      "ssv": "small saphenous vein",
       "gastroc": "gastrocnemius vein",
       "soleal": "soleal vein",
       "sfj": "saphenofemoral junction",
-      "spj": "saphenopopliteal junction"
+      "gsv-prox-thigh": "great saphenous vein, proximal thigh",
+      "gsv-mid-thigh": "great saphenous vein, mid thigh",
+      "gsv-dist-thigh": "great saphenous vein, distal thigh",
+      "gsv-knee": "great saphenous vein, at the knee",
+      "gsv-calf": "great saphenous vein, calf",
+      "spj": "saphenopopliteal junction",
+      "ssv": "small saphenous vein"
     },
     "studyHeader": {
       "title": "Study Data",
@@ -274,43 +267,30 @@
       "summaryDate": "Study date"
     },
     "compressibility": {
-      "normal": "Normal",
+      "normal": "Full",
       "partial": "Partial",
       "non-compressible": "Non-compressible",
       "inconclusive": "Inconclusive"
     },
     "thrombosis": {
-      "none": "None",
+      "none": "—",
       "acute": "Acute",
       "chronic": "Chronic",
-      "indeterminate": "Indeterminate"
-    },
-    "spontaneity": {
-      "normal": "Normal",
-      "reduced": "Reduced",
-      "absent": "Absent",
-      "inconclusive": "Inconclusive"
+      "indeterminate": "Inconclusive"
     },
     "phasicity": {
-      "normal": "Normal",
-      "continuous": "Continuous",
-      "pulsatile": "Pulsatile",
-      "absent": "Absent",
-      "inconclusive": "Inconclusive"
-    },
-    "augmentation": {
-      "normal": "Normal",
+      "respirophasic": "Respirophasic",
       "reduced": "Reduced",
-      "absent": "Absent",
+      "pulsatile": "Pulsatile",
+      "monophasic": "Monophasic",
       "inconclusive": "Inconclusive"
     },
     "refluxTable": {
       "title": "Reflux time and measurements",
       "subtitle": "Numeric parameters for segments with recorded findings",
-      "ms": "Duration (ms)",
-      "msShort": "Dur. (ms)",
-      "ap": "AP (mm)",
-      "trans": "Trans (mm)",
+      "ms": "Duration (cm/s)",
+      "msShort": "Dur. (cm/s)",
+      "ap": "Diameter (mm)",
       "depth": "Depth (mm)",
       "empty": "No segments recorded yet"
     },
@@ -361,8 +341,39 @@
       "applyTemplate": "Apply template"
     },
     "anatomy": {
-      "title": "Anatomy diagram",
-      "subtitle": "Updates live as findings change"
+      "title": "Diagram",
+      "subtitle": ""
+    },
+    "drawing": {
+      "ariaLabel": "Drawing tools",
+      "canvasAriaLabel": "Hand-drawing canvas",
+      "modeClick": "Click",
+      "modeDraw": "Draw",
+      "tools": {
+        "pen": "Pen",
+        "eraser": "Eraser"
+      },
+      "size": {
+        "label": "Size",
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      },
+      "color": {
+        "label": "Color",
+        "normal": "Normal",
+        "occluded": "Occlusion",
+        "incompetent": "Incompetent",
+        "inconclusive": "Inconclusive"
+      },
+      "modeEditSegment": "Edit segment",
+      "editSegmentHint": "Tap a vein, then redraw it to replace its geometry",
+      "actions": {
+        "undo": "Undo",
+        "clear": "Clear all",
+        "clearConfirm": "Clear all hand-drawn marks on the diagram?",
+        "clearOverride": "Reset segment path"
+      }
     },
     "assessment": {
       "title": "Segmental Assessment",
@@ -415,32 +426,32 @@
       "normalBilateral": {
         "name": "Normal bilateral study",
         "description": "DVT rule-out confirmed normal on both legs.",
-        "impression": "Bilateral lower-extremity venous duplex examination is within normal limits. All deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+        "impression": "Bilateral lower-extremity venous duplex examination is within normal limits. All deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
       },
       "normalRight": {
         "name": "Normal right only",
         "description": "Unilateral right-leg study, all segments normal.",
-        "impression": "Right lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+        "impression": "Right lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
       },
       "normalLeft": {
         "name": "Normal left only",
         "description": "Unilateral left-leg study, all segments normal.",
-        "impression": "Left lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous, phasic, and augmented flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
+        "impression": "Left lower-extremity venous duplex examination is within normal limits. Deep and superficial venous segments are fully compressible with normal spontaneous and phasic flow patterns. No evidence of acute or chronic deep vein thrombosis. No pathological reflux identified."
       },
       "acuteDvtRightFemoropopliteal": {
         "name": "Acute DVT — right femoropopliteal",
         "description": "Occlusive thrombus from right CFV through popliteal.",
-        "impression": "Acute occlusive deep vein thrombosis involving the right common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
+        "impression": "Acute occlusive deep vein thrombosis involving the right common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
       },
       "acuteDvtLeftFemoropopliteal": {
         "name": "Acute DVT — left femoropopliteal",
         "description": "Occlusive thrombus from left CFV through popliteal.",
-        "impression": "Acute occlusive deep vein thrombosis involving the left common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible with absent flow augmentation. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
+        "impression": "Acute occlusive deep vein thrombosis involving the left common femoral, femoral, and popliteal veins, consistent with femoropopliteal DVT. Segments are non-compressible. Vein calipers are enlarged, supporting acute timing. The distal tibial and peroneal veins are patent with normal compressibility. Superficial venous system appears patent."
       },
       "acuteDvtLeftIliofemoral": {
         "name": "Acute iliofemoral DVT — left",
         "description": "Extensive thrombus from left EIV through mid-FV; May-Thurner workup.",
-        "impression": "Acute iliofemoral deep vein thrombosis. Non-compressible segments with absent phasicity and augmentation extending from the external iliac vein through the mid-femoral vein of the left lower extremity. Markedly dilated venous calipers. Distribution raises suspicion for May-Thurner syndrome — recommend cross-sectional imaging of the iliac venous outflow. Distal femoral, popliteal, and calf veins are patent."
+        "impression": "Acute iliofemoral deep vein thrombosis. Non-compressible segments with absent phasicity extending from the external iliac vein through the mid-femoral vein of the left lower extremity. Markedly dilated venous calipers. Distribution raises suspicion for May-Thurner syndrome — recommend cross-sectional imaging of the iliac venous outflow. Distal femoral, popliteal, and calf veins are patent."
       },
       "acuteDvtRightCalf": {
         "name": "Isolated calf DVT — right",
@@ -484,10 +495,10 @@
         "postAblationGsvRight": "Continue compression therapy (class II) × 2 weeks post-procedure. Return-to-duplex in 1 month to confirm durable occlusion and exclude endovenous heat-induced thrombosis (EHIT) classes II–IV per Kabnick classification."
       },
       "sonographerProtocol": {
-        "dvtRuleOut": "Bilateral venous duplex protocol per IAC standards. Compression evaluation every 2 cm from common femoral through tibial and peroneal veins. Colour and spectral Doppler assessment of spontaneity, phasicity, and augmentation. Patient supine with reverse Trendelenburg tilt.",
+        "dvtRuleOut": "Bilateral venous duplex protocol per IAC standards. Compression evaluation every 2 cm from common femoral through tibial and peroneal veins. Colour and spectral Doppler assessment of spontaneity and phasicity. Patient supine with reverse Trendelenburg tilt.",
         "iliofemoralDvt": "Iliofemoral DVT protocol: extended proximal imaging through the common femoral into the external and common iliac veins. Documented compressibility, spectral Doppler respiratory phasicity, and caliper measurements from iliac through mid-femoral segments. Contralateral screening for May-Thurner pattern.",
-        "calfDvt": "Calf-targeted DVT protocol with transverse compression of paired tibial and peroneal veins every 1–2 cm, plus gastrocnemius and soleal muscular branches. Colour Doppler augmentation applied to confirm patency where compression is technically limited.",
-        "chronicReflux": "Chronic venous insufficiency protocol: reverse Trendelenburg / standing position for reflux. Distal manual augmentation or pneumatic cuff release. Reflux duration measured at SFJ, SPJ, and mid-segments per ESVS 2022 — pathological threshold > 500 ms superficial / > 1000 ms deep.",
+        "calfDvt": "Calf-targeted DVT protocol with transverse compression of paired tibial and peroneal veins every 1–2 cm, plus gastrocnemius and soleal muscular branches. Colour Doppler applied to confirm patency where compression is technically limited.",
+        "chronicReflux": "Chronic venous insufficiency protocol: reverse Trendelenburg / standing position for reflux. Distal manual compression or pneumatic cuff release. Reflux duration measured at SFJ, SPJ, and mid-segments per ESVS 2022 — pathological threshold > 500 ms superficial / > 1000 ms deep.",
         "acuteSvt": "Acute superficial venous thrombophlebitis protocol: B-mode measurement of thrombus extent along the great saphenous vein, with specific documentation of the distance from the most proximal thrombus to the saphenofemoral junction. Deep venous system screened in full to rule out extension.",
         "postAblation": "Post-endovenous-ablation follow-up protocol. Assessment of ablated GSV segments for occlusion (absent flow, echogenic lumen). SFJ stump inspected for endovenous heat-induced thrombosis (EHIT) per Kabnick classification. Deep venous system screened for thrombus extension."
       },

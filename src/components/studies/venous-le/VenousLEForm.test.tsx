@@ -180,6 +180,7 @@ describe('VenousLEForm — stateToFormState projection', () => {
       recommendations: [],
       sonographerComments: '',
       clinicianComments: '',
+      drawings: [],
     };
 
     const projected = stateToFormState(state, encounter);
@@ -221,6 +222,7 @@ describe('VenousLEForm — stateToFormState projection', () => {
       recommendations: [],
       sonographerComments: '',
       clinicianComments: '',
+      drawings: [],
     };
 
     const projected = stateToFormState(state, encounter);

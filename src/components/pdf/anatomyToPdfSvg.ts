@@ -19,6 +19,9 @@ import type { Competency } from '../../types/anatomy';
 import type { VenousLESegmentBase, VenousSegmentFindings } from '../studies/venous-le/config';
 import { deriveCompetency } from '../studies/venous-le/config';
 import { COMPETENCY_COLORS } from '../../constants/theme-colors';
+import type { AnatomyViewKey, DrawingStroke } from '../../types/drawing';
+import { DRAWING_COLOR_HEX } from '../../types/drawing';
+import { strokeToSvgPath } from '../anatomy/strokeToSvgPath';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -31,7 +34,7 @@ export type AnatomyViewName =
   | 'neck-carotid';
 
 export interface PdfSvgElement {
-  readonly kind: 'segment' | 'outline';
+  readonly kind: 'segment' | 'outline' | 'drawing';
   /** Canonical segment id, present only for kind='segment'. */
   readonly id?: string;
   readonly d: string;
@@ -43,6 +46,12 @@ export interface PdfSvgElement {
 export interface AnatomyToPdfResult {
   readonly viewBox: string;
   readonly elements: ReadonlyArray<PdfSvgElement>;
+  /**
+   * Optional URL to a backdrop image that should be rendered behind the
+   * paths. Only set when the SVG actually embeds an `<image>` element
+   * (e.g. the venous-LE reference-image diagrams).
+   */
+  readonly backdropHref?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -241,34 +250,62 @@ export async function loadAnatomyForPdf(
     readonly segmentStrokeWidth?: number;
     /** Override color resolution (arterial + carotid use this). */
     readonly competencyFn?: SegmentColorsFn;
+    /** Hand-drawn strokes (clinician annotations) — only renders strokes whose `view` matches. */
+    readonly drawings?: ReadonlyArray<DrawingStroke>;
+    /** Render segments as translucent overlays (use when the SVG has an `<image>` backdrop). */
+    readonly overlay?: boolean;
   }
 ): Promise<AnatomyToPdfResult> {
   const raw = await loadRawAnatomySvg(view);
   const viewBox = extractViewBox(raw);
   const paths = extractPaths(raw);
+  const backdropHref = extractBackdropHref(raw);
+  const overlay = options?.overlay ?? Boolean(backdropHref);
 
   const outlineStroke = options?.outlineStroke ?? '#cbd5e0';
   const outlineStrokeWidth = options?.outlineStrokeWidth ?? 1.25;
-  const segmentStrokeWidth = options?.segmentStrokeWidth ?? 4;
+  const segmentStrokeWidth = options?.segmentStrokeWidth ?? (overlay ? 14 : 4);
   const competencyFn = options?.competencyFn;
+  const drawings = options?.drawings ?? [];
 
   const elements: PdfSvgElement[] = [];
 
   for (const p of paths) {
     if (p.section === 'segments') {
       if (!p.id) continue;
-      const { fill, stroke } = competencyFn
-        ? competencyFn(p.id)
+      const { competency, fill, stroke } = competencyFn
+        ? { competency: 'normal' as Competency, ...competencyFn(p.id) }
         : colorsForSegment(p.id, findings);
-      elements.push({
-        kind: 'segment',
-        id: p.id,
-        d: p.d,
-        fill,
-        stroke,
-        strokeWidth: segmentStrokeWidth,
-      });
+      if (overlay) {
+        // In overlay mode, skip segments without findings — the backdrop reads through.
+        const split = competencyFn ? null : splitSegmentId(p.id);
+        const hasFinding = competencyFn
+          ? true
+          : Boolean(split && findings[`${split.base}-${split.side}`]);
+        if (!hasFinding) continue;
+        elements.push({
+          kind: 'segment',
+          id: p.id,
+          d: p.d,
+          fill: 'transparent',
+          stroke: toTranslucent(stroke, 0.55),
+          strokeWidth: segmentStrokeWidth,
+        });
+        // Suppress unused-var warning when not in overlay mode.
+        void competency;
+      } else {
+        elements.push({
+          kind: 'segment',
+          id: p.id,
+          d: p.d,
+          fill,
+          stroke,
+          strokeWidth: segmentStrokeWidth,
+        });
+      }
     } else {
+      // In overlay mode the silhouette / pelvis-hint groups are empty, so nothing to render here.
+      if (overlay) continue;
       elements.push({
         kind: 'outline',
         d: p.d,
@@ -279,7 +316,48 @@ export async function loadAnatomyForPdf(
     }
   }
 
-  return { viewBox, elements };
+  // Append clinician-drawn strokes for this view, last so they paint on top.
+  if (drawings.length > 0) {
+    const viewKey = view as AnatomyViewKey;
+    for (const stroke of drawings) {
+      if (stroke.view !== viewKey) continue;
+      const d = strokeToSvgPath(stroke.points, stroke.size);
+      if (!d) continue;
+      elements.push({
+        kind: 'drawing',
+        id: stroke.id,
+        d,
+        fill: DRAWING_COLOR_HEX[stroke.color],
+        stroke: 'none',
+        strokeWidth: 0,
+      });
+    }
+  }
+
+  return backdropHref ? { viewBox, elements, backdropHref } : { viewBox, elements };
+}
+
+/**
+ * Convert a hex color (#rrggbb) to an `rgba(...)` string with the given alpha.
+ * Pass-through for non-recognized inputs.
+ */
+function toTranslucent(color: string, alpha: number): string {
+  const hex = color.match(/^#([0-9a-f]{6})$/i);
+  if (!hex) return color;
+  const v = hex[1] as string;
+  const r = parseInt(v.slice(0, 2), 16);
+  const g = parseInt(v.slice(2, 4), 16);
+  const b = parseInt(v.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
+ * Extract the `<image href="...">` backdrop URL if present in the SVG.
+ * Returns `undefined` when the SVG has no embedded image element.
+ */
+function extractBackdropHref(raw: string): string | undefined {
+  const match = raw.match(/<image\b[^>]*\bhref="([^"]+)"/);
+  return match?.[1];
 }
 
 /** Testing / diagnostic helper — expose the cached raw size. */

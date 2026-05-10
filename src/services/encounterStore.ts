@@ -145,6 +145,104 @@ export async function saveEncounter(draft: EncounterDraft): Promise<void> {
   writeSyncRaw(stamped);
 }
 
+// ---------------------------------------------------------------------------
+// Legacy-data migration
+// ---------------------------------------------------------------------------
+
+/**
+ * Rewrite legacy venous-LE segment IDs and phasicity values stored in older
+ * encounter drafts so they match the current schema. Pure on the input —
+ * returns a new draft when anything changes; otherwise returns the original.
+ */
+function migrateLegacyDraft(draft: EncounterDraft): EncounterDraft {
+  const segMap: Readonly<Record<string, string | null>> = {
+    'eiv-left': null,
+    'eiv-right': null,
+    'pop-fossa-left': null,
+    'pop-fossa-right': null,
+    'gsv-ak-left': 'gsv-prox-thigh-left',
+    'gsv-ak-right': 'gsv-prox-thigh-right',
+    'gsv-prox-calf-left': 'gsv-calf-left',
+    'gsv-prox-calf-right': 'gsv-calf-right',
+    'gsv-mid-calf-left': 'gsv-calf-left',
+    'gsv-mid-calf-right': 'gsv-calf-right',
+    'gsv-dist-calf-left': 'gsv-calf-left',
+    'gsv-dist-calf-right': 'gsv-calf-right',
+  };
+  const phasicityMap: Readonly<Record<string, string>> = {
+    normal: 'respirophasic',
+    continuous: 'monophasic',
+    absent: 'reduced',
+  };
+  let mutated = false;
+  const rewriteFindings = (findings: Record<string, unknown>): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(findings)) {
+      const remapped = key in segMap ? segMap[key] : key;
+      if (remapped === null) {
+        mutated = true;
+        continue;
+      }
+      const newKey = remapped ?? key;
+      if (newKey !== key) mutated = true;
+      let entry = value;
+      if (entry && typeof entry === 'object' && 'phasicity' in entry) {
+        const currentPhase = (entry as { phasicity?: unknown }).phasicity;
+        if (typeof currentPhase === 'string' && currentPhase in phasicityMap) {
+          entry = { ...(entry as object), phasicity: phasicityMap[currentPhase] };
+          mutated = true;
+        }
+      }
+      // Drop transDiameterMm if present.
+      if (entry && typeof entry === 'object' && 'transDiameterMm' in entry) {
+        const { transDiameterMm: _drop, ...rest } = entry as Record<string, unknown>;
+        entry = rest;
+        mutated = true;
+      }
+      // Drop spontaneity / augmentation if present.
+      if (entry && typeof entry === 'object') {
+        const obj = entry as Record<string, unknown>;
+        if ('spontaneity' in obj || 'augmentation' in obj) {
+          const { spontaneity: _s, augmentation: _a, ...rest } = obj;
+          entry = rest;
+          mutated = true;
+        }
+      }
+      // If multiple legacy keys collapse onto the same new key, last write wins.
+      out[newKey] = entry;
+    }
+    return out;
+  };
+
+  const studies = draft.studies as Readonly<Record<string, unknown>>;
+  const newStudies: Record<string, unknown> = {};
+  for (const [studyType, study] of Object.entries(studies)) {
+    if (!study || typeof study !== 'object') {
+      newStudies[studyType] = study;
+      continue;
+    }
+    const studyObj = study as Record<string, unknown>;
+    const params = studyObj['parameters'];
+    if (!params || typeof params !== 'object') {
+      newStudies[studyType] = study;
+      continue;
+    }
+    const paramsObj = params as Record<string, unknown>;
+    const findings = paramsObj['segmentFindings'];
+    if (!findings || typeof findings !== 'object') {
+      newStudies[studyType] = study;
+      continue;
+    }
+    const newFindings = rewriteFindings(findings as Record<string, unknown>);
+    newStudies[studyType] = {
+      ...studyObj,
+      parameters: { ...paramsObj, segmentFindings: newFindings },
+    };
+  }
+  if (!mutated) return draft;
+  return { ...draft, studies: newStudies as EncounterDraft['studies'] };
+}
+
 /**
  * Async load — preferred path. Reads IDB; if missing but localStorage
  * still has a copy (e.g. after an IDB upgrade race), hydrates from the
@@ -152,17 +250,18 @@ export async function saveEncounter(draft: EncounterDraft): Promise<void> {
  */
 export async function loadEncounter(id: EncounterId): Promise<EncounterDraft | null> {
   const fromIdb = await get(keyEncounter(id), store());
-  if (isEncounterDraft(fromIdb)) return fromIdb;
+  if (isEncounterDraft(fromIdb)) return migrateLegacyDraft(fromIdb);
 
   const fromLocal = readSyncRaw(id);
   if (fromLocal) {
+    const migrated = migrateLegacyDraft(fromLocal);
     // Self-heal: re-populate IDB so subsequent loads stay on the fast path.
     try {
-      await set(keyEncounter(id), fromLocal, store());
+      await set(keyEncounter(id), migrated, store());
     } catch {
       // ignore — fall through with the localStorage value.
     }
-    return fromLocal;
+    return migrated;
   }
   return null;
 }
@@ -173,7 +272,8 @@ export async function loadEncounter(id: EncounterId): Promise<EncounterDraft | n
  * copy, callers should follow up with an async `loadEncounter` to refresh.
  */
 export function loadEncounterSync(id: EncounterId): EncounterDraft | null {
-  return readSyncRaw(id);
+  const raw = readSyncRaw(id);
+  return raw ? migrateLegacyDraft(raw) : null;
 }
 
 /**

@@ -28,17 +28,15 @@ export interface PatientBlockLabels {
   readonly medications?: string;
   readonly patientPosition?: string;
   readonly icd10Codes?: string;
-  readonly cptCode?: string;
   readonly informedConsent?: string;
   readonly informedConsentYes?: string;
   readonly informedConsentNo?: string;
   /** Localized labels for `patientPosition` enum values. */
   readonly positionLabels?: Readonly<Record<string, string>>;
-  /**
-   * Optional localized CPT description. If set, overrides `header.cptCode.display`
-   * (which is frozen at form-init time and may be English even in Georgian PDFs).
-   */
-  readonly cptLocalizedDisplay?: string;
+  /** Suffix appended to the computed age (e.g. "y" or "წ"). */
+  readonly ageSuffix?: string;
+  /** Localized labels for `patientGender` enum values. */
+  readonly genderValueLabels?: Readonly<Record<string, string>>;
 }
 
 export interface PatientBlockProps {
@@ -82,7 +80,11 @@ const styles = StyleSheet.create({
   },
 });
 
-function computeAgeYears(isoDob: string | undefined, refDate: string): string {
+function computeAgeYears(
+  isoDob: string | undefined,
+  refDate: string,
+  suffix = 'y',
+): string {
   if (!isoDob) return '—';
   const dob = new Date(isoDob);
   const ref = new Date(refDate);
@@ -92,7 +94,7 @@ function computeAgeYears(isoDob: string | undefined, refDate: string): string {
   if (m < 0 || (m === 0 && ref.getDate() < dob.getDate())) {
     years -= 1;
   }
-  return years >= 0 ? `${years}y` : '—';
+  return years >= 0 ? `${years} ${suffix}` : '—';
 }
 
 function fieldValue(value: string | undefined): string {
@@ -116,7 +118,10 @@ function Cell({
 }
 
 export function PatientBlock({ header, labels }: PatientBlockProps): ReactElement {
-  const age = computeAgeYears(header.patientBirthDate, header.studyDate);
+  const age = computeAgeYears(header.patientBirthDate, header.studyDate, labels.ageSuffix);
+  const genderDisplay = header.patientGender
+    ? labels.genderValueLabels?.[header.patientGender] ?? header.patientGender
+    : undefined;
 
   // Derive the Phase 1.5 row values.
   const positionKey = header.patientPosition;
@@ -127,9 +132,6 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
     header.icd10Codes && header.icd10Codes.length > 0
       ? header.icd10Codes.map((c) => c.code).join(', ')
       : undefined;
-  const cptDisplay = header.cptCode
-    ? `${header.cptCode.code} — ${labels.cptLocalizedDisplay ?? header.cptCode.display}`
-    : undefined;
   const consentDisplay =
     header.informedConsent === true
       ? `${labels.informedConsentYes ?? 'Yes'}${
@@ -143,10 +145,9 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
   const hasExtraRow1 = !!(
     labels.patientPosition ||
     labels.icd10Codes ||
-    labels.cptCode ||
     labels.informedConsent
   ) &&
-    (positionDisplay || icd10Display || cptDisplay || consentDisplay);
+    (positionDisplay || icd10Display || consentDisplay);
   const hasMedicationsRow = !!labels.medications && !!medicationsDisplay;
 
   return (
@@ -156,7 +157,7 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
         <Cell label={labels.mrn} value={fieldValue(header.patientId)} />
         <Cell label={labels.dob} value={fieldValue(header.patientBirthDate)} />
         <Cell label={labels.age} value={age} />
-        <Cell label={labels.gender} value={fieldValue(header.patientGender)} />
+        <Cell label={labels.gender} value={fieldValue(genderDisplay)} />
       </View>
       <View style={styles.row}>
         <Cell label={labels.studyDate} value={fieldValue(header.studyDate)} />
@@ -169,9 +170,6 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
         <View style={styles.row}>
           {labels.patientPosition ? (
             <Cell label={labels.patientPosition} value={fieldValue(positionDisplay)} />
-          ) : null}
-          {labels.cptCode ? (
-            <Cell label={labels.cptCode} value={fieldValue(cptDisplay)} />
           ) : null}
           {labels.icd10Codes ? (
             <Cell label={labels.icd10Codes} value={fieldValue(icd10Display)} />

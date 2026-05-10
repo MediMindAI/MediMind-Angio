@@ -35,28 +35,27 @@ export type { Side };
 // bundles never pull script files)
 // ============================================================================
 
-/** Canonical 20-segment IAC/SVU lower-extremity venous duplex catalog (deep + superficial + muscular). */
+/** Canonical lower-extremity venous duplex catalog (deep + superficial + muscular). */
 export const VENOUS_LE_SEGMENTS = [
   'cfv', // Common femoral vein
-  'eiv', // External iliac vein
   'fv-prox', // Femoral vein proximal
   'fv-mid', // Femoral vein mid
   'fv-dist', // Femoral vein distal
   'pfv', // Profunda (deep) femoral vein
-  'gsv-ak', // Great saphenous vein, above knee
-  'gsv-prox-calf', // GSV proximal calf
-  'gsv-mid-calf', // GSV mid calf
-  'gsv-dist-calf', // GSV distal calf
   'pop-ak', // Popliteal above knee
-  'pop-fossa', // Popliteal fossa
   'pop-bk', // Popliteal below knee
   'ptv', // Posterior tibial vein
   'per', // Peroneal vein
-  'ssv', // Small saphenous vein
   'gastroc', // Gastrocnemius vein
   'soleal', // Soleal vein
   'sfj', // Saphenofemoral junction
+  'gsv-prox-thigh', // GSV proximal thigh
+  'gsv-mid-thigh', // GSV mid thigh
+  'gsv-dist-thigh', // GSV distal thigh
+  'gsv-knee', // GSV at the knee
+  'gsv-calf', // GSV calf segment (merged)
   'spj', // Saphenopopliteal junction
+  'ssv', // Small saphenous vein
 ] as const;
 
 export type VenousLESegmentBase = (typeof VENOUS_LE_SEGMENTS)[number];
@@ -86,20 +85,14 @@ export type Compressibility = (typeof COMPRESSIBILITY_VALUES)[number];
 export const THROMBOSIS_VALUES = ['none', 'acute', 'chronic', 'indeterminate'] as const;
 export type Thrombosis = (typeof THROMBOSIS_VALUES)[number];
 
-export const SPONTANEITY_VALUES = ['normal', 'reduced', 'absent', 'inconclusive'] as const;
-export type Spontaneity = (typeof SPONTANEITY_VALUES)[number];
-
 export const PHASICITY_VALUES = [
-  'normal',
-  'continuous',
+  'respirophasic',
+  'reduced',
   'pulsatile',
-  'absent',
+  'monophasic',
   'inconclusive',
 ] as const;
 export type Phasicity = (typeof PHASICITY_VALUES)[number];
-
-export const AUGMENTATION_VALUES = ['normal', 'reduced', 'absent', 'inconclusive'] as const;
-export type Augmentation = (typeof AUGMENTATION_VALUES)[number];
 
 // ============================================================================
 // Per-segment findings shape
@@ -113,16 +106,12 @@ export type Augmentation = (typeof AUGMENTATION_VALUES)[number];
 export interface VenousSegmentFinding {
   readonly compressibility?: Compressibility;
   readonly thrombosis?: Thrombosis;
-  readonly spontaneity?: Spontaneity;
   readonly phasicity?: Phasicity;
-  readonly augmentation?: Augmentation;
 
-  /** Reflux duration in ms (positive = retrograde flow duration). */
+  /** Reflux duration in ms (label displays as "სმ/წმ" but value remains time-based). */
   readonly refluxDurationMs?: number;
-  /** AP diameter in mm. */
+  /** Vein diameter in mm. */
   readonly apDiameterMm?: number;
-  /** Transverse diameter in mm (alongside AP — Corestudycast parity). */
-  readonly transDiameterMm?: number;
   /** Depth from skin in mm (for ablation planning). */
   readonly depthMm?: number;
 
@@ -135,6 +124,14 @@ export interface VenousSegmentFinding {
 
   /** Free-text note for this segment. */
   readonly note?: string;
+
+  /**
+   * Per-encounter SVG path-d override for this segment. When set, the
+   * anatomy diagram renders this string instead of the static `d`
+   * shipped in `public/anatomy/le-*.svg`. Captured by the "Edit segment"
+   * mode in the drawing toolbar.
+   */
+  readonly pathOverride?: string;
 }
 
 /** Form-level state for the per-segment table. Map segment-side → finding. */
@@ -161,13 +158,11 @@ export const REFLUX_THRESHOLDS = {
 export function isDeepSegment(segment: VenousLESegmentBase): boolean {
   return (
     segment === 'cfv' ||
-    segment === 'eiv' ||
     segment === 'fv-prox' ||
     segment === 'fv-mid' ||
     segment === 'fv-dist' ||
     segment === 'pfv' ||
     segment === 'pop-ak' ||
-    segment === 'pop-fossa' ||
     segment === 'pop-bk' ||
     segment === 'ptv' ||
     segment === 'per' ||
@@ -211,22 +206,10 @@ export const CATEGORICAL_PARAMETERS: ReadonlyArray<ParameterDef> = [
     options: THROMBOSIS_VALUES.map((v) => ({ value: v, label: `venousLE.thrombosis.${v}` })),
   },
   {
-    id: 'spontaneity',
-    label: 'venousLE.param.spontaneity',
-    kind: 'select',
-    options: SPONTANEITY_VALUES.map((v) => ({ value: v, label: `venousLE.spontaneity.${v}` })),
-  },
-  {
     id: 'phasicity',
     label: 'venousLE.param.phasicity',
     kind: 'select',
     options: PHASICITY_VALUES.map((v) => ({ value: v, label: `venousLE.phasicity.${v}` })),
-  },
-  {
-    id: 'augmentation',
-    label: 'venousLE.param.augmentation',
-    kind: 'select',
-    options: AUGMENTATION_VALUES.map((v) => ({ value: v, label: `venousLE.augmentation.${v}` })),
   },
 ];
 
@@ -251,16 +234,6 @@ export const NUMERIC_PARAMETERS: ReadonlyArray<ParameterDef> = [
     max: 50,
     step: 0.1,
     help: 'venousLE.help.apDiameterMm',
-  },
-  {
-    id: 'transDiameterMm',
-    label: 'venousLE.param.transDiameterMm',
-    kind: 'diameter-mm',
-    unit: 'mm',
-    min: 0,
-    max: 50,
-    step: 0.1,
-    help: 'venousLE.help.transDiameterMm',
   },
   {
     id: 'depthMm',
@@ -293,47 +266,37 @@ export const VENOUS_LE_BILATERAL_CONFIG: StudyConfig = {
 import type { Competency } from '../../../types/anatomy';
 
 /**
- * Derive the anatomy-diagram competency color for a segment from its findings.
+ * Return the diagram competency color for a segment.
  *
- * Rules (ordered — first match wins):
- *  1. thrombosis acute/chronic → 'incompetent' (red)
- *  2. compressibility non-compressible/partial → 'incompetent' (red)
- *  3. pathological reflux per threshold → 'incompetent' (red)
- *  4. compressibility normal + no pathological reflux → 'normal' (black)
- *  5. compressibility inconclusive → 'inconclusive' (gray)
- *  6. no finding at all → 'normal' (safe default — silhouette only)
- *
- * Ablated is set via manual user action in the UI (not derived from findings).
+ * `competencyOverride` is the manual escape hatch — when the clinician
+ * picks a color from the dropdown, that wins. Otherwise the color is
+ * derived from the clinical fields the form already captures
+ * (compressibility, thrombosis, reflux duration, phasicity). This is
+ * what makes templates like "Acute DVT" colour the involved veins red
+ * without any per-template glue code: the template sets
+ * `compressibility: 'non-compressible'` + `thrombosis: 'acute'`, this
+ * function reads them and returns `'occluded'`.
  */
 export function deriveCompetency(
-  segment: VenousLESegmentBase,
+  _segment: VenousLESegmentBase,
   finding: VenousSegmentFinding | undefined
 ): Competency {
   if (!finding) return 'normal';
-
-  // Manual override wins over all auto-derivation rules.
-  if (finding.competencyOverride !== undefined) {
-    return finding.competencyOverride;
-  }
-
-  if (finding.thrombosis === 'acute' || finding.thrombosis === 'chronic') {
-    return 'incompetent';
-  }
-
+  if (finding.competencyOverride) return finding.competencyOverride;
+  // Occlusion — thrombus (acute or chronic) or a non-compressible vein.
+  if (finding.thrombosis === 'acute' || finding.thrombosis === 'chronic') return 'occluded';
+  if (finding.compressibility === 'non-compressible' || finding.compressibility === 'partial') return 'occluded';
+  // Reflux — duration >500 ms is a conservative pan-segment cutoff
+  // (deep ≥1000 ms, superficial ≥500 ms in current ACUG guidance; we
+  // use 500 here so a single threshold catches both).
+  if ((finding.refluxDurationMs ?? 0) > 500) return 'incompetent';
+  // Inconclusive markers — any clinical field explicitly flagged
+  // "inconclusive" / "indeterminate" means the segment couldn't be
+  // assessed cleanly.
   if (
-    finding.compressibility === 'non-compressible' ||
-    finding.compressibility === 'partial'
-  ) {
-    return 'incompetent';
-  }
-
-  if (hasPathologicalReflux(segment, finding)) {
-    return 'incompetent';
-  }
-
-  if (finding.compressibility === 'inconclusive') {
-    return 'inconclusive';
-  }
-
+    finding.compressibility === 'inconclusive' ||
+    finding.phasicity === 'inconclusive' ||
+    finding.thrombosis === 'indeterminate'
+  ) return 'inconclusive';
   return 'normal';
 }

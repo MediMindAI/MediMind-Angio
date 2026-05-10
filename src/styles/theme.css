@@ -114,11 +114,13 @@
   --emr-info-alpha-15: rgba(49, 130, 206, 0.15);
 
   /* ==================== COMPETENCY COLORS (angiology) ==================== */
-  /* Used in anatomical diagram overlay — matches Corestudycast convention */
-  --emr-competency-normal: #1f2937;        /* solid black */
-  --emr-competency-ablated: #ffffff;       /* hollow — white fill */
-  --emr-competency-incompetent: #e53e3e;   /* red */
-  --emr-competency-inconclusive: #9ca3af;  /* gray */
+  /* 5-state clinical palette — kept in sync with COMPETENCY_COLORS in
+     src/constants/theme-colors.ts. */
+  --emr-competency-normal: #0ea5e9;        /* sky-500 — patent */
+  --emr-competency-occluded: #dc2626;      /* red-600 — thrombus */
+  --emr-competency-incompetent: #f59e0b;   /* amber-500 — reflux */
+  --emr-competency-inconclusive: #9ca3af;  /* gray-400 — insufficient data */
+  --emr-competency-ablated: #16a34a;       /* green-600 — post-procedural */
 
   /* ==================== BORDERS ==================== */
   --emr-border-color: #e5e7eb;

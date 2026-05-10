@@ -45,16 +45,15 @@ import type { EncounterDraft } from '../src/types/encounter';
 
 const findings: Partial<Record<VenousLEFullSegmentId, VenousSegmentFinding>> = {
   // Normal deep
-  'cfv-right': { compressibility: 'normal', spontaneity: 'normal', phasicity: 'normal', augmentation: 'normal', apDiameterMm: 10.2 },
-  'fv-prox-right': { compressibility: 'normal', spontaneity: 'normal', phasicity: 'normal', augmentation: 'normal' },
-  'pop-ak-right': { compressibility: 'normal', spontaneity: 'normal', phasicity: 'normal', augmentation: 'normal' },
+  'cfv-right': { compressibility: 'normal', phasicity: 'respirophasic', apDiameterMm: 10.2 },
+  'fv-prox-right': { compressibility: 'normal', phasicity: 'respirophasic' },
+  'pop-ak-right': { compressibility: 'normal', phasicity: 'respirophasic' },
 
   // Pathological reflux — superficial GSV
-  'gsv-ak-right': {
+  'gsv-prox-thigh-right': {
     compressibility: 'normal',
     refluxDurationMs: 1800,
     apDiameterMm: 7.4,
-    transDiameterMm: 6.8,
     depthMm: 8.2,
   },
 

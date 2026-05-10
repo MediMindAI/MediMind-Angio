@@ -571,6 +571,19 @@
   box-shadow: 0 6px 18px -8px var(--emr-secondary-alpha-30);
 }
 
+.studyCardComingSoon {
+  cursor: not-allowed;
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.studyCardComingSoon:hover {
+  border-color: var(--emr-border-color);
+  background: var(--emr-bg-card);
+  transform: none;
+  box-shadow: none;
+}
+
 .studyCardSelected:hover {
   border-color: var(--emr-secondary);
   background: linear-gradient(

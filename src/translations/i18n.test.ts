@@ -73,7 +73,8 @@ describe('i18n parity (core namespace)', () => {
     expect(en).toContain('versionFooter.buildPrefix');
     // Spot-check a few anatomy-segment + side keys (full sweep is parity above).
     expect(en).toContain('anatomy.segment.cfv');
-    expect(en).toContain('anatomy.segment.gsv_ak');
+    expect(en).toContain('anatomy.segment.gsv_prox_thigh');
+    expect(en).toContain('anatomy.segment.gsv_calf');
     expect(en).toContain('anatomy.segment.avf_inflow');
     expect(en).toContain('anatomy.side.left');
     expect(en).toContain('anatomy.side.bilateral');

@@ -22,8 +22,16 @@
 
       See audit-findings/angio-production-audit-2026-04-25.md Part 09 #2.
     -->
+    <!--
+      @react-pdf/renderer requirements:
+      - `connect-src` needs `data:` for the WASM data-URL + `blob:` for inline asset fetches.
+      - `worker-src` needs `blob:` because the PDF renderer creates a worker
+        from an in-memory blob URL. Without an explicit worker-src,
+        browsers fall back to script-src, which here is `'self' 'wasm-unsafe-eval'`
+        and excludes blob: — so PDF generation silently fails.
+    -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" />
+          content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

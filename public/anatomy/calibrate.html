@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Anatomy Path Calibration</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --border: #e2e8f0;
+    --accent: #0ea5e9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: #0f172a; }
+  header { padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .help { font-size: 12px; color: #64748b; }
+  main { display: grid; grid-template-columns: 1fr 280px; gap: 16px; padding: 16px; }
+  #stage { position: relative; width: 600px; height: 1453px; max-width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: white; }
+  #stage > img, #stage > svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  #stage > svg { z-index: 2; touch-action: none; cursor: crosshair; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; height: fit-content; position: sticky; top: 70px; max-height: calc(100vh - 90px); overflow-y: auto; }
+  select, button { font: inherit; padding: 6px 10px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; }
+  button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.danger { background: #ef4444; color: white; border-color: #ef4444; }
+  button:hover { filter: brightness(0.95); }
+  .vein-list { display: flex; flex-direction: column; gap: 2px; }
+  .vein-list label { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .vein-list label:hover { background: #f1f5f9; }
+  .vein-list label.active { background: #dbeafe; font-weight: 600; }
+  .vein-list label.has-trace::after { content: '✓'; color: #16a34a; margin-left: auto; font-weight: bold; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .row { display: flex; gap: 6px; }
+  .row > * { flex: 1; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+  details { font-size: 12px; }
+  details code { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; }
+  textarea { width: 100%; height: 200px; font-family: monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Anatomy SVG Path Calibration</h1>
+  <span class="help">Pick a vein → drag-draw on the image → repeat → click <b>Export</b> → paste into Claude.</span>
+</header>
+<main>
+  <div id="stage">
+    <img id="bg" alt="" />
+    <svg id="overlay" viewBox="0 0 600 1453" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <aside class="panel">
+    <label style="font-size:13px;display:flex;flex-direction:column;gap:4px;">
+      Stroke thickness
+      <span style="display:flex;align-items:center;gap:8px;">
+        <input id="thickness" type="range" min="2" max="24" step="1" value="10" style="flex:1;"/>
+        <span id="thickness-val" style="font-variant-numeric:tabular-nums;width:24px;text-align:right;">10</span>
+      </span>
+    </label>
+
+    <label style="font-size:13px;display:flex;flex-direction:column;gap:4px;">
+      Smoothing tolerance
+      <span style="display:flex;align-items:center;gap:8px;">
+        <input id="smoothing" type="range" min="0" max="6" step="0.5" value="1.5" style="flex:1;"/>
+        <span id="smoothing-val" style="font-variant-numeric:tabular-nums;width:30px;text-align:right;">1.5</span>
+      </span>
+    </label>
+
+    <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+      <input id="show-others" type="checkbox" checked /> Show other veins faintly
+    </label>
+
+    <div class="row">
+      <button id="undo">Undo last stroke</button>
+      <button id="clear-current" class="danger">Clear current vein</button>
+    </div>
+
+    <hr/>
+
+    <div class="vein-list" id="vein-list"></div>
+
+    <hr/>
+
+    <button id="export" class="primary">Export Calibration JSON</button>
+    <button id="copy-clip">Copy JSON to clipboard</button>
+    <button id="reset-all" class="danger">Reset all</button>
+
+    <details>
+      <summary>How this works</summary>
+      <p>Each vein you draw gets converted to an SVG <code>&lt;path d="…"&gt;</code> string in the 600×1453 viewBox of <code>le-anterior.svg</code> / <code>le-posterior.svg</code>. The exported JSON is fed into <code>scripts/apply-calibration-json.mjs</code> which rewrites the path coords in those SVG files.</p>
+      <p>Drag-drawing produces a polyline (<code>M x,y L … L …</code>). Hold <b>Shift</b> while drawing for a smoothed curve.</p>
+    </details>
+  </aside>
+</main>
+
+<script>
+  // Major-vessel calibration list — abbreviations match the duplex worksheet
+  // labels printed on le-reference.png. Each top-level id below is what you
+  // trace ONCE; the apply script splits long traces (FV, GSV, POP) into the
+  // SVG's sub-segments by Y position.
+  const VEINS = [
+    { id: 'CFV-right',     color: '#dc2626' },
+    { id: 'CFV-left',      color: '#dc2626' },
+    { id: 'SFJ-right',     color: '#ea580c' },
+    { id: 'SFJ-left',      color: '#ea580c' },
+    { id: 'PFV-right',     color: '#d97706' },
+    { id: 'PFV-left',      color: '#d97706' },
+    { id: 'FV-right',      color: '#65a30d' },
+    { id: 'FV-left',       color: '#65a30d' },
+    { id: 'GSV-right',     color: '#0d9488' },
+    { id: 'GSV-left',      color: '#0d9488' },
+    { id: 'POP-right',     color: '#2563eb' },
+    { id: 'POP-left',      color: '#2563eb' },
+    { id: 'Tibial-right',  color: '#7c3aed' },
+    { id: 'Tibial-left',   color: '#7c3aed' },
+    { id: 'SSV-right',     color: '#c026d3' },
+    { id: 'SSV-left',      color: '#c026d3' },
+  ];
+  const VEIN_IDS = VEINS.map((v) => v.id);
+
+  // State: traces[veinId] = [[x, y], [x, y], ...]
+  const STORAGE_KEY = 'anatomy-calibration-v2';
+  const traces = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  // strokeLens[veinId] = [pointsInStroke1, pointsInStroke2, …]  — used so
+  // "Undo last stroke" can pop the most recent stroke off the polyline.
+  const strokeLens = JSON.parse(localStorage.getItem(STORAGE_KEY + '-strokes') || '{}');
+
+  let currentVein = VEIN_IDS[0];
+  let drawing = false;
+  let activePts = [];
+  let thickness = 10;        // current-vein stroke width (viewBox units)
+  let smoothing = 1.5;       // RDP tolerance
+  let showOthers = true;     // render other already-traced veins faintly
+  const stage = document.getElementById('stage');
+  const bg = document.getElementById('bg');
+  const svg = document.getElementById('overlay');
+  const veinListEl = document.getElementById('vein-list');
+  const thicknessEl = document.getElementById('thickness');
+  const thicknessValEl = document.getElementById('thickness-val');
+  const smoothingEl = document.getElementById('smoothing');
+  const smoothingValEl = document.getElementById('smoothing-val');
+  const showOthersEl = document.getElementById('show-others');
+
+  bg.src = 'le-reference.png';
+
+  function veinColor(id) {
+    return (VEINS.find((v) => v.id === id) ?? { color: '#64748b' }).color;
+  }
+
+  function pointsToD(pts) {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0][0]},${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) d += ` L ${pts[i][0]},${pts[i][1]}`;
+    return d;
+  }
+
+  // Ramer-Douglas-Peucker simplification for cleaner output paths.
+  function rdp(pts, tol = 1.5) {
+    if (pts.length < 3) return pts.slice();
+    const [a, b] = [pts[0], pts[pts.length - 1]];
+    let maxD = 0, idx = 0;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const d = perpDist(pts[i], a, b);
+      if (d > maxD) { maxD = d; idx = i; }
+    }
+    if (maxD > tol) {
+      return rdp(pts.slice(0, idx + 1), tol).slice(0, -1).concat(rdp(pts.slice(idx), tol));
+    }
+    return [a, b];
+  }
+  function perpDist(p, a, b) {
+    const [x, y] = p, [x1, y1] = a, [x2, y2] = b;
+    const num = Math.abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1);
+    const den = Math.hypot(y2 - y1, x2 - x1) || 1;
+    return num / den;
+  }
+
+  function render() {
+    // Wipe
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    for (const [id, pts] of Object.entries(traces)) {
+      if (!pts || pts.length < 2) continue;
+      const isActive = id === currentVein;
+      if (!isActive && !showOthers) continue;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', pointsToD(pts));
+      path.setAttribute('stroke', veinColor(id));
+      // Active vein: full thickness. Other veins: 60% thickness, more transparent.
+      path.setAttribute('stroke-width', String(isActive ? thickness : Math.max(2, thickness * 0.6)));
+      path.setAttribute('fill', 'none');
+      path.setAttribute('opacity', isActive ? '1' : '0.35');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+    }
+    // Active in-progress stroke (above committed)
+    if (activePts.length > 1) {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', pointsToD(activePts));
+      path.setAttribute('stroke', veinColor(currentVein));
+      path.setAttribute('stroke-width', String(thickness));
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('opacity', '0.9');
+      svg.appendChild(path);
+    }
+    renderVeinList();
+  }
+
+  function renderVeinList() {
+    veinListEl.innerHTML = VEIN_IDS.map((id) => {
+      const has = traces[id]?.length >= 2;
+      const cls = `${id === currentVein ? 'active ' : ''}${has ? 'has-trace' : ''}`.trim();
+      return `<label class="${cls}" data-id="${id}"><span class="swatch" style="background:${veinColor(id)}"></span>${id}</label>`;
+    }).join('');
+    veinListEl.querySelectorAll('label').forEach((el) => {
+      el.onclick = () => { currentVein = el.dataset.id; render(); };
+    });
+  }
+
+  function svgPointFromEvent(ev) {
+    const pt = svg.createSVGPoint();
+    pt.x = ev.clientX; pt.y = ev.clientY;
+    const m = svg.getScreenCTM();
+    if (!m) return [0, 0];
+    const t = pt.matrixTransform(m.inverse());
+    return [Math.round(t.x), Math.round(t.y)];
+  }
+
+  svg.addEventListener('pointerdown', (ev) => {
+    drawing = true;
+    activePts = [svgPointFromEvent(ev)];
+    svg.setPointerCapture(ev.pointerId);
+    render();
+  });
+  svg.addEventListener('pointermove', (ev) => {
+    if (!drawing) return;
+    const p = svgPointFromEvent(ev);
+    const last = activePts[activePts.length - 1];
+    if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < 2) return;
+    activePts.push(p);
+    render();
+  });
+  svg.addEventListener('pointerup', (ev) => {
+    if (!drawing) return;
+    drawing = false;
+    svg.releasePointerCapture(ev.pointerId);
+    if (activePts.length >= 2) {
+      const simplified = rdp(activePts, smoothing);
+      // Append to the existing trace so multiple pen strokes build one
+      // continuous line. Drop the duplicate join point if the new stroke
+      // starts very close to where the last one ended.
+      const existing = traces[currentVein] ?? [];
+      let added = simplified;
+      if (existing.length >= 1 && simplified.length >= 1) {
+        const a = existing[existing.length - 1];
+        const b = simplified[0];
+        if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 4) added = simplified.slice(1);
+      }
+      traces[currentVein] = existing.concat(added);
+      strokeLens[currentVein] = (strokeLens[currentVein] ?? []).concat(added.length);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(traces));
+      localStorage.setItem(STORAGE_KEY + '-strokes', JSON.stringify(strokeLens));
+    }
+    activePts = [];
+    render();
+  });
+  svg.addEventListener('pointercancel', () => { drawing = false; activePts = []; render(); });
+
+  function persist() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(traces));
+    localStorage.setItem(STORAGE_KEY + '-strokes', JSON.stringify(strokeLens));
+  }
+
+  document.getElementById('undo').onclick = () => {
+    const lens = strokeLens[currentVein] ?? [];
+    if (!lens.length) return;
+    const lastLen = lens.pop();
+    strokeLens[currentVein] = lens;
+    traces[currentVein] = (traces[currentVein] ?? []).slice(0, -lastLen);
+    if ((traces[currentVein]?.length ?? 0) < 2) {
+      delete traces[currentVein];
+      delete strokeLens[currentVein];
+    }
+    persist(); render();
+  };
+  document.getElementById('clear-current').onclick = () => {
+    delete traces[currentVein]; delete strokeLens[currentVein];
+    persist(); render();
+  };
+  document.getElementById('reset-all').onclick = () => {
+    if (!confirm('Erase ALL traces?')) return;
+    for (const k of Object.keys(traces)) delete traces[k];
+    for (const k of Object.keys(strokeLens)) delete strokeLens[k];
+    persist(); render();
+  };
+
+  function buildJson() {
+    // Flat shape: { "CFV-right": [[x,y],…], "GSV-right": [[x,y],…] }.
+    // Geometry is preserved as point arrays so the server-side splitter
+    // can divide long traces (FV, GSV, POP) into their SVG sub-segments.
+    const out = {};
+    for (const [id, pts] of Object.entries(traces)) {
+      if (pts && pts.length >= 2) out[id] = pts;
+    }
+    return out;
+  }
+
+  document.getElementById('export').onclick = () => {
+    const json = JSON.stringify(buildJson(), null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'anatomy-calibration.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById('copy-clip').onclick = async () => {
+    const json = JSON.stringify(buildJson(), null, 2);
+    await navigator.clipboard.writeText(json);
+    alert('Calibration JSON copied to clipboard.');
+  };
+
+  thicknessEl.addEventListener('input', () => {
+    thickness = +thicknessEl.value;
+    thicknessValEl.textContent = thickness;
+    render();
+  });
+  smoothingEl.addEventListener('input', () => {
+    smoothing = +smoothingEl.value;
+    smoothingValEl.textContent = smoothing.toFixed(1);
+  });
+  showOthersEl.addEventListener('change', () => {
+    showOthers = showOthersEl.checked;
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
