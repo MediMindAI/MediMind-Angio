@@ -92,22 +92,28 @@ export const GRADIENTS = {
 
 /**
  * Colors for vein segment competency overlay on anatomical diagrams.
- * Clinical 5-state palette (production):
- *   - Normal       → sky-blue   (patent, evaluated)
- *   - Occluded     → red        (thrombus / non-compressible vein)
- *   - Incompetent  → amber      (reflux)
- *   - Inconclusive → gray       (insufficient data)
- *   - Ablated      → green      (post-procedural)
+ * Clinical-symbology 5-state palette (production):
+ *   - Normal       → slate grey   (visible "evaluated, no abnormality" baseline)
+ *   - Occluded     → black        (vessel closed off — thrombus / non-compressible)
+ *   - Incompetent  → red          (reflux — active disease, alarm color)
+ *   - Inconclusive → grey stripes (insufficient data — pattern, not solid: see AnatomyView)
+ *   - Ablated      → green        (post-procedural)
  *
  * `fill` is the solid swatch color used for segment-table dropdowns,
  * legends, and PDF. `stroke` is the outline. `overlay` is the translucent
  * variant used to paint segment overlays on top of the printed PNG
  * anatomy (see `overlayStrokeFor` in AnatomyView.tsx).
+ *
+ * Inconclusive renders as solid grey for the swatch + dropdown, but is
+ * promoted to a diagonal grey-stripe pattern in the anatomy SVG fills
+ * and a dashed stroke in overlay mode (see colorizeSvg in AnatomyView).
+ * The slate-tone of "normal" keeps it distinct from the neutral-grey
+ * inconclusive even at small swatch sizes.
  */
 export const COMPETENCY_COLORS = {
-  normal:       { fill: '#0ea5e9', stroke: '#0369a1', overlay: 'rgba(14, 165, 233, 0.65)' },
-  occluded:     { fill: '#dc2626', stroke: '#991b1b', overlay: 'rgba(220, 38, 38, 0.70)' },
-  incompetent:  { fill: '#f59e0b', stroke: '#b45309', overlay: 'rgba(245, 158, 11, 0.70)' },
+  normal:       { fill: '#94a3b8', stroke: '#475569', overlay: 'rgba(148, 163, 184, 0.85)' },
+  occluded:     { fill: '#000000', stroke: '#000000', overlay: 'rgba(0, 0, 0, 0.78)' },
+  incompetent:  { fill: '#dc2626', stroke: '#991b1b', overlay: 'rgba(220, 38, 38, 0.72)' },
   inconclusive: { fill: '#9ca3af', stroke: '#4b5563', overlay: 'rgba(156, 163, 175, 0.60)' },
   ablated:      { fill: '#16a34a', stroke: '#166534', overlay: 'rgba(22, 163, 74, 0.60)' },
 } as const;

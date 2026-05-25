@@ -7,7 +7,7 @@
  * async data must be resolved into props before mounting the Document.
  */
 import type { ReactElement } from 'react';
-import { View, Text, Svg, Path, Image, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Svg, Path, Image, Line, Rect, StyleSheet } from '@react-pdf/renderer';
 import type { AnatomyToPdfResult } from '../anatomyToPdfSvg';
 import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 import { COMPETENCY_COLORS } from '../../../constants/theme-colors';
@@ -130,6 +130,7 @@ function renderAnatomy(
             strokeWidth={el.strokeWidth}
             strokeLinecap="round"
             strokeLinejoin="round"
+            {...(el.strokeDasharray ? { strokeDasharray: el.strokeDasharray } : {})}
           />
         ))}
       </Svg>
@@ -185,17 +186,45 @@ export function DiagramSection({
       <View style={styles.legendRow}>
         {competencies.map((c) => {
           const { fill, stroke } = COMPETENCY_COLORS[c];
+          // Inconclusive renders as diagonal grey/white stripes to match
+          // the anatomy fill pattern (web uses an SVG <pattern>; PDF lacks
+          // <Pattern> in @react-pdf v4, so emit a tiny <Svg> with three
+          // diagonal lines instead).
+          const isInconclusive = c === 'inconclusive';
           return (
             <View key={c} style={styles.legendItem}>
-              <View
-                style={{
-                  ...styles.legendSwatch,
-                  backgroundColor: fill,
-                  borderWidth: 1,
-                  borderColor: stroke,
-                  borderStyle: 'solid',
-                }}
-              />
+              {isInconclusive ? (
+                <Svg
+                  width={10}
+                  height={10}
+                  viewBox="0 0 10 10"
+                  style={{ ...styles.legendSwatch, marginRight: 4 }}
+                >
+                  <Rect x={0} y={0} width={10} height={10} fill="#ffffff" />
+                  <Line x1={-2} y1={4} x2={4} y2={-2} stroke="#9ca3af" strokeWidth={1.5} />
+                  <Line x1={-2} y1={9} x2={9} y2={-2} stroke="#9ca3af" strokeWidth={1.5} />
+                  <Line x1={3} y1={12} x2={12} y2={3} stroke="#9ca3af" strokeWidth={1.5} />
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={10}
+                    height={10}
+                    fill="none"
+                    stroke={stroke}
+                    strokeWidth={0.75}
+                  />
+                </Svg>
+              ) : (
+                <View
+                  style={{
+                    ...styles.legendSwatch,
+                    backgroundColor: fill,
+                    borderWidth: 1,
+                    borderColor: stroke,
+                    borderStyle: 'solid',
+                  }}
+                />
+              )}
               <Text style={styles.legendText}>{labels.legend[c]}</Text>
             </View>
           );

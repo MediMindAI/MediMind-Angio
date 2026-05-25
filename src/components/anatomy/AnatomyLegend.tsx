@@ -36,10 +36,20 @@ export function AnatomyLegend({
 
   const items = COMPETENCIES.map((competency) => {
     const { fill, stroke } = colors[competency];
+    // Inconclusive: render swatch as diagonal grey/white stripes to match
+    // the anatomy fill pattern. The legend has to teach the same code as
+    // the diagram, so the swatch must look like the segment.
+    const isInconclusive = competency === 'inconclusive';
     const swatchStyle: CSSProperties = {
       width: '14px',
       height: '14px',
-      backgroundColor: fill,
+      backgroundColor: isInconclusive ? '#ffffff' : fill,
+      ...(isInconclusive
+        ? {
+            backgroundImage:
+              'repeating-linear-gradient(45deg, #9ca3af 0 2px, #ffffff 2px 4px)',
+          }
+        : {}),
       border: `1.5px solid ${stroke}`,
       borderRadius: '2px',
       flexShrink: 0,

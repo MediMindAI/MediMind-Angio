@@ -41,6 +41,12 @@ export interface PdfSvgElement {
   readonly fill: string;
   readonly stroke: string;
   readonly strokeWidth: number;
+  /**
+   * Optional dash pattern for the stroke. Used to render `inconclusive`
+   * segments as dashed (the PDF substitute for the web's diagonal-stripe
+   * fill pattern — `@react-pdf/renderer` v4 doesn't expose `<Pattern>`).
+   */
+  readonly strokeDasharray?: string;
 }
 
 export interface AnatomyToPdfResult {
@@ -276,6 +282,11 @@ export async function loadAnatomyForPdf(
       const { competency, fill, stroke } = competencyFn
         ? { competency: 'normal' as Competency, ...competencyFn(p.id) }
         : colorsForSegment(p.id, findings);
+      // Inconclusive segments get a dashed treatment — the PDF substitute
+      // for the web's diagonal-stripe pattern. Same competency state in
+      // both renderers, just different visual encoding (PDF doesn't have
+      // <Pattern> in @react-pdf/renderer v4).
+      const isInconclusive = !competencyFn && competency === 'inconclusive';
       if (overlay) {
         // In overlay mode, skip segments without findings — the backdrop reads through.
         const split = competencyFn ? null : splitSegmentId(p.id);
@@ -290,9 +301,8 @@ export async function loadAnatomyForPdf(
           fill: 'transparent',
           stroke: toTranslucent(stroke, 0.55),
           strokeWidth: segmentStrokeWidth,
+          ...(isInconclusive ? { strokeDasharray: '8 5' } : {}),
         });
-        // Suppress unused-var warning when not in overlay mode.
-        void competency;
       } else {
         elements.push({
           kind: 'segment',
@@ -301,6 +311,7 @@ export async function loadAnatomyForPdf(
           fill,
           stroke,
           strokeWidth: segmentStrokeWidth,
+          ...(isInconclusive ? { strokeDasharray: '4 3' } : {}),
         });
       }
     } else {

@@ -1,9 +1,11 @@
-// Verify the new 5-state competency palette by seeding different
-// states and screenshotting each result.
-//   1. All normal     → expect every overlay to be sky-blue.
-//   2. Acute DVT      → CFV/FV/POP on right leg should be red (occluded).
-//   3. GSV reflux     → GSV chain on right should be amber (incompetent).
-//   4. Inconclusive   → marked segment renders gray.
+// Verify the clinical-symbology 5-state competency palette by seeding
+// different states and screenshotting each result.
+//   1. All normal     → every overlay renders white (segments are visible
+//                       only by their slate-grey outline against the backdrop).
+//   2. Acute DVT      → CFV/FV/POP on right leg should be BLACK (occluded).
+//   3. GSV reflux     → GSV chain bilateral should be RED (incompetent / reflux).
+//   4. Inconclusive   → marked segment renders as a GREY DASHED stroke
+//                       (overlay mode) or GREY DIAGONAL STRIPES (fill mode).
 //
 // Run:  node e2e/verify-colors.mjs
 import { chromium } from 'playwright';

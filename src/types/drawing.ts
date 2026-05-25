@@ -27,8 +27,9 @@ export type DrawingMode = 'click' | 'draw' | 'edit-segment';
 export type DrawingTool = 'pen' | 'eraser';
 
 /**
- * Pen palette is the same clinical 5-state palette as the anatomy
- * overlays. A red pen and a template-coloured "occluded" segment match.
+ * Pen palette mirrors the clinical 5-state anatomy palette so a red pen
+ * and a "reflux" segment, or a black pen and an "occluded" segment, read
+ * as the same idea on screen.
  */
 export const DRAWING_COLORS = ['normal', 'occluded', 'incompetent', 'inconclusive'] as const;
 export type DrawingColor = (typeof DRAWING_COLORS)[number];
