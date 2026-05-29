@@ -20,7 +20,7 @@ import { HeaderSection, PreliminaryWatermark } from './sections/HeaderSection';
 import { PatientBlock } from './sections/PatientBlock';
 import type { PatientBlockLabels } from './sections/PatientBlock';
 import { DiagramSection } from './sections/DiagramSection';
-import type { DiagramSectionLabels } from './sections/DiagramSection';
+import type { DiagramSectionLabels, DiagramLegendItem } from './sections/DiagramSection';
 import { FindingsTable } from './sections/FindingsTable';
 import type { FindingsTableLabels } from './sections/FindingsTable';
 import { ArterialFindingsTable } from './sections/ArterialFindingsTable';
@@ -51,6 +51,7 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../studies/carotid/config';
+import { suggestNascetCategory } from '../studies/carotid/stenosisCalculator';
 
 // ---------------------------------------------------------------------------
 // Label bundle — every user-facing string the PDF needs.
@@ -67,6 +68,8 @@ export interface ReportLabels {
   readonly arterialFindings: ArterialFindingsTableLabels;
   readonly pressures: SegmentalPressureTableLabels;
   readonly carotidFindings: CarotidFindingsTableLabels;
+  /** 5-band severity legend for the carotid neck diagram. */
+  readonly carotidLegend: ReadonlyArray<DiagramLegendItem>;
   readonly nascet: NASCETSummaryLabels;
   readonly narrative: NarrativeSectionLabels;
   readonly ceap: CEAPSectionLabels;
@@ -193,12 +196,21 @@ function deriveCarotidFindings(form: FormState): CarotidFindings {
   return raw as unknown as CarotidFindings;
 }
 
-/** Carotid form stashes NASCET per side on `parameters.nascet`. */
+/**
+ * Carotid form stashes NASCET per side on `parameters.nascet`. A manual pick
+ * wins; when a side is blank we auto-classify from SRU velocity criteria so
+ * the printed NASCET block follows the entered velocities (a normal study no
+ * longer prints "< 50 %", and pathological speeds can't read as normal).
+ */
 function deriveCarotidNascet(form: FormState): CarotidNascetClassification {
   if (form.studyType !== 'carotid') return {};
   const raw = form.parameters['nascet'];
-  if (!raw || typeof raw !== 'object') return {};
-  return raw as unknown as CarotidNascetClassification;
+  const manual = (raw && typeof raw === 'object' ? raw : {}) as CarotidNascetClassification;
+  const findings = deriveCarotidFindings(form);
+  return {
+    right: manual.right ?? suggestNascetCategory(findings, 'right'),
+    left: manual.left ?? suggestNascetCategory(findings, 'left'),
+  };
 }
 
 // formatDate / formatDateTime helpers were inlined here previously; both
@@ -387,6 +399,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
                 anterior={anatomy?.anterior ?? null}
                 posterior={null}
                 labels={labels.diagram}
+                legendItems={labels.carotidLegend}
                 viewWidthPt={260}
               />
             </View>

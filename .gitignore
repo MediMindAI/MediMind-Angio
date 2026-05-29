@@ -47,3 +47,9 @@ audit-findings/
 
 # Claude Code local config (per-user; not project state)
 .claude/
+
+# Gemini API key for anatomy image generation (local only)
+scripts/.gemini-key
+
+# Playwright debug screenshots (local scratch output)
+screenshots/

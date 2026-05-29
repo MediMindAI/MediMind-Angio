@@ -12,11 +12,27 @@ import type { Competency } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { useAnatomyColors } from './useAnatomyColors';
 
+/** One legend entry. `pattern` renders the diagonal grey/white stripe swatch. */
+export interface AnatomyLegendItem {
+  readonly key: string;
+  readonly label: string;
+  readonly fill: string;
+  readonly stroke: string;
+  readonly pattern?: boolean;
+}
+
 export interface AnatomyLegendProps {
   /** Prefer horizontal layout (default: true). */
   horizontal?: boolean;
   /** Additional CSS class. */
   className?: string;
+  /**
+   * Custom legend entries (e.g. carotid severity bands). When omitted, the
+   * default venous competency legend is rendered.
+   */
+  items?: ReadonlyArray<AnatomyLegendItem>;
+  /** Overrides the default aria-label. */
+  ariaLabel?: string;
 }
 
 const COMPETENCIES: readonly Competency[] = [
@@ -30,33 +46,42 @@ const COMPETENCIES: readonly Competency[] = [
 export function AnatomyLegend({
   horizontal = true,
   className,
+  items: customItems,
+  ariaLabel,
 }: AnatomyLegendProps): React.ReactElement {
   const { t } = useTranslation();
   const colors = useAnatomyColors();
 
-  const items = COMPETENCIES.map((competency) => {
-    const { fill, stroke } = colors[competency];
-    // Inconclusive: render swatch as diagonal grey/white stripes to match
-    // the anatomy fill pattern. The legend has to teach the same code as
-    // the diagram, so the swatch must look like the segment.
-    const isInconclusive = competency === 'inconclusive';
+  // Default (venous) legend, or caller-supplied entries (e.g. carotid severity).
+  const entries: ReadonlyArray<AnatomyLegendItem> =
+    customItems ??
+    COMPETENCIES.map((competency) => ({
+      key: competency,
+      label: t(`competency.${competency}`, competency),
+      fill: colors[competency].fill,
+      stroke: colors[competency].stroke,
+      // Inconclusive renders as stripes to match the anatomy fill pattern.
+      pattern: competency === 'inconclusive',
+    }));
+
+  const items = entries.map((entry) => {
     const swatchStyle: CSSProperties = {
       width: '14px',
       height: '14px',
-      backgroundColor: isInconclusive ? '#ffffff' : fill,
-      ...(isInconclusive
+      backgroundColor: entry.pattern ? '#ffffff' : entry.fill,
+      ...(entry.pattern
         ? {
             backgroundImage:
               'repeating-linear-gradient(45deg, #9ca3af 0 2px, #ffffff 2px 4px)',
           }
         : {}),
-      border: `1.5px solid ${stroke}`,
+      border: `1.5px solid ${entry.stroke}`,
       borderRadius: '2px',
       flexShrink: 0,
       display: 'inline-block',
     };
     return (
-      <Group key={competency} gap={6} wrap="nowrap" align="center">
+      <Group key={entry.key} gap={6} wrap="nowrap" align="center">
         <span aria-hidden="true" style={swatchStyle} />
         <Text
           style={{
@@ -66,34 +91,24 @@ export function AnatomyLegend({
             flexShrink: 0,
           }}
         >
-          {t(`competency.${competency}`, competency)}
+          {entry.label}
         </Text>
       </Group>
     );
   });
 
+  const label = ariaLabel ?? t('anatomy.legend.label', 'Competency legend');
+
   if (horizontal) {
     return (
-      <Group
-        gap="md"
-        wrap="wrap"
-        justify="center"
-        className={className}
-        role="list"
-        aria-label={t('anatomy.legend.label', 'Competency legend')}
-      >
+      <Group gap="md" wrap="wrap" justify="center" className={className} role="list" aria-label={label}>
         {items}
       </Group>
     );
   }
 
   return (
-    <Stack
-      gap="xs"
-      className={className}
-      role="list"
-      aria-label={t('anatomy.legend.label', 'Competency legend')}
-    >
+    <Stack gap="xs" className={className} role="list" aria-label={label}>
       {items}
     </Stack>
   );

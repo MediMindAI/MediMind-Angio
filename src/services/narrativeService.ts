@@ -26,6 +26,8 @@ import {
 } from '../components/studies/venous-le/narrativeGenerator';
 import { generateArterialNarrative } from '../components/studies/arterial-le/narrativeGenerator';
 import { generateCarotidNarrative } from '../components/studies/carotid/narrativeGenerator';
+import { suggestNascetCategory } from '../components/studies/carotid/stenosisCalculator';
+import type { CarotidNascetClassification } from '../components/studies/carotid/config';
 
 export { generateNarrative };
 export type { NarrativeOutput, NarrativeKeyEntry };
@@ -77,7 +79,16 @@ export function narrativeFromFormState(form: FormState): NarrativeOutput {
     const rawFindings = form.parameters['segmentFindings'];
     const rawNascet = form.parameters['nascet'];
     if (!isCarotidFindings(rawFindings)) return EMPTY_NARRATIVE;
-    const nascet = isCarotidNascet(rawNascet) ? rawNascet : {};
+    const manual = isCarotidNascet(rawNascet) ? rawNascet : {};
+    // The conclusion must follow the entered velocities, not just a manually
+    // picked category. A manual pick still wins (clinician override); when a
+    // side is left blank we auto-classify it from SRU velocity criteria so
+    // pathological speeds can't read as "normal" and a clean study isn't
+    // forced to "< 50 %".
+    const nascet: CarotidNascetClassification = {
+      right: manual.right ?? suggestNascetCategory(rawFindings, 'right'),
+      left: manual.left ?? suggestNascetCategory(rawFindings, 'left'),
+    };
     return generateCarotidNarrative(rawFindings, nascet);
   }
 

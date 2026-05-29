@@ -116,6 +116,7 @@ type AssetDeps = {
   isVenousForm: typeof import('../../types/form').isVenousForm;
   deriveArterialCompetency: typeof import('../studies/arterial-le/config').deriveArterialCompetency;
   deriveCarotidCompetency: typeof import('../studies/carotid/config').deriveCarotidCompetency;
+  carotidDiagramColor: typeof import('../studies/carotid/config').carotidDiagramColor;
   SEVERITY_COLORS: typeof import('../../constants/theme-colors').SEVERITY_COLORS;
 };
 
@@ -124,7 +125,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     { loadAnatomyForPdf },
     { isVenousForm },
     { deriveArterialCompetency },
-    { deriveCarotidCompetency },
+    { deriveCarotidCompetency, carotidDiagramColor },
     { SEVERITY_COLORS },
   ] = await Promise.all([
     import('../pdf/anatomyToPdfSvg'),
@@ -138,6 +139,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     isVenousForm,
     deriveArterialCompetency,
     deriveCarotidCompetency,
+    carotidDiagramColor,
     SEVERITY_COLORS,
   };
 }
@@ -161,6 +163,7 @@ async function resolveStudyAssets(
     isVenousForm,
     deriveArterialCompetency,
     deriveCarotidCompetency,
+    carotidDiagramColor,
     SEVERITY_COLORS,
   } = deps ?? (await loadAssetDeps());
 
@@ -206,7 +209,7 @@ async function resolveStudyAssets(
         carotidFindings[fullId as keyof typeof carotidFindings],
         nascetCat,
       );
-      return SEVERITY_COLORS[band];
+      return carotidDiagramColor(fullId, band);
     };
     const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn });
     anatomy = { anterior, posterior: null };

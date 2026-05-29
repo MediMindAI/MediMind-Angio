@@ -47,6 +47,17 @@ function ccaDistalPsv(findings: CarotidFindings, side: 'left' | 'right'): number
   return f?.psvCmS;
 }
 
+/** True when any vessel on this side carries plaque or a non-antegrade flow. */
+function anyDiseaseOnSide(findings: CarotidFindings, side: 'left' | 'right'): boolean {
+  for (const base of CAROTID_VESSELS) {
+    const f = findings[`${base}-${side}` as CarotidVesselFullId];
+    if (!f) continue;
+    if (f.plaquePresent) return true;
+    if (f.flowDirection === 'retrograde' || f.flowDirection === 'absent') return true;
+  }
+  return false;
+}
+
 /**
  * Auto-suggest a NASCET category for one side. `undefined` when inputs
  * are too sparse to classify.
@@ -82,7 +93,10 @@ export function suggestNascetCategory(
     return '50to69';
   }
 
-  return 'lt50';
+  // Sub-threshold velocity. Distinguish a truly normal vessel from mild
+  // (< 50 %) atherosclerosis: only call it < 50 % when plaque or a
+  // non-antegrade waveform is present, otherwise report it as normal.
+  return anyDiseaseOnSide(findings, side) ? 'lt50' : 'normal';
 }
 
 /** Compute the ICA/CCA ratio on one side. Returns `null` when not computable. */
@@ -99,6 +113,7 @@ export function icaCcaRatio(
 /** Human-friendly label for a NASCET category. */
 export function nascetCategoryFallback(cat: NascetCategory): string {
   switch (cat) {
+    case 'normal':         return 'Normal';
     case 'lt50':           return '< 50 %';
     case '50to69':         return '50–69 %';
     case 'ge70':           return '≥ 70 %';
@@ -112,6 +127,7 @@ export function nascetCategoryColorRole(
   cat: NascetCategory | undefined,
 ): 'success' | 'warning' | 'error' | 'neutral' {
   switch (cat) {
+    case 'normal':         return 'success';
     case 'lt50':           return 'success';
     case '50to69':         return 'warning';
     case 'ge70':

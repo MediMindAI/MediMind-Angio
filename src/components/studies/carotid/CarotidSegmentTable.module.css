@@ -52,10 +52,10 @@
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 220px 90px 90px 180px 120px 60px 90px;
+  grid-template-columns: 200px 84px 84px 84px 150px 130px 56px 84px;
   gap: 8px;
   align-items: center;
-  min-width: 992px;
+  min-width: 940px;
 }
 
 .headRow {
@@ -142,37 +142,6 @@
 .muted {
   color: var(--emr-text-tertiary);
   font-size: var(--emr-font-xs);
-}
-
-/* --- Steal-phase inline chips --- */
-.stealRow {
-  display: flex;
-  gap: 3px;
-  margin-top: 4px;
-}
-
-.stealChip {
-  width: 24px;
-  height: 22px;
-  padding: 0 4px;
-  font-size: var(--emr-font-2xs);
-  font-weight: var(--emr-font-semibold);
-  background: var(--emr-bg-input);
-  color: var(--emr-text-secondary);
-  border: 1px solid var(--emr-border-color);
-  border-radius: var(--emr-border-radius-sm);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.stealChip:hover {
-  background: var(--emr-bg-hover);
-}
-
-.stealChipSelected {
-  background: var(--emr-error);
-  color: var(--emr-text-white);
-  border-color: var(--emr-error);
 }
 
 @media (max-width: 992px) {

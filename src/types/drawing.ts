@@ -12,7 +12,19 @@
 
 import { COMPETENCY_COLORS } from '../constants/theme-colors';
 
-export type AnatomyViewKey = 'le-anterior' | 'le-posterior';
+export type AnatomyViewKey = 'le-anterior' | 'le-posterior' | 'neck-carotid';
+
+/**
+ * ViewBox pixel dimensions per anatomy view. The drawing-canvas overlay SVG
+ * must share the anatomy SVG's coordinate space so freehand strokes land
+ * where the cursor is. Venous LE is 600×1453; the carotid fillable-vector
+ * view (neck-carotid.svg) is 771×910.
+ */
+export const ANATOMY_VIEWBOX: Record<AnatomyViewKey, readonly [number, number]> = {
+  'le-anterior': [600, 1453],
+  'le-posterior': [600, 1453],
+  'neck-carotid': [771, 910],
+};
 
 /**
  * Drawing-toolbar mode.

@@ -42,7 +42,7 @@ export interface CarotidTemplate {
 // --- Helpers ---------------------------------------------------------------
 
 const VESSELS = [
-  'cca-prox', 'cca-mid', 'cca-dist', 'bulb',
+  'cca-prox', 'cca-mid', 'cca-dist',
   'ica-prox', 'ica-mid', 'ica-dist', 'eca',
   'vert-v1', 'vert-v2', 'vert-v3',
   'subclav-prox', 'subclav-dist',
@@ -76,7 +76,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     nameKey: 'carotid.templates.normalBilateral.name',
     nameFallback: 'Normal bilateral',
     descriptionKey: 'carotid.templates.normalBilateral.description',
-    descriptionFallback: 'All vessels normal, no plaque, NASCET <50% bilaterally.',
+    descriptionFallback: 'All vessels normal, no plaque, no stenosis bilaterally.',
     kind: 'normal',
     scope: 'bilateral',
     severity: 'routine',
@@ -86,7 +86,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 90, edvCmS: 30 },
       'ica-prox-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 90, edvCmS: 30 },
     }),
-    nascet: { right: 'lt50', left: 'lt50' },
+    nascet: { right: 'normal', left: 'normal' },
     impressionKey: 'carotid.templates.normalBilateral.impression',
     impressionFallback:
       'Normal bilateral carotid, vertebral, and subclavian duplex examination. Common and internal carotid arteries demonstrate normal peak systolic and end-diastolic velocities with triphasic antegrade flow and no atherosclerotic plaque. Vertebral arteries show normal antegrade flow bilaterally. No hemodynamic evidence of stenosis or occlusion.',
@@ -103,12 +103,10 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     scope: 'bilateral',
     severity: 'routine',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'bulb-right':     { ...CAROTID_NORMAL_FINDING, psvCmS: 90, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 10, plaqueSurface: 'smooth' },
-      'bulb-left':      { ...CAROTID_NORMAL_FINDING, psvCmS: 95, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 12, plaqueSurface: 'smooth' },
-      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 110, edvCmS: 35, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
-      'ica-prox-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 115, edvCmS: 38, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
-      'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 80 },
-      'cca-dist-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 82 },
+      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 110, edvCmS: 35, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
+      'ica-prox-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 115, edvCmS: 38, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
+      'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 80, imtMm: 0.9, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 10, plaqueSurface: 'smooth' },
+      'cca-dist-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 82, imtMm: 0.9, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 12, plaqueSurface: 'smooth' },
     }),
     nascet: { right: 'lt50', left: 'lt50' },
     impressionKey: 'carotid.templates.mildBilateralAtherosclerosis.impression',
@@ -127,7 +125,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     scope: 'left',
     severity: 'urgent',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 180, edvCmS: 55, plaquePresent: true, plaqueMorphology: 'soft', plaqueLengthMm: 18, plaqueSurface: 'smooth' },
+      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 180, edvCmS: 55, plaquePresent: true, plaqueMorphology: 'type1', plaqueLengthMm: 18, plaqueSurface: 'smooth' },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 72 },
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
@@ -157,7 +155,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     scope: 'left',
     severity: 'critical',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 310, edvCmS: 120, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 22, plaqueSurface: 'irregular', plaqueUlceration: true },
+      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 310, edvCmS: 120, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 22, plaqueSurface: 'irregular', plaqueUlceration: true },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 65 },
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
@@ -187,7 +185,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     scope: 'left',
     severity: 'critical',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'ica-prox-left': { flowDirection: 'absent', plaquePresent: true, plaqueMorphology: 'mixed' },
+      'ica-prox-left': { flowDirection: 'absent', plaquePresent: true, plaqueMorphology: 'type3' },
       'ica-mid-left':  { flowDirection: 'absent' },
       'ica-dist-left': { flowDirection: 'absent' },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 80 },
@@ -220,12 +218,11 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     severity: 'informational',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
       'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 110, edvCmS: 30 },
-      'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
-      'bulb-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 90, plaquePresent: true, plaqueMorphology: 'mixed', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
-      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 105, edvCmS: 32 },
-      'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
+      'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 85, imtMm: 0.7 },
+      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 105, edvCmS: 32, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
+      'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85, imtMm: 0.9 },
     }),
-    nascet: { right: 'lt50', left: 'lt50' },
+    nascet: { right: 'lt50', left: 'normal' },
     impressionKey: 'carotid.templates.postCeaLeft.impression',
     impressionFallback:
       'Status post left carotid endarterectomy. The left internal carotid artery demonstrates normal peak systolic and end-diastolic velocities with a smooth post-surgical lumen and minimal intimal thickening — no evidence of restenosis. Right carotid system shows mild atherosclerotic plaque without significant stenosis. Vertebrals patent bilaterally.',
@@ -255,7 +252,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
     }),
-    nascet: { right: 'lt50', left: 'lt50' },
+    nascet: { right: 'lt50', left: 'normal' },
     impressionKey: 'carotid.templates.postStentRightIca.impression',
     impressionFallback:
       'Status post right internal carotid artery stenting with patent in-stent flow. In-stent peak systolic velocity (160 cm/s) and ICA/CCA ratio (1.8) are within accepted post-stent thresholds — no evidence of in-stent restenosis. Edge velocities are normal. Left carotid system unremarkable.',
@@ -295,7 +292,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-right':    { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'ica-prox-left':     { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
     }),
-    nascet: { right: 'lt50', left: 'lt50' },
+    nascet: { right: 'normal', left: 'normal' },
     impressionKey: 'carotid.templates.subclavianStealLeft.impression',
     impressionFallback:
       'Left subclavian steal syndrome. Left subclavian artery, proximal segment, demonstrates dampened monophasic flow with focal velocity elevation (PSV 280 cm/s) consistent with proximal subclavian stenosis. The left vertebral artery shows complete retrograde flow (Phase III steal). Right carotid, vertebral, and subclavian systems are unremarkable. Bilateral carotid arteries are without hemodynamically significant stenosis.',

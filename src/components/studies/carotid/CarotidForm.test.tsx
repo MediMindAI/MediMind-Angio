@@ -168,8 +168,10 @@ describe('CarotidForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, () =
     renderForm(draft.encounterId);
 
     // The carotid-specific narrative textareas are stable test ids.
+    // Sonographer comments were removed per clinician request — only
+    // impression + clinician comments remain.
     expect(screen.getByTestId('carotid-impression')).toBeInTheDocument();
-    expect(screen.getByTestId('carotid-sonographer')).toBeInTheDocument();
+    expect(screen.queryByTestId('carotid-sonographer')).not.toBeInTheDocument();
     expect(screen.getByTestId('carotid-clinician')).toBeInTheDocument();
     // Templates trigger button is part of the per-study toolbar.
     expect(screen.getByTestId('carotid-template-gallery-trigger')).toBeInTheDocument();

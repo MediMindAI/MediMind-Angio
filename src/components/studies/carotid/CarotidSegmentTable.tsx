@@ -19,7 +19,7 @@ import {
   CAROTID_VESSELS,
   FLOW_DIRECTION_VALUES,
   PLAQUE_MORPHOLOGY_VALUES,
-  isVertebral,
+  isCca,
   type CarotidFindings,
   type CarotidVesselFinding,
   type CarotidVesselFullId,
@@ -28,7 +28,6 @@ import {
   type PlaqueMorphology,
 } from './config';
 import { icaCcaRatio } from './stenosisCalculator';
-import { defaultPlaqueLabel } from '../shared/labels';
 import classes from './CarotidSegmentTable.module.css';
 
 export type CarotidTableView = 'left' | 'right' | 'bilateral';
@@ -101,6 +100,8 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
     [t],
   );
 
+  const imtLabel = t('carotid.param.imtMm', 'IMT (mm)');
+
   // Compute ICA/CCA ratio once per side so we can show it on ICA-prox rows.
   const ratioRight = icaCcaRatio(findings, 'right');
   const ratioLeft = icaCcaRatio(findings, 'left');
@@ -116,9 +117,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
             <Text className={classes.title} id="carotid-segment-title">
               {t('carotid.segmentTable.title', 'Vessel assessment')}
             </Text>
-            <Text className={classes.subtitle}>
-              {t('carotid.segmentTable.subtitle', 'PSV, EDV, flow direction, and plaque per vessel')}
-            </Text>
           </Box>
         </Group>
       </header>
@@ -130,10 +128,13 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
               {t('carotid.segmentTable.vessel', 'Vessel')}
             </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-              {t('carotid.param.psv', 'PSV')}
+              {t('carotid.param.psvCmS', 'PSV (cm/s)')}
             </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-              {t('carotid.param.edv', 'EDV')}
+              {t('carotid.param.edvCmS', 'ED (cm/s)')}
+            </div>
+            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
+              {imtLabel}
             </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
               {t('carotid.param.flowDirection', 'Flow')}
@@ -163,7 +164,7 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                   </span>
                 </div>
 
-                <div className={classes.cell} data-label="PSV (cm/s)">
+                <div className={classes.cell} data-label={t('carotid.param.psvCmS', 'PSV (cm/s)')}>
                   <EMRNumberInput
                     aria-label={`${vesselLabel} ${sideChip} PSV`}
                     value={r.finding?.psvCmS ?? ''}
@@ -178,9 +179,9 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                   />
                 </div>
 
-                <div className={classes.cell} data-label="EDV (cm/s)">
+                <div className={classes.cell} data-label={t('carotid.param.edvCmS', 'ED (cm/s)')}>
                   <EMRNumberInput
-                    aria-label={`${vesselLabel} ${sideChip} EDV`}
+                    aria-label={`${vesselLabel} ${sideChip} ED`}
                     value={r.finding?.edvCmS ?? ''}
                     onChange={(v) =>
                       setField(r.fullId, 'edvCmS', typeof v === 'number' ? v : v === '' ? undefined : Number(v))
@@ -191,6 +192,26 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                     size="sm"
                     data-testid={`carotid-${r.fullId}-edv`}
                   />
+                </div>
+
+                {/* IMT is clinically measured on the common carotid only. */}
+                <div className={classes.cell} data-label={imtLabel}>
+                  {isCca(r.base) ? (
+                    <EMRNumberInput
+                      aria-label={`${vesselLabel} ${sideChip} IMT`}
+                      value={r.finding?.imtMm ?? ''}
+                      onChange={(v) =>
+                        setField(r.fullId, 'imtMm', typeof v === 'number' ? v : v === '' ? undefined : Number(v))
+                      }
+                      min={0}
+                      max={3}
+                      step={0.1}
+                      size="sm"
+                      data-testid={`carotid-${r.fullId}-imt`}
+                    />
+                  ) : (
+                    <span className={classes.muted}>—</span>
+                  )}
                 </div>
 
                 <div className={classes.cell} data-label={t('carotid.param.flowDirection', 'Flow')}>
@@ -204,12 +225,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                     size="sm"
                     data-testid={`carotid-${r.fullId}-flow`}
                   />
-                  {isVertebral(r.base) ? (
-                    <VertebralStealInline
-                      value={r.finding?.subclavianStealPhase}
-                      onChange={(phase) => setField(r.fullId, 'subclavianStealPhase', phase)}
-                    />
-                  ) : null}
                 </div>
 
                 <div className={classes.cell} data-label={t('carotid.param.plaqueMorphology', 'Plaque')}>
@@ -251,51 +266,27 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
   );
 });
 
-function VertebralStealInline({
-  value,
-  onChange,
-}: {
-  value: 0 | 1 | 2 | 3 | undefined;
-  onChange: (phase: 0 | 1 | 2 | 3 | undefined) => void;
-}): React.ReactElement {
-  const { t } = useTranslation();
-  return (
-    <div className={classes.stealRow} role="radiogroup" aria-label={t('carotid.steal.aria', 'Subclavian steal phase')}>
-      {[0, 1, 2, 3].map((p) => {
-        const selected = value === p;
-        return (
-          <button
-            key={p}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            onClick={() => onChange(selected ? undefined : (p as 0 | 1 | 2 | 3))}
-            className={`${classes.stealChip} ${selected ? classes.stealChipSelected : ''}`}
-            title={t(`carotid.steal.phase${p}`, defaultStealLabel(p as 0 | 1 | 2 | 3))}
-          >
-            {p === 0 ? '—' : `Ⅰ·Ⅱ·Ⅲ`[p - 1] ?? String(p)}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function defaultFlowLabel(v: FlowDirection): string {
   switch (v) {
     case 'antegrade':     return 'Antegrade';
     case 'retrograde':    return 'Retrograde';
-    case 'bidirectional': return 'Bidirectional';
     case 'absent':        return 'Absent';
   }
 }
 
-function defaultStealLabel(p: 0 | 1 | 2 | 3): string {
-  switch (p) {
-    case 0: return 'Normal antegrade';
-    case 1: return 'Phase I — mid-systolic deceleration';
-    case 2: return 'Phase II — alternating (partial retrograde)';
-    case 3: return 'Phase III — full retrograde';
+/**
+ * English fallback for the Gray-Weale plaque echogenicity types. Carotid-
+ * specific (the shared `defaultPlaqueLabel` still serves arterial-LE's
+ * none/calcified/mixed/soft enum).
+ */
+function defaultPlaqueLabel(v: PlaqueMorphology): string {
+  switch (v) {
+    case 'none':  return '—';
+    case 'type1': return 'Type I — fully hypoechoic (soft)';
+    case 'type2': return 'Type II — predominantly hypoechoic';
+    case 'type3': return 'Type III — predominantly echogenic';
+    case 'type4': return 'Type IV — fully echogenic';
+    case 'type5': return 'Type V — calcified, non-identifiable';
   }
 }
 

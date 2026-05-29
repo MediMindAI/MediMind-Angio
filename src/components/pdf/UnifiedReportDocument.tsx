@@ -73,6 +73,7 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../studies/carotid/config';
+import { suggestNascetCategory } from '../studies/carotid/stenosisCalculator';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -142,7 +143,14 @@ function extractCarotidFindings(form: FormState): CarotidFindings {
 function extractCarotidNascet(form: FormState): CarotidNascetClassification {
   if (form.studyType !== 'carotid') return {};
   const raw = form.parameters['nascet'];
-  return isCarotidNascet(raw) ? raw : {};
+  const manual = isCarotidNascet(raw) ? raw : {};
+  // Auto-classify blank sides from SRU velocities so the printed NASCET block
+  // follows entered data (parity with ReportDocument.deriveCarotidNascet).
+  const findings = extractCarotidFindings(form);
+  return {
+    right: manual.right ?? suggestNascetCategory(findings, 'right'),
+    left: manual.left ?? suggestNascetCategory(findings, 'left'),
+  };
 }
 
 /**
@@ -276,6 +284,7 @@ function renderStudyFindings(
             anterior={assets.anatomy.anterior}
             posterior={null}
             labels={assets.labels.diagram}
+            legendItems={assets.labels.carotidLegend}
             viewWidthPt={260}
           />
         </View>

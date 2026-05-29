@@ -10,30 +10,29 @@
       "right": "Right"
     },
     "vessel": {
-      "cca-prox": "CCA, proximal",
-      "cca-mid": "CCA, mid",
-      "cca-dist": "CCA, distal",
-      "bulb": "Carotid bulb",
-      "ica-prox": "ICA, proximal",
-      "ica-mid": "ICA, mid",
-      "ica-dist": "ICA, distal",
+      "cca-prox": "CCA Prox",
+      "cca-mid": "CCA Mid",
+      "cca-dist": "CCA Dist",
+      "ica-prox": "ICA Prox",
+      "ica-mid": "ICA Mid",
+      "ica-dist": "ICA Dist",
       "eca": "ECA",
-      "vert-v1": "Vertebral V1",
-      "vert-v2": "Vertebral V2",
-      "vert-v3": "Vertebral V3",
-      "subclav-prox": "Subclavian, proximal",
-      "subclav-dist": "Subclavian, distal"
+      "vert-v1": "VA V1",
+      "vert-v2": "VA V2",
+      "vert-v3": "VA V3",
+      "subclav-prox": "A Subcl Prox",
+      "subclav-dist": "A Subcl Dist"
     },
     "segmentTable": {
       "title": "Vessel assessment",
-      "subtitle": "PSV, EDV, flow direction, and plaque per vessel",
       "vessel": "Vessel"
     },
     "param": {
       "psv": "PSV",
-      "edv": "EDV",
+      "edv": "ED",
       "psvCmS": "PSV (cm/s)",
-      "edvCmS": "EDV (cm/s)",
+      "edvCmS": "ED (cm/s)",
+      "imtMm": "IMT (mm)",
       "flowDirection": "Flow",
       "plaqueMorphology": "Plaque",
       "plaqueLengthMm": "Plaque length (mm)",
@@ -43,14 +42,22 @@
     "flow": {
       "antegrade": "Antegrade",
       "retrograde": "Retrograde",
-      "bidirectional": "Bidirectional",
       "absent": "Absent"
     },
     "plaque": {
-      "none": "None",
-      "calcified": "Calcified",
-      "mixed": "Mixed",
-      "soft": "Soft"
+      "none": "—",
+      "type1": "Type I — fully hypoechoic (soft)",
+      "type2": "Type II — predominantly hypoechoic",
+      "type3": "Type III — predominantly echogenic",
+      "type4": "Type IV — fully echogenic",
+      "type5": "Type V — calcified, non-identifiable"
+    },
+    "severity": {
+      "normal": "Normal",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "severe": "Severe",
+      "occluded": "Occluded"
     },
     "nascet": {
       "title": "NASCET stenosis classification",
@@ -58,6 +65,7 @@
       "preview": "NASCET",
       "suggest": "Suggest",
       "applySuggestion": "Apply SRU suggestion",
+      "normal": "Normal",
       "lt50": "< 50 %",
       "50to69": "50–69 %",
       "ge70": "≥ 70 %",
@@ -102,12 +110,12 @@
       "menuLabel": "Templates",
       "normalBilateral": {
         "name": "Normal bilateral",
-        "description": "All vessels normal, no plaque, NASCET <50% bilaterally.",
+        "description": "All vessels normal, no plaque, no stenosis bilaterally.",
         "impression": "Normal bilateral carotid, vertebral, and subclavian duplex examination. Common and internal carotid arteries demonstrate normal peak systolic and end-diastolic velocities with triphasic antegrade flow and no atherosclerotic plaque. Vertebral arteries show normal antegrade flow bilaterally. No hemodynamic evidence of stenosis or occlusion."
       },
       "mildBilateralAtherosclerosis": {
         "name": "Mild bilateral atherosclerosis",
-        "description": "Bilateral bulb/ICA plaque, NASCET <50% bilateral.",
+        "description": "Bilateral CCA/ICA plaque, no significant stenosis bilaterally.",
         "impression": "Bilateral mild atherosclerotic disease of the carotid bifurcations involving the bulbs and proximal internal carotid arteries. Plaques are of mixed echogenicity with smooth surfaces and no ulceration. Peak systolic velocities remain within normal limits; no hemodynamically significant stenosis. NASCET < 50% bilaterally."
       },
       "moderateLeftIca": {
@@ -203,7 +211,8 @@
     },
     "findingsTable": {
       "psvShort": "PSV",
-      "edvShort": "EDV",
+      "edvShort": "ED",
+      "imtShort": "IMT",
       "flowShort": "Flow",
       "plaqueShort": "Plaque",
       "ratioShort": "ICA/CCA"

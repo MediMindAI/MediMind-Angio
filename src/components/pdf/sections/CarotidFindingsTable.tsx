@@ -23,7 +23,7 @@ import type {
   PlaqueMorphology,
   PlaqueSurface,
 } from '../../studies/carotid/config';
-import { CAROTID_VESSELS } from '../../studies/carotid/config';
+import { CAROTID_VESSELS, isCca } from '../../studies/carotid/config';
 import { icaCcaRatio } from '../../studies/carotid/stenosisCalculator';
 
 export interface CarotidFindingsTableLabels {
@@ -32,6 +32,7 @@ export interface CarotidFindingsTableLabels {
   readonly vessel: string;
   readonly psv: string;
   readonly edv: string;
+  readonly imt: string;
   readonly flow: string;
   readonly plaque: string;
   readonly ratio: string;
@@ -55,6 +56,7 @@ const COL_FLEX = {
   vessel: 2.0,
   psv: 0.9,
   edv: 0.9,
+  imt: 0.9,
   flow: 1.3,
   plaque: 1.5,
   ratio: 0.9,
@@ -139,6 +141,7 @@ function hasAnyValue(f: CarotidVesselFinding): boolean {
   return (
     f.psvCmS !== undefined ||
     f.edvCmS !== undefined ||
+    f.imtMm !== undefined ||
     f.flowDirection !== undefined ||
     f.plaquePresent === true ||
     f.plaqueMorphology !== undefined ||
@@ -171,6 +174,12 @@ function formatVelocity(n: number | undefined, dash: string): string {
   return `${Math.round(n)}`;
 }
 
+/** IMT prints only on common-carotid rows (1 decimal mm); others em-dash. */
+function formatImt(base: CarotidVesselBase, n: number | undefined, dash: string): string {
+  if (!isCca(base) || n === undefined || Number.isNaN(n)) return dash;
+  return n.toFixed(1);
+}
+
 function formatPlaque(
   f: CarotidVesselFinding,
   labels: CarotidFindingsTableLabels,
@@ -181,7 +190,7 @@ function formatPlaque(
   const pieces: string[] = [];
   if (morph && morph !== 'none') pieces.push(labels.plaqueName[morph]);
   if (surface) pieces.push(labels.surfaceName[surface]);
-  let text = pieces.length > 0 ? pieces.join('·') : labels.plaqueName['soft'];
+  let text = pieces.length > 0 ? pieces.join('·') : labels.plaqueName['type3'];
   if (f.plaqueUlceration) text += ` ${labels.ulcerationMark}`;
   return text;
 }
@@ -237,6 +246,16 @@ function SideTable({
         >
           {labels.edv}
         </Text>
+        <Text
+          style={{
+            flexBasis: 0,
+            flexGrow: COL_FLEX.imt,
+            ...styles.headCell,
+            ...styles.cellRight,
+          }}
+        >
+          {labels.imt}
+        </Text>
         <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.flow, ...styles.headCell }}>
           {labels.flow}
         </Text>
@@ -280,6 +299,9 @@ function SideTable({
               </Text>
               <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.edv, ...cellRightStyle }}>
                 {formatVelocity(r.finding.edvCmS, labels.emptyDash)}
+              </Text>
+              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.imt, ...cellRightStyle }}>
+                {formatImt(r.vesselBase, r.finding.imtMm, labels.emptyDash)}
               </Text>
               <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.flow, ...cellStyle }}>
                 {flowText}

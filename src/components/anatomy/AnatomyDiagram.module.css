@@ -22,6 +22,13 @@
   isolation: isolate;
 }
 
+/* Carotid is a wider, shorter view — match its SVG viewBox so the stage
+   doesn't reserve the tall venous footprint (which left a big white gap). */
+.stage[data-view='neck-carotid'] {
+  aspect-ratio: 771 / 910;
+  max-width: 540px;
+}
+
 /* AnatomyView lives at z=1, drawing canvas overlays at z=2.
    Both layers fill the stage so coordinates align exactly. */
 .stage > div:first-of-type {

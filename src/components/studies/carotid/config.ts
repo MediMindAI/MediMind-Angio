@@ -10,6 +10,7 @@
 
 import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
 import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
+import { COMPETENCY_COLORS, SEVERITY_COLORS } from '../../../constants/theme-colors';
 
 // Re-export the canonical `Side` type so existing consumers
 // (`import { Side } from '.../carotid/config'`) keep working.
@@ -23,7 +24,6 @@ export const CAROTID_VESSELS = [
   'cca-prox',
   'cca-mid',
   'cca-dist',
-  'bulb',
   'ica-prox',
   'ica-mid',
   'ica-dist',
@@ -57,6 +57,15 @@ export function isIca(v: CarotidVesselBase): boolean {
   return v === 'ica-prox' || v === 'ica-mid' || v === 'ica-dist';
 }
 
+/**
+ * True when the vessel is a common-carotid segment. Intima-media thickness
+ * (IMT) is only clinically measured on the CCA, so the IMT input + PDF cell
+ * render exclusively on these rows.
+ */
+export function isCca(v: CarotidVesselBase): boolean {
+  return v === 'cca-prox' || v === 'cca-mid' || v === 'cca-dist';
+}
+
 // ============================================================================
 // Enums
 // ============================================================================
@@ -64,18 +73,35 @@ export function isIca(v: CarotidVesselBase): boolean {
 export const FLOW_DIRECTION_VALUES = [
   'antegrade',
   'retrograde',
-  'bidirectional',
   'absent',
 ] as const;
 export type FlowDirection = (typeof FLOW_DIRECTION_VALUES)[number];
 
-export const PLAQUE_MORPHOLOGY_VALUES = ['none', 'calcified', 'mixed', 'soft'] as const;
+/**
+ * Gray-Weale plaque echogenicity classification (Types I–V). Replaces the
+ * former free morphology enum (none/calcified/mixed/soft) per clinician
+ * request — the five echogenicity types are the standard carotid descriptor:
+ *   type1 — fully hypoechoic (soft)
+ *   type2 — predominantly hypoechoic
+ *   type3 — predominantly echogenic
+ *   type4 — fully echogenic
+ *   type5 — calcified, non-identifiable
+ */
+export const PLAQUE_MORPHOLOGY_VALUES = [
+  'none',
+  'type1',
+  'type2',
+  'type3',
+  'type4',
+  'type5',
+] as const;
 export type PlaqueMorphology = (typeof PLAQUE_MORPHOLOGY_VALUES)[number];
 
 export const PLAQUE_SURFACE_VALUES = ['smooth', 'irregular'] as const;
 export type PlaqueSurface = (typeof PLAQUE_SURFACE_VALUES)[number];
 
 export const NASCET_CATEGORY_VALUES = [
+  'normal',           // no stenosis (PSV < 125, no plaque)
   'lt50',             // < 50 %
   '50to69',           // 50–69 %
   'ge70',             // ≥ 70 %
@@ -94,6 +120,8 @@ export type SubclavianStealPhase = (typeof SUBCLAVIAN_STEAL_PHASES)[number];
 export interface CarotidVesselFinding {
   readonly psvCmS?: number;
   readonly edvCmS?: number;
+  /** Intima-media thickness (mm) — common-carotid segments only. */
+  readonly imtMm?: number;
   readonly flowDirection?: FlowDirection;
   readonly plaquePresent?: boolean;
   readonly plaqueMorphology?: PlaqueMorphology;
@@ -110,6 +138,12 @@ export interface CarotidVesselFinding {
    * running the rule-based derivation (Wave 4.6 — Part 01 MEDIUM parity).
    */
   readonly competencyOverride?: CarotidCompetency;
+  /**
+   * User-redrawn SVG path-d for this vessel's diagram overlay (anatomy
+   * "Edit segment" mode). Mirrors `VenousSegmentFinding.pathOverride`; when
+   * set, the diagram renders this geometry instead of the static SVG path.
+   */
+  readonly pathOverride?: string;
 }
 
 export type CarotidFindings = Readonly<
@@ -178,6 +212,7 @@ export const CATEGORICAL_PARAMETERS: ReadonlyArray<ParameterDef> = [
 export const NUMERIC_PARAMETERS: ReadonlyArray<ParameterDef> = [
   { id: 'psvCmS', label: 'carotid.param.psvCmS', kind: 'velocity-cm-s', unit: 'cm/s', min: 0, max: 700, step: 10 },
   { id: 'edvCmS', label: 'carotid.param.edvCmS', kind: 'velocity-cm-s', unit: 'cm/s', min: 0, max: 300, step: 5 },
+  { id: 'imtMm', label: 'carotid.param.imtMm', kind: 'diameter-mm', unit: 'mm', min: 0, max: 3, step: 0.1 },
   { id: 'plaqueLengthMm', label: 'carotid.param.plaqueLengthMm', kind: 'diameter-mm', unit: 'mm', min: 0, max: 100, step: 1 },
 ];
 
@@ -222,4 +257,47 @@ export function deriveCarotidCompetency(
   if (nascetCat === '50to69') return 'moderate';
   if (finding.plaquePresent) return 'mild';
   return 'normal';
+}
+
+/**
+ * Fill/stroke for a carotid severity band on the FILLED vessel diagram.
+ * Normal/patent renders neutral grey (so a normal study isn't a wall of
+ * green and disease pops); all abnormal bands use the shared severity
+ * palette (amber → orange → red → maroon). Used by both the form-side
+ * diagram (`colorFn`) and the PDF (`competencyFn`) so they always agree.
+ */
+/** Strip to {fill,stroke} (palette constants also carry an `overlay` field). */
+const fs = (c: { fill: string; stroke: string }): { fill: string; stroke: string } => ({
+  fill: c.fill,
+  stroke: c.stroke,
+});
+
+/**
+ * Severity band → diagram color, kept CONSISTENT with the established venous
+ * palette: `normal` and `occluded` reuse the venous `COMPETENCY_COLORS`
+ * (slate grey + black) so a patent/occluded vessel looks identical across the
+ * venous and carotid reports; the in-between stenosis bands use the shared
+ * arterial `SEVERITY_COLORS` (amber → orange → red).
+ */
+export function carotidBandColor(band: CarotidCompetency): { fill: string; stroke: string } {
+  if (band === 'normal') return fs(COMPETENCY_COLORS.normal); // slate grey, == venous
+  if (band === 'occluded') return fs(COMPETENCY_COLORS.occluded); // black, == venous
+  return fs(SEVERITY_COLORS[band]); // mild / moderate / severe
+}
+
+/** Intracranial circle-of-Willis blob — not graded; uses the venous red. */
+const CAROTID_INTRACRANIAL_COLOR = fs(COMPETENCY_COLORS.incompetent); // #dc2626
+
+/**
+ * Fill for any diagram path id — handles the two non-graded static shapes
+ * (`intracranial` = venous red, `aorta` = neutral grey context) before
+ * falling back to the severity band for the 26 graded segments.
+ */
+export function carotidDiagramColor(
+  id: string,
+  band: CarotidCompetency,
+): { fill: string; stroke: string } {
+  if (id === 'intracranial') return CAROTID_INTRACRANIAL_COLOR;
+  if (id === 'aorta') return fs(COMPETENCY_COLORS.normal);
+  return carotidBandColor(band);
 }

@@ -16,6 +16,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { strokeToSvgPath } from './strokeToSvgPath';
 import { polylineFromPoints, type Point as PolyPoint } from './polylineFromPoints';
 import {
+  ANATOMY_VIEWBOX,
   DRAWING_COLOR_HEX,
   type AnatomyViewKey,
   type DrawingMode,
@@ -26,10 +27,6 @@ import {
   type DrawingSize,
 } from '../../types/drawing';
 import type { SegmentId } from '../../types/anatomy';
-
-/** ViewBox dimensions of the venous LE anatomy SVGs. */
-const VIEWBOX_W = 600;
-const VIEWBOX_H = 1453;
 
 export interface DrawingCanvasProps {
   readonly view: AnatomyViewKey;
@@ -84,6 +81,8 @@ export const DrawingCanvas = memo(function DrawingCanvas({
   onCommitSegmentEdit,
   ariaLabel,
 }: DrawingCanvasProps): React.ReactElement {
+  // Per-view viewBox so the overlay shares the backdrop SVG's coordinate space.
+  const [VIEWBOX_W, VIEWBOX_H] = ANATOMY_VIEWBOX[view];
   const [activePoints, setActivePoints] = useState<DrawingPoint[]>([]);
   const activeRef = useRef<DrawingPoint[]>([]);
 

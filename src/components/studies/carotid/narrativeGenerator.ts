@@ -97,14 +97,17 @@ function buildSide(
           vessel: `carotid.vessel.${base}`,
           morphology: f.plaqueMorphology
             ? `carotid.plaque.${f.plaqueMorphology}`
-            : 'carotid.plaque.mixed',
+            : 'carotid.plaque.type3',
           length: f.plaqueLengthMm ?? 0,
         },
       });
     }
   }
 
-  if (nascetCat) {
+  // A 'normal' category carries no stenosis statement — the normal-side
+  // sentence below covers it. Only emit the "{category} stenosis" conclusion
+  // for an actual stenosis grade.
+  if (nascetCat && nascetCat !== 'normal') {
     conclusions.push({
       key: 'carotid.conclusion.nascet',
       params: {

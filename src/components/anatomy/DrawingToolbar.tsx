@@ -41,6 +41,9 @@ export interface DrawingToolbarProps {
    *  Clear-override button label + enabled state). */
   readonly editingSegmentId?: SegmentId | null;
   readonly onClearOverride?: () => void;
+  /** Show the "Edit segment" mode (geometry redraw). Default true; false for
+   *  filled-vector views (e.g. carotid) where a centerline redraw is moot. */
+  readonly showEditSegment?: boolean;
 }
 
 export const DrawingToolbar = memo(function DrawingToolbar({
@@ -58,6 +61,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
   hasDrawings,
   editingSegmentId,
   onClearOverride,
+  showEditSegment = true,
 }: DrawingToolbarProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -100,15 +104,19 @@ export const DrawingToolbar = memo(function DrawingToolbar({
                 </Group>
               ),
             },
-            {
-              value: 'edit-segment',
-              label: (
-                <Group gap={6} align="center" wrap="nowrap">
-                  <IconRoute size={14} stroke={1.75} />
-                  <span>{t('venousLE.drawing.modeEditSegment', 'Edit segment')}</span>
-                </Group>
-              ),
-            },
+            ...(showEditSegment
+              ? [
+                  {
+                    value: 'edit-segment',
+                    label: (
+                      <Group gap={6} align="center" wrap="nowrap">
+                        <IconRoute size={14} stroke={1.75} />
+                        <span>{t('venousLE.drawing.modeEditSegment', 'Edit segment')}</span>
+                      </Group>
+                    ),
+                  },
+                ]
+              : []),
           ]}
           data-testid="drawing-mode-toggle"
         />

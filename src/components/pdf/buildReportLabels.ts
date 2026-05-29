@@ -28,6 +28,7 @@ import {
 } from '../studies/arterial-le/config';
 import type {
   CarotidVesselBase,
+  CarotidCompetency,
   FlowDirection,
   PlaqueMorphology as CarotidPlaqueMorphology,
   PlaqueSurface,
@@ -39,7 +40,9 @@ import {
   PLAQUE_MORPHOLOGY_VALUES as CAROTID_PLAQUE_VALUES,
   PLAQUE_SURFACE_VALUES,
   NASCET_CATEGORY_VALUES,
+  carotidBandColor,
 } from '../studies/carotid/config';
+import type { DiagramLegendItem } from './sections/DiagramSection';
 import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
 import type { FormState } from '../../types/form';
@@ -218,6 +221,26 @@ function buildSingleReportLabels(
     {} as Record<NascetCategory, string>,
   );
 
+  // Carotid uses a 5-band severity scale on the neck diagram. Colors come from
+  // `carotidBandColor` (the same resolver the form + PDF diagram use) so the
+  // legend matches exactly — normal/occluded reuse the venous palette.
+  const CAROTID_SEVERITY_FALLBACK: Record<CarotidCompetency, string> = {
+    normal: 'Normal',
+    mild: 'Mild',
+    moderate: 'Moderate',
+    severe: 'Severe',
+    occluded: 'Occluded',
+  };
+  const carotidLegend: ReadonlyArray<DiagramLegendItem> = (
+    ['normal', 'mild', 'moderate', 'severe', 'occluded'] as ReadonlyArray<CarotidCompetency>
+  ).map((band) => ({
+    key: band,
+    label: t(`carotid.severity.${band}`, CAROTID_SEVERITY_FALLBACK[band]),
+    // Use the same resolver as the diagram so legend ↔ vessel colors agree
+    // (normal = venous slate grey, occluded = venous black).
+    ...carotidBandColor(band),
+  }));
+
   return {
     title: t(titleKey, 'Vascular Duplex Report'),
     subtitle: t(subtitleKey, ''),
@@ -301,7 +324,8 @@ function buildSingleReportLabels(
       left: t('carotid.tabs.left', 'Left'),
       vessel: t('carotid.segmentTable.vessel', 'Vessel'),
       psv: t('carotid.findingsTable.psvShort', t('carotid.param.psvCmS', 'PSV')),
-      edv: t('carotid.findingsTable.edvShort', t('carotid.param.edvCmS', 'EDV')),
+      edv: t('carotid.findingsTable.edvShort', t('carotid.param.edvCmS', 'ED')),
+      imt: t('carotid.findingsTable.imtShort', t('carotid.param.imtMm', 'IMT')),
       flow: t('carotid.findingsTable.flowShort', t('carotid.param.flowDirection', 'Flow')),
       plaque: t('carotid.findingsTable.plaqueShort', t('carotid.param.plaqueMorphology', 'Plaque')),
       ratio: t('carotid.findingsTable.ratioShort', t('carotid.param.ratio', 'ICA/CCA')),
@@ -312,6 +336,7 @@ function buildSingleReportLabels(
       surfaceName,
       emptyDash: '—',
     },
+    carotidLegend,
     nascet: {
       title: t('carotid.nascetSummary.title', t('carotid.nascet.title', 'NASCET classification')),
       rightIca: t('carotid.nascetSummary.rightIca', 'Right ICA'),

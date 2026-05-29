@@ -15,7 +15,7 @@ import type {
   CarotidVesselBase,
   CarotidVesselFinding,
 } from '../../../components/studies/carotid/config';
-import { isVertebral } from '../../../components/studies/carotid/config';
+import { isCca, isVertebral } from '../../../components/studies/carotid/config';
 import { icaCcaRatio } from '../../../components/studies/carotid/stenosisCalculator';
 import type { BundleEntry, Observation } from '../../../types/fhir';
 import { MEDIMIND_CODESYSTEMS } from '../../../constants/fhir-systems';
@@ -50,7 +50,6 @@ export function appendCarotidFindingObservations(
   const tag = `segment=${vesselBase};side=${side}`;
   const isAbnormalFlow =
     finding.flowDirection === 'retrograde' ||
-    finding.flowDirection === 'bidirectional' ||
     finding.flowDirection === 'absent';
 
   // Numeric: PSV
@@ -79,6 +78,21 @@ export function appendCarotidFindingObservations(
     tag,
     isAbnormal: typeof finding.edvCmS === 'number' && finding.edvCmS >= 100,
   });
+  // Numeric: intima-media thickness (common carotid only; > 1.0 mm abnormal,
+  // ≥ 1.5 mm is the plaque threshold per Mannheim consensus).
+  if (isCca(vesselBase)) {
+    pushCustomNumeric(ctx, out, {
+      bodySite,
+      sideText,
+      paramId: 'imtMm',
+      paramLabel: 'Intima-media thickness',
+      value: finding.imtMm,
+      system: medimindParamSystem(ctx, 'imtMm'),
+      unit: 'mm',
+      tag,
+      isAbnormal: typeof finding.imtMm === 'number' && finding.imtMm > 1.0,
+    });
+  }
   // Categorical: flow direction
   pushCodedCategorical(ctx, out, {
     bodySite,
@@ -111,7 +125,9 @@ export function appendCarotidFindingObservations(
     value: finding.plaqueMorphology,
     system: MEDIMIND_CODESYSTEMS.PLAQUE_MORPHOLOGY,
     tag,
-    isAbnormal: finding.plaqueMorphology === 'soft' || finding.plaqueMorphology === 'mixed',
+    // Hypoechoic plaque (Gray-Weale Types I–II) carries the highest embolic
+    // risk, so flag those as abnormal.
+    isAbnormal: finding.plaqueMorphology === 'type1' || finding.plaqueMorphology === 'type2',
   });
   // Categorical: plaque surface
   pushCodedCategorical(ctx, out, {
@@ -175,7 +191,6 @@ export function appendCarotidFindingObservations(
 function carotidSnomedKey(base: CarotidVesselBase): string {
   if (base === 'cca-prox' || base === 'cca-mid' || base === 'cca-dist') return 'cca';
   if (base === 'ica-prox' || base === 'ica-mid' || base === 'ica-dist') return 'ica';
-  if (base === 'bulb') return 'carotid-bulb';
   if (base === 'eca') return 'eca';
   if (base === 'vert-v1' || base === 'vert-v2' || base === 'vert-v3') return 'va';
   // subclav-prox / subclav-dist — no SNOMED entry in VASCULAR_SEGMENTS_SNOMED;

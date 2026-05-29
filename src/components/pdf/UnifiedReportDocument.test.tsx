@@ -44,6 +44,7 @@ const EMPTY_LABELS: ReportLabels = {
   arterialFindings: {} as ReportLabels['arterialFindings'],
   pressures: {} as ReportLabels['pressures'],
   carotidFindings: {} as ReportLabels['carotidFindings'],
+  carotidLegend: [],
   nascet: {} as ReportLabels['nascet'],
   narrative: {} as ReportLabels['narrative'],
   ceap: {} as ReportLabels['ceap'],

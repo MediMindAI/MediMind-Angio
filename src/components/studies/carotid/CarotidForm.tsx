@@ -24,8 +24,9 @@
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
-import { AnatomyView } from '../../anatomy/AnatomyView';
-import { SEVERITY_COLORS } from '../../../constants/theme-colors';
+import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
+import type { DrawingStroke } from '../../../types/drawing';
+import type { SegmentId } from '../../../types/anatomy';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconStack2 } from '@tabler/icons-react';
@@ -61,7 +62,8 @@ import type {
   CarotidVesselFinding,
   CarotidVesselFullId,
 } from './config';
-import { deriveCarotidCompetency } from './config';
+import { carotidBandColor, carotidDiagramColor, deriveCarotidCompetency } from './config';
+import { AnatomyLegend } from '../../anatomy';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
 import { NASCETPicker } from './NASCETPicker';
 import { type CarotidTemplate, type CarotidTemplateKind } from './templates';
@@ -114,6 +116,8 @@ interface CarotidFormStateV2 extends CarotidStudyFields {
   readonly sonographerComments: string;
   readonly clinicianComments: string;
   readonly recommendations: ReadonlyArray<Recommendation>;
+  /** Freehand annotation strokes drawn over the anatomy diagram. */
+  readonly drawings: ReadonlyArray<DrawingStroke>;
 }
 
 type Action =
@@ -133,6 +137,12 @@ type Action =
       recommendations: ReadonlyArray<Recommendation>;
       impression: string;
     }
+  | { type: 'COMMIT_STROKE'; stroke: DrawingStroke }
+  | { type: 'ERASE_STROKE'; strokeId: string }
+  | { type: 'UNDO_STROKE' }
+  | { type: 'CLEAR_DRAWINGS' }
+  | { type: 'SET_SEGMENT_PATH_OVERRIDE'; id: CarotidVesselFullId; d: string }
+  | { type: 'CLEAR_SEGMENT_PATH_OVERRIDE'; id: CarotidVesselFullId }
   | { type: 'RESET' }
   | { type: 'HYDRATE'; state: CarotidFormStateV2 };
 
@@ -155,6 +165,7 @@ function initialState(): CarotidFormStateV2 {
     sonographerComments: '',
     clinicianComments: '',
     recommendations: [],
+    drawings: [],
   };
 }
 
@@ -195,6 +206,30 @@ function reducer(state: CarotidFormStateV2, action: Action): CarotidFormStateV2 
         // into the next case when a clinician picks a template.
         clinicianComments: '',
       };
+    case 'COMMIT_STROKE':
+      return { ...state, drawings: [...state.drawings, action.stroke] };
+    case 'ERASE_STROKE':
+      return { ...state, drawings: state.drawings.filter((s) => s.id !== action.strokeId) };
+    case 'UNDO_STROKE':
+      return state.drawings.length === 0
+        ? state
+        : { ...state, drawings: state.drawings.slice(0, -1) };
+    case 'CLEAR_DRAWINGS':
+      return { ...state, drawings: [] };
+    case 'SET_SEGMENT_PATH_OVERRIDE': {
+      const prev = state.findings[action.id] ?? {};
+      return {
+        ...state,
+        findings: { ...state.findings, [action.id]: { ...prev, pathOverride: action.d } },
+      };
+    }
+    case 'CLEAR_SEGMENT_PATH_OVERRIDE': {
+      const current = state.findings[action.id];
+      if (!current) return state;
+      const { pathOverride: _drop, ...rest } = current;
+      void _drop;
+      return { ...state, findings: { ...state.findings, [action.id]: rest } };
+    }
     case 'RESET':
       // Phase 3b — no header argument. Encounter-level fields stay
       // untouched (they live in EncounterContext); per-study fields reset
@@ -234,7 +269,9 @@ function normalizeHydratedState(raw: CarotidFormStateV2): CarotidFormStateV2 {
     void _legacyHeader;
     return { ...initialState(), ...(rest as Partial<CarotidFormStateV2>) } as CarotidFormStateV2;
   }
-  return raw;
+  // Pre-drawing V2 drafts lack `drawings`; default it so the reducer/diagram
+  // never spread `undefined`.
+  return raw.drawings ? raw : { ...raw, drawings: [] };
 }
 
 function toFormState(s: CarotidFormStateV2, encounter: EncounterDraft | null): FormState {
@@ -279,6 +316,7 @@ function toFormState(s: CarotidFormStateV2, encounter: EncounterDraft | null): F
       // payload (`CarotidFormParameters`) flows through without casts.
       segmentFindings: s.findings,
       nascet: s.nascet,
+      drawings: s.drawings,
     },
   };
 }
@@ -393,10 +431,6 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const handleImpressionChange = useCallback((text: string) => {
     dispatch({ type: 'SET_IMPRESSION', impression: text });
-  }, []);
-
-  const handleSonographerChange = useCallback((text: string) => {
-    dispatch({ type: 'SET_SONOGRAPHER', comments: text });
   }, []);
 
   const handleClinicianChange = useCallback((text: string) => {
@@ -560,15 +594,74 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const formState = useMemo(() => toFormState(state, encounter), [state, encounter]);
 
+  // Collect any user-redrawn vessel paths so the diagram renders them instead
+  // of the static SVG geometry (mirrors the venous LE "Edit segment" flow).
+  const pathOverridesMap = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const [id, f] of Object.entries(state.findings)) {
+      if (f?.pathOverride) out[id] = f.pathOverride;
+    }
+    return out;
+  }, [state.findings]);
+
+  // Click-to-cycle severity (parity with venous click-to-cycle competency).
+  // The shared handler's `current` arg is competency-typed and empty for
+  // carotid, so we read the live band from state and advance the override.
+  const handleAnatomySegmentClick = useCallback(
+    (id: SegmentId) => {
+      const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
+      // Static, non-graded shapes (intracranial, aorta) have no side — ignore.
+      if (!side) return;
+      const fullId = id as CarotidVesselFullId;
+      const nascetCat = state.nascet[side];
+      const current = deriveCarotidCompetency(state.findings[fullId], nascetCat);
+      const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
+      const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
+      dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
+    },
+    [state.findings, state.nascet],
+  );
+
+  const handleCommitStroke = useCallback((stroke: DrawingStroke) => {
+    dispatch({ type: 'COMMIT_STROKE', stroke });
+  }, []);
+  const handleEraseStroke = useCallback((strokeId: string) => {
+    dispatch({ type: 'ERASE_STROKE', strokeId });
+  }, []);
+  const handleUndoStroke = useCallback(() => {
+    dispatch({ type: 'UNDO_STROKE' });
+  }, []);
+  const handleClearDrawings = useCallback(() => {
+    dispatch({ type: 'CLEAR_DRAWINGS' });
+  }, []);
+  const handleCommitSegmentEdit = useCallback((segmentId: SegmentId, d: string) => {
+    dispatch({ type: 'SET_SEGMENT_PATH_OVERRIDE', id: segmentId as CarotidVesselFullId, d });
+  }, []);
+  const handleClearSegmentEdit = useCallback((segmentId: SegmentId) => {
+    dispatch({ type: 'CLEAR_SEGMENT_PATH_OVERRIDE', id: segmentId as CarotidVesselFullId });
+  }, []);
+
   const carotidColorFn = useCallback(
     (id: string): { fill: string; stroke: string } => {
       const finding = state.findings[id as CarotidVesselFullId];
       const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
       const nascetCat = side ? state.nascet[side] : undefined;
       const band = deriveCarotidCompetency(finding, nascetCat);
-      return SEVERITY_COLORS[band];
+      return carotidDiagramColor(id, band);
     },
     [state.findings, state.nascet],
+  );
+
+  // Under-diagram color key — the 5 stenosis-severity bands, colored by the
+  // same `carotidBandColor` the vessels use so the legend ↔ diagram agree.
+  const carotidLegendItems = useMemo(
+    () =>
+      (['normal', 'mild', 'moderate', 'severe', 'occluded'] as const).map((band) => ({
+        key: band,
+        label: t(`carotid.severity.${band}`, band),
+        ...carotidBandColor(band),
+      })),
+    [t],
   );
 
   // Tooltip status text — the venous Competency enum doesn't apply here, so
@@ -649,17 +742,27 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
                 )}
               </Text>
             </div>
-            <Group justify="center">
-              <AnatomyView
-                view="neck-carotid"
-                segments={{}}
-                size="lg"
-                interactive={false}
-                colorFn={carotidColorFn}
-                tooltipText={carotidTooltipText}
-                ariaLabel={t('carotid.anatomy.title', 'Carotid anatomy')}
-              />
-            </Group>
+            <AnatomyDiagramSection
+              view="neck-carotid"
+              segments={{}}
+              colorFn={carotidColorFn}
+              tooltipText={carotidTooltipText}
+              overlay={false}
+              enableSegmentEdit={false}
+              pathOverrides={pathOverridesMap}
+              drawings={state.drawings}
+              onSegmentClick={handleAnatomySegmentClick}
+              onCommitStroke={handleCommitStroke}
+              onEraseStroke={handleEraseStroke}
+              onUndo={handleUndoStroke}
+              onClear={handleClearDrawings}
+              onCommitSegmentEdit={handleCommitSegmentEdit}
+              onClearSegmentEdit={handleClearSegmentEdit}
+            />
+            <AnatomyLegend
+              items={carotidLegendItems}
+              ariaLabel={t('carotid.anatomy.legendLabel', 'Stenosis severity legend')}
+            />
           </Stack>
         </Paper>
 
@@ -671,14 +774,6 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
             autosize
             minRows={4}
             data-testid="carotid-impression"
-          />
-          <Textarea
-            label={t('carotid.narrative.sonographerComments', 'Sonographer comments')}
-            value={state.sonographerComments}
-            onChange={(e) => handleSonographerChange(e.currentTarget.value)}
-            autosize
-            minRows={2}
-            data-testid="carotid-sonographer"
           />
           <Textarea
             label={t('carotid.narrative.clinicianComments', 'Clinician comments')}

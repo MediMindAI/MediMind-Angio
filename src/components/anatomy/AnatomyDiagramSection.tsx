@@ -13,6 +13,7 @@ import { DrawingToolbar } from './DrawingToolbar';
 import {
   DEFAULT_DRAWING_COLOR,
   DEFAULT_DRAWING_SIZE,
+  type AnatomyViewKey,
   type DrawingColor,
   type DrawingMode,
   type DrawingSize,
@@ -22,7 +23,19 @@ import {
 import type { Competency, SegmentId } from '../../types/anatomy';
 
 export interface AnatomyDiagramSectionProps {
+  /** Which anatomy view to render (default: venous LE anterior). */
+  readonly view?: AnatomyViewKey;
   readonly segments: Map<SegmentId, Competency> | Record<SegmentId, Competency>;
+  /** Non-competency color resolver (e.g. carotid severity bands). */
+  readonly colorFn?: (id: SegmentId) => { fill: string; stroke: string };
+  /** Custom tooltip status text (used alongside `colorFn`). */
+  readonly tooltipText?: (id: SegmentId) => string;
+  /** Overlay mode (colored stroke over backdrop, default). False = filled
+   *  vector segments (carotid). */
+  readonly overlay?: boolean;
+  /** Expose the "Edit segment" geometry-redraw mode. Default true; false for
+   *  filled-vector views where a centerline redraw is meaningless. */
+  readonly enableSegmentEdit?: boolean;
   /** Per-segment SVG path-d override map (from `state.findings.pathOverride`). */
   readonly pathOverrides?: Map<SegmentId, string> | Record<SegmentId, string>;
   readonly drawings: ReadonlyArray<DrawingStroke>;
@@ -39,7 +52,12 @@ export interface AnatomyDiagramSectionProps {
 }
 
 export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
+  view = 'le-anterior',
   segments,
+  colorFn,
+  tooltipText,
+  overlay = true,
+  enableSegmentEdit = true,
   pathOverrides,
   drawings,
   highlightId,
@@ -101,11 +119,15 @@ export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
         hasDrawings={drawings.length > 0}
         editingSegmentId={editingSegmentId}
         onClearOverride={handleClearSegmentEdit}
+        showEditSegment={enableSegmentEdit}
       />
       {/* Single combined anatomy view — anterior + posterior segments share one image. */}
       <AnatomyDiagram
-        view="le-anterior"
+        view={view}
         segments={segments}
+        colorFn={colorFn}
+        tooltipText={tooltipText}
+        overlay={overlay}
         pathOverrides={pathOverrides}
         drawings={drawings}
         mode={mode}

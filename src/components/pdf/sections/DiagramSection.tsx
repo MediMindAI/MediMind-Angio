@@ -20,12 +20,28 @@ export interface DiagramSectionLabels {
   readonly legend: Record<Competency, string>;
 }
 
+/** One legend entry when a study supplies its own colour scale. */
+export interface DiagramLegendItem {
+  readonly key: string;
+  readonly label: string;
+  readonly fill: string;
+  readonly stroke: string;
+  /** Render the diagonal-stripe swatch (used for the "inconclusive" band). */
+  readonly striped?: boolean;
+}
+
 export interface DiagramSectionProps {
   readonly anterior: AnatomyToPdfResult | null;
   readonly posterior: AnatomyToPdfResult | null;
   readonly labels: DiagramSectionLabels;
   /** Target rendered width in points for each view. */
   readonly viewWidthPt?: number;
+  /**
+   * Explicit legend entries. When omitted, the default venous competency
+   * legend is rendered. Carotid passes its 5-band severity scale here so the
+   * diagram doesn't show venous terms (Part: clinician feedback).
+   */
+  readonly legendItems?: ReadonlyArray<DiagramLegendItem>;
 }
 
 const styles = StyleSheet.create({
@@ -168,8 +184,21 @@ export function DiagramSection({
   posterior,
   labels,
   viewWidthPt = 150,
+  legendItems,
 }: DiagramSectionProps): ReactElement {
-  const competencies: Array<Competency> = ['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'];
+  // Default to the venous competency legend; a study may override it via
+  // `legendItems` (carotid supplies its 5-band severity scale).
+  const items: ReadonlyArray<DiagramLegendItem> =
+    legendItems ??
+    (['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'] as Array<Competency>).map(
+      (c) => ({
+        key: c,
+        label: labels.legend[c],
+        fill: COMPETENCY_COLORS[c].fill,
+        stroke: COMPETENCY_COLORS[c].stroke,
+        striped: c === 'inconclusive',
+      }),
+    );
 
   return (
     <View style={styles.wrapper}>
@@ -184,15 +213,15 @@ export function DiagramSection({
         </View>
       </View>
       <View style={styles.legendRow}>
-        {competencies.map((c) => {
-          const { fill, stroke } = COMPETENCY_COLORS[c];
+        {items.map((item) => {
+          const { fill, stroke } = item;
           // Inconclusive renders as diagonal grey/white stripes to match
           // the anatomy fill pattern (web uses an SVG <pattern>; PDF lacks
           // <Pattern> in @react-pdf v4, so emit a tiny <Svg> with three
           // diagonal lines instead).
-          const isInconclusive = c === 'inconclusive';
+          const isInconclusive = item.striped === true;
           return (
-            <View key={c} style={styles.legendItem}>
+            <View key={item.key} style={styles.legendItem}>
               {isInconclusive ? (
                 <Svg
                   width={10}
@@ -225,7 +254,7 @@ export function DiagramSection({
                   }}
                 />
               )}
-              <Text style={styles.legendText}>{labels.legend[c]}</Text>
+              <Text style={styles.legendText}>{item.label}</Text>
             </View>
           );
         })}

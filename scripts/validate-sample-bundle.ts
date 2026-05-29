@@ -457,20 +457,20 @@ for (const [rt, n] of Object.entries(arterialCounts)) {
 // ---------------------------------------------------------------------------
 
 const carotidFindings: CarotidFindings = {
-  'cca-dist-right': { psvCmS: 85, edvCmS: 25, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
+  'cca-dist-right': { psvCmS: 85, edvCmS: 25, imtMm: 0.8, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
   'ica-prox-right': {
     psvCmS: 250, edvCmS: 110, flowDirection: 'antegrade',
-    plaquePresent: true, plaqueMorphology: 'mixed', plaqueSurface: 'irregular',
+    plaquePresent: true, plaqueMorphology: 'type3', plaqueSurface: 'irregular',
     plaqueUlceration: true, plaqueLengthMm: 14,
   },
-  'cca-dist-left': { psvCmS: 90, edvCmS: 28, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
+  'cca-dist-left': { psvCmS: 90, edvCmS: 28, imtMm: 0.9, flowDirection: 'antegrade', plaquePresent: false, plaqueMorphology: 'none' },
   'ica-prox-left': {
     psvCmS: 110, edvCmS: 30, flowDirection: 'antegrade',
-    plaquePresent: true, plaqueMorphology: 'calcified', plaqueSurface: 'smooth',
+    plaquePresent: true, plaqueMorphology: 'type5', plaqueSurface: 'smooth',
     plaqueLengthMm: 8,
   },
   'vert-v2-right': { psvCmS: 45, flowDirection: 'antegrade', subclavianStealPhase: 0 },
-  'vert-v2-left': { psvCmS: 22, flowDirection: 'bidirectional', subclavianStealPhase: 2 },
+  'vert-v2-left': { psvCmS: 22, flowDirection: 'retrograde', subclavianStealPhase: 2 },
 };
 
 const nascet: CarotidNascetClassification = {

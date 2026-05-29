@@ -39,6 +39,13 @@ export interface AnatomyDiagramProps {
   readonly highlightId?: SegmentId | null;
   /** Segment currently selected for redraw, in `mode === 'edit-segment'`. */
   readonly editingSegmentId?: SegmentId | null;
+  /** Non-competency color resolver (e.g. carotid severity bands). */
+  readonly colorFn?: (id: SegmentId) => { fill: string; stroke: string };
+  /** Custom tooltip status text (used alongside `colorFn`). */
+  readonly tooltipText?: (id: SegmentId) => string;
+  /** Overlay mode = colored stroke over a backdrop image (default, venous).
+   *  When false, segments are solid FILLED shapes (carotid fillable vector). */
+  readonly overlay?: boolean;
   readonly onSegmentClick?: (id: SegmentId, current: Competency) => void;
   readonly onCommitStroke: (stroke: DrawingStroke) => void;
   readonly onEraseStroke: (strokeId: string) => void;
@@ -57,6 +64,9 @@ export const AnatomyDiagram = memo(function AnatomyDiagram({
   size,
   highlightId,
   editingSegmentId,
+  colorFn,
+  tooltipText,
+  overlay = true,
   onSegmentClick,
   onCommitStroke,
   onEraseStroke,
@@ -72,7 +82,10 @@ export const AnatomyDiagram = memo(function AnatomyDiagram({
   return (
     <Stack gap={6} align="center" className={classes.panel}>
       <Text className={classes.viewLabel}>
-        {t(`anatomy.view.${view}`, view === 'le-anterior' ? 'Anterior view' : 'Posterior view')}
+        {t(
+          `anatomy.view.${view}`,
+          view === 'le-posterior' ? 'Posterior view' : 'Anterior view',
+        )}
       </Text>
       <div
         className={classes.stage}
@@ -86,9 +99,11 @@ export const AnatomyDiagram = memo(function AnatomyDiagram({
           pathOverrides={pathOverrides}
           size="lg"
           interactive={mode === 'click' || mode === 'edit-segment'}
+          colorFn={colorFn}
+          tooltipText={tooltipText}
           onSegmentClick={onSegmentClick}
           highlightId={editingSegmentId ?? highlightId ?? null}
-          overlay
+          overlay={overlay}
         />
         <DrawingCanvas
           view={view}

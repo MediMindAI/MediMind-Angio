@@ -8,6 +8,8 @@
  *   - I83.x  Varicose veins (with/without complications)
  *   - I87.x  Venous insufficiency, post-thrombotic syndrome
  *   - Z86.x  Personal history of venous thromboembolism
+ *   - I65.x  Occlusion/stenosis of precerebral arteries (carotid/vertebral/
+ *            basilar) + I63/I77/R55 for the carotid-duplex indication set.
  *   - Plus an "other" escape hatch for free-text indications.
  *
  * Each code carries display strings in Georgian (primary), English (canonical),
@@ -280,6 +282,105 @@ export const VASCULAR_ICD10_CODES: ReadonlyArray<VascularIcd10Entry> = [
       ka: 'ტკივილი მარცხენა ფეხში',
       en: 'Pain in left leg',
       ru: 'Боль в левой ноге',
+    },
+  },
+
+  // --- I65 — Occlusion/stenosis of precerebral arteries (carotid duplex) ---
+  {
+    code: 'I65.21',
+    display: {
+      ka: 'მარჯვენა საძილე არტერიის სტენოზი',
+      en: 'Occlusion and stenosis of right carotid artery',
+      ru: 'Окклюзия и стеноз правой сонной артерии',
+    },
+  },
+  {
+    code: 'I65.22',
+    display: {
+      ka: 'მარცხენა საძილე არტერიის სტენოზი',
+      en: 'Occlusion and stenosis of left carotid artery',
+      ru: 'Окклюзия и стеноз левой сонной артерии',
+    },
+  },
+  {
+    code: 'I65.23',
+    display: {
+      ka: 'საძილე არტერიების ორმხრივი სტენოზი',
+      en: 'Occlusion and stenosis of bilateral carotid arteries',
+      ru: 'Окклюзия и стеноз сонных артерий с обеих сторон',
+    },
+  },
+  {
+    code: 'I65.29',
+    display: {
+      ka: 'საძილე არტერიის სტენოზი, დაუზუსტებელი მხარე',
+      en: 'Occlusion and stenosis of unspecified carotid artery',
+      ru: 'Окклюзия и стеноз неуточнённой сонной артерии',
+    },
+  },
+  {
+    code: 'I65.01',
+    display: {
+      ka: 'მარჯვენა ხერხემლის არტერიის სტენოზი',
+      en: 'Occlusion and stenosis of right vertebral artery',
+      ru: 'Окклюзия и стеноз правой позвоночной артерии',
+    },
+  },
+  {
+    code: 'I65.02',
+    display: {
+      ka: 'მარცხენა ხერხემლის არტერიის სტენოზი',
+      en: 'Occlusion and stenosis of left vertebral artery',
+      ru: 'Окклюзия и стеноз левой позвоночной артерии',
+    },
+  },
+  {
+    code: 'I65.1',
+    display: {
+      ka: 'ბაზილარული არტერიის სტენოზი',
+      en: 'Occlusion and stenosis of basilar artery',
+      ru: 'Окклюзия и стеноз базилярной артерии',
+    },
+  },
+  {
+    code: 'I65.8',
+    display: {
+      ka: 'სხვა პრეცერებრალური არტერიის სტენოზი (მაგ. ლავიწქვეშა მოპარვა)',
+      en: 'Occlusion and stenosis of other precerebral arteries',
+      ru: 'Окклюзия и стеноз других прецеребральных артерий',
+    },
+  },
+  // --- I63 / I77 / Z86 — Related arterial indications ----------------------
+  {
+    code: 'I63.20',
+    display: {
+      ka: 'ცერებრალური ინფარქტი პრეცერებრალური არტერიების სტენოზის/ოკლუზიის გამო',
+      en: 'Cerebral infarction due to occlusion/stenosis of precerebral arteries',
+      ru: 'Инфаркт мозга вследствие окклюзии/стеноза прецеребральных артерий',
+    },
+  },
+  {
+    code: 'I77.1',
+    display: {
+      ka: 'არტერიის სტენოზი',
+      en: 'Stricture of artery',
+      ru: 'Сужение артерии',
+    },
+  },
+  {
+    code: 'Z86.73',
+    display: {
+      ka: 'პირადი ისტორია: TIA ან ცერებრალური ინფარქტი ნარჩენი დეფიციტის გარეშე',
+      en: 'Personal history of TIA and cerebral infarction without residual deficits',
+      ru: 'В анамнезе: ТИА и инфаркт мозга без резидуального дефицита',
+    },
+  },
+  {
+    code: 'R55',
+    display: {
+      ka: 'სინკოპე და კოლაფსი',
+      en: 'Syncope and collapse',
+      ru: 'Обморок и коллапс',
     },
   },
 
