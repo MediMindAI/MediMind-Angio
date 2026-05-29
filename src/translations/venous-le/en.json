@@ -194,7 +194,9 @@
     },
     "competency": {
       "normal": "Competent",
+      "occluded": "Occluded",
       "incompetent": "Incompetent",
+      "inconclusive": "Inconclusive",
       "ablated": "Post-ablation"
     },
     "bulk": {
@@ -342,7 +344,7 @@
     },
     "anatomy": {
       "title": "Diagram",
-      "subtitle": ""
+      "subtitle": "Colors reflect segment competency and patency."
     },
     "drawing": {
       "ariaLabel": "Drawing tools",

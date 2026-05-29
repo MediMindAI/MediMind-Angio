@@ -194,7 +194,9 @@
     },
     "competency": {
       "normal": "კომპეტენტური",
+      "occluded": "ოკლუზია",
       "incompetent": "რეფლუქი",
+      "inconclusive": "დაუდგენელი",
       "ablated": "აბლირებული"
     },
     "bulk": {
@@ -342,7 +344,7 @@
     },
     "anatomy": {
       "title": "დიაგრამა",
-      "subtitle": ""
+      "subtitle": "ფერები ასახავს სეგმენტის კომპეტენტურობასა და გამავლობას."
     },
     "drawing": {
       "ariaLabel": "სახატავი ხელსაწყოები",
