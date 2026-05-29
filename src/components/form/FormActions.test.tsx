@@ -83,6 +83,7 @@ vi.mock('../pdf/buildReportLabels', () => ({
 
 vi.mock('../../services/narrativeService', () => ({
   buildLocalizedNarrative: () => undefined,
+  buildLocalizedNarrativeFromForm: () => undefined,
 }));
 
 vi.mock('../../services/fontService', () => ({

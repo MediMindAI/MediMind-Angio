@@ -35,6 +35,7 @@
 import type { EncounterDraft } from '../types/encounter';
 import type { CptCode, FormState, StudyHeader } from '../types/form';
 import type { StudyType } from '../types/study';
+import { localDateToIso } from './dateHelpers';
 
 /**
  * Minimal shape every Phase-3b per-study reducer state shares.
@@ -138,7 +139,7 @@ function buildPerStudyHeader(slot: PerStudySlotCommon, encounter: EncounterDraft
   // in StudyHeader.tsx) — not part of canonical StudyHeader. Dropped
   // from the projection to keep types honest.
   return {
-    studyDate: slot.studyDate || encounter.header.encounterDate || new Date().toISOString().slice(0, 10),
+    studyDate: slot.studyDate || encounter.header.encounterDate || localDateToIso(new Date()) || '',
     accessionNumber: slot.accessionNumber,
     cptCode: slot.cptCode,
     patientPosition: slot.patientPosition,

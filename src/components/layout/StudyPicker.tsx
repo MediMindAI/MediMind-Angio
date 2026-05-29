@@ -165,8 +165,7 @@ export const StudyPicker = memo(function StudyPicker(): React.ReactElement {
         navigate(plugin.route);
         return;
       }
-      // eslint-disable-next-line no-console
-      console.info('[StudyPicker] start study (not yet available):', studyKey);
+      // Coming-soon study with no route — no-op (the card is disabled in the UI).
     },
     [navigate],
   );

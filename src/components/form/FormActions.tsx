@@ -44,7 +44,8 @@ import type { StudyType } from '../../types/study';
 import { downloadFhirBundle } from '../../services/fhirBuilder';
 import { projectStudyToFormState } from '../../services/encounterProjection';
 import { buildReportLabels } from '../pdf/buildReportLabels';
-import { buildLocalizedNarrative } from '../../services/narrativeService';
+import { buildLocalizedNarrative, buildLocalizedNarrativeFromForm } from '../../services/narrativeService';
+import { localDateToIso } from '../../services/dateHelpers';
 import {
   isArterialFindings,
   isCarotidFindings,
@@ -115,7 +116,7 @@ type AssetDeps = {
   loadAnatomyForPdf: typeof import('../pdf/anatomyToPdfSvg').loadAnatomyForPdf;
   isVenousForm: typeof import('../../types/form').isVenousForm;
   deriveArterialCompetency: typeof import('../studies/arterial-le/config').deriveArterialCompetency;
-  deriveCarotidCompetency: typeof import('../studies/carotid/config').deriveCarotidCompetency;
+  resolveCarotidBand: typeof import('../studies/carotid/config').resolveCarotidBand;
   carotidDiagramColor: typeof import('../studies/carotid/config').carotidDiagramColor;
   SEVERITY_COLORS: typeof import('../../constants/theme-colors').SEVERITY_COLORS;
 };
@@ -125,7 +126,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     { loadAnatomyForPdf },
     { isVenousForm },
     { deriveArterialCompetency },
-    { deriveCarotidCompetency, carotidDiagramColor },
+    { resolveCarotidBand, carotidDiagramColor },
     { SEVERITY_COLORS },
   ] = await Promise.all([
     import('../pdf/anatomyToPdfSvg'),
@@ -138,7 +139,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     loadAnatomyForPdf,
     isVenousForm,
     deriveArterialCompetency,
-    deriveCarotidCompetency,
+    resolveCarotidBand,
     carotidDiagramColor,
     SEVERITY_COLORS,
   };
@@ -162,7 +163,7 @@ async function resolveStudyAssets(
     loadAnatomyForPdf,
     isVenousForm,
     deriveArterialCompetency,
-    deriveCarotidCompetency,
+    resolveCarotidBand,
     carotidDiagramColor,
     SEVERITY_COLORS,
   } = deps ?? (await loadAssetDeps());
@@ -197,22 +198,23 @@ async function resolveStudyAssets(
     };
     const anterior = await loadAnatomyForPdf('le-arterial-anterior', {}, { competencyFn });
     anatomy = { anterior, posterior: null };
+    localized = buildLocalizedNarrativeFromForm(studyForm, t);
   } else if (studyForm.studyType === 'carotid') {
     const rawFindings = studyForm.parameters['segmentFindings'];
     const carotidFindings = isCarotidFindings(rawFindings) ? rawFindings : {};
     const rawNascet = studyForm.parameters['nascet'];
     const nascet = isCarotidNascet(rawNascet) ? rawNascet : {};
     const competencyFn = (fullId: string): { fill: string; stroke: string } => {
-      const side = fullId.endsWith('-left') ? 'left' : fullId.endsWith('-right') ? 'right' : null;
-      const nascetCat = side ? nascet[side] : undefined;
-      const band = deriveCarotidCompetency(
-        carotidFindings[fullId as keyof typeof carotidFindings],
-        nascetCat,
-      );
+      const band = resolveCarotidBand(carotidFindings, nascet, fullId);
       return carotidDiagramColor(fullId, band);
     };
-    const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn });
+    const rawDrawings = studyForm.parameters['drawings'];
+    const drawings = Array.isArray(rawDrawings)
+      ? (rawDrawings as ReadonlyArray<import('../../types/drawing').DrawingStroke>)
+      : [];
+    const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn, drawings });
     anatomy = { anterior, posterior: null };
+    localized = buildLocalizedNarrativeFromForm(studyForm, t);
   }
 
   return { anatomy, localized };
@@ -378,7 +380,7 @@ export const FormActions = memo(function FormActions({
       anchor.href = url;
       const filename = isUnifiedMode
         ? `encounter-${(encounter?.header.patientName || 'patient').replace(/\s+/g, '-')}-${
-            encounter?.header.encounterDate ?? new Date().toISOString().slice(0, 10)
+            encounter?.header.encounterDate ?? localDateToIso(new Date()) ?? ''
           }.pdf`
         : `${baseFilename}.pdf`;
       anchor.download = filename;

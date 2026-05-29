@@ -92,7 +92,8 @@
   "anatomy": {
     "view": {
       "le-anterior": "Anterior view",
-      "le-posterior": "Posterior view"
+      "le-posterior": "Posterior view",
+      "neck-carotid": "Carotid / vertebral"
     },
     "legend": {
       "label": "Competency legend"

@@ -92,7 +92,8 @@
   "anatomy": {
     "view": {
       "le-anterior": "Передний вид",
-      "le-posterior": "Задний вид"
+      "le-posterior": "Задний вид",
+      "neck-carotid": "Сонные / позвоночные артерии"
     },
     "legend": {
       "label": "Легенда состоятельности"

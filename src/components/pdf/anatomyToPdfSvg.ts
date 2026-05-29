@@ -345,6 +345,13 @@ export async function loadAnatomyForPdf(
     }
   }
 
+  // Observability: a structurally-valid but mis-tagged/re-tagged SVG (e.g. after
+  // a future `npm run anatomy:tag` run) yields zero paths and renders a blank
+  // diagram silently. Warn so it's caught in dev/CI rather than shipping blank.
+  if (elements.length === 0) {
+    console.warn(`[anatomyToPdfSvg] no paths parsed for view "${view}" — PDF diagram will be blank`);
+  }
+
   return backdropHref ? { viewBox, elements, backdropHref } : { viewBox, elements };
 }
 

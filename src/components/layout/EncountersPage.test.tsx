@@ -23,6 +23,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import { EncountersPage } from './EncountersPage';
 import { TranslationProvider } from '../../contexts/TranslationContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
@@ -48,7 +49,7 @@ function Wrap({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <MemoryRouter>
       <MantineProvider>
-        <TranslationProvider>{children}</TranslationProvider>
+        <TranslationProvider><ThemeProvider>{children}</ThemeProvider></TranslationProvider>
       </MantineProvider>
     </MemoryRouter>
   );

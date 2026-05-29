@@ -51,6 +51,7 @@ import { EncounterContextBanner } from '../components/layout/EncounterContextBan
 import { EncountersPage } from '../components/layout/EncountersPage';
 import { EncounterProvider, useEncounter } from '../contexts/EncounterContext';
 import { TranslationProvider } from '../contexts/TranslationContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
@@ -119,7 +120,7 @@ function Wrap({ children, initialEntries = ['/'] }: WrapProps): React.ReactEleme
   return (
     <MemoryRouter initialEntries={initialEntries}>
       <MantineProvider>
-        <TranslationProvider>{children}</TranslationProvider>
+        <TranslationProvider><ThemeProvider>{children}</ThemeProvider></TranslationProvider>
       </MantineProvider>
     </MemoryRouter>
   );
@@ -224,10 +225,10 @@ describe('Encounter pivot — full happy path (Phase 5 Item 7)', () => {
 
     // Pick the venous + arterial study checkboxes (plugin keys: venousLE, arterialLE).
     const venousCheckbox = screen.getByTestId(
-      'intake-study-checkbox-venousLE',
+      'intake-study-venousLE',
     ) as HTMLInputElement;
     const arterialCheckbox = screen.getByTestId(
-      'intake-study-checkbox-arterialLE',
+      'intake-study-arterialLE',
     ) as HTMLInputElement;
     await act(async () => {
       fireEvent.click(venousCheckbox);

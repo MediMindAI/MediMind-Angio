@@ -52,6 +52,10 @@
       "type4": "Type IV — fully echogenic",
       "type5": "Type V — calcified, non-identifiable"
     },
+    "surface": {
+      "smooth": "Smooth",
+      "irregular": "Irregular"
+    },
     "severity": {
       "normal": "Normal",
       "mild": "Mild",

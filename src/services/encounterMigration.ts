@@ -35,6 +35,7 @@ import type {
 import type { StudyType } from '../types/study';
 import type { IndicationCode } from '../types/form';
 import { saveEncounter } from './encounterStore';
+import { localDateToIso } from './dateHelpers';
 import { keyStudyDraft } from '../constants/storage-keys';
 
 /**
@@ -110,7 +111,7 @@ function buildEncounterHeader(legacyHeader: Record<string, unknown>): EncounterH
     asString(legacyHeader.indication); // Wave 4.9 deprecated alias
 
   const studyDate = asString(legacyHeader.studyDate);
-  const encounterDate = studyDate ?? new Date().toISOString().slice(0, 10);
+  const encounterDate = studyDate ?? localDateToIso(new Date()) ?? '';
 
   return {
     patientName: asString(legacyHeader.patientName) ?? '',

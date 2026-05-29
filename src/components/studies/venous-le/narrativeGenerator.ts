@@ -283,7 +283,7 @@ function buildSideNarrative(
   // (d.1) Sub-threshold reflux — measured but below pathological cutoff.
   for (const { segment, ms } of classified.subthresholdReflux) {
     const vein = segmentDisplay(segment);
-    sentences.push(`Reflux measured in the ${vein} (${ms} cm/s).`);
+    sentences.push(`Reflux measured in the ${vein} (${ms} ms).`);
     sentenceKeys.push(`venousLE.narrative.refluxMeasured.${segment}.${side}`);
     sentenceEntries.push({
       key: 'venousLE.narrative.refluxMeasured',

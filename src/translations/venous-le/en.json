@@ -188,7 +188,7 @@
       "thrombosis": "Thrombosis",
       "phasicity": "Flow phasicity",
       "competency": "Competency",
-      "refluxDurationMs": "Reflux duration (cm/s)",
+      "refluxDurationMs": "Reflux duration (ms)",
       "apDiameterMm": "Diameter (mm)",
       "depthMm": "Depth (mm)"
     },
@@ -220,8 +220,8 @@
         "right": "Normal spontaneous phasic flow in the right lower extremity.",
         "left": "Normal spontaneous phasic flow in the left lower extremity."
       },
-      "refluxNoted": "Marked reflux ({ms} cm/s) — {vein}.",
-      "refluxMeasured": "Reflux at {vein} — {ms} cm/s.",
+      "refluxNoted": "Marked reflux ({ms} ms) — {vein}.",
+      "refluxMeasured": "Reflux at {vein} — {ms} ms.",
       "incompetent": "Incompetent valves noted — {vein}.",
       "postAblation": "Post-ablation status — {vein}.",
       "nonCompressible": "Non-compressible segment — {vein}. Finding suggestive of acute DVT.",
@@ -231,7 +231,7 @@
       "inconclusive": "Study limited — inconclusive compressibility assessment ({vein})."
     },
     "conclusion": {
-      "reflux": "Pathological reflux ({ms} cm/s) — {side} {vein}.",
+      "reflux": "Pathological reflux ({ms} ms) — {side} {vein}.",
       "acuteDvt": "Acute DVT suspected — {side} {vein}.",
       "chronicPostThrombotic": "Chronic post-thrombotic changes — {side} {vein}.",
       "inconclusive": "Study limitation — inconclusive assessment of {side} {vein}.",
@@ -288,8 +288,8 @@
     "refluxTable": {
       "title": "Reflux time and measurements",
       "subtitle": "Numeric parameters for segments with recorded findings",
-      "ms": "Duration (cm/s)",
-      "msShort": "Dur. (cm/s)",
+      "ms": "Duration (ms)",
+      "msShort": "Dur. (ms)",
       "ap": "Diameter (mm)",
       "depth": "Depth (mm)",
       "empty": "No segments recorded yet"

@@ -260,12 +260,29 @@ export function deriveCarotidCompetency(
 }
 
 /**
- * Fill/stroke for a carotid severity band on the FILLED vessel diagram.
- * Normal/patent renders neutral grey (so a normal study isn't a wall of
- * green and disease pops); all abnormal bands use the shared severity
- * palette (amber → orange → red → maroon). Used by both the form-side
- * diagram (`colorFn`) and the PDF (`competencyFn`) so they always agree.
+ * Resolve the diagram severity band for ANY segment id, including the
+ * `bulb-*` segments which exist only on the diagram (not in `CAROTID_VESSELS`,
+ * so templates/table/NASCET never create a `bulb` finding). The carotid bulb
+ * IS the bifurcation where the NASCET stenosis is graded, so when it has no
+ * finding of its own it mirrors the **proximal ICA** of the same side — this
+ * makes templates, NASCET, and ICA findings color the bulb instead of leaving
+ * it stuck on "normal". A direct bulb finding (e.g. a click override) still
+ * wins.
  */
+export function resolveCarotidBand(
+  findings: CarotidFindings,
+  nascet: CarotidNascetClassification,
+  id: string,
+): CarotidCompetency {
+  const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
+  const nascetCat = side ? nascet[side] : undefined;
+  let finding = findings[id as CarotidVesselFullId];
+  if (!finding && side && id.startsWith('bulb-')) {
+    finding = findings[`ica-prox-${side}` as CarotidVesselFullId];
+  }
+  return deriveCarotidCompetency(finding, nascetCat);
+}
+
 /** Strip to {fill,stroke} (palette constants also carry an `overlay` field). */
 const fs = (c: { fill: string; stroke: string }): { fill: string; stroke: string } => ({
   fill: c.fill,
@@ -273,20 +290,20 @@ const fs = (c: { fill: string; stroke: string }): { fill: string; stroke: string
 });
 
 /**
- * Severity band → diagram color, kept CONSISTENT with the established venous
- * palette: `normal` and `occluded` reuse the venous `COMPETENCY_COLORS`
- * (slate grey + black) so a patent/occluded vessel looks identical across the
- * venous and carotid reports; the in-between stenosis bands use the shared
- * arterial `SEVERITY_COLORS` (amber → orange → red).
+ * Severity band → diagram color. There is no mandated clinical color standard
+ * for carotid stenosis (SRU/NASCET/ESVS define velocity criteria, not colors);
+ * the universal de-facto convention is the traffic-light / heat scale —
+ * green (normal) → amber (mild) → orange (moderate) → red (severe) →
+ * dark-red (occluded). That is exactly the shared arterial `SEVERITY_COLORS`,
+ * so carotid + arterial-LE stay consistent. Used by both the form-side diagram
+ * (`colorFn`) and the PDF (`competencyFn`) so they always agree.
  */
 export function carotidBandColor(band: CarotidCompetency): { fill: string; stroke: string } {
-  if (band === 'normal') return fs(COMPETENCY_COLORS.normal); // slate grey, == venous
-  if (band === 'occluded') return fs(COMPETENCY_COLORS.occluded); // black, == venous
-  return fs(SEVERITY_COLORS[band]); // mild / moderate / severe
+  return fs(SEVERITY_COLORS[band]);
 }
 
-/** Intracranial circle-of-Willis blob — not graded; uses the venous red. */
-const CAROTID_INTRACRANIAL_COLOR = fs(COMPETENCY_COLORS.incompetent); // #dc2626
+/** Intracranial circle-of-Willis blob — not graded; neutral venous red tone. */
+const CAROTID_INTRACRANIAL_COLOR = fs(COMPETENCY_COLORS.incompetent);
 
 /**
  * Fill for any diagram path id — handles the two non-graded static shapes

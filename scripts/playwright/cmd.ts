@@ -27,7 +27,7 @@ const RETRYABLE_ACTIONS = new Set(['click', 'fill', 'waitfor']);
 
 interface ServerResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
@@ -70,10 +70,13 @@ async function main() {
   let context = 'default';
   const filteredArgs: string[] = [];
   for (let i = 0; i < rawArgs.length; i++) {
-    if (rawArgs[i] === '--context' && i + 1 < rawArgs.length) {
-      context = rawArgs[++i];
+    const arg = rawArgs[i];
+    if (arg === undefined) continue;
+    if (arg === '--context' && i + 1 < rawArgs.length) {
+      context = rawArgs[i + 1] ?? context;
+      i++;
     } else {
-      filteredArgs.push(rawArgs[i]);
+      filteredArgs.push(arg);
     }
   }
 
@@ -135,6 +138,10 @@ Examples:
   }
 
   const action = filteredArgs[0];
+  if (action === undefined) {
+    console.error('No action provided');
+    process.exit(1);
+  }
   const commandArgs = filteredArgs.slice(1);
 
   try {

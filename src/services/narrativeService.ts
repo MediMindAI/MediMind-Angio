@@ -28,6 +28,11 @@ import { generateArterialNarrative } from '../components/studies/arterial-le/nar
 import { generateCarotidNarrative } from '../components/studies/carotid/narrativeGenerator';
 import { suggestNascetCategory } from '../components/studies/carotid/stenosisCalculator';
 import type { CarotidNascetClassification } from '../components/studies/carotid/config';
+import enCore from '../translations/en.json';
+import enArterialLE from '../translations/arterial-le/en.json';
+import enCarotid from '../translations/carotid/en.json';
+import enCeap from '../translations/ceap/en.json';
+import enVenousLE from '../translations/venous-le/en.json';
 
 export { generateNarrative };
 export type { NarrativeOutput, NarrativeKeyEntry };
@@ -187,4 +192,88 @@ export function buildLocalizedNarrative(
     leftFindings: leftSentences.join(' '),
     conclusions,
   };
+}
+
+/**
+ * Study-type-agnostic localized narrative. Unlike `buildLocalizedNarrative`
+ * (venous-only), this routes through `narrativeFromFormState`, so arterial-LE
+ * and carotid narratives reach the PDF too. (Prior bug: `resolveStudyAssets`
+ * only built `localized` for venous, silently dropping carotid/arterial
+ * findings + conclusions from the report.)
+ */
+export function buildLocalizedNarrativeFromForm(
+  form: FormState,
+  t: TranslateFn,
+): LocalizedNarrative {
+  const base = narrativeFromFormState(form);
+  return {
+    rightFindings: base.rightFindingsEntries.map((e) => resolveEntry(e, t)).join(' '),
+    leftFindings: base.leftFindingsEntries.map((e) => resolveEntry(e, t)).join(' '),
+    conclusions: base.conclusionsEntries.map((e) => resolveEntry(e, t)),
+  };
+}
+
+// ============================================================================
+// English fallback resolver — for the FHIR DiagnosticReport.conclusion, which
+// is canonical English (the venous generator already emits English `.conclusions`
+// directly; carotid + arterial emit only `conclusionsEntries`, so we resolve
+// those to English here using the bundled en translation namespaces).
+// ============================================================================
+
+function deepMergeEn(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  for (const k of Object.keys(source)) {
+    const v = source[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const existing = target[k];
+      const next: Record<string, unknown> =
+        existing && typeof existing === 'object' && !Array.isArray(existing)
+          ? { ...(existing as Record<string, unknown>) }
+          : {};
+      deepMergeEn(next, v as Record<string, unknown>);
+      target[k] = next;
+    } else {
+      target[k] = v;
+    }
+  }
+}
+
+const EN_TREE: Record<string, unknown> = {};
+for (const ns of [enCore, enArterialLE, enCarotid, enCeap, enVenousLE]) {
+  deepMergeEn(EN_TREE, ns);
+}
+
+function getEnValue(path: string): string | undefined {
+  let current: unknown = EN_TREE;
+  for (const k of path.split('.')) {
+    if (current && typeof current === 'object' && k in current) {
+      current = (current as Record<string, unknown>)[k];
+    } else {
+      return undefined;
+    }
+  }
+  return typeof current === 'string' ? current : undefined;
+}
+
+/** English-only `t` mirroring TranslationContext's lookup + `{name}`/`{{name}}` interpolation. */
+const englishT: TranslateFn = (key, paramsOrDefault) => {
+  const isDefault = typeof paramsOrDefault === 'string';
+  const params = isDefault ? undefined : paramsOrDefault;
+  const fallback = isDefault ? paramsOrDefault : key;
+  const value = getEnValue(key);
+  if (value === undefined) return fallback;
+  if (params) {
+    return value.replace(/\{\{?(\w+)\}?\}/g, (match, paramKey: string) => {
+      const v = params[paramKey];
+      return v !== undefined && v !== null ? String(v) : match;
+    });
+  }
+  return value;
+};
+
+/**
+ * English conclusion sentences for a narrative — used by the FHIR
+ * DiagnosticReport builder when `narrative.conclusions` is empty (carotid/arterial).
+ */
+export function resolveConclusionsEnglish(narrative: NarrativeOutput): string[] {
+  return narrative.conclusionsEntries.map((e) => resolveEntry(e, englishT));
 }

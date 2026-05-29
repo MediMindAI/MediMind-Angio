@@ -92,7 +92,8 @@
   "anatomy": {
     "view": {
       "le-anterior": "წინა ხედი",
-      "le-posterior": "უკანა ხედი"
+      "le-posterior": "უკანა ხედი",
+      "neck-carotid": "საძილე / ხერხემლის არტერიები"
     },
     "legend": {
       "label": "სარქვლოვანი კომპეტენტურობის ლეგენდა"
@@ -257,7 +258,7 @@
       "discard": "გაუქმება",
       "discardConfirmTitle": "გსურთ ვიზიტის გაუქმება?",
       "discardConfirmBody": "ამ ვიზიტის ყველა მონაცემი სამუდამოდ წაიშლება.",
-      "discardConfirmAction": "გაუქმება",
+      "discardConfirmAction": "წაშლა",
       "clearAll": "ყველა ვიზიტის წაშლა",
       "clearAllConfirmTitle": "გსურთ ყველა ვიზიტის წაშლა?",
       "clearAllConfirmBody": "წაიშლება ყველა შენახული ვიზიტი და კვლევის მონახაზი. ამ ქმედების უკუქცევა შეუძლებელია.",

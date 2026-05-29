@@ -109,7 +109,6 @@ function writeJson(key: string, value: unknown): void {
   } catch (err) {
     // Quota exceeded or mode-locked storage — surface to console for now.
     // A future UX iteration can notify the user with a toast.
-    // eslint-disable-next-line no-console
     console.warn('[customTemplatesService] failed to persist', key, err);
   }
 }
@@ -158,7 +157,6 @@ function runLegacyMigrationOnce(): void {
     removeKey(LEGACY_RECENT_KEY);
     storage.setItem(MIGRATION_FLAG_KEY, '1');
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('[customTemplatesService] migration failed', err);
   }
 }

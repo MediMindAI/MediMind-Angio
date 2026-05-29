@@ -98,9 +98,7 @@ export function buildSegmentObservationEntries(ctx: BuildContext): Array<BundleE
       appendCarotidComputedObservations(ctx, entries, findings);
     }
     const nascet = extractCarotidNascet(ctx.form);
-    if (nascet) {
-      appendCarotidNascetObservations(ctx, entries, nascet);
-    }
+    appendCarotidNascetObservations(ctx, entries, nascet, findings);
     return entries;
   }
 

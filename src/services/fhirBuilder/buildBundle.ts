@@ -28,6 +28,7 @@ import type {
   EmittedResource,
 } from '../../types/fhir';
 import { createContext } from './context';
+import { localDateToIso } from '../dateHelpers';
 import { buildPatientEntry } from './patient';
 import {
   buildInstitutionOrganizationEntry,
@@ -144,7 +145,7 @@ export function downloadFhirBundle(form: FormState, filename?: string): void {
   a.href = url;
   a.download =
     filename ??
-    `medimind-angio-${form.studyType}-${form.header.studyDate || new Date().toISOString().slice(0, 10)}.json`;
+    `medimind-angio-${form.studyType}-${form.header.studyDate || localDateToIso(new Date()) || ''}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

@@ -15,8 +15,8 @@ import type {
   CarotidVesselBase,
   CarotidVesselFinding,
 } from '../../../components/studies/carotid/config';
-import { isCca, isVertebral } from '../../../components/studies/carotid/config';
-import { icaCcaRatio } from '../../../components/studies/carotid/stenosisCalculator';
+import { isCca, isIca, isVertebral } from '../../../components/studies/carotid/config';
+import { icaCcaRatio, suggestNascetCategory } from '../../../components/studies/carotid/stenosisCalculator';
 import type { BundleEntry, Observation } from '../../../types/fhir';
 import { MEDIMIND_CODESYSTEMS } from '../../../constants/fhir-systems';
 import type { BuildContext } from '../context';
@@ -63,7 +63,11 @@ export function appendCarotidFindingObservations(
     loincDisplay: 'Peak systolic velocity',
     unit: 'cm/s',
     tag,
-    isAbnormal: typeof finding.psvCmS === 'number' && finding.psvCmS >= 125,
+    // 125 cm/s is the SRU/NASCET ≥50%-stenosis threshold for the ICA only; it
+    // is not a meaningful abnormal cutoff for the CCA (normal can approach
+    // 100–120), ECA, or vertebrals. Gate the flag on ICA; still emit the value
+    // for every vessel.
+    isAbnormal: isIca(vesselBase) && typeof finding.psvCmS === 'number' && finding.psvCmS >= 125,
   });
   // Numeric: EDV
   pushLoincNumeric(ctx, out, {
@@ -76,7 +80,8 @@ export function appendCarotidFindingObservations(
     loincDisplay: 'End diastolic velocity',
     unit: 'cm/s',
     tag,
-    isAbnormal: typeof finding.edvCmS === 'number' && finding.edvCmS >= 100,
+    // EDV ≥100 is likewise an ICA ≥70%-stenosis criterion — ICA-only.
+    isAbnormal: isIca(vesselBase) && typeof finding.edvCmS === 'number' && finding.edvCmS >= 100,
   });
   // Numeric: intima-media thickness (common carotid only; > 1.0 mm abnormal,
   // ≥ 1.5 mm is the plaque threshold per Mannheim consensus).
@@ -201,11 +206,20 @@ function carotidSnomedKey(base: CarotidVesselBase): string {
 export function appendCarotidNascetObservations(
   ctx: BuildContext,
   out: Array<BundleEntry<Observation>>,
-  nascet: CarotidNascetClassification
+  nascet: CarotidNascetClassification | undefined,
+  findings: CarotidFindings | undefined
 ): void {
   const bodySite = bodySiteForSegment('ica');
   for (const side of ['left', 'right'] as const) {
-    const cat = nascet[side];
+    let cat = nascet?.[side];
+    // Keep the FHIR bundle in lockstep with the auto-derived narrative: when
+    // the clinician leaves NASCET blank but ICA velocities indicate stenosis,
+    // emit the same SRU-2003 suggested category the report prose uses. Skip a
+    // suggested 'normal' (no stenosis = no NASCET Observation needed).
+    if (!cat && findings) {
+      const suggested = suggestNascetCategory(findings, side);
+      if (suggested && suggested !== 'normal') cat = suggested;
+    }
     if (!cat) continue;
     const sideText = side === 'right' ? 'Right' : 'Left';
     pushCodedCategorical(ctx, out, {
@@ -215,7 +229,8 @@ export function appendCarotidNascetObservations(
       paramLabel: 'NASCET category',
       value: cat,
       system: MEDIMIND_CODESYSTEMS.NASCET_CATEGORY,
-      tag: `parameter=nascet;side=${side}`,
+      // Single parameter= key (pushCodedCategorical appends ;parameter=nascetCategory).
+      tag: `side=${side}`,
       isAbnormal: cat === 'ge70' || cat === 'near-occlusion' || cat === 'occluded',
     });
   }

@@ -108,7 +108,7 @@ export interface VenousSegmentFinding {
   readonly thrombosis?: Thrombosis;
   readonly phasicity?: Phasicity;
 
-  /** Reflux duration in ms (label displays as "სმ/წმ" but value remains time-based). */
+  /** Reflux duration in milliseconds (time-based; labels render as ms / მწმ / мс). */
   readonly refluxDurationMs?: number;
   /** Vein diameter in mm. */
   readonly apDiameterMm?: number;

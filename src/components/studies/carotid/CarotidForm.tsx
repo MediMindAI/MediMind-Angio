@@ -48,6 +48,7 @@ import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
 import { SaveTemplateDialog, type SaveTemplatePayload } from '../../form/SaveTemplateDialog';
 import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
+import { localDateToIso } from '../../../services/dateHelpers';
 import {
   loadCustomTemplates,
   loadRecentTemplateIds,
@@ -62,7 +63,7 @@ import type {
   CarotidVesselFinding,
   CarotidVesselFullId,
 } from './config';
-import { carotidBandColor, carotidDiagramColor, deriveCarotidCompetency } from './config';
+import { carotidBandColor, carotidDiagramColor, resolveCarotidBand } from './config';
 import { AnatomyLegend } from '../../anatomy';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
 import { NASCETPicker } from './NASCETPicker';
@@ -155,7 +156,7 @@ function initialState(): CarotidFormStateV2 {
   return {
     schemaVersion: 2,
     studyType: 'carotid',
-    studyDate: new Date().toISOString().slice(0, 10),
+    studyDate: localDateToIso(new Date()) ?? '',
     cptCode: defaultCarotidCpt(),
     findings: {},
     nascet: {},
@@ -613,8 +614,8 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
       // Static, non-graded shapes (intracranial, aorta) have no side — ignore.
       if (!side) return;
       const fullId = id as CarotidVesselFullId;
-      const nascetCat = state.nascet[side];
-      const current = deriveCarotidCompetency(state.findings[fullId], nascetCat);
+      // Start cycling from the band currently SHOWN (bulb mirrors ICA-prox).
+      const current = resolveCarotidBand(state.findings, state.nascet, id);
       const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
       const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
       dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
@@ -643,10 +644,7 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const carotidColorFn = useCallback(
     (id: string): { fill: string; stroke: string } => {
-      const finding = state.findings[id as CarotidVesselFullId];
-      const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
-      const nascetCat = side ? state.nascet[side] : undefined;
-      const band = deriveCarotidCompetency(finding, nascetCat);
+      const band = resolveCarotidBand(state.findings, state.nascet, id);
       return carotidDiagramColor(id, band);
     },
     [state.findings, state.nascet],
@@ -670,10 +668,7 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   // optional; falls back to the English band name if missing.
   const carotidTooltipText = useCallback(
     (id: string): string => {
-      const finding = state.findings[id as CarotidVesselFullId];
-      const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
-      const nascetCat = side ? state.nascet[side] : undefined;
-      const band = deriveCarotidCompetency(finding, nascetCat);
+      const band = resolveCarotidBand(state.findings, state.nascet, id);
       return t(`carotid.severity.${band}`, band);
     },
     [state.findings, state.nascet, t],

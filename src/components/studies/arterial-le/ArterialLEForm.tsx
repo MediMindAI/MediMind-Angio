@@ -43,6 +43,7 @@ import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
 import { SaveTemplateDialog, type SaveTemplatePayload } from '../../form/SaveTemplateDialog';
 import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
+import { localDateToIso } from '../../../services/dateHelpers';
 import {
   loadCustomTemplates,
   loadRecentTemplateIds,
@@ -140,7 +141,7 @@ function initialState(): ArterialFormStateV2 {
   return {
     schemaVersion: 2,
     studyType: 'arterialLE',
-    studyDate: new Date().toISOString().slice(0, 10),
+    studyDate: localDateToIso(new Date()) ?? '',
     cptCode: defaultCpt(),
     findings: {},
     pressures: {},
@@ -236,7 +237,7 @@ function toFormState(state: ArterialFormStateV2, encounter: EncounterDraft | nul
     medications: eh?.medications,
     icd10Codes: eh?.icd10Codes,
     // Per-study fields (local reducer state); studyDate falls back to encounter date.
-    studyDate: state.studyDate || eh?.encounterDate || new Date().toISOString().slice(0, 10),
+    studyDate: state.studyDate || eh?.encounterDate || localDateToIso(new Date()) || '',
     accessionNumber: state.accessionNumber,
     patientPosition: state.patientPosition,
     cptCode: state.cptCode,

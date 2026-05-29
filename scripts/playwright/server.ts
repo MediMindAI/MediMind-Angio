@@ -13,7 +13,7 @@
  *   npx tsx scripts/playwright/cmd.ts stop
  */
 
-import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { chromium, Browser, BrowserContext, BrowserContextOptions, Page } from 'playwright';
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -52,7 +52,7 @@ async function getPageForContext(name: string): Promise<Page> {
   // If we have a saved session for this context, reuse it (skips login).
   const persist = name.startsWith(PERSISTED_CONTEXT_PREFIX);
   const statePath = storageStatePath(name);
-  const contextOpts: any = {
+  const contextOpts: BrowserContextOptions = {
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
   };
@@ -108,7 +108,7 @@ async function closeAllNamedContexts(): Promise<void> {
   contexts.clear();
 }
 
-async function processCommand(action: string, args: string[], contextName: string): Promise<any> {
+async function processCommand(action: string, args: string[], contextName: string): Promise<unknown> {
   // close-context doesn't need a page
   if (action === 'close-context') {
     const name = args[0] || contextName;
@@ -281,70 +281,8 @@ async function processCommand(action: string, args: string[], contextName: strin
       return { x, y, deltaY, wheeled: true };
     }
 
-    case 'login': {
-      const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-      const portalType = (args[0] || 'staff').toLowerCase();
-
-      // DEV-ONLY defaults — not production credentials. See CLAUDE.md for context.
-      const defaults: Record<string, { email: string; password: string }> = {
-        staff: { email: 'admin@medimind.ge', password: 'MediMind2024' },
-        portal: { email: 'einelasha@gmail.com', password: 'Dba545c5fde36242@@' },
-      };
-
-      const creds = defaults[portalType] || defaults.staff;
-      const email = args[1] || creds.email;
-      const password = args[2] || creds.password;
-
-      if (portalType === 'portal') {
-        // Portal: single-step login (email + password on same form)
-        await page.goto(`${BASE_URL}/portal/login`, { waitUntil: 'load', timeout: 30000 });
-
-        // Wait for form or detect already logged in
-        try {
-          await page.waitForSelector('input[placeholder="patient@example.com"]', { timeout: 5000 });
-        } catch {
-          return { portalType, alreadyLoggedIn: true, url: page.url() };
-        }
-
-        await page.fill('input[placeholder="patient@example.com"]', email, { timeout: 10000 });
-        await page.fill('input[placeholder="••••••••"]', password, { timeout: 10000 });
-        await page.click('button[type="submit"]', { timeout: 10000 });
-        await page.waitForURL('**/portal/dashboard**', { timeout: 30000 });
-
-        return { portalType, loggedIn: true, url: page.url() };
-      } else {
-        // Pre-set English language BEFORE navigating so we avoid a reload later
-        await page.goto(`${BASE_URL}/signin`, { waitUntil: 'load', timeout: 30000 });
-        await page.evaluate(() => localStorage.setItem('emrLanguage', 'en'));
-
-        // Wait for email input or detect already logged in
-        try {
-          await page.waitForSelector('input[placeholder="name@domain.com"]', { timeout: 5000 });
-        } catch {
-          return { portalType: 'staff', alreadyLoggedIn: true, url: page.url() };
-        }
-
-        // Step 1: Email
-        await page.fill('input[placeholder="name@domain.com"]', email, { timeout: 10000 });
-        await page.click('button:has-text("Next")', { timeout: 10000 });
-
-        // Step 2: Wait for password field, then fill and submit
-        await page.waitForSelector('input[placeholder="Enter your password"]', { timeout: 10000 });
-        await page.fill('input[placeholder="Enter your password"]', password, { timeout: 10000 });
-        await page.click('button:has-text("Sign In")', { timeout: 10000 });
-
-        // Wait for authenticated redirect
-        await page.waitForURL('**/emr/**', { timeout: 30000 });
-
-        // Wait for the main app to be interactive (a real element, not an arbitrary timeout)
-        await page.waitForSelector('[class*="TopNavBar"], [class*="EMRMainMenu"], nav, header', { timeout: 10000 });
-
-        return { portalType: 'staff', loggedIn: true, url: page.url() };
-      }
-    }
-
     case 'setOffline': {
-      const offline = args[0] === 'true' || args[0] === true;
+      const offline = args[0] === 'true';
       const context = page.context();
       await context.setOffline(offline);
       return { success: true, offline };
@@ -390,7 +328,7 @@ async function main(): Promise<void> {
   });
 
   const pages = defaultContext.pages();
-  defaultPage = pages.length > 0 ? pages[0] : await defaultContext.newPage();
+  defaultPage = pages[0] ?? await defaultContext.newPage();
 
   // Separate browser instance for named contexts (parallel QA agents)
   browser = await chromium.launch({

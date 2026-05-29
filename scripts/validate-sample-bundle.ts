@@ -291,10 +291,12 @@ assert(
   'ServiceRequest.code.coding must include a CPT code',
 );
 
-const transObs = observations.find((o) =>
-  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=transDiameterMm')),
+// AP diameter is the venous diameter parameter the builder emits (the legacy
+// transverse-diameter parameter was removed in the venous-LE refresh).
+const diameterObs = observations.find((o) =>
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=apDiameterMm')),
 );
-assert(transObs !== undefined, 'expected a transverse-diameter Observation');
+assert(diameterObs !== undefined, 'expected an AP-diameter Observation');
 
 const positionObs = observations.find((o) =>
   (o.code.coding ?? []).some((c) => c.code === '8361-8'),

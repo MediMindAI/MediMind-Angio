@@ -31,6 +31,7 @@ import { MantineProvider } from '@mantine/core';
 import { EncounterContextBanner } from './EncounterContextBanner';
 import { EncounterProvider } from '../../contexts/EncounterContext';
 import { TranslationProvider } from '../../contexts/TranslationContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
@@ -92,15 +93,17 @@ function Harness({ encounterId, route }: HarnessProps): React.ReactElement {
     <MemoryRouter initialEntries={[route]}>
       <MantineProvider>
         <TranslationProvider>
-          <EncounterProvider encounterId={encounterId}>
-            <Routes>
-              <Route
-                path="/encounter/:encounterId/:studyType"
-                element={<EncounterContextBanner />}
-              />
-              <Route path="*" element={<EncounterContextBanner />} />
-            </Routes>
-          </EncounterProvider>
+          <ThemeProvider>
+            <EncounterProvider encounterId={encounterId}>
+              <Routes>
+                <Route
+                  path="/encounter/:encounterId/:studyType"
+                  element={<EncounterContextBanner />}
+                />
+                <Route path="*" element={<EncounterContextBanner />} />
+              </Routes>
+            </EncounterProvider>
+          </ThemeProvider>
         </TranslationProvider>
       </MantineProvider>
     </MemoryRouter>
@@ -144,10 +147,9 @@ describe('EncounterContextBanner — render contract', () => {
     expect(screen.getByTestId('encounter-context-banner')).toBeInTheDocument();
     expect(screen.getByTestId('banner-patient-name')).toHaveTextContent('Jane Doe');
     expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('2026-04-25');
-    // Age is computed at runtime; assert it is present and a non-negative number.
-    const ageEl = screen.getByTestId('banner-patient-age');
-    expect(ageEl).toBeInTheDocument();
-    expect(ageEl.textContent).toMatch(/\d+/);
+    // Age (computed from birthDate 1985-03-21 → 41) now renders within the
+    // combined meta line (date · age · ID), not a separate element.
+    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('41');
   });
 
   it('omits the age block when birthDate is missing', async () => {

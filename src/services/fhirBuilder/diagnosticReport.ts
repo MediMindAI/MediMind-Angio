@@ -21,7 +21,7 @@ import {
   STANDARD_FHIR_SYSTEMS,
 } from '../../constants/fhir-systems';
 import { formatCeapClassification } from '../ceapService';
-import { narrativeFromFormState } from '../narrativeService';
+import { narrativeFromFormState, resolveConclusionsEnglish } from '../narrativeService';
 import type { BuildContext } from './context';
 import { urnRef } from './context';
 
@@ -42,8 +42,15 @@ export function buildDiagnosticReportEntry(
   if (ctx.form.narrative.clinicianComments) {
     conclusionParts.push(ctx.form.narrative.clinicianComments);
   }
-  if (narrative.conclusions.length > 0) {
-    conclusionParts.push(...narrative.conclusions);
+  // Venous generators emit English prose directly into `.conclusions`; carotid
+  // and arterial emit only `conclusionsEntries`, so fall back to resolving those
+  // to English (DiagnosticReport.conclusion is canonical English).
+  const autoConclusions =
+    narrative.conclusions.length > 0
+      ? narrative.conclusions
+      : resolveConclusionsEnglish(narrative);
+  if (autoConclusions.length > 0) {
+    conclusionParts.push(...autoConclusions);
   }
 
   const results: Reference[] = [];

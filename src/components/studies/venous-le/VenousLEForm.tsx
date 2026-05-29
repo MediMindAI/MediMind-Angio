@@ -73,6 +73,7 @@ import { CEAPPicker } from '../../form/CEAPPicker';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
 import { defaultCptForStudy, cptDisplay } from '../../../constants/vascular-cpt';
+import { localDateToIso } from '../../../services/dateHelpers';
 import {
   VENOUS_LE_SEGMENTS,
   deriveCompetency,
@@ -146,7 +147,8 @@ interface VenousFormStateV1 {
 }
 
 const STUDY_ID = 'venousLEBilateral';
-const TODAY_ISO = new Date().toISOString().slice(0, 10);
+// Local calendar date (not UTC) — avoids the Tbilisi UTC+4 date-rollback bug.
+const TODAY_ISO = localDateToIso(new Date()) ?? '';
 
 const DEFAULT_CPT = defaultCptForStudy('venousLEBilateral');
 

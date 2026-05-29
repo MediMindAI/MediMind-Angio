@@ -20,6 +20,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import { EncounterIntake } from './EncounterIntake';
 import { TranslationProvider } from '../../contexts/TranslationContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
@@ -43,7 +44,7 @@ function Wrap({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <MemoryRouter>
       <MantineProvider>
-        <TranslationProvider>{children}</TranslationProvider>
+        <TranslationProvider><ThemeProvider>{children}</ThemeProvider></TranslationProvider>
       </MantineProvider>
     </MemoryRouter>
   );
@@ -115,7 +116,7 @@ describe('EncounterIntake — Phase 2.b', () => {
 
     // Check a study — Start is now enabled.
     const carotidCheckbox = screen.getByTestId(
-      'intake-study-checkbox-carotid',
+      'intake-study-carotid',
     ) as HTMLInputElement;
     fireEvent.click(carotidCheckbox);
 
@@ -138,7 +139,7 @@ describe('EncounterIntake — Phase 2.b', () => {
     });
 
     const carotidCheckbox = screen.getByTestId(
-      'intake-study-checkbox-carotid',
+      'intake-study-carotid',
     ) as HTMLInputElement;
     fireEvent.click(carotidCheckbox);
 
