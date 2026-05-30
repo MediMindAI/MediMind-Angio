@@ -11,6 +11,7 @@
  * Row-red triggers when any of:
  *   - `flowDirection === 'absent'` or `'retrograde'`
  *   - `plaquePresent && (plaqueSurface === 'irregular' || plaqueUlceration)`
+ *   - `subclavianStealPhase >= 1` (vertebral steal)
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
@@ -134,6 +135,9 @@ function isPathological(f: CarotidVesselFinding): boolean {
   if (f.plaquePresent && (f.plaqueSurface === 'irregular' || f.plaqueUlceration)) {
     return true;
   }
+  // Subclavian steal (vertebral) is hemodynamically significant — flag it like
+  // the diagram now colors it.
+  if (f.subclavianStealPhase !== undefined && f.subclavianStealPhase >= 1) return true;
   return false;
 }
 

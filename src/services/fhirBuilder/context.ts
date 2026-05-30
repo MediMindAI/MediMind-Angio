@@ -7,12 +7,13 @@
  */
 
 import type { FormState } from '../../types/form';
-import type { CodeableConcept } from '../../types/fhir';
+import type { CodeableConcept, Coding } from '../../types/fhir';
 import type { StudyType } from '../../types/study';
 import {
   FHIR_BASE_URL,
   MEDIMIND_EXTENSIONS,
   STANDARD_FHIR_SYSTEMS,
+  SNOMED_LATERALITY,
   VASCULAR_LOINC,
   VASCULAR_SEGMENTS_SNOMED,
 } from '../../constants/fhir-systems';
@@ -274,21 +275,35 @@ export function createSharedContext(
 // Shared helpers
 // ============================================================================
 
-export function bodySiteForSegment(segment: string): CodeableConcept {
+export function bodySiteForSegment(
+  segment: string,
+  side?: 'left' | 'right',
+): CodeableConcept {
+  // When a side is given, post-coordinate a SNOMED laterality qualifier onto
+  // the coding so consumers can query by side without parsing free text.
+  const lat = side ? SNOMED_LATERALITY[side] : undefined;
   const entry = VASCULAR_SEGMENTS_SNOMED[segment];
   if (!entry || entry.code === '-') {
     // Unmapped segment — still return the text so the Observation carries the site.
-    return { text: segment };
+    return { text: lat ? `${segment} (${lat.display})` : segment };
+  }
+  const coding: Coding[] = [
+    {
+      system: STANDARD_FHIR_SYSTEMS.SNOMED,
+      code: entry.code,
+      display: entry.display,
+    },
+  ];
+  if (lat) {
+    coding.push({
+      system: STANDARD_FHIR_SYSTEMS.SNOMED,
+      code: lat.code,
+      display: lat.display,
+    });
   }
   return {
-    coding: [
-      {
-        system: STANDARD_FHIR_SYSTEMS.SNOMED,
-        code: entry.code,
-        display: entry.display,
-      },
-    ],
-    text: entry.display,
+    coding,
+    text: lat ? `${entry.display} (${lat.display})` : entry.display,
   };
 }
 

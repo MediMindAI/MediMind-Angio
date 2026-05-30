@@ -11,6 +11,7 @@ import {
   CAROTID_VESSELS,
   SRU_THRESHOLDS,
   type CarotidFindings,
+  type CarotidNascetClassification,
   type CarotidVesselFullId,
   type NascetCategory,
 } from './config';
@@ -47,12 +48,18 @@ function ccaDistalPsv(findings: CarotidFindings, side: 'left' | 'right'): number
   return f?.psvCmS;
 }
 
-/** True when any vessel on this side carries plaque or a non-antegrade flow. */
-function anyDiseaseOnSide(findings: CarotidFindings, side: 'left' | 'right'): boolean {
-  for (const base of CAROTID_VESSELS) {
+/**
+ * True when the ICA on this side carries plaque or a non-antegrade flow.
+ * NASCET grades the ICA only, so the lt50-vs-normal gate must look at ICA
+ * segments alone — disease on the ECA/vertebral/subclavian must not flip a
+ * hemodynamically normal ICA to "< 50 %".
+ */
+function anyIcaDiseaseOnSide(findings: CarotidFindings, side: 'left' | 'right'): boolean {
+  for (const base of ['ica-prox', 'ica-mid', 'ica-dist'] as const) {
     const f = findings[`${base}-${side}` as CarotidVesselFullId];
     if (!f) continue;
     if (f.plaquePresent) return true;
+    if (f.plaqueMorphology !== undefined && f.plaqueMorphology !== 'none') return true;
     if (f.flowDirection === 'retrograde' || f.flowDirection === 'absent') return true;
   }
   return false;
@@ -93,10 +100,27 @@ export function suggestNascetCategory(
     return '50to69';
   }
 
-  // Sub-threshold velocity. Distinguish a truly normal vessel from mild
-  // (< 50 %) atherosclerosis: only call it < 50 % when plaque or a
-  // non-antegrade waveform is present, otherwise report it as normal.
-  return anyDiseaseOnSide(findings, side) ? 'lt50' : 'normal';
+  // Sub-threshold velocity. Distinguish a truly normal ICA from mild
+  // (< 50 %) atherosclerosis: only call it < 50 % when ICA plaque or a
+  // non-antegrade ICA waveform is present, otherwise report it as normal.
+  return anyIcaDiseaseOnSide(findings, side) ? 'lt50' : 'normal';
+}
+
+/**
+ * Effective per-side NASCET used to color the diagram: the clinician's explicit
+ * selection when present, otherwise the live SRU velocity suggestion. This makes
+ * typed ICA velocities color the ICA/bulb immediately (the NASCET picker stays an
+ * override). Returns `undefined` for a side with neither an explicit pick nor
+ * enough velocity data, so vessels with no measurements stay normal.
+ */
+export function effectiveNascet(
+  findings: CarotidFindings,
+  nascet: CarotidNascetClassification,
+): CarotidNascetClassification {
+  return {
+    right: nascet.right ?? suggestNascetCategory(findings, 'right'),
+    left: nascet.left ?? suggestNascetCategory(findings, 'left'),
+  };
 }
 
 /** Compute the ICA/CCA ratio on one side. Returns `null` when not computable. */

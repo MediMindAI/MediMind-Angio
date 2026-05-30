@@ -45,7 +45,7 @@ export function appendCarotidFindingObservations(
   side: 'left' | 'right',
   finding: CarotidVesselFinding
 ): void {
-  const bodySite = bodySiteForSegment(carotidSnomedKey(vesselBase));
+  const bodySite = bodySiteForSegment(carotidSnomedKey(vesselBase), side);
   const sideText = side === 'right' ? 'Right' : 'Left';
   const tag = `segment=${vesselBase};side=${side}`;
   const isAbnormalFlow =
@@ -209,8 +209,8 @@ export function appendCarotidNascetObservations(
   nascet: CarotidNascetClassification | undefined,
   findings: CarotidFindings | undefined
 ): void {
-  const bodySite = bodySiteForSegment('ica');
   for (const side of ['left', 'right'] as const) {
+    const bodySite = bodySiteForSegment('ica', side);
     let cat = nascet?.[side];
     // Keep the FHIR bundle in lockstep with the auto-derived narrative: when
     // the clinician leaves NASCET blank but ICA velocities indicate stenosis,
@@ -246,7 +246,7 @@ export function appendCarotidComputedObservations(
     if (ratio === null || !Number.isFinite(ratio)) continue;
     const sideText = side === 'right' ? 'Right' : 'Left';
     pushCustomNumeric(ctx, out, {
-      bodySite: bodySiteForSegment('ica'),
+      bodySite: bodySiteForSegment('ica', side),
       sideText,
       paramId: 'icaCcaRatio',
       paramLabel: 'ICA/CCA ratio',

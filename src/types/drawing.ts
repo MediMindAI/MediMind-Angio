@@ -43,7 +43,7 @@ export type DrawingTool = 'pen' | 'eraser';
  * and a "reflux" segment, or a black pen and an "occluded" segment, read
  * as the same idea on screen.
  */
-export const DRAWING_COLORS = ['normal', 'occluded', 'incompetent', 'inconclusive'] as const;
+export const DRAWING_COLORS = ['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'] as const;
 export type DrawingColor = (typeof DRAWING_COLORS)[number];
 
 /** Resolves a `DrawingColor` token to a concrete CSS color string. */
@@ -52,6 +52,7 @@ export const DRAWING_COLOR_HEX: Readonly<Record<DrawingColor, string>> = {
   occluded:     COMPETENCY_COLORS.occluded.fill,
   incompetent:  COMPETENCY_COLORS.incompetent.fill,
   inconclusive: COMPETENCY_COLORS.inconclusive.fill,
+  ablated:      COMPETENCY_COLORS.ablated.fill,
 };
 
 /**
@@ -69,6 +70,7 @@ export function migrateLegacyDrawingColor(value: unknown): DrawingColor {
     case 'occluded':
     case 'incompetent':
     case 'inconclusive':
+    case 'ablated':
       return value;
     default:
       return 'normal';

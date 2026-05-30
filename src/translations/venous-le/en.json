@@ -366,7 +366,8 @@
         "normal": "Normal",
         "occluded": "Occlusion",
         "incompetent": "Incompetent",
-        "inconclusive": "Inconclusive"
+        "inconclusive": "Inconclusive",
+        "ablated": "Post-ablation"
       },
       "modeEditSegment": "Edit segment",
       "editSegmentHint": "Tap a vein, then redraw it to replace its geometry",

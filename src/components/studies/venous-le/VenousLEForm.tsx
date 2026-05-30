@@ -1142,6 +1142,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
             <div className={classes.anatomyBody}>
               <AnatomyDiagramSection
                 segments={competencyMap}
+                overlay={false}
+                enableSegmentEdit={false}
                 pathOverrides={pathOverridesMap}
                 drawings={state.drawings}
                 highlightId={anatomyHighlight}

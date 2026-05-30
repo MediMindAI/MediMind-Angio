@@ -37,7 +37,8 @@
       "plaqueMorphology": "Plaque",
       "plaqueLengthMm": "Plaque length (mm)",
       "ulceration": "Ulc.",
-      "ratio": "ICA/CCA"
+      "ratio": "ICA/CCA",
+      "note": "Note"
     },
     "flow": {
       "antegrade": "Antegrade",
@@ -77,11 +78,10 @@
       "occluded": "Occluded"
     },
     "steal": {
-      "aria": "Subclavian steal phase",
-      "phase0": "Normal antegrade",
-      "phase1": "Phase I — mid-systolic deceleration",
-      "phase2": "Phase II — alternating (partial retrograde)",
-      "phase3": "Phase III — full retrograde"
+      "0": "None",
+      "1": "Phase I — transient",
+      "2": "Phase II — partial",
+      "3": "Phase III — permanent"
     },
     "narrative": {
       "impression": "Impression",
@@ -207,7 +207,8 @@
     },
     "anatomy": {
       "title": "Carotid anatomy",
-      "subtitle": "Vessel colors reflect severity (normal to occluded)."
+      "subtitle": "Vessel colors reflect severity (normal to occluded).",
+      "legendLabel": "Stenosis severity legend"
     },
     "form": {
       "title": "Carotid & Vertebral Duplex Study",

@@ -64,6 +64,7 @@ import type {
   CarotidVesselFullId,
 } from './config';
 import { carotidBandColor, carotidDiagramColor, resolveCarotidBand } from './config';
+import { effectiveNascet } from './stenosisCalculator';
 import { AnatomyLegend } from '../../anatomy';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
 import { NASCETPicker } from './NASCETPicker';
@@ -605,6 +606,14 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     return out;
   }, [state.findings]);
 
+  // Effective per-side NASCET that actually colors the diagram: explicit
+  // selection when set, otherwise the live SRU velocity suggestion. This is what
+  // makes typed ICA velocities color the ICA/bulb without a manual NASCET pick.
+  const eff = useMemo(
+    () => effectiveNascet(state.findings, state.nascet),
+    [state.findings, state.nascet],
+  );
+
   // Click-to-cycle severity (parity with venous click-to-cycle competency).
   // The shared handler's `current` arg is competency-typed and empty for
   // carotid, so we read the live band from state and advance the override.
@@ -615,12 +624,12 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
       if (!side) return;
       const fullId = id as CarotidVesselFullId;
       // Start cycling from the band currently SHOWN (bulb mirrors ICA-prox).
-      const current = resolveCarotidBand(state.findings, state.nascet, id);
+      const current = resolveCarotidBand(state.findings, eff, id);
       const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
       const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
       dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
     },
-    [state.findings, state.nascet],
+    [state.findings, eff],
   );
 
   const handleCommitStroke = useCallback((stroke: DrawingStroke) => {
@@ -644,10 +653,10 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
   const carotidColorFn = useCallback(
     (id: string): { fill: string; stroke: string } => {
-      const band = resolveCarotidBand(state.findings, state.nascet, id);
+      const band = resolveCarotidBand(state.findings, eff, id);
       return carotidDiagramColor(id, band);
     },
-    [state.findings, state.nascet],
+    [state.findings, eff],
   );
 
   // Under-diagram color key — the 5 stenosis-severity bands, colored by the
@@ -668,10 +677,10 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   // optional; falls back to the English band name if missing.
   const carotidTooltipText = useCallback(
     (id: string): string => {
-      const band = resolveCarotidBand(state.findings, state.nascet, id);
+      const band = resolveCarotidBand(state.findings, eff, id);
       return t(`carotid.severity.${band}`, band);
     },
-    [state.findings, state.nascet, t],
+    [state.findings, eff, t],
   );
 
   return (

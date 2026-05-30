@@ -146,6 +146,16 @@ export const VASCULAR_LOINC: Readonly<
  * Confidence legend for the comment: HIGH = verified from SNOMED browser,
  * MED = inferred from related concept, TODO = placeholder.
  */
+/**
+ * SNOMED CT laterality qualifier-values, post-coordinated onto a body-site
+ * CodeableConcept so FHIR consumers can filter Observations by side
+ * structurally instead of parsing `code.text`.
+ */
+export const SNOMED_LATERALITY = {
+  left: { code: '7771000', display: 'Left' },
+  right: { code: '24028007', display: 'Right' },
+} as const;
+
 export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; display: string }>> = {
   // ------- Superficial venous system (lower extremity) ----------------------
 

@@ -118,6 +118,7 @@ type AssetDeps = {
   deriveArterialCompetency: typeof import('../studies/arterial-le/config').deriveArterialCompetency;
   resolveCarotidBand: typeof import('../studies/carotid/config').resolveCarotidBand;
   carotidDiagramColor: typeof import('../studies/carotid/config').carotidDiagramColor;
+  effectiveNascet: typeof import('../studies/carotid/stenosisCalculator').effectiveNascet;
   SEVERITY_COLORS: typeof import('../../constants/theme-colors').SEVERITY_COLORS;
 };
 
@@ -127,12 +128,14 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     { isVenousForm },
     { deriveArterialCompetency },
     { resolveCarotidBand, carotidDiagramColor },
+    { effectiveNascet },
     { SEVERITY_COLORS },
   ] = await Promise.all([
     import('../pdf/anatomyToPdfSvg'),
     import('../../types/form'),
     import('../studies/arterial-le/config'),
     import('../studies/carotid/config'),
+    import('../studies/carotid/stenosisCalculator'),
     import('../../constants/theme-colors'),
   ]);
   return {
@@ -141,6 +144,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
     deriveArterialCompetency,
     resolveCarotidBand,
     carotidDiagramColor,
+    effectiveNascet,
     SEVERITY_COLORS,
   };
 }
@@ -165,6 +169,7 @@ async function resolveStudyAssets(
     deriveArterialCompetency,
     resolveCarotidBand,
     carotidDiagramColor,
+    effectiveNascet,
     SEVERITY_COLORS,
   } = deps ?? (await loadAssetDeps());
 
@@ -203,7 +208,12 @@ async function resolveStudyAssets(
     const rawFindings = studyForm.parameters['segmentFindings'];
     const carotidFindings = isCarotidFindings(rawFindings) ? rawFindings : {};
     const rawNascet = studyForm.parameters['nascet'];
-    const nascet = isCarotidNascet(rawNascet) ? rawNascet : {};
+    // Mirror the form: explicit NASCET, else the SRU velocity suggestion, so the
+    // PDF diagram colors the ICA/bulb identically to the on-screen diagram.
+    const nascet = effectiveNascet(
+      carotidFindings,
+      isCarotidNascet(rawNascet) ? rawNascet : {},
+    );
     const competencyFn = (fullId: string): { fill: string; stroke: string } => {
       const band = resolveCarotidBand(carotidFindings, nascet, fullId);
       return carotidDiagramColor(fullId, band);

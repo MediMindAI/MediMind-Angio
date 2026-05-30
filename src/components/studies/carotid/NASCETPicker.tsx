@@ -62,7 +62,7 @@ export const NASCETPicker = memo(function NASCETPicker({
       title={t('carotid.nascet.title', 'NASCET stenosis classification')}
       subtitle={t('carotid.nascet.subtitle', 'Bilateral ICA severity per SRU 2003 velocity criteria')}
       icon={IconStethoscope}
-      defaultOpen={false}
+      defaultOpen
       testId="nascet-section"
       rightSection={preview}
     >

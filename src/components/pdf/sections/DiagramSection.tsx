@@ -7,7 +7,7 @@
  * async data must be resolved into props before mounting the Document.
  */
 import type { ReactElement } from 'react';
-import { View, Text, Svg, Path, Image, Line, Rect, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Svg, Path, Image, Line, Rect, StyleSheet, Defs, ClipPath, G } from '@react-pdf/renderer';
 import type { AnatomyToPdfResult } from '../anatomyToPdfSvg';
 import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 import { COMPETENCY_COLORS } from '../../../constants/theme-colors';
@@ -137,18 +137,46 @@ function renderAnatomy(
         viewBox={`${vbX} ${vbY} ${vbWidth} ${vbHeight}`}
         style={{ position: 'absolute', top: 0, left: 0 }}
       >
-        {data.elements.map((el, idx) => (
-          <Path
-            key={`${el.kind}-${el.id ?? idx}`}
-            d={el.d}
-            fill={el.fill}
-            stroke={el.stroke}
-            strokeWidth={el.strokeWidth}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            {...(el.strokeDasharray ? { strokeDasharray: el.strokeDasharray } : {})}
-          />
-        ))}
+        {(() => {
+          // Clip the vessel layer to the silhouette so distal veins can't spill
+          // past the leg outline (mirrors the web SVG's #leg-clip). Outlines
+          // render unclipped underneath; segments/drawings are clipped.
+          const outlineD = data.elements
+            .filter((el) => el.kind === 'outline')
+            .map((el) => el.d)
+            .join(' ');
+          const renderPath = (el: typeof data.elements[number], idx: number): ReactElement => (
+            <Path
+              key={`${el.kind}-${el.id ?? idx}`}
+              d={el.d}
+              fill={el.fill}
+              stroke={el.stroke}
+              strokeWidth={el.strokeWidth}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              {...(el.strokeDasharray ? { strokeDasharray: el.strokeDasharray } : {})}
+            />
+          );
+          const outlines = data.elements.filter((el) => el.kind === 'outline');
+          const clipped = data.elements.filter((el) => el.kind !== 'outline');
+          return (
+            <>
+              {outlineD ? (
+                <Defs>
+                  <ClipPath id="leg-clip-pdf">
+                    <Path d={outlineD} />
+                  </ClipPath>
+                </Defs>
+              ) : null}
+              {outlines.map(renderPath)}
+              {outlineD ? (
+                <G clipPath="url(#leg-clip-pdf)">{clipped.map(renderPath)}</G>
+              ) : (
+                clipped.map(renderPath)
+              )}
+            </>
+          );
+        })()}
       </Svg>
     </View>
   );

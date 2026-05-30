@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { suggestNascetCategory, icaCcaRatio } from './stenosisCalculator';
+import { suggestNascetCategory, icaCcaRatio, effectiveNascet } from './stenosisCalculator';
 import type { CarotidFindings, CarotidVesselFinding } from './config';
 
 /** Build a right-side findings map from per-vessel partials. */
@@ -130,5 +130,23 @@ describe('icaCcaRatio', () => {
     expect(icaCcaRatio(rightFindings({ 'ica-prox': { psvCmS: 200 }, 'cca-dist': { psvCmS: 0 } }), 'right')).toBeNull();
     expect(icaCcaRatio(rightFindings({ 'ica-prox': { psvCmS: 200 } }), 'right')).toBeNull();
     expect(icaCcaRatio(rightFindings({ 'cca-dist': { psvCmS: 50 } }), 'right')).toBeNull();
+  });
+});
+
+describe('effectiveNascet', () => {
+  it('falls back to the SRU velocity suggestion when no explicit pick exists', () => {
+    // ICA PSV 230 → ≥70%; no explicit nascet on the right.
+    const findings = rightFindings({ 'ica-prox': { psvCmS: 230 } });
+    expect(effectiveNascet(findings, {})).toEqual({ right: 'ge70', left: undefined });
+  });
+
+  it('explicit selection always wins over the velocity suggestion', () => {
+    // Velocity would suggest ≥70%, but the clinician downgraded to 50–69%.
+    const findings = rightFindings({ 'ica-prox': { psvCmS: 230 } });
+    expect(effectiveNascet(findings, { right: '50to69' }).right).toBe('50to69');
+  });
+
+  it('stays undefined for a side with neither a pick nor enough velocity data', () => {
+    expect(effectiveNascet({}, {})).toEqual({ right: undefined, left: undefined });
   });
 });

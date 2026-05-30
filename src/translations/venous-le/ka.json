@@ -366,7 +366,8 @@
         "normal": "ნორმა",
         "occluded": "ოკლუზია",
         "incompetent": "რეფლუქი",
-        "inconclusive": "დაუდგენელი"
+        "inconclusive": "დაუდგენელი",
+        "ablated": "აბლირებული"
       },
       "modeEditSegment": "სეგმენტის რედაქტირება",
       "editSegmentHint": "მონიშნეთ ვენა და ხელახლა დახაზეთ",

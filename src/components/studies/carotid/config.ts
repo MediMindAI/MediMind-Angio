@@ -161,9 +161,7 @@ export interface CarotidNascetClassification {
 // ============================================================================
 
 export const SRU_THRESHOLDS = {
-  psvLt50: 125,       // ICA PSV < 125 → < 50 %
   psvGe50: 125,       // 125 ≤ PSV → ≥ 50 %
-  psv50to69Upper: 230,
   psvGe70: 230,       // PSV ≥ 230 → ≥ 70 % (one of the three criteria)
   edvGe70: 100,       // EDV ≥ 100 → ≥ 70 %
   ratioGe70: 4.0,     // ICA/CCA ≥ 4 → ≥ 70 %
@@ -253,9 +251,27 @@ export function deriveCarotidCompetency(
   // with venous `deriveCompetency`).
   if (finding.competencyOverride !== undefined) return finding.competencyOverride;
   if (finding.flowDirection === 'absent' || nascetCat === 'occluded') return 'occluded';
-  if (nascetCat === 'ge70' || nascetCat === 'near-occlusion') return 'severe';
-  if (nascetCat === '50to69') return 'moderate';
-  if (finding.plaquePresent) return 'mild';
+  // Subclavian steal / retrograde flow (vertebrals). Phase 3 = permanent
+  // retrograde steal → severe; phases 1–2 (intermittent/partial) and a bare
+  // retrograde waveform → moderate. Keeps the diagram in step with the
+  // narrative steal grade instead of leaving the vessel green.
+  if (nascetCat === 'ge70' || nascetCat === 'near-occlusion' || finding.subclavianStealPhase === 3) {
+    return 'severe';
+  }
+  if (
+    nascetCat === '50to69' ||
+    finding.flowDirection === 'retrograde' ||
+    (finding.subclavianStealPhase !== undefined && finding.subclavianStealPhase >= 1)
+  ) {
+    return 'moderate';
+  }
+  // A chosen plaque morphology implies plaque is present even when the
+  // explicit `plaquePresent` flag was never set (the segment-table Plaque
+  // column writes morphology only). Either signal colors the vessel mild.
+  const hasPlaque =
+    finding.plaquePresent === true ||
+    (finding.plaqueMorphology !== undefined && finding.plaqueMorphology !== 'none');
+  if (hasPlaque) return 'mild';
   return 'normal';
 }
 
@@ -275,11 +291,16 @@ export function resolveCarotidBand(
   id: string,
 ): CarotidCompetency {
   const side = id.endsWith('-left') ? 'left' : id.endsWith('-right') ? 'right' : null;
-  const nascetCat = side ? nascet[side] : undefined;
   let finding = findings[id as CarotidVesselFullId];
   if (!finding && side && id.startsWith('bulb-')) {
     finding = findings[`ica-prox-${side}` as CarotidVesselFullId];
   }
+  // NASCET/SRU grade is a property of the ICA bifurcation only — apply it to
+  // the ICA segments and the bulb (the bifurcation) alone. CCA, ECA, vertebral,
+  // and subclavian color from their own flow/plaque so an ICA stenosis grade no
+  // longer "bleeds" across every vessel on the side.
+  const nascetGraded = id.startsWith('ica-') || id.startsWith('bulb-');
+  const nascetCat = side && nascetGraded ? nascet[side] : undefined;
   return deriveCarotidCompetency(finding, nascetCat);
 }
 
@@ -302,19 +323,15 @@ export function carotidBandColor(band: CarotidCompetency): { fill: string; strok
   return fs(SEVERITY_COLORS[band]);
 }
 
-/** Intracranial circle-of-Willis blob — not graded; neutral venous red tone. */
-const CAROTID_INTRACRANIAL_COLOR = fs(COMPETENCY_COLORS.incompetent);
-
 /**
- * Fill for any diagram path id — handles the two non-graded static shapes
- * (`intracranial` = venous red, `aorta` = neutral grey context) before
- * falling back to the severity band for the 26 graded segments.
+ * Fill for any diagram path id — handles the one non-graded static shape
+ * (`aorta` = neutral grey context) before falling back to the severity band
+ * for the graded segments.
  */
 export function carotidDiagramColor(
   id: string,
   band: CarotidCompetency,
 ): { fill: string; stroke: string } {
-  if (id === 'intracranial') return CAROTID_INTRACRANIAL_COLOR;
   if (id === 'aorta') return fs(COMPETENCY_COLORS.normal);
   return carotidBandColor(band);
 }
