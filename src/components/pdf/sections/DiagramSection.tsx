@@ -235,10 +235,16 @@ export function DiagramSection({
           <Text style={styles.viewLabel}>{labels.anterior}</Text>
           {renderAnatomy(anterior, viewWidthPt)}
         </View>
-        <View style={styles.viewColumn}>
-          <Text style={styles.viewLabel}>{labels.posterior}</Text>
-          {renderAnatomy(posterior, viewWidthPt)}
-        </View>
+        {/* Posterior column only renders when a posterior diagram was
+            resolved. Venous now carries every vessel on the anterior view,
+            and arterial/carotid have no posterior at all — so this avoids a
+            stray empty "Posterior view" column. */}
+        {posterior ? (
+          <View style={styles.viewColumn}>
+            <Text style={styles.viewLabel}>{labels.posterior}</Text>
+            {renderAnatomy(posterior, viewWidthPt)}
+          </View>
+        ) : null}
       </View>
       <View style={styles.legendRow}>
         {items.map((item) => {

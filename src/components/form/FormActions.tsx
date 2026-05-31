@@ -186,11 +186,10 @@ async function resolveStudyAssets(
     const drawings = Array.isArray(rawDrawings)
       ? (rawDrawings as ReadonlyArray<import('../../types/drawing').DrawingStroke>)
       : [];
-    const [anterior, posterior] = await Promise.all([
-      loadAnatomyForPdf('le-anterior', findings, { drawings }),
-      loadAnatomyForPdf('le-posterior', findings, { drawings }),
-    ]);
-    anatomy = { anterior, posterior };
+    // Venous now carries every vessel (deep + superficial) on the anterior
+    // view, so the posterior diagram is redundant — omit it from the report.
+    const anterior = await loadAnatomyForPdf('le-anterior', findings, { drawings });
+    anatomy = { anterior, posterior: null };
     localized = buildLocalizedNarrative(findings, t);
   } else if (studyForm.studyType === 'arterialLE') {
     const rawFindings = studyForm.parameters['segmentFindings'];
