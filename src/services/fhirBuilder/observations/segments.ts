@@ -32,8 +32,10 @@ import {
   appendArterialComputedObservations,
   appendArterialFindingObservations,
   appendArterialPressureObservations,
+  appendArterialRunoffObservations,
   extractArterialFindings,
   extractArterialPressures,
+  extractArterialRunoff,
 } from './arterial';
 import {
   appendCarotidComputedObservations,
@@ -79,6 +81,10 @@ export function buildSegmentObservationEntries(ctx: BuildContext): Array<BundleE
     if (pressures) {
       appendArterialPressureObservations(ctx, entries, pressures);
       appendArterialComputedObservations(ctx, entries, pressures);
+    }
+    const runoff = extractArterialRunoff(ctx.form);
+    if (runoff) {
+      appendArterialRunoffObservations(ctx, entries, runoff);
     }
     return entries;
   }

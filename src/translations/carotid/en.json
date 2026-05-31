@@ -75,7 +75,8 @@
       "50to69": "50–69 %",
       "ge70": "≥ 70 %",
       "near-occlusion": "Near-occlusion",
-      "occluded": "Occluded"
+      "occluded": "Occluded",
+      "matchesSru": "matches SRU"
     },
     "steal": {
       "0": "None",

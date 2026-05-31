@@ -72,6 +72,15 @@ export interface AnatomyViewProps {
    */
   tooltipText?: (id: SegmentId) => string;
   /**
+   * Optional override for the tooltip's segment-NAME line. The default
+   * resolver (`humanLabelFromId`) reads the shared venous-centric
+   * `anatomy.segment.*` catalog, where ids like `cia`/`eia`/`pop-ak`/`per`
+   * mean the venous segment. Studies whose ids collide with that catalog but
+   * mean something else (arterial LE → arteries) pass their own resolver so
+   * the tooltip reads "Common iliac artery" instead of "…vein".
+   */
+  labelFor?: (id: SegmentId) => string;
+  /**
    * Overlay mode: the SVG contains an `<image>` backdrop and segment
    * paths are invisible until colored. When true, finding-driven colors
    * are painted as translucent strokes over the backdrop instead of solid
@@ -348,6 +357,7 @@ export function AnatomyView({
   ariaLabel,
   colorFn,
   tooltipText,
+  labelFor,
   overlay = false,
   pathOverrides,
 }: AnatomyViewProps): React.ReactElement {
@@ -435,14 +445,14 @@ export function AnatomyView({
       const y = wrapperRect ? event.clientY - wrapperRect.top : event.clientY;
       setTooltip({
         id,
-        label: humanLabelFromId(id, t),
+        label: labelFor ? labelFor(id) : humanLabelFromId(id, t),
         competency,
         x,
         y,
       });
       if (wrapperRef.current) wrapperRef.current.style.cursor = 'pointer';
     },
-    [isInteractive, findSegmentId, segmentsMap, defaultCompetency, tooltip, t],
+    [isInteractive, findSegmentId, segmentsMap, defaultCompetency, tooltip, t, labelFor],
   );
 
   const handlePointerLeave = useCallback(() => {

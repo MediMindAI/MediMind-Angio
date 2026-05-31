@@ -19,12 +19,16 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Grid, Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
-import { AnatomyView } from '../../anatomy/AnatomyView';
-import { SEVERITY_COLORS } from '../../../constants/theme-colors';
+import { Alert, Grid, Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
+import { EMRSelect } from '../../shared/EMRFormFields';
+import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
+import { AnatomyLegend } from '../../anatomy';
+import { severityBandColor, severityLegendItems } from '../../anatomy/severityColor';
+import type { SegmentId } from '../../../types/anatomy';
+import type { DrawingStroke } from '../../../types/drawing';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconStack2 } from '@tabler/icons-react';
+import { IconAlertTriangle, IconPlus, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useEncounter } from '../../../contexts/EncounterContext';
 import type {
@@ -56,9 +60,12 @@ import type {
   ArterialLEFullSegmentId,
   ArterialSegmentFinding,
   ArterialSegmentFindings,
+  Runoff,
+  RunoffAssessment,
   SegmentalPressures,
 } from './config';
-import { deriveArterialCompetency } from './config';
+import { deriveArterialCompetency, RUNOFF_VALUES } from './config';
+import { validateArterial } from './arterialValidation';
 import { SegmentalPressureTable } from './SegmentalPressureTable';
 import { ArterialSegmentTable, type ArterialTableView } from './ArterialSegmentTable';
 import {
@@ -102,22 +109,33 @@ interface ArterialFormStateV2 {
   // --- Findings + narrative ---
   readonly findings: ArterialSegmentFindings;
   readonly pressures: SegmentalPressures;
+  readonly runoff: RunoffAssessment;
   readonly view: ArterialTableView;
   readonly impression: string;
   readonly impressionEdited: boolean;
   readonly sonographerComments: string;
   readonly clinicianComments: string;
   readonly recommendations: ReadonlyArray<Recommendation>;
+  // Clinician freehand annotations on the arterial anatomy diagram. Added
+  // without a schemaVersion bump (mirrors the carotid drawing rollout): a
+  // pre-drawing V2 draft simply defaults `drawings: []` on hydration, so
+  // in-flight encounter drafts are never rejected and wiped.
+  readonly drawings: ReadonlyArray<DrawingStroke>;
 }
 
 type Action =
   | { type: 'SET_VIEW'; view: ArterialTableView }
   | { type: 'SET_FINDING'; id: ArterialLEFullSegmentId; patch: Partial<ArterialSegmentFinding> }
   | { type: 'SET_PRESSURES'; pressures: SegmentalPressures }
+  | { type: 'SET_RUNOFF'; side: 'left' | 'right'; value: Runoff | undefined }
   | { type: 'SET_IMPRESSION'; impression: string }
   | { type: 'SET_SONOGRAPHER'; comments: string }
   | { type: 'SET_CLINICIAN'; comments: string }
   | { type: 'SET_RECOMMENDATIONS'; recommendations: ReadonlyArray<Recommendation> }
+  | { type: 'COMMIT_STROKE'; stroke: DrawingStroke }
+  | { type: 'ERASE_STROKE'; strokeId: string }
+  | { type: 'UNDO_STROKE' }
+  | { type: 'CLEAR_DRAWINGS' }
   | {
       type: 'APPLY_TEMPLATE';
       findings: ArterialSegmentFindings;
@@ -145,13 +163,27 @@ function initialState(): ArterialFormStateV2 {
     cptCode: defaultCpt(),
     findings: {},
     pressures: {},
+    runoff: {},
     view: 'bilateral',
     impression: '',
     impressionEdited: false,
     sonographerComments: '',
     clinicianComments: '',
     recommendations: [],
+    drawings: [],
   };
+}
+
+/**
+ * Backfill fields added to V2 after its first ship (`drawings`, `runoff`) on a
+ * hydrated draft so they're never `undefined` (mirrors the carotid rollout —
+ * no schemaVersion bump, so in-flight drafts are never rejected and wiped).
+ */
+function withDrawingsDefault(s: ArterialFormStateV2): ArterialFormStateV2 {
+  let out = s;
+  if (!out.drawings) out = { ...out, drawings: [] };
+  if (!out.runoff) out = { ...out, runoff: {} };
+  return out;
 }
 
 function reducer(state: ArterialFormStateV2, action: Action): ArterialFormStateV2 {
@@ -165,6 +197,8 @@ function reducer(state: ArterialFormStateV2, action: Action): ArterialFormStateV
     }
     case 'SET_PRESSURES':
       return { ...state, pressures: action.pressures };
+    case 'SET_RUNOFF':
+      return { ...state, runoff: { ...state.runoff, [action.side]: action.value } };
     case 'SET_IMPRESSION':
       return { ...state, impression: action.impression, impressionEdited: true };
     case 'SET_SONOGRAPHER':
@@ -173,6 +207,16 @@ function reducer(state: ArterialFormStateV2, action: Action): ArterialFormStateV
       return { ...state, clinicianComments: action.comments };
     case 'SET_RECOMMENDATIONS':
       return { ...state, recommendations: action.recommendations };
+    case 'COMMIT_STROKE':
+      return { ...state, drawings: [...state.drawings, action.stroke] };
+    case 'ERASE_STROKE':
+      return { ...state, drawings: state.drawings.filter((s) => s.id !== action.strokeId) };
+    case 'UNDO_STROKE':
+      return state.drawings.length === 0
+        ? state
+        : { ...state, drawings: state.drawings.slice(0, -1) };
+    case 'CLEAR_DRAWINGS':
+      return { ...state, drawings: [] };
     case 'APPLY_TEMPLATE': {
       return {
         ...state,
@@ -259,6 +303,8 @@ function toFormState(state: ArterialFormStateV2, encounter: EncounterDraft | nul
       // payload (`ArterialFormParameters`) flows through without casts.
       segmentFindings: state.findings,
       pressures: state.pressures,
+      drawings: state.drawings,
+      runoff: state.runoff,
     },
   };
 }
@@ -301,12 +347,12 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     // EncounterContext closure is safe even on first render.
     const fromEncounter = encounter?.studies.arterialLE;
     if (isArterialFormStateV2(fromEncounter)) {
-      return fromEncounter;
+      return withDrawingsDefault(fromEncounter);
     }
 
     const persisted = loadDraft<{ schemaVersion?: unknown; studyType?: unknown }>(LEGACY_STUDY_ID);
     if (isArterialFormStateV2(persisted)) {
-      return persisted;
+      return withDrawingsDefault(persisted);
     }
     return initialState();
   });
@@ -574,9 +620,84 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     (id: string): { fill: string; stroke: string } => {
       const finding = state.findings[id as ArterialLEFullSegmentId];
       const band = deriveArterialCompetency(finding);
-      return SEVERITY_COLORS[band];
+      return severityBandColor(band);
     },
     [state.findings],
+  );
+
+  // Click-to-cycle severity (parity with carotid). Advances a manual
+  // `competencyOverride` through the 5 stenosis bands so a clinician can paint
+  // the diagram directly when they haven't filled the segment table yet.
+  const handleAnatomySegmentClick = useCallback(
+    (id: SegmentId) => {
+      if (!id.endsWith('-left') && !id.endsWith('-right')) return;
+      const fullId = id as ArterialLEFullSegmentId;
+      const current = deriveArterialCompetency(state.findings[fullId]);
+      const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
+      const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
+      dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
+    },
+    [state.findings],
+  );
+
+  // Drawing handlers — persist freehand strokes into the encounter draft.
+  const handleCommitStroke = useCallback((stroke: DrawingStroke) => {
+    dispatch({ type: 'COMMIT_STROKE', stroke });
+  }, []);
+  const handleEraseStroke = useCallback((strokeId: string) => {
+    dispatch({ type: 'ERASE_STROKE', strokeId });
+  }, []);
+  const handleUndoStroke = useCallback(() => {
+    dispatch({ type: 'UNDO_STROKE' });
+  }, []);
+  const handleClearDrawings = useCallback(() => {
+    dispatch({ type: 'CLEAR_DRAWINGS' });
+  }, []);
+
+  // Under-diagram color key — the 5 stenosis-severity bands, colored by the
+  // same helper the vessels use so legend ↔ diagram agree.
+  const arterialLegendItems = useMemo(
+    () => severityLegendItems(t, 'arterialLE.severity'),
+    [t],
+  );
+
+  const handleRunoffChange = useCallback(
+    (side: 'left' | 'right', value: Runoff | undefined) => {
+      dispatch({ type: 'SET_RUNOFF', side, value });
+    },
+    [],
+  );
+
+  // Non-blocking consistency hints (≥50 % stenosis with triphasic flow, ABI
+  // computed from incomplete pressures, etc.). Resolves each warning's i18n
+  // param values (segment/side keys) before interpolation.
+  const warnings = useMemo(
+    () => validateArterial(state.findings, state.pressures),
+    [state.findings, state.pressures],
+  );
+  const warningMessages = useMemo(
+    () =>
+      warnings.map((w) => {
+        const params = w.params
+          ? Object.fromEntries(
+              Object.entries(w.params).map(([k, v]) => [
+                k,
+                typeof v === 'string' && v.startsWith('arterialLE.') ? t(v) : v,
+              ]),
+            )
+          : undefined;
+        return { id: w.id, text: params ? t(w.key, params) : t(w.key, w.fallback) };
+      }),
+    [warnings, t],
+  );
+
+  const runoffData = useMemo(
+    () =>
+      RUNOFF_VALUES.map((v) => ({
+        value: v,
+        label: t(`arterialLE.runoff.${v}`, v),
+      })),
+    [t],
   );
 
   // Tooltip status text — the venous Competency enum doesn't apply here, so
@@ -590,6 +711,22 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
       return t(`arterialLE.severity.${band}`, band);
     },
     [state.findings, t],
+  );
+
+  // Tooltip NAME line — the shared anatomy.segment.* catalog is venous, so
+  // arterial ids (cia/eia/pop-ak/per…) would otherwise read "…vein". Resolve
+  // from the arterial study's own segment labels instead.
+  const arterialLabelFor = useCallback(
+    (id: string): string => {
+      const m = id.match(/-(left|right)$/);
+      if (!m) return t(`arterialLE.segment.${id}`, id);
+      const side = m[1] as 'left' | 'right';
+      const base = id.slice(0, id.length - side.length - 1);
+      const baseLabel = t(`arterialLE.segment.${base}`, base);
+      const sideLabel = t(`arterialLE.side.${side}`, side);
+      return `${baseLabel} (${sideLabel})`;
+    },
+    [t],
   );
 
   return (
@@ -646,6 +783,57 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
           </Grid.Col>
         </Grid>
 
+        {warningMessages.length > 0 && (
+          <Alert
+            variant="light"
+            color="yellow"
+            icon={<IconAlertTriangle size={18} />}
+            title={t('arterialLE.validation.title', 'Check these findings')}
+            data-testid="arterial-warnings"
+          >
+            <Stack gap={4}>
+              {warningMessages.map((w) => (
+                <Text key={w.id} size="sm">
+                  {w.text}
+                </Text>
+              ))}
+            </Stack>
+          </Alert>
+        )}
+
+        <Paper withBorder radius="md" shadow="sm" p="md">
+          <Stack gap="sm">
+            <div>
+              <Title order={5} mb={2}>
+                {t('arterialLE.runoff.title', 'Distal run-off')}
+              </Title>
+              <Text size="sm" c="dimmed">
+                {t('arterialLE.runoff.subtitle', 'Tibial-vessel patency summary per side.')}
+              </Text>
+            </div>
+            <Group grow align="flex-start" wrap="wrap">
+              <EMRSelect
+                label={t('arterialLE.tabs.right', 'Right')}
+                value={state.runoff.right ?? ''}
+                onChange={(v) => handleRunoffChange('right', v === '' ? undefined : (v as Runoff))}
+                data={runoffData}
+                clearable
+                size="sm"
+                data-testid="arterial-runoff-right"
+              />
+              <EMRSelect
+                label={t('arterialLE.tabs.left', 'Left')}
+                value={state.runoff.left ?? ''}
+                onChange={(v) => handleRunoffChange('left', v === '' ? undefined : (v as Runoff))}
+                data={runoffData}
+                clearable
+                size="sm"
+                data-testid="arterial-runoff-left"
+              />
+            </Group>
+          </Stack>
+        </Paper>
+
         <Paper withBorder radius="md" shadow="sm" p="md">
           <Stack gap="sm">
             <div>
@@ -659,17 +847,25 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
                 )}
               </Text>
             </div>
-            <Group justify="center">
-              <AnatomyView
-                view="le-arterial-anterior"
-                segments={{}}
-                size="lg"
-                interactive={false}
-                colorFn={arterialColorFn}
-                tooltipText={arterialTooltipText}
-                ariaLabel={t('arterialLE.anatomy.title', 'Arterial anatomy')}
-              />
-            </Group>
+            <AnatomyDiagramSection
+              view="le-arterial-anterior"
+              segments={{}}
+              colorFn={arterialColorFn}
+              tooltipText={arterialTooltipText}
+              labelFor={arterialLabelFor}
+              overlay={false}
+              enableSegmentEdit={false}
+              drawings={state.drawings}
+              onSegmentClick={handleAnatomySegmentClick}
+              onCommitStroke={handleCommitStroke}
+              onEraseStroke={handleEraseStroke}
+              onUndo={handleUndoStroke}
+              onClear={handleClearDrawings}
+            />
+            <AnatomyLegend
+              items={arterialLegendItems}
+              ariaLabel={t('arterialLE.anatomy.legendLabel', 'Stenosis severity legend')}
+            />
           </Stack>
         </Paper>
 

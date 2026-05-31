@@ -342,6 +342,12 @@ const labels: ReportLabels = {
       mixed: 'Mixed',
       soft: 'Soft',
     },
+    qualityName: {
+      adequate: 'Adequate',
+      limited: 'Limited',
+      'non-visualized': 'Not visualized',
+    },
+    noteLabel: 'Note',
     emptyDash: '—',
   },
   pressures: {

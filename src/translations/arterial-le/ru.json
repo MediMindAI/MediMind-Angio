@@ -28,7 +28,8 @@
     "segmentTable": {
       "title": "Посегментная оценка",
       "subtitle": "Форма волны, PSV, стеноз и бляшка по каждому сегменту",
-      "segment": "Сегмент"
+      "segment": "Сегмент",
+      "toggleDetails": "Дополнительные поля"
     },
     "param": {
       "waveform": "Форма волны",
@@ -37,7 +38,10 @@
       "stenosisPct": "Стеноз %",
       "plaqueMorphology": "Бляшка",
       "plaqueLengthMm": "Длина бляшки (mm)",
-      "occluded": "Окк."
+      "occluded": "Окк.",
+      "note": "Примечание",
+      "velocityRatio": "Соотношение скоростей",
+      "visualizationQuality": "Качество изображения"
     },
     "help": {
       "psvCmS": "Пиковая систолическая скорость в точке измерения.",
@@ -97,12 +101,14 @@
       "normalSide": "Артериальное русло {side} нижней конечности в пределах нормы; трёхфазный кровоток прослеживается на всём протяжении.",
       "occluded": "Окклюзия — {vein}.",
       "stenosis": "{severity} стеноз — {vein} (PSV {psv} cm/s).",
-      "dampedWaveform": "{waveform} кровоток — {vein}."
+      "dampedWaveform": "{waveform} кровоток — {vein}.",
+      "notVisualized": "{vein} — недостаточно визуализирован."
     },
     "conclusion": {
       "occluded": "Окклюзия — {side} {vein}.",
       "significantStenosis": "Гемодинамически значимый ({severity}) стеноз — {side} {vein}.",
-      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
+      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}.",
+      "runoff": "{side}: {runoff} дистальный отток."
     },
     "actions": {
       "newCase": "+ Новое исследование",
@@ -222,7 +228,8 @@
     },
     "anatomy": {
       "title": "Артериальная анатомия",
-      "subtitle": "Цвет сегментов отражает степень тяжести (от нормы до окклюзии)."
+      "subtitle": "Цвет сегментов отражает степень тяжести (от нормы до окклюзии).",
+      "legendLabel": "Легенда тяжести стеноза"
     },
     "form": {
       "title": "Дуплексное исследование артерий нижних конечностей",
@@ -234,6 +241,31 @@
       "stenShort": "Стеноз",
       "plaqueShort": "Бляшка",
       "occlShort": "Оккл."
+    },
+    "visualizationQuality": {
+      "adequate": "Адекватное",
+      "limited": "Ограниченное",
+      "non-visualized": "Не визуализируется"
+    },
+    "runoff": {
+      "title": "Дистальный отток",
+      "subtitle": "Сводка проходимости берцовых артерий по сторонам.",
+      "patent": "Проходим (3 сосуда)",
+      "single-vessel": "Один сосуд",
+      "occluded": "Окклюзирован"
+    },
+    "validation": {
+      "title": "Проверьте эти данные",
+      "stenosisTriphasic": "{segment} ({side}): значимый стеноз при трёхфазном кровотоке — требуется уточнение.",
+      "occludedWithFlow": "{segment} ({side}): отмечена окклюзия, но введена скорость кровотока.",
+      "abiIncomplete": "{side}: для расчёта ЛПИ нужны плечевое и лодыжечное давление."
+    },
+    "severity": {
+      "normal": "Норма",
+      "mild": "Лёгкий",
+      "moderate": "Умеренный",
+      "severe": "Тяжёлый",
+      "occluded": "Окклюзия"
     }
   }
 }

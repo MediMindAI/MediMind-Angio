@@ -109,10 +109,17 @@ function AxisCard({
             type="button"
             className={classes.suggestChip}
             onClick={() => onSelect(suggestion)}
+            title={t('carotid.nascet.applySuggestion', 'Apply SRU suggestion')}
             aria-label={t('carotid.nascet.applySuggestion', 'Apply SRU suggestion')}
           >
             {t('carotid.nascet.suggest', 'Suggest')}: {t(`carotid.nascet.${suggestion}`, nascetCategoryFallback(suggestion))}
           </button>
+        ) : suggestion && suggestion === value ? (
+          // Applied-state confirmation so the chip doesn't silently vanish —
+          // the clinician sees the pick matches the SRU velocity suggestion.
+          <span className={classes.suggestApplied}>
+            {`✓ ${t('carotid.nascet.matchesSru', 'matches SRU')}`}
+          </span>
         ) : null}
       </Group>
       <Stack gap={4}>

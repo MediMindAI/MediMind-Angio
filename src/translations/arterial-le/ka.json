@@ -28,7 +28,8 @@
     "segmentTable": {
       "title": "სეგმენტური შეფასება",
       "subtitle": "ტალღური ფორმა, PSV, სტენოზი და ფოლაქი თითოეული სეგმენტისთვის",
-      "segment": "სეგმენტი"
+      "segment": "სეგმენტი",
+      "toggleDetails": "დამატებითი ველები"
     },
     "param": {
       "waveform": "ტალღური ფორმა",
@@ -37,7 +38,10 @@
       "stenosisPct": "სტენოზი %",
       "plaqueMorphology": "ფოლაქი",
       "plaqueLengthMm": "ფოლაქის სიგრძე (მმ)",
-      "occluded": "ოკლ."
+      "occluded": "ოკლ.",
+      "note": "შენიშვნა",
+      "velocityRatio": "სიჩქარის თანაფარდობა",
+      "visualizationQuality": "გამოსახულების ხარისხი"
     },
     "help": {
       "psvCmS": "პიკური სისტოლური სიჩქარე გაზომვის წერტილში.",
@@ -97,12 +101,14 @@
       "normalSide": "{side} ქვედა კიდურის არტერიები ნორმის ფარგლებშია — ფიქსირდება სამფაზიანი ნაკადი.",
       "occluded": "ოკლუზია — {vein}.",
       "stenosis": "{severity} სტენოზი — {vein} (PSV {psv} სმ/წმ).",
-      "dampedWaveform": "{waveform} ნაკადი — {vein}."
+      "dampedWaveform": "{waveform} ნაკადი — {vein}.",
+      "notVisualized": "{vein} — არ არის ადეკვატურად ვიზუალიზებული."
     },
     "conclusion": {
       "occluded": "ოკლუზია — {side} {vein}.",
       "significantStenosis": "ჰემოდინამიკურად მნიშვნელოვანი ({severity}) სტენოზი — {side} {vein}.",
-      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
+      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}.",
+      "runoff": "{side}: {runoff} დისტალური გადინება."
     },
     "actions": {
       "newCase": "+ ახალი კვლევა",
@@ -222,7 +228,8 @@
     },
     "anatomy": {
       "title": "არტერიული ანატომიის სქემა",
-      "subtitle": "ფერები შეესაბამება სიმძიმის ხარისხს (ნორმიდან ოკლუზიამდე)."
+      "subtitle": "ფერები შეესაბამება სიმძიმის ხარისხს (ნორმიდან ოკლუზიამდე).",
+      "legendLabel": "სტენოზის სიმძიმის ლეგენდა"
     },
     "form": {
       "title": "ქვედა კიდურების არტერიული დუპლექს-კვლევა",
@@ -234,6 +241,31 @@
       "stenShort": "სტენოზი",
       "plaqueShort": "ფოლაქი",
       "occlShort": "ოკლ."
+    },
+    "visualizationQuality": {
+      "adequate": "ადეკვატური",
+      "limited": "შეზღუდული",
+      "non-visualized": "არ ვიზუალიზდება"
+    },
+    "runoff": {
+      "title": "დისტალური გადინება",
+      "subtitle": "წვივის სისხლძარღვების გამავლობის შეჯამება მხარეების მიხედვით.",
+      "patent": "გამავალი (3 სისხლძარღვი)",
+      "single-vessel": "ერთი სისხლძარღვი",
+      "occluded": "ოკლუზირებული"
+    },
+    "validation": {
+      "title": "გადაამოწმეთ ეს მონაცემები",
+      "stenosisTriphasic": "{segment} ({side}): მნიშვნელოვანი სტენოზი ტრიფაზური ტალღით — გთხოვთ, შეათანხმოთ.",
+      "occludedWithFlow": "{segment} ({side}): მონიშნულია ოკლუზიად, თუმცა შეყვანილია ნაკადის სიჩქარე.",
+      "abiIncomplete": "{side}: ABI-ის გამოსათვლელად საჭიროა ბრაქიალური და ტერფის წნევა."
+    },
+    "severity": {
+      "normal": "ნორმა",
+      "mild": "მსუბუქი",
+      "moderate": "ზომიერი",
+      "severe": "მძიმე",
+      "occluded": "ოკლუზია"
     }
   }
 }

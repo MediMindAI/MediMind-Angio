@@ -77,7 +77,12 @@ export function narrativeFromFormState(form: FormState): NarrativeOutput {
     const rawPressures = form.parameters['pressures'];
     if (!isArterialFindings(rawFindings)) return EMPTY_NARRATIVE;
     const pressures = isArterialPressures(rawPressures) ? rawPressures : {};
-    return generateArterialNarrative(rawFindings, pressures);
+    const rawRunoff = form.parameters['runoff'];
+    const runoff =
+      typeof rawRunoff === 'object' && rawRunoff !== null
+        ? (rawRunoff as import('../components/studies/arterial-le/config').RunoffAssessment)
+        : {};
+    return generateArterialNarrative(rawFindings, pressures, runoff);
   }
 
   if (form.studyType === 'carotid') {

@@ -91,3 +91,28 @@ describe('deriveCarotidCompetency — plaque morphology colors mild', () => {
     expect(deriveCarotidCompetency({ plaqueMorphology: 'type3' }, '50to69')).toBe('moderate');
   });
 });
+
+describe('deriveCarotidCompetency — retrograde flow & subclavian steal', () => {
+  it('retrograde flow colors moderate (no longer left green)', () => {
+    expect(deriveCarotidCompetency({ flowDirection: 'retrograde' })).toBe('moderate');
+  });
+
+  it('steal phase 3 (permanent retrograde) colors severe', () => {
+    expect(deriveCarotidCompetency({ subclavianStealPhase: 3 })).toBe('severe');
+  });
+
+  it('steal phases 1–2 color moderate', () => {
+    expect(deriveCarotidCompetency({ subclavianStealPhase: 1 })).toBe('moderate');
+    expect(deriveCarotidCompetency({ subclavianStealPhase: 2 })).toBe('moderate');
+  });
+
+  it('steal phase 0 (none) stays normal', () => {
+    expect(deriveCarotidCompetency({ subclavianStealPhase: 0 })).toBe('normal');
+  });
+
+  it('absent flow still wins as occluded over a steal phase', () => {
+    expect(
+      deriveCarotidCompetency({ flowDirection: 'absent', subclavianStealPhase: 1 }),
+    ).toBe('occluded');
+  });
+});

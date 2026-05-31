@@ -12,7 +12,7 @@
 
 import { COMPETENCY_COLORS } from '../constants/theme-colors';
 
-export type AnatomyViewKey = 'le-anterior' | 'le-posterior' | 'neck-carotid';
+export type AnatomyViewKey = 'le-anterior' | 'le-posterior' | 'neck-carotid' | 'le-arterial-anterior';
 
 /**
  * ViewBox pixel dimensions per anatomy view. The drawing-canvas overlay SVG
@@ -24,6 +24,7 @@ export const ANATOMY_VIEWBOX: Record<AnatomyViewKey, readonly [number, number]> 
   'le-anterior': [600, 1453],
   'le-posterior': [600, 1453],
   'neck-carotid': [771, 910],
+  'le-arterial-anterior': [600, 1453],
 };
 
 /**

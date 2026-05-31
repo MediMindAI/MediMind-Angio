@@ -13,6 +13,7 @@ import type {
   ArterialLESegmentBase,
   ArterialSegmentFinding,
   ArterialSegmentFindings,
+  RunoffAssessment,
   SegmentalPressures,
 } from '../../../components/studies/arterial-le/config';
 import { computeAbi, computeTbi } from '../../../components/studies/arterial-le/abiCalculator';
@@ -25,6 +26,7 @@ import {
   pushCodedCategorical,
   pushCustomNumeric,
   pushLoincNumeric,
+  pushStringObservation,
 } from './shared';
 
 export function extractArterialFindings(form: FormState): ArterialSegmentFindings | undefined {
@@ -150,6 +152,64 @@ export function appendArterialFindingObservations(
       isAbnormal: true,
     });
   }
+  // Categorical: insonation quality (only emit limited / non-visualized — an
+  // adequate or unset segment carries no quality caveat).
+  if (finding.visualizationQuality && finding.visualizationQuality !== 'adequate') {
+    pushCodedCategorical(ctx, out, {
+      bodySite,
+      sideText,
+      paramId: 'visualizationQuality',
+      paramLabel: 'Insonation quality',
+      value: finding.visualizationQuality,
+      system: MEDIMIND_CODESYSTEMS.VISUALIZATION_QUALITY,
+      tag,
+      isAbnormal: finding.visualizationQuality === 'non-visualized',
+    });
+  }
+  // Free text: per-segment note.
+  pushStringObservation(ctx, out, {
+    bodySite,
+    sideText,
+    paramId: 'segmentNote',
+    paramLabel: 'Segment note',
+    value: finding.note,
+    tag,
+  });
+}
+
+/**
+ * Per-side distal run-off summary (ESVS) as coded Observations. Emitted once
+ * per side that carries a run-off value.
+ */
+export function appendArterialRunoffObservations(
+  ctx: BuildContext,
+  out: Array<BundleEntry<Observation>>,
+  runoff: RunoffAssessment
+): void {
+  const sides: ReadonlyArray<{ side: 'left' | 'right'; text: string }> = [
+    { side: 'right', text: 'Right' },
+    { side: 'left', text: 'Left' },
+  ];
+  for (const { side, text } of sides) {
+    const value = side === 'left' ? runoff.left : runoff.right;
+    if (!value) continue;
+    pushCodedCategorical(ctx, out, {
+      bodySite: { text: 'Tibial run-off vessels' },
+      sideText: text,
+      paramId: 'runoff',
+      paramLabel: 'Distal run-off',
+      value,
+      system: MEDIMIND_CODESYSTEMS.RUNOFF,
+      tag: `parameter=runoff;side=${side}`,
+      isAbnormal: value === 'occluded',
+    });
+  }
+}
+
+export function extractArterialRunoff(form: FormState): RunoffAssessment | undefined {
+  const raw = form.parameters['runoff'];
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  return raw as RunoffAssessment;
 }
 
 /**

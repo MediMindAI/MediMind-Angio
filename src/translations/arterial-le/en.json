@@ -28,7 +28,8 @@
     "segmentTable": {
       "title": "Segmental assessment",
       "subtitle": "Waveform, PSV, stenosis, and plaque per segment",
-      "segment": "Segment"
+      "segment": "Segment",
+      "toggleDetails": "More fields"
     },
     "param": {
       "waveform": "Waveform",
@@ -37,7 +38,10 @@
       "stenosisPct": "Stenosis %",
       "plaqueMorphology": "Plaque",
       "plaqueLengthMm": "Plaque length (mm)",
-      "occluded": "Occl."
+      "occluded": "Occl.",
+      "note": "Note",
+      "velocityRatio": "Velocity ratio",
+      "visualizationQuality": "Image quality"
     },
     "help": {
       "psvCmS": "Peak systolic velocity at sample site.",
@@ -97,12 +101,14 @@
       "normalSide": "Normal {side} lower-extremity arterial tree with triphasic flow throughout.",
       "occluded": "Occluded — {vein}.",
       "stenosis": "{severity} stenosis — {vein} (PSV {psv} cm/s).",
-      "dampedWaveform": "{waveform} flow — {vein}."
+      "dampedWaveform": "{waveform} flow — {vein}.",
+      "notVisualized": "{vein} — not adequately visualized."
     },
     "conclusion": {
       "occluded": "Occlusion — {side} {vein}.",
       "significantStenosis": "Hemodynamically significant ({severity}) stenosis — {side} {vein}.",
-      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}."
+      "abiSummary": "{side} ABI {abi} ({abiBand}) · TBI {tbi}.",
+      "runoff": "{side}: {runoff} distal run-off."
     },
     "actions": {
       "newCase": "+ New case",
@@ -222,7 +228,8 @@
     },
     "anatomy": {
       "title": "Arterial anatomy",
-      "subtitle": "Segment colors reflect severity (normal to occluded)."
+      "subtitle": "Segment colors reflect severity (normal to occluded).",
+      "legendLabel": "Stenosis severity legend"
     },
     "form": {
       "title": "Lower Extremity Arterial Duplex Study",
@@ -234,6 +241,31 @@
       "stenShort": "Sten.",
       "plaqueShort": "Plaque",
       "occlShort": "Occl."
+    },
+    "visualizationQuality": {
+      "adequate": "Adequate",
+      "limited": "Limited",
+      "non-visualized": "Not visualized"
+    },
+    "runoff": {
+      "title": "Distal run-off",
+      "subtitle": "Tibial-vessel patency summary per side.",
+      "patent": "Patent (3-vessel)",
+      "single-vessel": "Single-vessel",
+      "occluded": "Occluded"
+    },
+    "validation": {
+      "title": "Check these findings",
+      "stenosisTriphasic": "{segment} ({side}): significant stenosis with a triphasic waveform — please reconcile.",
+      "occludedWithFlow": "{segment} ({side}): marked occluded but a flow velocity was entered.",
+      "abiIncomplete": "{side}: ABI needs a brachial and an ankle pressure to compute."
+    },
+    "severity": {
+      "normal": "Normal",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "severe": "Severe",
+      "occluded": "Occluded"
     }
   }
 }

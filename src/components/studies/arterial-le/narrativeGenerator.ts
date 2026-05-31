@@ -15,6 +15,7 @@ import {
   ARTERIAL_LE_SEGMENTS,
   type ArterialLEFullSegmentId,
   type ArterialSegmentFindings,
+  type RunoffAssessment,
   type SegmentalPressures,
   stenosisCategoryFromPct,
   isHemodynamicallySignificant,
@@ -35,9 +36,10 @@ interface SideBuild {
 export function generateArterialNarrative(
   findings: ArterialSegmentFindings,
   pressures: SegmentalPressures,
+  runoff: RunoffAssessment = {},
 ): NarrativeOutput {
-  const right = buildSide(findings, 'right', pressures);
-  const left = buildSide(findings, 'left', pressures);
+  const right = buildSide(findings, 'right', pressures, runoff);
+  const left = buildSide(findings, 'left', pressures, runoff);
 
   return {
     rightFindings: right.prose,
@@ -56,6 +58,7 @@ function buildSide(
   findings: ArterialSegmentFindings,
   side: 'left' | 'right',
   pressures: SegmentalPressures,
+  runoff: RunoffAssessment,
 ): SideBuild {
   const sentences: NarrativeKeyEntry[] = [];
   const conclusions: NarrativeKeyEntry[] = [];
@@ -68,6 +71,17 @@ function buildSide(
     const id = `${base}-${side}` as ArterialLEFullSegmentId;
     const f = findings[id];
     if (!f) continue;
+
+    // A segment the sonographer could not interrogate must not silently read
+    // as a normal triphasic vessel — emit an explicit "not visualized" note
+    // and skip the hemodynamic prose for it (IAC standard).
+    if (f.visualizationQuality === 'non-visualized') {
+      sentences.push({
+        key: 'arterialLE.narrative.notVisualized',
+        params: { vein: `arterialLE.segment.${base}` },
+      });
+      continue;
+    }
 
     if (f.waveform && f.waveform !== 'triphasic') allTriphasic = false;
 
@@ -126,6 +140,18 @@ function buildSide(
   const tbi = computeTbi(pressures, side === 'left' ? 'L' : 'R');
   const abiBullet = buildAbiBullet(abi, tbi, side);
   if (abiBullet) conclusions.push(abiBullet);
+
+  // Distal run-off roll-up (ESVS) — surfaced as its own conclusion bullet.
+  const sideRunoff = side === 'left' ? runoff.left : runoff.right;
+  if (sideRunoff) {
+    conclusions.push({
+      key: 'arterialLE.conclusion.runoff',
+      params: {
+        side: `arterialLE.side.${side}`,
+        runoff: `arterialLE.runoff.${sideRunoff}`,
+      },
+    });
+  }
 
   // Add a "normal" sentence if no abnormal findings at all
   if (!anySignificant && !anyOccluded && allTriphasic && sentences.length === 0) {

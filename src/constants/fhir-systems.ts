@@ -385,6 +385,10 @@ export const MEDIMIND_CODESYSTEMS = {
   VELOCITY_RATIO: `${FHIR_BASE_URL}/CodeSystem/velocity-ratio`,
   /** Toe-Brachial Index — no standard LOINC, custom anchor. */
   TBI: `${FHIR_BASE_URL}/CodeSystem/tbi`,
+  /** Per-segment insonation quality: adequate | limited | non-visualized. */
+  VISUALIZATION_QUALITY: `${FHIR_BASE_URL}/CodeSystem/visualization-quality`,
+  /** Distal run-off summary (per side): patent | single-vessel | occluded. */
+  RUNOFF: `${FHIR_BASE_URL}/CodeSystem/runoff`,
   /**
    * Patient position during the study (supine | prone | standing | etc.).
    * Wave 3.6 (Part 05 HIGH): the patient-position Observation previously

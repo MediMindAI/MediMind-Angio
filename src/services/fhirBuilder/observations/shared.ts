@@ -253,3 +253,47 @@ export function pushBooleanObservation(
     request: { method: 'POST', url: 'Observation' },
   });
 }
+
+export interface StringObsArgs {
+  readonly bodySite?: CodeableConcept;
+  readonly sideText: string;
+  readonly paramId: string;
+  readonly paramLabel: string;
+  /** Skips emission when undefined or blank. */
+  readonly value: string | undefined;
+  readonly tag: string;
+  readonly isAbnormal?: boolean;
+}
+
+/** Free-text Observation (`valueString`) — e.g. a per-segment note. */
+export function pushStringObservation(
+  ctx: BuildContext,
+  out: Array<BundleEntry<Observation>>,
+  args: StringObsArgs
+): void {
+  const text = args.value?.trim();
+  if (!text) return;
+  const obsId = newUuid();
+  const obs: Observation = {
+    resourceType: 'Observation',
+    id: obsId,
+    status: 'final',
+    category: [observationCategory('imaging')],
+    code: {
+      coding: buildParameterCoding(ctx, args.paramId),
+      text: `${args.sideText} ${args.paramLabel}`,
+    },
+    subject: { reference: ctx.patientRef },
+    effectiveDateTime: ctx.nowIso,
+    issued: ctx.nowIso,
+    bodySite: args.bodySite,
+    valueString: text,
+    interpretation: args.isAbnormal ? [interpretationAbnormal()] : undefined,
+    note: [{ text: `${args.tag};parameter=${args.paramId}` }],
+  };
+  out.push({
+    fullUrl: urnRef(obsId),
+    resource: obs,
+    request: { method: 'POST', url: 'Observation' },
+  });
+}

@@ -129,6 +129,68 @@
   color: var(--emr-accent);
 }
 
+/* Expand toggle for the secondary-fields panel */
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-sm);
+  background: var(--emr-bg-card);
+  color: var(--emr-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.expandBtn:hover {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.expandBtn[data-open] {
+  transform: rotate(180deg);
+}
+
+/* A small accent dot when the panel holds entered values (so it's not hidden). */
+.expandBtn[data-has-details] {
+  border-color: var(--emr-accent);
+  color: var(--emr-accent);
+}
+
+.detailsPanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 10px 12px 14px;
+  margin: 2px 0 6px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius-lg);
+}
+
+.detailField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+}
+
+.detailNote {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.detailLabel {
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
 @media (max-width: 992px) {
   .headRow {
     display: none;

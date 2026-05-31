@@ -88,13 +88,24 @@ describe('suggestNascetCategory', () => {
       ).toBe('lt50');
     });
 
-    it('non-antegrade flow on any vessel → lt50', () => {
+    it('non-antegrade flow on the ICA → lt50', () => {
+      expect(
+        suggestNascetCategory(
+          rightFindings({ 'ica-prox': { psvCmS: 100 }, 'ica-mid': { flowDirection: 'retrograde' } }),
+          'right',
+        ),
+      ).toBe('lt50');
+    });
+
+    it('disease on a NON-ICA vessel does NOT flip the ICA to lt50 (NASCET is ICA-only)', () => {
+      // Retrograde ECA / vertebral steal must not contaminate the ICA stenosis
+      // grade — the ICA itself is hemodynamically normal here.
       expect(
         suggestNascetCategory(
           rightFindings({ 'ica-prox': { psvCmS: 100 }, eca: { flowDirection: 'retrograde' } }),
           'right',
         ),
-      ).toBe('lt50');
+      ).toBe('normal');
     });
 
     it('clean low-velocity study → normal', () => {

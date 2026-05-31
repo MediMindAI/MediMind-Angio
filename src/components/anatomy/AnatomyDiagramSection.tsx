@@ -30,6 +30,8 @@ export interface AnatomyDiagramSectionProps {
   readonly colorFn?: (id: SegmentId) => { fill: string; stroke: string };
   /** Custom tooltip status text (used alongside `colorFn`). */
   readonly tooltipText?: (id: SegmentId) => string;
+  /** Override the tooltip segment-name line (e.g. arterial vs venous ids). */
+  readonly labelFor?: (id: SegmentId) => string;
   /** Overlay mode (colored stroke over backdrop, default). False = filled
    *  vector segments (carotid). */
   readonly overlay?: boolean;
@@ -56,6 +58,7 @@ export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
   segments,
   colorFn,
   tooltipText,
+  labelFor,
   overlay = true,
   enableSegmentEdit = true,
   pathOverrides,
@@ -127,6 +130,7 @@ export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
         segments={segments}
         colorFn={colorFn}
         tooltipText={tooltipText}
+        labelFor={labelFor}
         overlay={overlay}
         pathOverrides={pathOverrides}
         drawings={drawings}

@@ -10,7 +10,8 @@
 
 import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
 import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
-import { COMPETENCY_COLORS, SEVERITY_COLORS } from '../../../constants/theme-colors';
+import { COMPETENCY_COLORS } from '../../../constants/theme-colors';
+import { severityBandColor } from '../../anatomy/severityColor';
 
 // Re-export the canonical `Side` type so existing consumers
 // (`import { Side } from '.../carotid/config'`) keep working.
@@ -320,7 +321,9 @@ const fs = (c: { fill: string; stroke: string }): { fill: string; stroke: string
  * (`colorFn`) and the PDF (`competencyFn`) so they always agree.
  */
 export function carotidBandColor(band: CarotidCompetency): { fill: string; stroke: string } {
-  return fs(SEVERITY_COLORS[band]);
+  // Delegates to the shared severity→color helper so carotid + arterial-LE
+  // stay in lock-step (single source of truth in anatomy/severityColor.ts).
+  return severityBandColor(band);
 }
 
 /**

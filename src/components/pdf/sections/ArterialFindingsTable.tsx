@@ -22,6 +22,7 @@ import type {
   ArterialLESegmentBase,
   PlaqueMorphology,
   StenosisCategory,
+  VisualizationQuality,
   Waveform,
 } from '../../studies/arterial-le/config';
 import { ARTERIAL_LE_SEGMENTS } from '../../studies/arterial-le/config';
@@ -40,6 +41,8 @@ export interface ArterialFindingsTableLabels {
   readonly waveformName: Record<Waveform, string>;
   readonly stenosisName: Record<StenosisCategory, string>;
   readonly plaqueName: Record<PlaqueMorphology, string>;
+  readonly qualityName: Record<VisualizationQuality, string>;
+  readonly noteLabel: string;
   readonly emptyDash: string;
 }
 
@@ -123,6 +126,18 @@ const styles = StyleSheet.create({
   cellRight: {
     textAlign: 'right',
   },
+  detailRow: {
+    paddingHorizontal: 6,
+    paddingBottom: 2,
+    borderBottomWidth: 0.5,
+    borderBottomColor: PDF_THEME.border,
+    borderBottomStyle: 'solid',
+  },
+  detailText: {
+    fontSize: PDF_FONT_SIZES.footnote,
+    color: PDF_THEME.textMuted,
+    lineHeight: 1.2,
+  },
 });
 
 interface RenderRow {
@@ -147,8 +162,24 @@ function hasAnyValue(f: ArterialSegmentFinding): boolean {
     f.stenosisCategory !== undefined ||
     f.plaqueMorphology !== undefined ||
     f.plaqueLengthMm !== undefined ||
-    f.occluded === true
+    f.occluded === true ||
+    (f.visualizationQuality !== undefined && f.visualizationQuality !== 'adequate') ||
+    (f.note !== undefined && f.note.trim() !== '')
   );
+}
+
+/** Optional secondary line below a row: image-quality caveat + free-text note. */
+function detailLine(
+  f: ArterialSegmentFinding,
+  labels: ArterialFindingsTableLabels,
+): string | null {
+  const parts: string[] = [];
+  if (f.visualizationQuality && f.visualizationQuality !== 'adequate') {
+    parts.push(labels.qualityName[f.visualizationQuality]);
+  }
+  const note = f.note?.trim();
+  if (note) parts.push(`${labels.noteLabel}: ${note}`);
+  return parts.length ? parts.join(' · ') : null;
 }
 
 function buildRows(
@@ -271,26 +302,34 @@ function SideTable({
             r.finding.waveform !== undefined
               ? labels.waveformName[r.finding.waveform]
               : labels.emptyDash;
+          const detail = detailLine(r.finding, labels);
           return (
-            <View key={`${side}-${r.segmentBase}`} style={rowStyle}>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...cellStyle }}>
-                {segLabel}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...cellStyle }}>
-                {waveformText}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellRightStyle }}>
-                {formatPsv(r.finding.psvCmS, labels.emptyDash)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.stenosis, ...cellRightStyle }}>
-                {formatStenosis(r.finding, labels)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...cellStyle }}>
-                {formatPlaque(r.finding, labels)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...cellRightStyle }}>
-                {r.finding.occluded === true ? labels.occludedMark : labels.emptyDash}
-              </Text>
+            <View key={`${side}-${r.segmentBase}`} wrap={false}>
+              <View style={rowStyle}>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...cellStyle }}>
+                  {segLabel}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...cellStyle }}>
+                  {waveformText}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellRightStyle }}>
+                  {formatPsv(r.finding.psvCmS, labels.emptyDash)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.stenosis, ...cellRightStyle }}>
+                  {formatStenosis(r.finding, labels)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...cellStyle }}>
+                  {formatPlaque(r.finding, labels)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...cellRightStyle }}>
+                  {r.finding.occluded === true ? labels.occludedMark : labels.emptyDash}
+                </Text>
+              </View>
+              {detail && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailText}>{detail}</Text>
+                </View>
+              )}
             </View>
           );
         })

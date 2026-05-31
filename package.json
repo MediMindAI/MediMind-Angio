@@ -19,6 +19,7 @@
     "anatomy:fetch": "tsx scripts/fetch-anatomy.ts",
     "anatomy:tag": "tsx scripts/tag-anatomy.ts",
     "anatomy:verify": "tsx scripts/verify-anatomy.ts",
+    "anatomy:arteries": "node scripts/inflate-arteries.mjs",
     "anatomy:all": "npm run anatomy:fetch && npm run anatomy:tag && npm run anatomy:verify",
     "i18n:check": "tsx scripts/check-i18n.ts",
     "validate:fhir": "tsx scripts/validate-sample-bundle.ts",

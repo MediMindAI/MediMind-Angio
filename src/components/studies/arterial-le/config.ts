@@ -83,6 +83,19 @@ export const PLAQUE_MORPHOLOGY_VALUES = [
 ] as const;
 export type PlaqueMorphology = (typeof PLAQUE_MORPHOLOGY_VALUES)[number];
 
+/**
+ * Per-segment insonation quality (IAC Vascular Testing Standards). Lets the
+ * sonographer flag a segment that could not be adequately interrogated (body
+ * habitus, edema, calcific shadowing) so the narrative does not silently imply
+ * a normal segment was confidently seen. `adequate` is the implicit default.
+ */
+export const VISUALIZATION_QUALITY_VALUES = [
+  'adequate',
+  'limited',
+  'non-visualized',
+] as const;
+export type VisualizationQuality = (typeof VISUALIZATION_QUALITY_VALUES)[number];
+
 // ============================================================================
 // Per-segment findings shape
 // ============================================================================
@@ -102,6 +115,8 @@ export interface ArterialSegmentFinding {
   readonly plaqueMorphology?: PlaqueMorphology;
   /** Plaque length in mm. */
   readonly plaqueLengthMm?: number;
+  /** Insonation quality; `adequate` when unset. Drives narrative suppression. */
+  readonly visualizationQuality?: VisualizationQuality;
   readonly note?: string;
   /**
    * Manual override for the diagram severity band. Mirrors
@@ -117,6 +132,20 @@ export interface ArterialSegmentFinding {
 export type ArterialSegmentFindings = Readonly<
   Partial<Record<ArterialLEFullSegmentId, ArterialSegmentFinding>>
 >;
+
+/**
+ * Per-side distal run-off summary (ESVS 2024). A roll-up of tibial-vessel
+ * patency that complements the per-segment table: three patent tibial vessels
+ * (`patent`), one patent (`single-vessel`), or none (`occluded`). Stored per
+ * side on the form state, not per segment.
+ */
+export const RUNOFF_VALUES = ['patent', 'single-vessel', 'occluded'] as const;
+export type Runoff = (typeof RUNOFF_VALUES)[number];
+
+export interface RunoffAssessment {
+  readonly left?: Runoff;
+  readonly right?: Runoff;
+}
 
 // ============================================================================
 // Segmental pressures (separate table, not per-segment)

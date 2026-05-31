@@ -201,7 +201,14 @@ async function resolveStudyAssets(
       );
       return SEVERITY_COLORS[band];
     };
-    const anterior = await loadAnatomyForPdf('le-arterial-anterior', {}, { competencyFn });
+    const rawArterialDrawings = studyForm.parameters['drawings'];
+    const arterialDrawings = Array.isArray(rawArterialDrawings)
+      ? (rawArterialDrawings as ReadonlyArray<import('../../types/drawing').DrawingStroke>)
+      : [];
+    const anterior = await loadAnatomyForPdf('le-arterial-anterior', {}, {
+      competencyFn,
+      drawings: arterialDrawings,
+    });
     anatomy = { anterior, posterior: null };
     localized = buildLocalizedNarrativeFromForm(studyForm, t);
   } else if (studyForm.studyType === 'carotid') {

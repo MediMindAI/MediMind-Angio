@@ -68,6 +68,17 @@
   background: var(--emr-secondary-alpha-20);
 }
 
+/* Applied-state confirmation shown once the pick matches the SRU suggestion. */
+.suggestApplied {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--emr-success, #16a34a);
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-semibold);
+  white-space: nowrap;
+}
+
 .option {
   display: flex;
   align-items: center;

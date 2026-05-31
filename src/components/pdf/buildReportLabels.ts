@@ -25,6 +25,8 @@ import {
   WAVEFORM_VALUES,
   STENOSIS_CATEGORY_VALUES,
   PLAQUE_MORPHOLOGY_VALUES as ARTERIAL_PLAQUE_VALUES,
+  VISUALIZATION_QUALITY_VALUES,
+  type VisualizationQuality,
 } from '../studies/arterial-le/config';
 import type {
   CarotidVesselBase,
@@ -170,6 +172,15 @@ function buildSingleReportLabels(
       {} as Record<ArterialPlaqueMorphology, string>,
     );
 
+  const arterialQualityName: Record<VisualizationQuality, string> =
+    VISUALIZATION_QUALITY_VALUES.reduce(
+      (acc, v) => {
+        acc[v] = t(`arterialLE.visualizationQuality.${v}`, v);
+        return acc;
+      },
+      {} as Record<VisualizationQuality, string>,
+    );
+
   const abiBand: Record<AbiBand, string> = {
     'non-compressible': t('arterialLE.abi.band.non-compressible', 'Non-compressible'),
     normal: t('arterialLE.abi.band.normal', 'Normal'),
@@ -301,6 +312,8 @@ function buildSingleReportLabels(
       waveformName,
       stenosisName,
       plaqueName: arterialPlaqueName,
+      qualityName: arterialQualityName,
+      noteLabel: t('arterialLE.param.note', 'Note'),
       emptyDash: '—',
     },
     pressures: {
