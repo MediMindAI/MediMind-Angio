@@ -14,6 +14,22 @@ import './styles/print.css';
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
 
+// Stale-chunk recovery. Each deploy rotates Vite's content-hashed chunk
+// filenames (e.g. pdf-<hash>.js) and deletes the previous ones from the
+// host. A tab still running the *previous* index.html holds the old hash
+// map, so a lazy import() — most visibly the PDF export — 404s with
+// "Failed to fetch dynamically imported module". Vite emits
+// `vite:preloadError`; we reload once to pull the fresh index.html + new
+// hashes. The timestamp throttle recovers from a deploy without looping
+// forever if the chunk is genuinely missing (a build bug, not a deploy).
+window.addEventListener('vite:preloadError', () => {
+  const KEY = 'vite-preload-reloaded-at';
+  const last = Number(sessionStorage.getItem(KEY) ?? 0);
+  if (Date.now() - last < 30_000) return;
+  sessionStorage.setItem(KEY, String(Date.now()));
+  window.location.reload();
+});
+
 // Wave 4.1 — fire-and-forget migration of any pre-existing localStorage
 // drafts into IndexedDB. The new drafts banner + clear-all UX reads from
 // IDB; without this hop, drafts written before the upgrade would never
