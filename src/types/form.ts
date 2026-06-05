@@ -17,6 +17,7 @@
  */
 
 import type { CeapClassification } from './ceap';
+import type { SvpClassification } from './svp';
 import type { SegmentState } from './anatomy';
 import type { StudyType } from './study';
 import type { PatientPosition } from './patient-position';
@@ -120,6 +121,13 @@ interface FormStateBase {
   readonly segments: ReadonlyArray<SegmentState>;
   readonly narrative: StudyNarrative;
   readonly ceap?: CeapClassification;
+  /**
+   * Optional SVP (Symptoms–Varices–Pathophysiology) classification — present
+   * on all variants to keep the shape uniform (like `ceap`); only the
+   * iliac/pelvic venous study populates it. Drives the SVP Observation +
+   * DiagnosticReport.conclusionCode and the PDF SVP block.
+   */
+  readonly svp?: SvpClassification;
   readonly recommendations: ReadonlyArray<Recommendation>;
   /**
    * Free-form parameter bag — indexed by ParameterDef.id, study-specific.
@@ -158,6 +166,10 @@ export interface IvcDuplexFormState extends FormStateBase {
   readonly studyType: 'ivcDuplex';
 }
 
+export interface IliacPelvicVenousFormState extends FormStateBase {
+  readonly studyType: 'iliacPelvicVenous';
+}
+
 /**
  * The complete form shape — union over every supported `StudyType`.
  * Consumers `switch (form.studyType) { ... }` to get exhaustive narrowing.
@@ -168,7 +180,8 @@ export type FormState =
   | VenousLELeftFormState
   | ArterialLEFormState
   | CarotidFormState
-  | IvcDuplexFormState;
+  | IvcDuplexFormState
+  | IliacPelvicVenousFormState;
 
 /** Type guard: narrows to any venous variant. */
 export function isVenousForm(

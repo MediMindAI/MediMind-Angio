@@ -149,7 +149,8 @@ function pushVenousCategorical(
   const isAbnormal =
     (paramId === 'compressibility' && value !== 'normal' && value !== 'inconclusive') ||
     (paramId === 'thrombosis' && (value === 'acute' || value === 'chronic')) ||
-    (paramId === 'phasicity' && (value === 'monophasic' || value === 'reduced'));
+    (paramId === 'phasicity' &&
+      (value === 'monophasic' || value === 'reduced' || value === 'not-detected'));
 
   const obs: Observation = {
     resourceType: 'Observation',

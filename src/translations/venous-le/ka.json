@@ -285,6 +285,7 @@
       "reduced": "შემცირებული",
       "pulsatile": "პულსირებადი",
       "monophasic": "ერთფაზიანი",
+      "not-detected": "არ აღინიშნება",
       "inconclusive": "დაუდგენელი"
     },
     "refluxTable": {
@@ -353,8 +354,10 @@
       "modeDraw": "ხატვა",
       "tools": {
         "pen": "კალამი",
-        "eraser": "საშლელი"
+        "eraser": "საშლელი",
+        "text": "ტექსტი"
       },
+      "textPlaceholder": "შეიყვანეთ წარწერა…",
       "size": {
         "label": "ზომა",
         "thin": "წვრილი",

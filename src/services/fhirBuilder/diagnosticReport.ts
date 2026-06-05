@@ -17,10 +17,12 @@ import type {
 } from '../../types/fhir';
 import {
   CEAP_SNOMED,
+  SVP_SNOMED,
   IDENTIFIER_SYSTEMS,
   STANDARD_FHIR_SYSTEMS,
 } from '../../constants/fhir-systems';
 import { formatCeapClassification } from '../ceapService';
+import { formatSvpClassification } from '../svpService';
 import { narrativeFromFormState, resolveConclusionsEnglish } from '../narrativeService';
 import type { BuildContext } from './context';
 import { urnRef } from './context';
@@ -30,6 +32,7 @@ export function buildDiagnosticReportEntry(
   panelEntry: BundleEntry<Observation>,
   segmentEntries: ReadonlyArray<BundleEntry<Observation>>,
   ceapEntry: BundleEntry<Observation> | null,
+  svpEntry: BundleEntry<Observation> | null,
   positionEntry: BundleEntry<Observation> | null,
   sonographerEntry: BundleEntry<Observation> | null,
   clinicianEntry: BundleEntry<Observation> | null
@@ -73,6 +76,9 @@ export function buildDiagnosticReportEntry(
   if (ceapEntry) {
     results.push({ reference: ceapEntry.fullUrl ?? `Observation/${ctx.ceapObsId}` });
   }
+  if (svpEntry) {
+    results.push({ reference: svpEntry.fullUrl ?? `Observation/${ctx.svpObsId}` });
+  }
 
   const conclusionCodes: CodeableConcept[] = [];
   if (ctx.form.ceap) {
@@ -85,6 +91,18 @@ export function buildDiagnosticReportEntry(
         },
       ],
       text: formatCeapClassification(ctx.form.ceap),
+    });
+  }
+  if (ctx.form.svp) {
+    conclusionCodes.push({
+      coding: [
+        {
+          system: STANDARD_FHIR_SYSTEMS.SNOMED,
+          code: SVP_SNOMED.PELVIC_CONGESTION_SYNDROME.code,
+          display: SVP_SNOMED.PELVIC_CONGESTION_SYNDROME.display,
+        },
+      ],
+      text: formatSvpClassification(ctx.form.svp),
     });
   }
 

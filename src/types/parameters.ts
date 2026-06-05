@@ -35,6 +35,10 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../components/studies/carotid/config';
+import type {
+  IliacPelvicVenousFindings,
+  IliacContext,
+} from '../components/studies/iliac-pelvic-venous/config';
 
 // ============================================================================
 // Per-study payload shapes
@@ -55,6 +59,11 @@ export interface ArterialFormParameters {
 export interface CarotidFormParameters {
   readonly segmentFindings: CarotidFindings;
   readonly nascet?: CarotidNascetClassification;
+}
+
+/** Parameter bag carried by the iliac/pelvic venous form. */
+export interface IliacPelvicVenousFormParameters {
+  readonly segmentFindings: IliacPelvicVenousFindings;
 }
 
 // ============================================================================
@@ -96,5 +105,15 @@ export function isCarotidFindings(x: unknown): x is CarotidFindings {
 
 /** Narrow `parameters['nascet']` to `CarotidNascetClassification`. */
 export function isCarotidNascet(x: unknown): x is CarotidNascetClassification {
+  return isPlainObject(x);
+}
+
+/** Narrow `parameters['segmentFindings']` to `IliacPelvicVenousFindings`. */
+export function isIliacFindings(x: unknown): x is IliacPelvicVenousFindings {
+  return isPlainObject(x);
+}
+
+/** Narrow `parameters['context']` to the iliac/pelvic Zone-0 `IliacContext`. */
+export function isIliacContext(x: unknown): x is IliacContext {
   return isPlainObject(x);
 }

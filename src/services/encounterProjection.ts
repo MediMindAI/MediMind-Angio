@@ -82,6 +82,14 @@ interface IvcSlot extends PerStudySlotCommon {
   readonly studyType: 'ivcDuplex';
 }
 
+interface IliacSlot extends PerStudySlotCommon {
+  readonly studyType: 'iliacPelvicVenous';
+  readonly ceap?: FormState['ceap'];
+  readonly svp?: FormState['svp'];
+  readonly drawings?: unknown;
+  readonly context?: unknown;
+}
+
 function hasStudyType(slot: unknown, type: StudyType): slot is PerStudySlotCommon {
   if (typeof slot !== 'object' || slot === null) return false;
   const s = slot as { studyType?: unknown };
@@ -244,6 +252,31 @@ export function projectStudyToFormState(
       recommendations: i.recommendations ?? [],
       parameters: {
         segmentFindings: i.findings ?? {},
+      },
+    };
+  }
+
+  if (type === 'iliacPelvicVenous') {
+    const ip = slot as IliacSlot;
+    return {
+      studyType: 'iliacPelvicVenous',
+      header,
+      segments: [],
+      narrative: {
+        indication: encounter.header.indicationNotes,
+        impression: ip.impression ?? '',
+        sonographerComments: ip.sonographerComments || undefined,
+        clinicianComments: ip.clinicianComments || undefined,
+      },
+      recommendations: ip.recommendations ?? [],
+      ceap: ip.ceap,
+      svp: ip.svp,
+      parameters: {
+        // Zone findings ride under `segmentFindings`; the diagram-centric
+        // study also carries `drawings` so the unified PDF renders them.
+        segmentFindings: ip.findings ?? {},
+        drawings: Array.isArray(ip.drawings) ? ip.drawings : [],
+        context: ip.context ?? {},
       },
     };
   }

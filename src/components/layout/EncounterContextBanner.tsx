@@ -75,6 +75,11 @@ const STUDY_TYPE_META: Readonly<Record<StudyType, StudyTypeMeta>> = {
     translationKey: 'studies.ivcDuplex.short',
     fallbackLabel: 'IVC',
   },
+  iliacPelvicVenous: {
+    route: '/iliac-pelvic-venous',
+    translationKey: 'studies.iliacPelvicVenous.short',
+    fallbackLabel: 'Iliac & pelvic',
+  },
 };
 
 /** Whole-year age from an ISO `YYYY-MM-DD` birth date. */

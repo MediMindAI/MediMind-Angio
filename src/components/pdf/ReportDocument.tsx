@@ -29,12 +29,16 @@ import { SegmentalPressureTable } from './sections/SegmentalPressureTable';
 import type { SegmentalPressureTableLabels } from './sections/SegmentalPressureTable';
 import { CarotidFindingsTable } from './sections/CarotidFindingsTable';
 import type { CarotidFindingsTableLabels } from './sections/CarotidFindingsTable';
+import { IliacPelvicVenousFindingsTable } from './sections/IliacPelvicVenousFindingsTable';
+import type { IliacPelvicVenousFindingsTableLabels } from './sections/IliacPelvicVenousFindingsTable';
 import { NASCETSummaryBlock } from './sections/NASCETSummaryBlock';
 import type { NASCETSummaryLabels } from './sections/NASCETSummaryBlock';
 import { NarrativeSection } from './sections/NarrativeSection';
 import type { NarrativeSectionLabels } from './sections/NarrativeSection';
 import { CEAPSection } from './sections/CEAPSection';
 import type { CEAPSectionLabels } from './sections/CEAPSection';
+import { SVPSection } from './sections/SVPSection';
+import type { SVPSectionLabels } from './sections/SVPSection';
 import { RecommendationsSection } from './sections/RecommendationsSection';
 import type { RecommendationsSectionLabels } from './sections/RecommendationsSection';
 import { FooterSection } from './sections/FooterSection';
@@ -51,6 +55,11 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../studies/carotid/config';
+import type {
+  IliacPelvicVenousFindings,
+  IliacContext,
+} from '../studies/iliac-pelvic-venous/config';
+import { isIliacContext, isIliacFindings } from '../../types/parameters';
 import { suggestNascetCategory } from '../studies/carotid/stenosisCalculator';
 
 // ---------------------------------------------------------------------------
@@ -71,8 +80,10 @@ export interface ReportLabels {
   /** 5-band severity legend for the carotid neck diagram. */
   readonly carotidLegend: ReadonlyArray<DiagramLegendItem>;
   readonly nascet: NASCETSummaryLabels;
+  readonly iliacFindings: IliacPelvicVenousFindingsTableLabels;
   readonly narrative: NarrativeSectionLabels;
   readonly ceap: CEAPSectionLabels;
+  readonly svp: SVPSectionLabels;
   readonly recommendations: RecommendationsSectionLabels;
   readonly footer: {
     readonly pageLabelTemplate: string;
@@ -213,6 +224,20 @@ function deriveCarotidNascet(form: FormState): CarotidNascetClassification {
   };
 }
 
+/** Iliac/pelvic form stashes zone findings on `parameters.segmentFindings`. */
+function deriveIliacFindings(form: FormState): IliacPelvicVenousFindings {
+  if (form.studyType !== 'iliacPelvicVenous') return {};
+  const raw = form.parameters['segmentFindings'];
+  return isIliacFindings(raw) ? raw : {};
+}
+
+/** Zone-0 technique/context lives on `parameters.context` (audit H3). */
+function deriveIliacContext(form: FormState): IliacContext | undefined {
+  if (form.studyType !== 'iliacPelvicVenous') return undefined;
+  const raw = form.parameters['context'];
+  return isIliacContext(raw) ? raw : undefined;
+}
+
 // formatDate / formatDateTime helpers were inlined here previously; both
 // have been replaced by `formatIsoForDisplay` from `services/dateHelpers`,
 // which routes through `Intl.DateTimeFormat` and includes the timezone
@@ -254,6 +279,9 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
   const arterialPressures = deriveArterialPressures(form);
   const carotidFindings = deriveCarotidFindings(form);
   const carotidNascet = deriveCarotidNascet(form);
+  const isIliac = form.studyType === 'iliacPelvicVenous';
+  const iliacFindings = deriveIliacFindings(form);
+  const iliacContext = deriveIliacContext(form);
 
   // Use the active page preset (Letter has wider content area than A4) so
   // tables anchor to the correct content box on US-page renders. Falls
@@ -404,6 +432,27 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
               />
             </View>
           </View>
+        ) : isIliac ? (
+          <View>
+            <View style={{ width: pageWidth }}>
+              <IliacPelvicVenousFindingsTable
+                findings={iliacFindings}
+                context={iliacContext}
+                labels={labels.iliacFindings}
+              />
+            </View>
+            <View style={{ width: pageWidth }}>
+              <DiagramSection
+                anterior={anatomy?.anterior ?? null}
+                posterior={null}
+                labels={labels.diagram}
+                // Iliac diagram is a static illustration with no competency
+                // coloring → intentionally no legend (empty, not the default).
+                legendItems={[]}
+                viewWidthPt={240}
+              />
+            </View>
+          </View>
         ) : (
           <FindingsTable findings={findings} labels={labels.findings} />
         )}
@@ -437,6 +486,8 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
         />
 
         {form.ceap ? <CEAPSection ceap={form.ceap} labels={labels.ceap} /> : null}
+
+        {form.svp ? <SVPSection svp={form.svp} labels={labels.svp} /> : null}
 
         <RecommendationsSection
           recommendations={form.recommendations}

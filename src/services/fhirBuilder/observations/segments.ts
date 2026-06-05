@@ -44,6 +44,7 @@ import {
   extractCarotidFindings,
   extractCarotidNascet,
 } from './carotid';
+import { appendIliacObservations, extractIliacFindings } from './iliac';
 import { appendGenericSegmentObservations } from './generic';
 
 export function buildSegmentObservationEntries(ctx: BuildContext): Array<BundleEntry<Observation>> {
@@ -105,6 +106,13 @@ export function buildSegmentObservationEntries(ctx: BuildContext): Array<BundleE
     }
     const nascet = extractCarotidNascet(ctx.form);
     appendCarotidNascetObservations(ctx, entries, nascet, findings);
+    return entries;
+  }
+
+  // Iliac/pelvic venous — zone-grouped findings (heterogeneous per zone).
+  if (ctx.form.studyType === 'iliacPelvicVenous') {
+    const findings = extractIliacFindings(ctx.form);
+    if (findings) appendIliacObservations(ctx, entries, findings);
     return entries;
   }
 

@@ -20,7 +20,7 @@ import type { VenousLESegmentBase, VenousSegmentFindings } from '../studies/veno
 import { deriveCompetency } from '../studies/venous-le/config';
 import { COMPETENCY_COLORS } from '../../constants/theme-colors';
 import type { AnatomyViewKey, DrawingStroke } from '../../types/drawing';
-import { DRAWING_COLOR_HEX } from '../../types/drawing';
+import { DRAWING_COLOR_HEX, fontForSize } from '../../types/drawing';
 import { strokeToSvgPath } from '../anatomy/strokeToSvgPath';
 
 // ---------------------------------------------------------------------------
@@ -31,12 +31,14 @@ export type AnatomyViewName =
   | 'le-anterior'
   | 'le-posterior'
   | 'le-arterial-anterior'
-  | 'neck-carotid';
+  | 'neck-carotid'
+  | 'abdominal-pelvic';
 
 export interface PdfSvgElement {
-  readonly kind: 'segment' | 'outline' | 'drawing';
+  readonly kind: 'segment' | 'outline' | 'drawing' | 'text';
   /** Canonical segment id, present only for kind='segment'. */
   readonly id?: string;
+  /** Path data — present on every kind except 'text'. */
   readonly d: string;
   readonly fill: string;
   readonly stroke: string;
@@ -47,6 +49,11 @@ export interface PdfSvgElement {
    * fill pattern — `@react-pdf/renderer` v4 doesn't expose `<Pattern>`).
    */
   readonly strokeDasharray?: string;
+  /** Text-label fields (kind='text'): the string + its anchor + font size. */
+  readonly text?: string;
+  readonly x?: number;
+  readonly y?: number;
+  readonly fontSize?: number;
 }
 
 export interface AnatomyToPdfResult {
@@ -327,11 +334,29 @@ export async function loadAnatomyForPdf(
     }
   }
 
-  // Append clinician-drawn strokes for this view, last so they paint on top.
+  // Append clinician annotations for this view, last so they paint on top.
   if (drawings.length > 0) {
     const viewKey = view as AnatomyViewKey;
     for (const stroke of drawings) {
       if (stroke.view !== viewKey) continue;
+      // Text label: emit a 'text' element anchored at points[0].
+      if (stroke.text != null) {
+        const anchor = stroke.points[0];
+        if (!anchor) continue;
+        elements.push({
+          kind: 'text',
+          id: stroke.id,
+          d: '',
+          fill: DRAWING_COLOR_HEX[stroke.color],
+          stroke: 'none',
+          strokeWidth: 0,
+          text: stroke.text,
+          x: anchor[0],
+          y: anchor[1],
+          fontSize: fontForSize(stroke.size),
+        });
+        continue;
+      }
       const d = strokeToSvgPath(stroke.points, stroke.size);
       if (!d) continue;
       elements.push({

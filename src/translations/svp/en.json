@@ -1,0 +1,50 @@
+{
+  "svp": {
+    "section": {
+      "title": "SVP Classification",
+      "subtitle": "Symptoms · Varices · Pathophysiology (Meissner 2021)",
+      "sAxis": "S — Symptoms",
+      "vAxis": "V — Varices",
+      "pAxis": "P — Pathophysiology"
+    },
+    "preview": "SVP:",
+    "s": {
+      "0": "S0 — No venous symptoms",
+      "1": "S1 — Renal (flank pain / hematuria)",
+      "2": "S2 — Chronic pelvic pain",
+      "3a": "S3a — Genital / vulvar",
+      "3b": "S3b — Pelvic-origin leg",
+      "3c": "S3c — Venous claudication"
+    },
+    "v": {
+      "0": "V0 — No varices",
+      "1": "V1 — Renal hilar",
+      "2": "V2 — Pelvic",
+      "3a": "V3a — Genital (vulvar / varicocele)",
+      "3b": "V3b — Pelvic-origin leg"
+    },
+    "segment": {
+      "IVC": "IVC — Inferior vena cava",
+      "LRV": "LRV — Left renal vein",
+      "GV": "GV — Gonadal vein",
+      "CIV": "CIV — Common iliac vein",
+      "EIV": "EIV — External iliac vein",
+      "IIV": "IIV — Internal iliac vein",
+      "PELV": "PELV — Pelvic escape veins"
+    },
+    "laterality": { "L": "Left", "R": "Right", "B": "Bilateral" },
+    "h": { "O": "Obstruction", "R": "Reflux" },
+    "e": { "T": "Thrombotic", "NT": "Non-thrombotic", "C": "Congenital" },
+    "p": {
+      "add": "Add segment",
+      "remove": "Remove",
+      "incomplete": "interim",
+      "empty": "No pathophysiology segments recorded.",
+      "col": {
+        "segment": "Segment",
+        "laterality": "Side",
+        "etiology": "Etiology"
+      }
+    }
+  }
+}

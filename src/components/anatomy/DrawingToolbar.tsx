@@ -10,7 +10,7 @@
 
 import { memo, useCallback } from 'react';
 import { Box, Group, SegmentedControl, Text, Tooltip, UnstyledButton } from '@mantine/core';
-import { IconArrowBackUp, IconEraser, IconPencil, IconPointer, IconRoute, IconTrash } from '@tabler/icons-react';
+import { IconArrowBackUp, IconEraser, IconLetterT, IconPencil, IconPointer, IconRoute, IconTrash } from '@tabler/icons-react';
 import type { SegmentId } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
 import {
@@ -214,6 +214,19 @@ export const DrawingToolbar = memo(function DrawingToolbar({
               disabled={mode !== 'draw'}
             >
               <IconEraser size={16} stroke={1.75} />
+            </UnstyledButton>
+          </Tooltip>
+          <Tooltip label={t('venousLE.drawing.tools.text', 'Text')} withArrow openDelay={300}>
+            <UnstyledButton
+              type="button"
+              onClick={() => setTool('text')}
+              aria-pressed={tool === 'text'}
+              className={classes.toolBtn}
+              data-active={tool === 'text' ? 'true' : undefined}
+              data-testid="drawing-tool-text"
+              disabled={mode !== 'draw'}
+            >
+              <IconLetterT size={16} stroke={1.75} />
             </UnstyledButton>
           </Tooltip>
         </Group>

@@ -56,6 +56,8 @@ async function loadTranslations(lang: Language): Promise<TranslationObject> {
     import(`../translations/carotid/${lang}.json`).catch(() => ({ default: {} })),
     import(`../translations/dialysis-aortic/${lang}.json`).catch(() => ({ default: {} })),
     import(`../translations/ceap/${lang}.json`).catch(() => ({ default: {} })),
+    import(`../translations/iliac-pelvic-venous/${lang}.json`).catch(() => ({ default: {} })),
+    import(`../translations/svp/${lang}.json`).catch(() => ({ default: {} })),
   ]);
 
   let merged: TranslationObject = {};

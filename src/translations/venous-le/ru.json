@@ -285,6 +285,7 @@
       "reduced": "Снижена",
       "pulsatile": "Пульсирующая",
       "monophasic": "Монофазная",
+      "not-detected": "Не регистрируется",
       "inconclusive": "Неопределённо"
     },
     "refluxTable": {
@@ -353,8 +354,10 @@
       "modeDraw": "Рисование",
       "tools": {
         "pen": "Перо",
-        "eraser": "Ластик"
+        "eraser": "Ластик",
+        "text": "Текст"
       },
+      "textPlaceholder": "Введите подпись…",
       "size": {
         "label": "Размер",
         "thin": "Тонкий",

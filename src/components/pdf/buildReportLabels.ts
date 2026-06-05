@@ -44,6 +44,22 @@ import {
   NASCET_CATEGORY_VALUES,
   carotidBandColor,
 } from '../studies/carotid/config';
+import {
+  PATENCY_VALUES,
+  CAVAL_COMPRESSIBILITY_VALUES,
+  THROMBUS_CHRONICITY_VALUES,
+  CFV_PHASICITY_VALUES,
+  VALSALVA_RESPONSE_VALUES,
+  REFLUX_TRIGGER_VALUES,
+  REFLUX_TYPE_VALUES,
+  FLOW_DIRECTION_VALUES as ILIAC_FLOW_DIRECTION_VALUES,
+  TORTUOSITY_VALUES,
+  ESCAPE_POINT_VALUES,
+  SEX_VALUES,
+  SYMPTOM_VALUES,
+  APPROACH_VALUES,
+  POSITION_VALUES,
+} from '../studies/iliac-pelvic-venous/config';
 import type { DiagramLegendItem } from './sections/DiagramSection';
 import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
@@ -104,13 +120,18 @@ function buildSingleReportLabels(
       ? 'arterialLE.form.title'
       : form?.studyType === 'carotid'
       ? 'carotid.form.title'
+      : form?.studyType === 'iliacPelvicVenous'
+      ? 'iliacPelvicVenous.form.title'
       : 'venousLE.form.title';
   const subtitleKey =
     form?.studyType === 'arterialLE'
       ? 'arterialLE.form.subtitle'
       : form?.studyType === 'carotid'
       ? 'carotid.form.subtitle'
+      : form?.studyType === 'iliacPelvicVenous'
+      ? 'iliacPelvicVenous.form.subtitle'
       : 'venousLE.form.subtitle';
+  const isIliac = form?.studyType === 'iliacPelvicVenous';
 
   // Per-segment names keyed by base id — the FindingsTable walks VENOUS_LE_SEGMENTS.
   const segmentName: Record<VenousLESegmentBase, string> = VENOUS_LE_SEGMENTS.reduce(
@@ -252,6 +273,83 @@ function buildSingleReportLabels(
     ...carotidBandColor(band),
   }));
 
+  // ----- Iliac / pelvic venous -----
+  const iliacValue: Record<string, string> = {};
+  const addIliacVals = (ns: string, vals: ReadonlyArray<string>): void => {
+    for (const v of vals) iliacValue[`${ns}.${v}`] = t(`iliacPelvicVenous.${ns}.${v}`, v);
+  };
+  addIliacVals('patency', PATENCY_VALUES);
+  addIliacVals('cavalCompressibility', CAVAL_COMPRESSIBILITY_VALUES);
+  addIliacVals('thrombusChronicity', THROMBUS_CHRONICITY_VALUES);
+  addIliacVals('cfvPhasicity', CFV_PHASICITY_VALUES);
+  addIliacVals('valsalvaResponse', VALSALVA_RESPONSE_VALUES);
+  addIliacVals('refluxTrigger', REFLUX_TRIGGER_VALUES);
+  addIliacVals('refluxType', REFLUX_TYPE_VALUES);
+  addIliacVals('flowDirection', ILIAC_FLOW_DIRECTION_VALUES);
+  addIliacVals('tortuosity', TORTUOSITY_VALUES);
+  addIliacVals('escapePoint', ESCAPE_POINT_VALUES);
+  // Zone-0 technique/context value labels (audit H3 — render technique block).
+  addIliacVals('sex', SEX_VALUES);
+  addIliacVals('symptom', SYMPTOM_VALUES);
+  addIliacVals('approach', APPROACH_VALUES);
+  addIliacVals('position', POSITION_VALUES);
+
+  const iliacSegment: Record<string, string> = {};
+  for (const id of [
+    'ivc',
+    'civ-left',
+    'civ-right',
+    'eiv-left',
+    'eiv-right',
+    'iiv-left',
+    'iiv-right',
+    'cfv-left',
+    'cfv-right',
+  ]) {
+    iliacSegment[id] = t(`iliacPelvicVenous.segment.${id}`, id);
+  }
+
+  const iliacField: Record<string, string> = {
+    // Zone-0 technique/context (audit H3) + previously-dropped flags (audit H4, M8).
+    sex: t('iliacPelvicVenous.field.sex', 'Sex'),
+    symptoms: t('iliacPelvicVenous.field.symptoms', 'Symptoms'),
+    approaches: t('iliacPelvicVenous.field.approaches', 'Approaches used'),
+    positions: t('iliacPelvicVenous.field.positions', 'Patient positions'),
+    valsalva: t('iliacPelvicVenous.field.valsalva', 'Valsalva performed'),
+    valsalvaResponse: t('iliacPelvicVenous.field.valsalvaResponse', 'Valsalva response'),
+    confirmImaging: t('iliacPelvicVenous.field.confirmImaging', 'Confirmatory imaging recommended'),
+    ratio: t('iliacPelvicVenous.field.ratio', 'Ratio'),
+    peakVelocityRatio: t('iliacPelvicVenous.field.peakVelocityRatio', 'Peak-velocity ratio'),
+    apDiameterRatio: t('iliacPelvicVenous.field.apDiameterRatio', 'AP-diameter ratio'),
+    aortoSmaAngleDeg: t('iliacPelvicVenous.field.aortoSmaAngle', 'Aorto-SMA angle'),
+    beakSign: t('iliacPelvicVenous.field.beakSign', 'Beak sign'),
+    hilarVarices: t('iliacPelvicVenous.field.hilarVarices', 'Renal hilar varices'),
+    reflux: t('iliacPelvicVenous.field.reflux', 'Reflux'),
+    collaterals: t('iliacPelvicVenous.field.collaterals', 'Collaterals'),
+    diameterMm: t('iliacPelvicVenous.field.diameterMm', 'Diameter (mm)'),
+    refluxPresent: t('iliacPelvicVenous.field.refluxPresent', 'Reflux present'),
+    refluxTrigger: t('iliacPelvicVenous.field.refluxTrigger', 'Reflux trigger'),
+    refluxDurationS: t('iliacPelvicVenous.field.refluxDurationS', 'Reflux duration (s)'),
+    refluxType: t('iliacPelvicVenous.field.refluxType', 'Reflux type'),
+    flowDirection: t('iliacPelvicVenous.field.flowDirection', 'Flow direction'),
+    largestDiameterMm: t('iliacPelvicVenous.field.largestDiameterMm', 'Largest diameter (mm)'),
+    flowVelocityCmS: t('iliacPelvicVenous.field.flowVelocityCmS', 'Flow velocity (cm/s)'),
+    tortuosity: t('iliacPelvicVenous.field.tortuosity', 'Tortuosity'),
+    crossingVeins: t('iliacPelvicVenous.field.crossingVeins', 'Crossing (arcuate) veins'),
+    crossPelvicCollateral: t(
+      'iliacPelvicVenous.field.crossPelvicCollateral',
+      'Cross-pelvic collateral',
+    ),
+    'extrapelvic.vulvar': t('iliacPelvicVenous.extrapelvic.vulvar', 'Vulvar'),
+    'extrapelvic.perineal': t('iliacPelvicVenous.extrapelvic.perineal', 'Perineal'),
+    'extrapelvic.gluteal': t('iliacPelvicVenous.extrapelvic.gluteal', 'Gluteal'),
+    'extrapelvic.posteromedialThigh': t(
+      'iliacPelvicVenous.extrapelvic.posteromedialThigh',
+      'Posteromedial thigh',
+    ),
+    'extrapelvic.sciatic': t('iliacPelvicVenous.extrapelvic.sciatic', 'Sciatic'),
+  };
+
   return {
     title: t(titleKey, 'Vascular Duplex Report'),
     subtitle: t(subtitleKey, ''),
@@ -283,7 +381,9 @@ function buildSingleReportLabels(
       },
     },
     diagram: {
-      anterior: t('anatomy.view.le-anterior', 'Anterior view'),
+      anterior: isIliac
+        ? t('iliacPelvicVenous.diagram.title', 'Pelvic venous map')
+        : t('anatomy.view.le-anterior', 'Anterior view'),
       posterior: t('anatomy.view.le-posterior', 'Posterior view'),
       legendLabel: t('anatomy.legend.label', 'Competency legend'),
       legend,
@@ -357,6 +457,27 @@ function buildSingleReportLabels(
       categoryName: nascetCategoryName,
       noneLabel: t('carotid.nascetSummary.noneLabel', '—'),
     },
+    iliacFindings: {
+      heading: t('iliacPelvicVenous.findings.heading', 'Findings by zone'),
+      none: t('iliacPelvicVenous.findings.none', 'No findings recorded.'),
+      zone: {
+        technique: t('iliacPelvicVenous.zone.context.short', 'Technique & context'),
+        renal: t('iliacPelvicVenous.zone.renal.short', 'Left renal vein'),
+        caval: t('iliacPelvicVenous.zone.caval.short', 'Iliac & caval veins'),
+        gonadal: t('iliacPelvicVenous.zone.gonadal.short', 'Gonadal veins'),
+        plexus: t('iliacPelvicVenous.zone.plexus.short', 'Pelvic plexus'),
+        escape: t('iliacPelvicVenous.zone.escape.short', 'Escape points'),
+        extrapelvic: t('iliacPelvicVenous.zone.extrapelvic.short', 'Extrapelvic varices'),
+      },
+      segment: iliacSegment,
+      side: {
+        left: t('iliacPelvicVenous.side.left', 'Left'),
+        right: t('iliacPelvicVenous.side.right', 'Right'),
+      },
+      field: iliacField,
+      value: iliacValue,
+      yes: t('iliacPelvicVenous.yes', 'Present'),
+    },
     narrative: {
       rightFindings: t(
         'venousLE.narrativeSections.rightFindings',
@@ -381,6 +502,12 @@ function buildSingleReportLabels(
       eAxis: t('venousLE.ceap.eSection', 'E — Etiology'),
       aAxis: t('venousLE.ceap.aSection', 'A — Anatomy'),
       pAxis: t('venousLE.ceap.pSection', 'P — Pathophysiology'),
+    },
+    svp: {
+      heading: t('svp.section.title', 'SVP Classification (Meissner 2021)'),
+      sAxis: t('svp.section.sAxis', 'S — Symptoms'),
+      vAxis: t('svp.section.vAxis', 'V — Varices'),
+      pAxis: t('svp.section.pAxis', 'P — Pathophysiology'),
     },
     recommendations: {
       heading: t('venousLE.recommendations.title', 'Recommendations'),

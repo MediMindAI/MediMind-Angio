@@ -451,6 +451,30 @@ const labels: ReportLabels = {
     aAxis: 'Anatomy: Superficial',
     pAxis: 'Pathophysiology: Reflux',
   },
+  iliacFindings: {
+    heading: 'Findings by zone',
+    none: 'No findings recorded.',
+    zone: {
+      technique: 'Technique & context',
+      renal: 'Left renal vein',
+      caval: 'Iliac & caval',
+      gonadal: 'Gonadal veins',
+      plexus: 'Pelvic plexus',
+      escape: 'Escape points',
+      extrapelvic: 'Extrapelvic varices',
+    },
+    segment: {},
+    side: { left: 'Left', right: 'Right' },
+    field: {},
+    value: {},
+    yes: 'Present',
+  },
+  svp: {
+    heading: 'SVP Classification',
+    sAxis: 'S — Symptoms',
+    vAxis: 'V — Varices',
+    pAxis: 'P — Pathophysiology',
+  },
   recommendations: {
     heading: 'Recommendations',
     priority: {

@@ -145,20 +145,43 @@ function renderAnatomy(
             .filter((el) => el.kind === 'outline')
             .map((el) => el.d)
             .join(' ');
-          const renderPath = (el: typeof data.elements[number], idx: number): ReactElement => (
-            <Path
-              key={`${el.kind}-${el.id ?? idx}`}
-              d={el.d}
-              fill={el.fill}
-              stroke={el.stroke}
-              strokeWidth={el.strokeWidth}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              {...(el.strokeDasharray ? { strokeDasharray: el.strokeDasharray } : {})}
-            />
-          );
+          const renderPath = (el: typeof data.elements[number], idx: number): ReactElement => {
+            // Clinician text annotation — real vector <Text> in the registered
+            // Georgian font, anchored at (x, y) in viewBox space.
+            if (el.kind === 'text') {
+              return (
+                <Text
+                  key={`text-${el.id ?? idx}`}
+                  x={el.x ?? 0}
+                  y={el.y ?? 0}
+                  fill={el.fill}
+                  style={{ fontFamily: PDF_FONT_FAMILY, fontSize: el.fontSize ?? 28, fontWeight: 'bold' }}
+                >
+                  {el.text ?? ''}
+                </Text>
+              );
+            }
+            return (
+              <Path
+                key={`${el.kind}-${el.id ?? idx}`}
+                d={el.d}
+                fill={el.fill}
+                stroke={el.stroke}
+                strokeWidth={el.strokeWidth}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                {...(el.strokeDasharray ? { strokeDasharray: el.strokeDasharray } : {})}
+              />
+            );
+          };
           const outlines = data.elements.filter((el) => el.kind === 'outline');
-          const clipped = data.elements.filter((el) => el.kind !== 'outline');
+          // Vein segments are clipped to the silhouette so distal veins can't
+          // spill past the leg. Clinician annotations (freehand + text) mirror
+          // the web's unclipped overlay, so a label in the margin isn't cut off.
+          const segments = data.elements.filter((el) => el.kind === 'segment');
+          const annotations = data.elements.filter(
+            (el) => el.kind === 'drawing' || el.kind === 'text',
+          );
           return (
             <>
               {outlineD ? (
@@ -170,10 +193,11 @@ function renderAnatomy(
               ) : null}
               {outlines.map(renderPath)}
               {outlineD ? (
-                <G clipPath="url(#leg-clip-pdf)">{clipped.map(renderPath)}</G>
+                <G clipPath="url(#leg-clip-pdf)">{segments.map(renderPath)}</G>
               ) : (
-                clipped.map(renderPath)
+                segments.map(renderPath)
               )}
+              {annotations.map(renderPath)}
             </>
           );
         })()}

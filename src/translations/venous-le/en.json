@@ -285,6 +285,7 @@
       "reduced": "Reduced",
       "pulsatile": "Pulsatile",
       "monophasic": "Monophasic",
+      "not-detected": "Not detected",
       "inconclusive": "Inconclusive"
     },
     "refluxTable": {
@@ -353,8 +354,10 @@
       "modeDraw": "Draw",
       "tools": {
         "pen": "Pen",
-        "eraser": "Eraser"
+        "eraser": "Eraser",
+        "text": "Text"
       },
+      "textPlaceholder": "Type label…",
       "size": {
         "label": "Size",
         "thin": "Thin",

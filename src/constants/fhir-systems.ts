@@ -96,6 +96,7 @@ export const STANDARD_FHIR_SYSTEMS = {
 // matching entry fails at COMPILE time (Area 03 CRITICAL — previously a runtime
 // crash on Export silently aborted the whole bundle build).
 import type { StudyType } from '../types/study';
+import type { SvpSegment } from '../types/svp';
 
 export const VASCULAR_LOINC: Readonly<
   Record<StudyType, { readonly code: string; readonly display: string }>
@@ -123,6 +124,17 @@ export const VASCULAR_LOINC: Readonly<
   ivcDuplex: {
     code: '43326-7',
     display: 'US.doppler IVC',
+  },
+  iliacPelvicVenous: {
+    // VERIFY: no dedicated LOINC exists for iliac/pelvic venous duplex (confirmed
+    // 2026-06-05 — loinc.org has no iliac/pelvic venous-duplex term). Best-fit reuse
+    // of the abdominal/central venous duplex code (43326-7). This DELIBERATELY
+    // collides with `ivcDuplex` above (same 43326-7) — the two studies are
+    // disambiguated structurally by CPT 93975 (abdominal/pelvic venous duplex,
+    // complete; see VASCULAR_CPT) and the study-type extension, NOT by LOINC.
+    // Re-verify against https://loinc.org and replace if a dedicated code publishes.
+    code: '43326-7',
+    display: 'US.doppler Iliac and pelvic veins',
   },
 } as const;
 
@@ -154,6 +166,8 @@ export const VASCULAR_LOINC: Readonly<
 export const SNOMED_LATERALITY = {
   left: { code: '7771000', display: 'Left' },
   right: { code: '24028007', display: 'Right' },
+  /** Bilateral ("Right and left") — used by SVP laterality 'B'. */
+  bilateral: { code: '51440002', display: 'Right and left' },
 } as const;
 
 export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; display: string }>> = {
@@ -236,6 +250,18 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   'iliac-vein': { code: '244411005', display: 'Structure of common iliac vein' },
   /** Renal vein. HIGH. */
   'renal-vein': { code: '56400007', display: 'Renal vein structure' },
+
+  // ------- Pelvic / iliac venous (iliacPelvicVenous study) ------------------
+
+  /** External iliac vein. HIGH — verified 2026-06-05 via SNOMED CT DICOM subset. */
+  'external-iliac-vein': { code: '63507001', display: 'Structure of external iliac vein' }, // HIGH
+  /** Internal iliac vein. HIGH — verified 2026-06-05 via SNOMED CT DICOM subset. */
+  'internal-iliac-vein': { code: '40300007', display: 'Structure of internal iliac vein' }, // HIGH
+  /** Gonadal (ovarian) vein — this study is female-focused. HIGH — verified 2026-06-05 via SNOMED CT DICOM subset. */
+  'gonadal-vein': { code: '976004', display: 'Structure of ovarian vein' }, // HIGH
+  /** Pelvic (uterine / parametrial) venous plexus — the peri-uterine plexus
+   * assessed in PeVD. HIGH — verified 2026-06-05 via tx.fhir.org ($expand). */
+  'pelvic-plexus': { code: '4810005', display: 'Structure of uterine venous plexus' }, // HIGH
 } as const;
 
 // ============================================================================
@@ -281,6 +307,48 @@ export const CEAP_SNOMED = {
   REFLUX: { code: '9851009', display: 'Venous insufficiency (reflux)' }, // MED — closest SNOMED concept
   /** Obstruction (Po component). FALLBACK to parent CVI — obstruction is one of two CVI etiologies (reflux/obstruction). */
   OBSTRUCTION: { code: '28695004', display: 'Venous obstruction' }, // FALLBACK: parent CVI
+} as const;
+
+// ============================================================================
+// SVP → SNOMED (Meissner 2021 pelvic venous disorders classification)
+// ============================================================================
+
+/**
+ * SNOMED CT codes for SVP-linked concepts — used by the SVP Observation
+ * components and the DiagnosticReport `conclusionCode`. Finding codes verified
+ * against the SNOMED CT Int'l browser; segment body sites marked `'-'` are
+ * text-fallback pending verification (same convention as
+ * `VASCULAR_SEGMENTS_SNOMED`).
+ */
+export const SVP_SNOMED = {
+  /** Umbrella diagnosis → Observation.code + DiagnosticReport.conclusionCode. HIGH. */
+  PELVIC_CONGESTION_SYNDROME: { code: '39402007', display: 'Pelvic congestion syndrome' },
+  /** V2 pelvic varices. HIGH. */
+  PELVIC_VARICES: { code: '266271008', display: 'Pelvic varices' },
+  /** Reflux (H = R). HIGH. */
+  REFLUX: { code: '252083003', display: 'Venous reflux flow' },
+  /** Obstruction (H = O). MED — 'Venous occlusion' is the closest active SNOMED
+   * disorder (verified 2026-06-05 via findacode). Replaces the prior PCS-umbrella
+   * fallback (39402007) which collided with the PELVIC_CONGESTION_SYNDROME code. */
+  OBSTRUCTION: { code: '307221007', display: 'Venous occlusion' }, // MED
+  /** CIV obstruction + NT etiology → May-Thurner. HIGH. */
+  ILIAC_COMPRESSION: { code: '448804008', display: 'Iliac vein compression syndrome' },
+  /** LRV obstruction + NT etiology → Nutcracker. HIGH. */
+  NUTCRACKER: { code: '717267005', display: 'Left renal vein entrapment syndrome' },
+} as const;
+
+/**
+ * Body-site codes for SVP anatomic segments → SVP Observation.component.code.
+ * `'-'` = text-fallback pending SNOMED browser verification.
+ */
+export const SVP_SEGMENT_SNOMED: Readonly<Record<SvpSegment, { code: string; display: string }>> = {
+  IVC: { code: '64131007', display: 'Inferior vena cava structure' }, // HIGH
+  LRV: { code: '56400007', display: 'Left renal vein structure' }, // HIGH (renal vein + laterality)
+  GV: { code: '976004', display: 'Structure of ovarian vein' }, // HIGH — DICOM subset 2026-06-05
+  CIV: { code: '244411005', display: 'Structure of common iliac vein' }, // HIGH
+  EIV: { code: '63507001', display: 'Structure of external iliac vein' }, // HIGH — DICOM subset 2026-06-05
+  IIV: { code: '40300007', display: 'Structure of internal iliac vein' }, // HIGH — DICOM subset 2026-06-05
+  PELV: { code: '-', display: 'Pelvic escape vein' }, // TEXT-ONLY: no SNOMED concept
 } as const;
 
 // ============================================================================

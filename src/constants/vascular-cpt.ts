@@ -125,6 +125,7 @@ const STUDY_TO_CPT: Readonly<Record<StudyType, string>> = {
   arterialLE: '93925',
   carotid: '93880',
   ivcDuplex: '93975',
+  iliacPelvicVenous: '93975',
 };
 
 /**
