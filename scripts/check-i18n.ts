@@ -24,6 +24,12 @@ import ruCeap from '../src/translations/ceap/ru.json';
 import enVenous from '../src/translations/venous-le/en.json';
 import kaVenous from '../src/translations/venous-le/ka.json';
 import ruVenous from '../src/translations/venous-le/ru.json';
+import enIliac from '../src/translations/iliac-pelvic-venous/en.json';
+import kaIliac from '../src/translations/iliac-pelvic-venous/ka.json';
+import ruIliac from '../src/translations/iliac-pelvic-venous/ru.json';
+import enSvp from '../src/translations/svp/en.json';
+import kaSvp from '../src/translations/svp/ka.json';
+import ruSvp from '../src/translations/svp/ru.json';
 
 /** Recursively flatten a nested translation object into sorted dotted paths. */
 function flatten(obj: unknown, prefix = ''): string[] {
@@ -53,6 +59,8 @@ const NAMESPACES: ReadonlyArray<Namespace> = [
   { name: 'carotid', en: enCarotid, ka: kaCarotid, ru: ruCarotid },
   { name: 'ceap', en: enCeap, ka: kaCeap, ru: ruCeap },
   { name: 'venous-le', en: enVenous, ka: kaVenous, ru: ruVenous },
+  { name: 'iliac-pelvic-venous', en: enIliac, ka: kaIliac, ru: ruIliac },
+  { name: 'svp', en: enSvp, ka: kaSvp, ru: ruSvp },
 ];
 
 function diff(a: string[], b: string[]): string[] {

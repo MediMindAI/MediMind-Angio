@@ -73,6 +73,7 @@ import {
 } from './observations/perPerformer';
 import { buildPanelObservationEntry } from './observations/panel';
 import { buildCeapObservationEntry } from './observations/ceap';
+import { buildSvpObservationEntry } from './observations/svp';
 import { buildDiagnosticReportEntry } from './diagnosticReport';
 
 export interface BuildEncounterBundleInput {
@@ -256,11 +257,13 @@ export function buildEncounterBundle(input: BuildEncounterBundleInput): Bundle {
     const clinicianObsEntry = buildClinicianImpressionObservationEntry(ctx);
     const panelEntry = buildPanelObservationEntry(ctx, segmentObsEntries);
     const ceapEntry = buildCeapObservationEntry(ctx);
+    const svpEntry = buildSvpObservationEntry(ctx);
     const reportEntry = buildDiagnosticReportEntry(
       ctx,
       panelEntry,
       segmentObsEntries,
       ceapEntry,
+      svpEntry,
       positionObsEntry,
       sonographerObsEntry,
       clinicianObsEntry,
@@ -276,6 +279,7 @@ export function buildEncounterBundle(input: BuildEncounterBundleInput): Bundle {
     if (sonographerObsEntry) perStudyEntries.push(sonographerObsEntry);
     if (clinicianObsEntry) perStudyEntries.push(clinicianObsEntry);
     if (ceapEntry) perStudyEntries.push(ceapEntry);
+    if (svpEntry) perStudyEntries.push(svpEntry);
     perStudyEntries.push(reportEntry);
   }
 

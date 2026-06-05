@@ -1,0 +1,132 @@
+/* SVPPicker — collapsible SVP classification (S/V chips + repeatable P rows).
+ * Reuses the CEAPPicker pill/axis idiom and the EMR semantic token palette only
+ * (no new hues). The P axis adds a repeatable-row layout CEAP doesn't have. */
+
+.body {
+  padding: 14px 4px 4px 4px;
+}
+
+/* Header preview pill — on the collapsible's gradient header. */
+.previewLabel {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-white);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.previewChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--emr-text-white);
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+  line-height: 1.5;
+  font-family: var(--emr-font-mono);
+}
+
+/* Axis cards. */
+.axis {
+  position: relative;
+  padding: 16px 18px 16px 22px;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  box-shadow: var(--emr-shadow-sm);
+  overflow: hidden;
+}
+
+.axis::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--emr-secondary);
+}
+
+.axisTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+/* Chip row — S/V multi-select pills. */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+}
+
+.pill :global(.mantine-Checkbox-input) {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.pill :global(.mantine-Checkbox-label) {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary) !important;
+  background: var(--emr-bg-page);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  line-height: 1.3;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.pill :global(.mantine-Checkbox-root:has(input:checked) .mantine-Checkbox-label) {
+  background: var(--emr-secondary) !important;
+  color: var(--emr-text-white) !important;
+  border-color: var(--emr-secondary) !important;
+  box-shadow: 0 1px 4px rgba(43, 108, 176, 0.3);
+}
+
+.pill :global(.mantine-Checkbox-root:focus-within .mantine-Checkbox-label) {
+  outline: 2px solid var(--emr-secondary);
+  outline-offset: 2px;
+}
+
+/* P-axis repeatable rows. */
+.pRow {
+  padding: 10px 12px;
+  background: var(--emr-bg-page);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-md);
+}
+
+.pEmpty {
+  margin-bottom: 8px;
+}

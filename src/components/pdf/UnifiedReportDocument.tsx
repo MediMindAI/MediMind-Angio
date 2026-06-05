@@ -45,9 +45,11 @@ import { FindingsTable } from './sections/FindingsTable';
 import { ArterialFindingsTable } from './sections/ArterialFindingsTable';
 import { SegmentalPressureTable } from './sections/SegmentalPressureTable';
 import { CarotidFindingsTable } from './sections/CarotidFindingsTable';
+import { IliacPelvicVenousFindingsTable } from './sections/IliacPelvicVenousFindingsTable';
 import { NASCETSummaryBlock } from './sections/NASCETSummaryBlock';
 import { NarrativeSection } from './sections/NarrativeSection';
 import { CEAPSection } from './sections/CEAPSection';
+import { SVPSection } from './sections/SVPSection';
 import { RecommendationsSection } from './sections/RecommendationsSection';
 import { FooterSection } from './sections/FooterSection';
 import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
@@ -61,6 +63,8 @@ import {
   isArterialPressures,
   isCarotidFindings,
   isCarotidNascet,
+  isIliacFindings,
+  isIliacContext,
 } from '../../types/parameters';
 import type { LocalizedNarrative } from '../../services/narrativeService';
 import type { EncounterDraft } from '../../types/encounter';
@@ -73,6 +77,10 @@ import type {
   CarotidFindings,
   CarotidNascetClassification,
 } from '../studies/carotid/config';
+import type {
+  IliacPelvicVenousFindings,
+  IliacContext,
+} from '../studies/iliac-pelvic-venous/config';
 import { suggestNascetCategory } from '../studies/carotid/stenosisCalculator';
 
 // ---------------------------------------------------------------------------
@@ -151,6 +159,19 @@ function extractCarotidNascet(form: FormState): CarotidNascetClassification {
     right: manual.right ?? suggestNascetCategory(findings, 'right'),
     left: manual.left ?? suggestNascetCategory(findings, 'left'),
   };
+}
+
+function extractIliacFindings(form: FormState): IliacPelvicVenousFindings {
+  if (form.studyType !== 'iliacPelvicVenous') return {};
+  const raw = form.parameters['segmentFindings'];
+  return isIliacFindings(raw) ? raw : {};
+}
+
+/** Zone-0 technique/context lives on `parameters.context` (audit H3). */
+function extractIliacContext(form: FormState): IliacContext | undefined {
+  if (form.studyType !== 'iliacPelvicVenous') return undefined;
+  const raw = form.parameters['context'];
+  return isIliacContext(raw) ? raw : undefined;
 }
 
 /**
@@ -292,6 +313,33 @@ function renderStudyFindings(
     );
   }
 
+  if (form.studyType === 'iliacPelvicVenous') {
+    const iliacFindings = extractIliacFindings(form);
+    const iliacContext = extractIliacContext(form);
+    return (
+      <View>
+        <View style={{ width: pageWidth }}>
+          <IliacPelvicVenousFindingsTable
+            findings={iliacFindings}
+            context={iliacContext}
+            labels={assets.labels.iliacFindings}
+          />
+        </View>
+        <View style={{ width: pageWidth }}>
+          <DiagramSection
+            anterior={assets.anatomy.anterior}
+            posterior={null}
+            labels={assets.labels.diagram}
+            // Iliac diagram is a static illustration with no competency
+            // coloring → intentionally no legend (empty, not the default).
+            legendItems={[]}
+            viewWidthPt={240}
+          />
+        </View>
+      </View>
+    );
+  }
+
   // IVC / future study types — no diagram or table yet, skip silently.
   return null;
 }
@@ -375,9 +423,10 @@ export function UnifiedReportDocument(
         leftFindings={assets.localized?.leftFindings ?? ''}
         conclusions={assets.localized?.conclusions ?? []}
       />
-      {isVenousForm(form) && form.ceap ? (
+      {(isVenousForm(form) || form.studyType === 'iliacPelvicVenous') && form.ceap ? (
         <CEAPSection ceap={form.ceap} labels={assets.labels.ceap} />
       ) : null}
+      {form.svp ? <SVPSection svp={form.svp} labels={assets.labels.svp} /> : null}
       {form.recommendations.length > 0 ? (
         <RecommendationsSection
           recommendations={form.recommendations}

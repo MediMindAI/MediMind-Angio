@@ -18,6 +18,7 @@ import type {
   QuestionnaireResponseItem,
 } from '../../types/fhir';
 import { formatCeapClassification } from '../ceapService';
+import { formatSvpClassification } from '../svpService';
 import type { BuildContext } from './context';
 import { urnRef } from './context';
 
@@ -81,6 +82,14 @@ function buildQuestionnaireItems(form: FormState): ReadonlyArray<QuestionnaireRe
       linkId: 'ceap',
       text: 'CEAP classification',
       answer: [{ valueString: formatCeapClassification(form.ceap) }],
+    });
+  }
+
+  if (form.svp) {
+    items.push({
+      linkId: 'svp',
+      text: 'SVP classification',
+      answer: [{ valueString: formatSvpClassification(form.svp) }],
     });
   }
 

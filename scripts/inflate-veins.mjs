@@ -98,30 +98,37 @@ const EXTRA_POSTERIOR = {
 // so vessels are smooth, connect within their chain, and sit in correct
 // medial->lateral order with clear separation (GSV > PTV > PER > SSV by x).
 // Chains share endpoints exactly so sub-segments join seamlessly.
+// Anatomical y landmarks (silhouette is 600x1451): groin/SFJ ~400, KNEE ~918
+// (narrowest "waist" in leg-bounds.json), ankle ~1400. Femoral + GSV thigh
+// courses are split into ~equal proximal/mid/distal thirds; the popliteal
+// straddles the knee (pop-ak ends AT the waist y918, pop-bk below it).
 const CLEAN_R = {
-  // ---- deep axis (CFV angles in from the pelvis, then vertical down center) ----
-  cfv: 'M 248,286 L 214,346 L 190,402',
-  'fv-prox': 'M 190,402 L 184,462',
-  'fv-mid': 'M 184,462 L 176,560 L 172,650',
-  'fv-dist': 'M 172,650 L 166,740 L 164,812',
-  'pop-ak': 'M 164,812 L 162,852',
-  'pop-bk': 'M 162,852 L 160,900',
-  ptv: 'M 160,900 L 174,1000 L 172,1140 L 154,1300 L 142,1400',
-  // ---- great saphenous: small SFJ hook joining the trunk, then medial course ----
-  sfj: 'M 198,398 L 216,402 L 230,410',
-  'gsv-prox-thigh': 'M 230,410 L 234,470',
-  'gsv-mid-thigh': 'M 234,470 L 237,560 L 237,650',
-  'gsv-dist-thigh': 'M 237,650 L 233,740 L 229,812 L 226,864',
-  'gsv-knee': 'M 226,864 L 218,924',
-  'gsv-calf': 'M 218,924 L 208,1010 L 198,1140 L 180,1300 L 166,1400',
+  // ---- deep axis (CFV angles in from the pelvis, then ~vertical down, kept a
+  //      touch lateral so the medial GSV has clear room beside it) ----
+  cfv: 'M 248,286 L 212,346 L 182,402',
+  'fv-prox': 'M 182,402 L 174,540',                      // femoral, proximal third
+  'fv-mid': 'M 174,540 L 168,678',                       // femoral, mid third
+  'fv-dist': 'M 168,678 L 164,812',                      // femoral, distal third (adductor hiatus)
+  'pop-ak': 'M 164,812 L 160,918',                       // popliteal above knee -> ends AT knee waist y918
+  'pop-bk': 'M 160,918 L 158,985',                       // popliteal below knee
+  ptv: 'M 158,985 L 172,1060 L 172,1150 L 154,1300 L 142,1400',
+  // ---- great saphenous: small SFJ hook joining the trunk, then medial course.
+  //      Pulled INWARD off the medial wall (was hugging the silhouette edge),
+  //      split into ~equal thirds SFJ(410) -> knee(900). ----
+  sfj: 'M 198,398 L 212,402 L 220,410',
+  'gsv-prox-thigh': 'M 220,410 L 221,573',               // GSV thigh, proximal third
+  'gsv-mid-thigh': 'M 221,573 L 218,736',                // GSV thigh, mid third
+  'gsv-dist-thigh': 'M 218,736 L 212,840 L 205,900',     // GSV thigh, distal third
+  'gsv-knee': 'M 205,900 L 200,958',                     // GSV at the knee
+  'gsv-calf': 'M 200,958 L 196,1030 L 188,1150 L 174,1300 L 160,1400',
   // ---- branches. Calf veins fan into clearly separated medial->lateral lanes:
-  //      GSV(208) > PTV(174) > gastroc(154) > SSV(132) > soleal(108) > PER(78) at y~1000.
-  pfv: 'M 190,400 L 162,470 L 144,560 L 134,642',        // profunda — lateral deep thigh
-  per: 'M 160,900 L 78,1000 L 70,1140 L 76,1300 L 82,1400',  // peroneal — lateral deep (with fibula)
-  ssv: 'M 162,905 L 132,1000 L 128,1140 L 118,1300 L 112,1390', // small saphenous — posterior midline
-  gastroc: 'M 158,902 L 154,995 L 154,1100',             // gastrocnemius — central muscular, short
-  soleal: 'M 156,902 L 108,990 L 106,1095',              // soleal — lateral muscular, short
-  spj: 'M 160,906 L 166,922',                            // saphenopopliteal junction (stub)
+  //      GSV(196) > PTV(172) > gastroc(154) > SSV(132) > soleal(108) > PER(75) at y~1030.
+  pfv: 'M 182,400 L 156,470 L 140,560 L 130,642',        // profunda — lateral deep thigh
+  per: 'M 158,985 L 78,1050 L 70,1160 L 76,1300 L 82,1400',  // peroneal — lateral deep (with fibula)
+  ssv: 'M 158,945 L 132,1030 L 128,1150 L 118,1300 L 112,1390', // small saphenous — posterior midline
+  gastroc: 'M 160,935 L 154,1015 L 154,1110',            // gastrocnemius — central muscular, short
+  soleal: 'M 156,940 L 108,1015 L 106,1110',             // soleal — lateral muscular, short
+  spj: 'M 158,942 L 164,958',                            // saphenopopliteal junction (stub)
 };
 
 // Decorative iliac confluence (inverted-V) at the top center, matching the

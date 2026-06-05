@@ -330,6 +330,7 @@ describe('EncounterContextBanner — add-study menu', () => {
       'arterialLE',
       'carotid',
       'ivcDuplex',
+      'iliacPelvicVenous',
     ];
     const draft = buildDraft({ selectedStudyTypes: allStudies });
     await act(async () => {

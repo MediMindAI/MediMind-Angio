@@ -12,7 +12,12 @@
 
 import { COMPETENCY_COLORS } from '../constants/theme-colors';
 
-export type AnatomyViewKey = 'le-anterior' | 'le-posterior' | 'neck-carotid' | 'le-arterial-anterior';
+export type AnatomyViewKey =
+  | 'le-anterior'
+  | 'le-posterior'
+  | 'neck-carotid'
+  | 'le-arterial-anterior'
+  | 'abdominal-pelvic';
 
 /**
  * ViewBox pixel dimensions per anatomy view. The drawing-canvas overlay SVG
@@ -25,6 +30,8 @@ export const ANATOMY_VIEWBOX: Record<AnatomyViewKey, readonly [number, number]> 
   'le-posterior': [600, 1453],
   'neck-carotid': [771, 910],
   'le-arterial-anterior': [600, 1453],
+  // Iliac/pelvic static illustration backdrop (abdominal-pelvic.png is 345×451).
+  'abdominal-pelvic': [345, 451],
 };
 
 /**
@@ -37,7 +44,7 @@ export const ANATOMY_VIEWBOX: Record<AnatomyViewKey, readonly [number, number]> 
  */
 export type DrawingMode = 'click' | 'draw' | 'edit-segment';
 
-export type DrawingTool = 'pen' | 'eraser';
+export type DrawingTool = 'pen' | 'eraser' | 'text';
 
 /**
  * Pen palette mirrors the clinical 5-state anatomy palette so a red pen
@@ -82,6 +89,24 @@ export function migrateLegacyDrawingColor(value: unknown): DrawingColor {
 export const DRAWING_SIZES = [2, 4, 8] as const;
 export type DrawingSize = (typeof DRAWING_SIZES)[number];
 
+/**
+ * Font size (viewBox units) for a text annotation, derived from the same
+ * size pill that controls pen thickness. Reusing the pen `DrawingSize`
+ * keeps the toolbar to one "Size" control for both pen and text. Tuned to
+ * read clearly on both the venous (600×1453) and carotid (771×910) views.
+ */
+export function fontForSize(size: DrawingSize): number {
+  switch (size) {
+    case 2:
+      return 20;
+    case 8:
+      return 40;
+    case 4:
+    default:
+      return 28;
+  }
+}
+
 /** Tuple of [x, y, pressure?] in viewBox coordinates. */
 export type DrawingPoint = readonly [number, number, number?];
 
@@ -92,6 +117,13 @@ export interface DrawingStroke {
   readonly size: DrawingSize;
   readonly points: ReadonlyArray<DrawingPoint>;
   readonly createdAt: string;
+  /**
+   * When set, this item is a **text label** anchored at `points[0]` rather
+   * than a freehand stroke — rendered as `<text>` (web) / `<Text>` (PDF) in
+   * the chosen `color`, at `fontForSize(size)`. Absent on freehand strokes,
+   * so older saved drafts keep rendering as paths (backward-compatible).
+   */
+  readonly text?: string;
 }
 
 export const DEFAULT_DRAWING_COLOR: DrawingColor = 'normal';

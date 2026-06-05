@@ -63,6 +63,14 @@ export interface FormActionsProps {
   readonly onSaveDraft: () => void;
   /** The filename used for both PDF and JSON exports. */
   readonly baseFilename: string;
+  /**
+   * Caller-driven export gate (audit M7) — when true, PDF/JSON export is
+   * disabled regardless of mode (e.g. an untouched form that would otherwise
+   * emit a confident "normal" report). ORs with the unified-mode gate.
+   */
+  readonly exportsDisabled?: boolean;
+  /** Tooltip shown when `exportsDisabled` is set by the caller. */
+  readonly exportsDisabledReason?: string;
 }
 
 /**
@@ -231,6 +239,17 @@ async function resolveStudyAssets(
     const anterior = await loadAnatomyForPdf('neck-carotid', {}, { competencyFn, drawings });
     anatomy = { anterior, posterior: null };
     localized = buildLocalizedNarrativeFromForm(studyForm, t);
+  } else if (studyForm.studyType === 'iliacPelvicVenous') {
+    // Static illustration backdrop + clinician free-draw/text; no competency
+    // coloring. Pass empty findings + no competencyFn so only the backdrop
+    // image and the drawings/text reach the PDF.
+    const rawDrawings = studyForm.parameters['drawings'];
+    const drawings = Array.isArray(rawDrawings)
+      ? (rawDrawings as ReadonlyArray<import('../../types/drawing').DrawingStroke>)
+      : [];
+    const anterior = await loadAnatomyForPdf('abdominal-pelvic', {}, { drawings });
+    anatomy = { anterior, posterior: null };
+    localized = buildLocalizedNarrativeFromForm(studyForm, t);
   }
 
   return { anatomy, localized };
@@ -260,6 +279,8 @@ export const FormActions = memo(function FormActions({
   hasUnsavedChanges,
   onSaveDraft,
   baseFilename,
+  exportsDisabled: exportsDisabledProp = false,
+  exportsDisabledReason,
 }: FormActionsProps): React.ReactElement {
   const { t, lang } = useTranslation();
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -533,11 +554,12 @@ export const FormActions = memo(function FormActions({
   // missing findings. The clinician sees a tooltip; per-study escape hatch
   // (TODO Phase 5: sub-menu) is deferred — minimum requirement is the
   // disabled buttons + tooltip.
-  const exportsDisabled = isUnifiedMode && !allComplete;
-  const disabledTooltip = t(
-    'formActions.completeAllFirst',
-    'Complete all studies in this encounter first',
-  );
+  const exportsDisabled = (isUnifiedMode && !allComplete) || exportsDisabledProp;
+  const disabledTooltip =
+    isUnifiedMode && !allComplete
+      ? t('formActions.completeAllFirst', 'Complete all studies in this encounter first')
+      : (exportsDisabledReason ??
+        t('formActions.completeAllFirst', 'Complete all studies in this encounter first'));
 
   // TODO Phase 5: per-study escape hatch sub-menu — render a Menu of
   // "Export this study only" items so a clinician can ship one finished

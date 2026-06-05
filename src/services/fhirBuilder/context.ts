@@ -35,6 +35,8 @@ export interface BuildContext {
   readonly reportRef: string;
   readonly ceapObsId: string | null;
   readonly ceapObsRef: string | null;
+  readonly svpObsId: string | null;
+  readonly svpObsRef: string | null;
   readonly encounterId: string | null;
   readonly encounterRef: string | null;
   readonly serviceRequestId: string | null;
@@ -63,10 +65,12 @@ export interface BuildContext {
    * prior `medimindParamSystem` hard-coded `venous-` regardless of study,
    * so an arterial Observation carried `system: ".../venous-stenosisPct"`.
    */
-  readonly paramPrefix: 'venous' | 'arterial' | 'carotid' | 'ivc';
+  readonly paramPrefix: 'venous' | 'arterial' | 'carotid' | 'ivc' | 'iliac';
 }
 
-function paramPrefixForStudy(studyType: StudyType): 'venous' | 'arterial' | 'carotid' | 'ivc' {
+function paramPrefixForStudy(
+  studyType: StudyType,
+): 'venous' | 'arterial' | 'carotid' | 'ivc' | 'iliac' {
   switch (studyType) {
     case 'venousLEBilateral':
     case 'venousLERight':
@@ -78,6 +82,8 @@ function paramPrefixForStudy(studyType: StudyType): 'venous' | 'arterial' | 'car
       return 'carotid';
     case 'ivcDuplex':
       return 'ivc';
+    case 'iliacPelvicVenous':
+      return 'iliac';
   }
 }
 
@@ -114,6 +120,7 @@ function mintPerStudyIds(form: FormState): {
   readonly qrId: string;
   readonly reportId: string;
   readonly ceapObsId: string | null;
+  readonly svpObsId: string | null;
   readonly serviceRequestId: string | null;
   readonly consentId: string | null;
   readonly positionObsId: string | null;
@@ -122,6 +129,7 @@ function mintPerStudyIds(form: FormState): {
 } {
   const header = form.header;
   const hasCeap = !!form.ceap;
+  const hasSvp = !!form.svp;
   const hasCpt = !!header.cptCode;
   const hasConsent = header.informedConsent === true;
   const hasPosition = !!header.patientPosition;
@@ -137,6 +145,7 @@ function mintPerStudyIds(form: FormState): {
     qrId: newUuid(),
     reportId: newUuid(),
     ceapObsId: hasCeap ? newUuid() : null,
+    svpObsId: hasSvp ? newUuid() : null,
     serviceRequestId: hasCpt ? newUuid() : null,
     consentId: hasConsent ? newUuid() : null,
     positionObsId: hasPosition ? newUuid() : null,
@@ -189,6 +198,8 @@ export function createContext(form: FormState): BuildContext {
     reportRef: urnRef(perStudy.reportId),
     ceapObsId: perStudy.ceapObsId,
     ceapObsRef: perStudy.ceapObsId ? urnRef(perStudy.ceapObsId) : null,
+    svpObsId: perStudy.svpObsId,
+    svpObsRef: perStudy.svpObsId ? urnRef(perStudy.svpObsId) : null,
     encounterId,
     encounterRef: encounterId ? urnRef(encounterId) : null,
     serviceRequestId: perStudy.serviceRequestId,
@@ -250,6 +261,8 @@ export function createSharedContext(
     reportRef: urnRef(perStudy.reportId),
     ceapObsId: perStudy.ceapObsId,
     ceapObsRef: perStudy.ceapObsId ? urnRef(perStudy.ceapObsId) : null,
+    svpObsId: perStudy.svpObsId,
+    svpObsRef: perStudy.svpObsId ? urnRef(perStudy.svpObsId) : null,
     encounterId: shared.encounterId,
     encounterRef: shared.encounterRef,
     serviceRequestId: perStudy.serviceRequestId,

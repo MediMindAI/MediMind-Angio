@@ -1,0 +1,231 @@
+{
+  "iliacPelvicVenous": {
+    "form": {
+      "title": "Iliac & Pelvic Venous Duplex",
+      "subtitle": "Pelvic venous disorders — reflux, obstruction & congestion"
+    },
+    "diagram": {
+      "title": "Pelvic venous map"
+    },
+    "tabs": {
+      "right": "Right",
+      "bilateral": "Bilateral",
+      "left": "Left"
+    },
+    "side": {
+      "left": "Left",
+      "right": "Right"
+    },
+    "yes": "Present",
+    "zone": {
+      "context": { "title": "Clinical context & technique", "short": "Technique & context" },
+      "renal": {
+        "title": "Left renal vein (nutcracker screening)",
+        "subtitle": "Ultrasound is screening only — confirm with CT/MR venography.",
+        "short": "Left renal vein"
+      },
+      "caval": {
+        "title": "Iliac & caval veins (May-Thurner / DVT)",
+        "subtitle": "Obstruction is screening only — confirm with IVUS / CT venography.",
+        "short": "Iliac & caval veins"
+      },
+      "gonadal": { "title": "Gonadal (ovarian) veins", "short": "Gonadal veins" },
+      "plexus": { "title": "Pelvic venous plexus", "short": "Pelvic plexus" },
+      "escape": { "title": "Escape points & extrapelvic varices", "short": "Escape points" },
+      "extrapelvic": { "short": "Extrapelvic varices" },
+      "diagram": {
+        "title": "Pelvic venous map",
+        "subtitle": "Draw findings and add text labels directly on the illustration."
+      },
+      "impression": { "title": "Impression" }
+    },
+    "field": {
+      "sex": "Sex",
+      "symptoms": "Symptoms",
+      "approaches": "Approaches used",
+      "positions": "Patient positions",
+      "valsalva": "Valsalva performed",
+      "peakVelocityRatio": "Peak-velocity ratio",
+      "apDiameterRatio": "AP-diameter ratio",
+      "aortoSmaAngle": "Aorto-SMA angle (°)",
+      "beakSign": "Beak sign",
+      "hilarVarices": "Renal hilar varices",
+      "confirmImaging": "Confirmatory imaging recommended",
+      "segment": "Segment",
+      "ratio": "Ratio",
+      "patency": "Patency",
+      "compressibility": "Compressibility",
+      "thrombus": "Thrombus",
+      "velocityRatio": "Velocity ratio",
+      "stenosisPct": "Stenosis %",
+      "phasicity": "Phasicity",
+      "valsalvaResponse": "Valsalva response",
+      "collaterals": "Collaterals",
+      "reflux": "Reflux",
+      "diameterMm": "Diameter (mm)",
+      "refluxPresent": "Reflux present",
+      "refluxTrigger": "Reflux trigger",
+      "refluxDurationS": "Reflux duration (s)",
+      "refluxType": "Reflux type",
+      "flowDirection": "Flow direction",
+      "largestDiameterMm": "Largest diameter (mm)",
+      "flowVelocityCmS": "Flow velocity (cm/s)",
+      "tortuosity": "Tortuosity",
+      "crossingVeins": "Crossing (arcuate) veins",
+      "crossPelvicCollateral": "Cross-pelvic collateral",
+      "escapePoints": "Escape points",
+      "escapePointType": "Point",
+      "side": "Side",
+      "extrapelvic": "Extrapelvic varices"
+    },
+    "param": {
+      "peakVelocityRatio": "LRV peak-velocity ratio",
+      "aortoSmaAngleDeg": "Aorto-SMA angle",
+      "velocityRatio": "Velocity ratio",
+      "stenosisPct": "Stenosis percent",
+      "diameterMm": "Vein diameter",
+      "refluxDurationS": "Reflux duration",
+      "flowVelocityCmS": "Flow velocity"
+    },
+    "warn": {
+      "ratio5": "≥ 5",
+      "angle35": "≤ 35°",
+      "dia6": "≥ 6 mm",
+      "dia5": "≥ 5 mm",
+      "dur1": "> 1 s",
+      "velocityRatio": "≥ 2.5",
+      "stenosisPct": "≥ 50%"
+    },
+    "sex": { "female": "Female", "male": "Male", "other": "Other" },
+    "symptom": {
+      "chronic-pelvic-pain": "Chronic pelvic pain (>6 mo)",
+      "dyspareunia": "Dyspareunia",
+      "post-coital-ache": "Post-coital ache",
+      "dysuria-urgency": "Dysuria / urgency",
+      "flank-pain": "Flank pain",
+      "hematuria": "Hematuria",
+      "vulvar-varices": "Vulvar varices",
+      "leg-varices": "Leg varices",
+      "recurrent-varices": "Recurrent leg varices"
+    },
+    "approach": {
+      "transabdominal": "Transabdominal",
+      "transvaginal": "Transvaginal",
+      "transperineal": "Transperineal"
+    },
+    "position": {
+      "supine": "Supine",
+      "left-lateral": "Left lateral",
+      "reverse-trendelenburg": "Reverse Trendelenburg",
+      "standing": "Standing"
+    },
+    "patency": { "patent": "Patent", "partial": "Partial", "occluded": "Occluded" },
+    "cavalCompressibility": {
+      "full": "Fully compressible",
+      "partial": "Partially compressible",
+      "non-compressible": "Non-compressible"
+    },
+    "thrombusChronicity": {
+      "none": "None",
+      "acute": "Acute",
+      "chronic": "Chronic",
+      "acute-on-chronic": "Acute-on-chronic"
+    },
+    "cfvPhasicity": { "phasic": "Phasic", "reduced": "Reduced", "monophasic": "Monophasic" },
+    "valsalvaResponse": { "normal": "Normal", "reduced": "Reduced", "absent": "Absent" },
+    "refluxTrigger": { "spontaneous": "Spontaneous", "valsalva-only": "Valsalva only" },
+    "refluxType": { "I": "Type I (1–2 s)", "II": "Type II (2.1–5 s)", "III": "Type III (>5 s / spontaneous)" },
+    "flowDirection": { "antegrade": "Antegrade", "retrograde": "Retrograde", "to-and-fro": "To-and-fro" },
+    "tortuosity": { "none": "None", "moderate": "Moderate", "severe": "Severe" },
+    "escapePoint": { "perineal": "Perineal", "inguinal": "Inguinal", "gluteal": "Gluteal", "obturator": "Obturator" },
+    "extrapelvic": {
+      "vulvar": "Vulvar",
+      "perineal": "Perineal",
+      "gluteal": "Gluteal",
+      "posteromedialThigh": "Posteromedial thigh",
+      "sciatic": "Sciatic"
+    },
+    "vessel": {
+      "civ": "Common iliac vein",
+      "eiv": "External iliac vein",
+      "iiv": "Internal iliac vein",
+      "cfv": "Common femoral vein"
+    },
+    "segment": {
+      "ivc": "IVC",
+      "civ-left": "Common iliac vein (L)",
+      "civ-right": "Common iliac vein (R)",
+      "eiv-left": "External iliac vein (L)",
+      "eiv-right": "External iliac vein (R)",
+      "iiv-left": "Internal iliac vein (L)",
+      "iiv-right": "Internal iliac vein (R)",
+      "cfv-left": "Common femoral vein (L)",
+      "cfv-right": "Common femoral vein (R)"
+    },
+    "narrative": {
+      "ovarianReflux": "{side}: dilated, refluxing ovarian vein ({diameterMm} mm, reflux {durationS} s).",
+      "plexusCongestion": "{side}: congested pelvic venous plexus (largest vein {diameterMm} mm).",
+      "cavalStenosis": "{side} {vessel}: stenosis {pct}% (velocity ratio {ratio}).",
+      "escapePoint": "{side}: pelvic escape point — {type}.",
+      "normalSide": "{side}: no significant pelvic venous reflux or obstruction.",
+      "sonographerComments": "Sonographer comments",
+      "clinicianComments": "Clinician comments"
+    },
+    "conclusion": {
+      "nutcracker": "Left renal vein compression — nutcracker phenomenon suggested (screening).",
+      "confirmRenal": "Confirm renal vein compression with CT/MR venography.",
+      "ivcObstruction": "Inferior vena cava obstruction identified.",
+      "mayThurner": "{side} common iliac vein compression — May-Thurner pattern (screening).",
+      "confirmIliac": "Confirm iliac obstruction with IVUS or CT/MR venography.",
+      "pelvicCongestion": "Pelvic venous reflux consistent with pelvic congestion.",
+      "normal": "No pelvic venous reflux or obstruction identified."
+    },
+    "findings": {
+      "heading": "Findings by zone",
+      "none": "No findings recorded."
+    },
+    "actions": {
+      "newCase": "+ New case",
+      "addEscapePoint": "Add",
+      "removeEscapePoint": "Remove",
+      "generateImpression": "Generate from findings",
+      "templateApplied": "Template applied",
+      "newCaseToastTitle": "New case started",
+      "newCaseToastMessage": "All data cleared.",
+      "applyTemplateConfirmTitle": "Apply template?",
+      "applyTemplateConfirmBody": "This will replace current findings, impression, and recommendations.",
+      "applyTemplate": "Apply template",
+      "enterFindingFirst": "Enter at least one finding before exporting.",
+      "cancel": "Cancel",
+      "newCaseConfirmTitle": "Start a new case?",
+      "newCaseConfirmBody": "This will erase all current data. Unsaved changes will be lost.",
+      "newCaseConfirm": "Discard & start new"
+    },
+    "templates": {
+      "menuLabel": "Templates",
+      "normal": {
+        "name": "Normal pelvic venous study",
+        "description": "No reflux or obstruction in any zone.",
+        "impression": "No pelvic venous reflux or obstruction identified. Gonadal veins of normal calibre without reflux; no iliac vein compression or thrombosis; left renal vein without nutcracker features."
+      },
+      "pcs": {
+        "name": "Pelvic congestion — left ovarian reflux",
+        "description": "Dilated, refluxing left ovarian vein with parametrial congestion.",
+        "impression": "Dilated, incompetent left ovarian vein with sustained reflux and congested left parametrial plexus — findings consistent with pelvic venous reflux (pelvic congestion).",
+        "rec": "Refer to interventional radiology for consideration of ovarian vein embolization."
+      },
+      "mayThurner": {
+        "name": "May-Thurner pattern (left CIV)",
+        "description": "Left common iliac vein compression with collaterals — screening positive.",
+        "impression": "Narrowing of the left common iliac vein with elevated cross-stenosis velocity ratio and pelvic collaterals, suggestive of May-Thurner (non-thrombotic iliac vein) compression. Ultrasound is screening only — cross-sectional/IVUS confirmation advised.",
+        "rec": "Confirm with IVUS or CT/MR venography prior to any intervention."
+      },
+      "nutcracker": {
+        "name": "Nutcracker pattern (left renal vein)",
+        "description": "Left renal vein compression — screening positive.",
+        "impression": "Aortomesenteric compression of the left renal vein with elevated peak-velocity and diameter ratios and a beak sign, suggestive of nutcracker phenomenon. Ultrasound is screening only — CT/MR venography confirmation advised.",
+        "rec": "Confirm with CT/MR venography and correlate with renocaval pressure gradient."
+      }
+    }
+  }
+}

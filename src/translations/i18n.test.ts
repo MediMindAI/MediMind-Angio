@@ -35,6 +35,14 @@ import enVenous from './venous-le/en.json';
 import kaVenous from './venous-le/ka.json';
 import ruVenous from './venous-le/ru.json';
 
+import enIliac from './iliac-pelvic-venous/en.json';
+import kaIliac from './iliac-pelvic-venous/ka.json';
+import ruIliac from './iliac-pelvic-venous/ru.json';
+
+import enSvp from './svp/en.json';
+import kaSvp from './svp/ka.json';
+import ruSvp from './svp/ru.json';
+
 /**
  * Recursively flatten a nested translation object into sorted dotted paths.
  * Arrays are treated as leaves (we have none in practice today, but keeping
@@ -108,5 +116,15 @@ describe('i18n parity (per-study namespaces)', () => {
   it('venous-le: en/ka/ru parity', () => {
     expect(flatten(kaVenous)).toEqual(flatten(enVenous));
     expect(flatten(ruVenous)).toEqual(flatten(enVenous));
+  });
+
+  it('iliac-pelvic-venous: en/ka/ru parity', () => {
+    expect(flatten(kaIliac)).toEqual(flatten(enIliac));
+    expect(flatten(ruIliac)).toEqual(flatten(enIliac));
+  });
+
+  it('svp: en/ka/ru parity', () => {
+    expect(flatten(kaSvp)).toEqual(flatten(enSvp));
+    expect(flatten(ruSvp)).toEqual(flatten(enSvp));
   });
 });

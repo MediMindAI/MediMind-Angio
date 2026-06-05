@@ -33,6 +33,8 @@ const EMPTY_LABELS: ReportLabels = {
   narrative: {} as ReportLabels['narrative'],
   ceap: {} as ReportLabels['ceap'],
   recommendations: {} as ReportLabels['recommendations'],
+  iliacFindings: {} as ReportLabels['iliacFindings'],
+  svp: {} as ReportLabels['svp'],
   footer: { pageLabelTemplate: '' },
 };
 

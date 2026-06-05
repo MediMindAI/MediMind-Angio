@@ -16,6 +16,7 @@ import {
   isArterialPressures,
   isCarotidFindings,
   isCarotidNascet,
+  isIliacFindings,
   isVenousFindings,
 } from '../types/parameters';
 import type { VenousSegmentFindings, VenousSegmentFinding } from '../components/studies/venous-le/config';
@@ -26,6 +27,7 @@ import {
 } from '../components/studies/venous-le/narrativeGenerator';
 import { generateArterialNarrative } from '../components/studies/arterial-le/narrativeGenerator';
 import { generateCarotidNarrative } from '../components/studies/carotid/narrativeGenerator';
+import { generateIliacNarrative } from '../components/studies/iliac-pelvic-venous/narrativeGenerator';
 import { suggestNascetCategory } from '../components/studies/carotid/stenosisCalculator';
 import type { CarotidNascetClassification } from '../components/studies/carotid/config';
 import enCore from '../translations/en.json';
@@ -33,6 +35,7 @@ import enArterialLE from '../translations/arterial-le/en.json';
 import enCarotid from '../translations/carotid/en.json';
 import enCeap from '../translations/ceap/en.json';
 import enVenousLE from '../translations/venous-le/en.json';
+import enIliac from '../translations/iliac-pelvic-venous/en.json';
 
 export { generateNarrative };
 export type { NarrativeOutput, NarrativeKeyEntry };
@@ -100,6 +103,12 @@ export function narrativeFromFormState(form: FormState): NarrativeOutput {
       left: manual.left ?? suggestNascetCategory(rawFindings, 'left'),
     };
     return generateCarotidNarrative(rawFindings, nascet);
+  }
+
+  if (form.studyType === 'iliacPelvicVenous') {
+    const raw = form.parameters['segmentFindings'];
+    if (!isIliacFindings(raw)) return EMPTY_NARRATIVE;
+    return generateIliacNarrative(raw);
   }
 
   return EMPTY_NARRATIVE;
@@ -243,7 +252,7 @@ function deepMergeEn(target: Record<string, unknown>, source: Record<string, unk
 }
 
 const EN_TREE: Record<string, unknown> = {};
-for (const ns of [enCore, enArterialLE, enCarotid, enCeap, enVenousLE]) {
+for (const ns of [enCore, enArterialLE, enCarotid, enCeap, enVenousLE, enIliac]) {
   deepMergeEn(EN_TREE, ns);
 }
 

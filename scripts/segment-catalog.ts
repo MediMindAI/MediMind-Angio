@@ -61,6 +61,32 @@ export const ABDOMINAL_PELVIC_SEGMENTS = [
 
 export type AbdominalPelvicSegment = (typeof ABDOMINAL_PELVIC_SEGMENTS)[number];
 
+/**
+ * Iliac & pelvic venous (PeVD) study — canonical body-site segment ids.
+ * Mirrors `ILIAC_PELVIC_VENOUS_SEGMENTS` in
+ * `src/components/studies/iliac-pelvic-venous/config.ts` (CLAUDE.md: the
+ * runtime config is canonical and the catalog mirrors it; runtime bundles must
+ * never import from `scripts/`). Keep the two lists in sync when either changes.
+ */
+export const ILIAC_PELVIC_VENOUS_SEGMENTS = [
+  'renal-vein',
+  'ivc',
+  'iliac-vein-left',
+  'iliac-vein-right',
+  'external-iliac-vein-left',
+  'external-iliac-vein-right',
+  'internal-iliac-vein-left',
+  'internal-iliac-vein-right',
+  'cfv-left',
+  'cfv-right',
+  'gonadal-vein-left',
+  'gonadal-vein-right',
+  'pelvic-plexus-left',
+  'pelvic-plexus-right',
+] as const;
+
+export type IliacPelvicVenousSegment = (typeof ILIAC_PELVIC_VENOUS_SEGMENTS)[number];
+
 // ---------------------------------------------------------------------------
 // Arterial lower-extremity
 //

@@ -121,6 +121,7 @@ export const AnatomyDiagram = memo(function AnatomyDiagram({
           onEraseStroke={onEraseStroke}
           onCommitSegmentEdit={onCommitSegmentEdit}
           ariaLabel={t('venousLE.drawing.canvasAriaLabel', 'Hand-drawing canvas') + ` (${view})`}
+          textPlaceholder={t('venousLE.drawing.textPlaceholder', 'Type label…')}
         />
       </div>
     </Stack>

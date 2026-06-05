@@ -53,6 +53,8 @@ const EMPTY_LABELS: ReportLabels = {
     priority: { routine: 'Routine', urgent: 'Urgent', stat: 'Stat' },
     followUpPrefix: 'Follow-up:',
   },
+  iliacFindings: {} as ReportLabels['iliacFindings'],
+  svp: {} as ReportLabels['svp'],
   footer: { pageLabelTemplate: 'Page {current} / {total}' },
 };
 

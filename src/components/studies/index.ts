@@ -25,6 +25,7 @@ import type { StudyPlugin } from '../../types/studyPlugin';
 import { VenousLEForm } from './venous-le/VenousLEForm';
 import { ArterialLEForm } from './arterial-le/ArterialLEForm';
 import { CarotidForm } from './carotid/CarotidForm';
+import { IliacPelvicVenousForm } from './iliac-pelvic-venous/IliacPelvicVenousForm';
 
 export const STUDY_PLUGINS: ReadonlyArray<StudyPlugin> = [
   {
@@ -67,9 +68,10 @@ export const STUDY_PLUGINS: ReadonlyArray<StudyPlugin> = [
   },
   {
     key: 'iliacPelvicVenous',
-    route: null,
-    available: false,
+    route: '/iliac-pelvic-venous',
+    available: true,
     icon: IconShieldCheckered,
+    FormComponent: IliacPelvicVenousForm,
     translationKey: 'studies.iliacPelvicVenous',
   },
 ];

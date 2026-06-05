@@ -90,6 +90,7 @@ export const PHASICITY_VALUES = [
   'reduced',
   'pulsatile',
   'monophasic',
+  'not-detected',
   'inconclusive',
 ] as const;
 export type Phasicity = (typeof PHASICITY_VALUES)[number];

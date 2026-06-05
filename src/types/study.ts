@@ -35,7 +35,8 @@ export type StudyType =
   | 'venousLELeft' // Lower extremity vein US, left
   | 'arterialLE' // Lower extremity artery US
   | 'carotid' // Carotid duplex
-  | 'ivcDuplex'; // IVC duplex
+  | 'ivcDuplex' // IVC duplex
+  | 'iliacPelvicVenous'; // Iliac & pelvic vein duplex (pelvic venous disorders)
 
 /**
  * Kind of input widget for a parameter. The form renderer switches on this.

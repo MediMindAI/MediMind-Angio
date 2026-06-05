@@ -56,6 +56,7 @@ const VALID_STUDY_TYPES: ReadonlySet<StudyType> = new Set<StudyType>([
   'arterialLE',
   'carotid',
   'ivcDuplex',
+  'iliacPelvicVenous',
 ]);
 
 /**
@@ -74,6 +75,7 @@ const STUDY_TYPE_TO_PLUGIN_KEY: Readonly<Partial<Record<StudyType, string>>> = {
   arterialLE: 'arterialLE',
   carotid: 'carotid',
   // ivcDuplex: no plugin yet — falls through to redirect.
+  iliacPelvicVenous: 'iliacPelvicVenous',
 };
 
 function isValidStudyType(value: string): value is StudyType {
