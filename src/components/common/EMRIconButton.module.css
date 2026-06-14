@@ -1,0 +1,361 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * EMRIconButton Styles
+ * Themed icon-only button with semantic variants
+ */
+
+/* ==================== BASE BUTTON ==================== */
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--emr-border-radius, 6px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  position: relative;
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 2px;
+}
+
+.iconButton:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.iconButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==================== SIZES ==================== */
+/* Width/height are also set inline by the component (source of truth, so raw
+   number sizes work); these classes stay for the icon-child selectors and any
+   legacy CSS that targets them. */
+.sizeXs {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.sizeXs .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.sizeSm {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.sizeSm .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.sizeMd {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+}
+
+.sizeMd .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sizeLg {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+}
+
+.sizeLg .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.sizeXl {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+
+.sizeXl .icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* ==================== VARIANT: SAVE (Green) ==================== */
+.variantSave {
+  color: var(--emr-success);
+}
+
+.variantSave:hover:not(:disabled) {
+  background: var(--emr-success-alpha-12);
+  color: var(--emr-success);
+}
+
+.variantSave:active:not(:disabled) {
+  background: var(--emr-success-alpha-20);
+}
+
+/* ==================== VARIANT: PRINT (Blue) ==================== */
+.variantPrint {
+  color: var(--emr-secondary);
+}
+
+.variantPrint:hover:not(:disabled) {
+  background: var(--emr-secondary-alpha-12);
+  color: var(--emr-accent);
+}
+
+.variantPrint:active:not(:disabled) {
+  background: var(--emr-secondary-alpha-20);
+}
+
+/* ==================== VARIANT: DELETE (Red) ==================== */
+.variantDelete {
+  color: var(--emr-error);
+}
+
+.variantDelete:hover:not(:disabled) {
+  background: var(--emr-error-alpha-12);
+  color: var(--emr-error);
+}
+
+.variantDelete:active:not(:disabled) {
+  background: var(--emr-error-alpha-30);
+}
+
+/* ==================== VARIANT: CHART (Teal/Info) ==================== */
+.variantChart {
+  color: var(--emr-info);
+}
+
+.variantChart:hover:not(:disabled) {
+  background: var(--emr-accent-alpha-12);
+  color: var(--emr-info);
+}
+
+.variantChart:active:not(:disabled) {
+  background: var(--emr-accent-alpha-20);
+}
+
+/* ==================== VARIANT: DEFAULT (Gray) ==================== */
+.variantDefault {
+  color: var(--emr-text-secondary);
+}
+
+.variantDefault:hover:not(:disabled) {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.variantDefault:active:not(:disabled) {
+  background: var(--emr-border-color);
+}
+
+/* ==================== VARIANT: SUBTLE (transparent → navy on hover) ====================
+   The #1 raw-ActionIcon idiom. Muted icon, transparent bg, navy tint on hover.
+   Default tone = muted; the color* classes below override the icon color. */
+.variantSubtle {
+  color: var(--emr-text-secondary);
+}
+
+.variantSubtle:hover:not(:disabled) {
+  background: var(--emr-primary-alpha-08);
+  color: var(--emr-primary);
+}
+
+.variantSubtle:active:not(:disabled) {
+  background: var(--emr-primary-alpha-12);
+}
+
+/* ==================== VARIANT: LIGHT (tinted navy bg) ==================== */
+.variantLight {
+  color: var(--emr-primary);
+  background: var(--emr-primary-alpha-08);
+}
+
+.variantLight:hover:not(:disabled) {
+  background: var(--emr-primary-alpha-12);
+  color: var(--emr-primary);
+}
+
+.variantLight:active:not(:disabled) {
+  background: var(--emr-primary-alpha-20);
+}
+
+/* ==================== VARIANT: PRIMARY (solid navy gradient) ==================== */
+.variantPrimary {
+  color: var(--emr-text-white);
+  background: var(--emr-gradient-primary);
+  box-shadow: 0 3px 10px var(--emr-primary-alpha-20);
+}
+
+.variantPrimary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.variantPrimary:active:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+/* ==================== VARIANT: FILLED COLOR (solid theme fill, white icon) ====================
+   The canonical replacement for raw `variant="filled" color="teal|green|blue|red|gray"`
+   swipe/action buttons. Solid theme-sanctioned background + white icon. The
+   filled* color classes below set the actual background. */
+.variantFilledColor {
+  color: var(--emr-text-white);
+}
+
+.variantFilledColor:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.variantFilledColor:active:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.filledSuccess {
+  background: var(--emr-success);
+  box-shadow: 0 3px 10px var(--emr-success-alpha-20);
+}
+
+.filledError {
+  background: var(--emr-error);
+  box-shadow: 0 3px 10px var(--emr-error-alpha-20);
+}
+
+.filledInfo {
+  background: var(--emr-secondary);
+  box-shadow: 0 3px 10px var(--emr-secondary-alpha-20);
+}
+
+.filledNavy {
+  background: var(--emr-primary);
+  box-shadow: 0 3px 10px var(--emr-primary-alpha-20);
+}
+
+.filledMuted {
+  background: var(--emr-text-secondary);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+/* ==================== VARIANT: WHITE (white surface, navy icon) ====================
+   Maps Mantine variant="white": a solid white chip with a navy icon, designed
+   to sit ON a colored/gradient header surface for high contrast. */
+.variantWhite {
+  color: var(--emr-primary);
+  background: var(--emr-bg-card);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.variantWhite:hover:not(:disabled) {
+  background: var(--emr-bg-hover);
+}
+
+.variantWhite:active:not(:disabled) {
+  background: var(--emr-bg-hover-alt);
+}
+
+/* ==================== VARIANT: TRANSPARENT (no hover bg) ==================== */
+.variantTransparent {
+  color: var(--emr-text-secondary);
+}
+
+.variantTransparent:hover:not(:disabled) {
+  color: var(--emr-primary);
+  background: transparent;
+}
+
+/* ==================== COLOR TONES (subtle / light only) ====================
+   Mantine color names map onto these theme-sanctioned tones.
+   The hover background follows the icon color so the tint reads correctly. */
+.colorNavy {
+  color: var(--emr-primary);
+}
+.colorNavy.variantSubtle:hover:not(:disabled),
+.colorNavy.variantLight:hover:not(:disabled) {
+  background: var(--emr-primary-alpha-12);
+  color: var(--emr-primary);
+}
+.colorNavy.variantLight {
+  background: var(--emr-primary-alpha-08);
+}
+
+.colorBlue {
+  color: var(--emr-secondary);
+}
+.colorBlue.variantSubtle:hover:not(:disabled),
+.colorBlue.variantLight:hover:not(:disabled) {
+  background: var(--emr-secondary-alpha-12);
+  color: var(--emr-accent);
+}
+.colorBlue.variantLight {
+  background: var(--emr-secondary-alpha-10);
+}
+
+.colorRed {
+  color: var(--emr-error);
+}
+.colorRed.variantSubtle:hover:not(:disabled),
+.colorRed.variantLight:hover:not(:disabled) {
+  background: var(--emr-error-alpha-12);
+  color: var(--emr-error);
+}
+.colorRed.variantLight {
+  background: var(--emr-error-alpha-10);
+}
+
+.colorGreen {
+  color: var(--emr-success);
+}
+.colorGreen.variantSubtle:hover:not(:disabled),
+.colorGreen.variantLight:hover:not(:disabled) {
+  background: var(--emr-success-alpha-12);
+  color: var(--emr-success);
+}
+.colorGreen.variantLight {
+  background: var(--emr-success-alpha-10);
+}
+
+.colorGray {
+  color: var(--emr-text-secondary);
+}
+.colorGray.variantSubtle:hover:not(:disabled),
+.colorGray.variantLight:hover:not(:disabled) {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+.colorGray.variantLight {
+  background: var(--emr-bg-hover);
+}
+
+/* ==================== LOADING SPINNER ==================== */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

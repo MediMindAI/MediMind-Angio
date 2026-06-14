@@ -8,10 +8,10 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Container, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Container, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import type { Competency, SegmentId } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
-import { EMRButton } from '../common';
+import { EMRButton, EMRCard } from '../common';
 import { AnatomyView } from './AnatomyView';
 import { AnatomyLegend } from './AnatomyLegend';
 
@@ -146,15 +146,7 @@ export function AnatomyDemo(): React.ReactElement {
           </Text>
         </Stack>
 
-        <Paper
-          p="md"
-          radius="md"
-          style={{
-            background: 'var(--emr-bg-card)',
-            border: '1px solid var(--emr-border-default)',
-            boxShadow: 'var(--emr-shadow-sm)',
-          }}
-        >
+        <EMRCard p="md" withBorder>
           <Stack gap="md">
             <Group gap="sm" wrap="wrap">
               <EMRButton variant="primary" size="sm" onClick={randomize}>
@@ -197,18 +189,10 @@ export function AnatomyDemo(): React.ReactElement {
               )}
             </Group>
           </Stack>
-        </Paper>
+        </EMRCard>
 
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-          <Paper
-            p="md"
-            radius="md"
-            style={{
-              background: 'var(--emr-bg-card)',
-              border: '1px solid var(--emr-border-default)',
-              boxShadow: 'var(--emr-shadow-sm)',
-            }}
-          >
+          <EMRCard p="md" withBorder>
             <Stack gap="sm" align="center">
               <Text
                 style={{
@@ -226,17 +210,9 @@ export function AnatomyDemo(): React.ReactElement {
                 onSegmentClick={handleSegmentClick}
               />
             </Stack>
-          </Paper>
+          </EMRCard>
 
-          <Paper
-            p="md"
-            radius="md"
-            style={{
-              background: 'var(--emr-bg-card)',
-              border: '1px solid var(--emr-border-default)',
-              boxShadow: 'var(--emr-shadow-sm)',
-            }}
-          >
+          <EMRCard p="md" withBorder>
             <Stack gap="sm" align="center">
               <Text
                 style={{
@@ -254,20 +230,12 @@ export function AnatomyDemo(): React.ReactElement {
                 onSegmentClick={handleSegmentClick}
               />
             </Stack>
-          </Paper>
+          </EMRCard>
         </SimpleGrid>
 
-        <Paper
-          p="md"
-          radius="md"
-          style={{
-            background: 'var(--emr-bg-card)',
-            border: '1px solid var(--emr-border-default)',
-            boxShadow: 'var(--emr-shadow-sm)',
-          }}
-        >
+        <EMRCard p="md" withBorder>
           <AnatomyLegend />
-        </Paper>
+        </EMRCard>
       </Stack>
     </Container>
   );

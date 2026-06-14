@@ -1,0 +1,87 @@
+/* EMRRadioCard - Radio button cards with icons and descriptions */
+
+.container {
+  width: 100%;
+}
+
+.card {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px;
+  background: var(--emr-bg-card);
+  border: 2px solid var(--emr-border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.card:hover:not(.disabled) {
+  border-color: var(--emr-secondary);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--emr-secondary);
+  outline-offset: 2px;
+}
+
+/* Selected State */
+.card.selected {
+  border-color: var(--emr-secondary);
+  background: var(--emr-light-accent);
+  box-shadow: var(--emr-shadow-md);
+}
+
+/* Disabled State */
+.card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Radio Button */
+.radio {
+  flex-shrink: 0;
+}
+
+/* Icon Container */
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+}
+
+.card.selected .iconContainer {
+  color: var(--emr-primary);
+}
+
+/* Label */
+.label {
+  font-size: var(--emr-font-base);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+}
+
+/* Description */
+.description {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-base);
+}
+
+/* Mobile Responsive - Stack vertically on small screens */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+

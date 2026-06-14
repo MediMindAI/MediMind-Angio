@@ -1,0 +1,476 @@
+/* EMRHeroSection - Premium Medical Dashboard Hero
+   Stunning gradient hero header with glass-morphism and animated effects
+   Uses EMR theme variables exclusively */
+
+/* ==================== HERO CONTAINER ==================== */
+.hero {
+  position: relative;
+  background: var(--emr-gradient-primary);
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Premium multi-layer gradient overlay */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Animated orb top-left */
+    radial-gradient(ellipse 120% 80% at 10% 20%, var(--emr-hero-orb-light-blue) 0%, transparent 50%),
+    /* Animated orb bottom-right */
+    radial-gradient(ellipse 100% 100% at 90% 80%, var(--emr-hero-orb-accent) 0%, transparent 45%),
+    /* Subtle center glow */
+    radial-gradient(ellipse 80% 60% at 50% 50%, var(--emr-hero-orb-pale-blue) 0%, transparent 60%),
+    /* Mesh gradient effect */
+    linear-gradient(180deg, transparent 0%, var(--emr-primary-alpha-20) 100%);
+  animation: heroGlow 12s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Secondary animated layer for depth */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Floating particles effect */
+    radial-gradient(circle 2px at 15% 30%, var(--emr-glass-white-40) 0%, transparent 100%),
+    radial-gradient(circle 3px at 85% 25%, var(--emr-glass-white-30) 0%, transparent 100%),
+    radial-gradient(circle 2px at 45% 70%, var(--emr-glass-white-35) 0%, transparent 100%),
+    radial-gradient(circle 2px at 75% 65%, var(--emr-glass-white-25) 0%, transparent 100%),
+    radial-gradient(circle 3px at 25% 80%, var(--emr-glass-white-30) 0%, transparent 100%),
+    /* Bottom accent line - premium glow */
+    linear-gradient(180deg, transparent 0%, transparent calc(100% - 4px), var(--emr-accent) calc(100% - 4px), var(--emr-light-accent) 100%);
+  animation: particleFloat 20s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+@keyframes heroGlow {
+  0% {
+    opacity: 0.8;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02) translate(1%, -1%);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1.01) translate(-1%, 1%);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-10px) rotate(0.5deg);
+  }
+}
+
+/* ==================== INNER CONTAINER ==================== */
+.heroInner {
+  position: relative;
+  z-index: 2;
+  padding: 20px 28px 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.compact .heroInner {
+  padding: 14px 24px 18px;
+}
+
+/* ==================== HEADER ROW ==================== */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.compact .headerRow {
+  margin-bottom: 14px;
+}
+
+/* ==================== TITLE BLOCK ==================== */
+.titleBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Premium glass-morphism icon wrapper */
+.iconWrapper {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    var(--emr-glass-white-25) 0%,
+    var(--emr-glass-white-10) 50%,
+    var(--emr-glass-white-15) 100%
+  );
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--emr-glass-white-30);
+  border-radius: 16px;
+  color: var(--emr-text-inverse);
+  flex-shrink: 0;
+  box-shadow:
+    0 8px 32px var(--emr-hero-shadow),
+    inset 0 1px 0 var(--emr-glass-white-30),
+    inset 0 -1px 0 var(--emr-black-alpha-10);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icon wrapper glow ring */
+.iconWrapper::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 19px;
+  background: linear-gradient(
+    135deg,
+    var(--emr-hero-glow-ring-start) 0%,
+    var(--emr-hero-glow-ring-mid) 50%,
+    var(--emr-hero-glow-ring-end) 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hero:hover .iconWrapper::before {
+  opacity: 1;
+}
+
+/* Icon pulse animation */
+.iconWrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(circle at center, var(--emr-glass-white-20) 0%, transparent 70%);
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.compact .iconWrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.compact .iconWrapper::before {
+  border-radius: 15px;
+}
+
+.iconWrapper svg {
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 2px 4px var(--emr-black-alpha-20));
+}
+
+.compact .iconWrapper svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ==================== TITLE TEXT ==================== */
+.titleText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: var(--emr-font-3xl);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-inverse);
+  margin: 0;
+  letter-spacing: var(--emr-letter-spacing-tighter);
+  line-height: var(--emr-line-height-1-2);
+  text-shadow:
+    0 2px 4px var(--emr-hero-shadow),
+    0 4px 8px var(--emr-primary-alpha-16);
+}
+
+.compact .title {
+  font-size: var(--emr-font-xl);
+  font-weight: var(--emr-font-bold);
+}
+
+.subtitle {
+  font-size: var(--emr-font-base);
+  color: var(--emr-glass-white-85);
+  font-weight: var(--emr-font-medium);
+  margin: 0;
+  text-shadow: 0 1px 2px var(--emr-primary-alpha-20);
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+.compact .subtitle {
+  font-size: var(--emr-font-sm);
+}
+
+/* ==================== ACTIONS ==================== */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Force all text inside actions to be white for hero gradient contrast */
+/* NOTE: Use explicit white colors here, NOT theme variables like --emr-text-inverse
+   which switch to dark colors in dark mode. The hero gradient is always dark. */
+.actions,
+.actions * {
+  color: var(--emr-text-white) !important;
+}
+
+/* Ensure dimmed/muted text is visible on hero gradient */
+.actions [class*="dimmed"],
+.actions [data-muted],
+.actions span,
+.actions p {
+  color: rgba(255, 255, 255, 0.9) !important;
+  opacity: 1 !important;
+}
+
+/* ==================== CONTENT (Stats area) ==================== */
+.content {
+  position: relative;
+}
+
+/* Premium stat card container styling */
+.content::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--emr-glass-white-20) 20%,
+    var(--emr-glass-white-40) 50%,
+    var(--emr-glass-white-20) 80%,
+    transparent 100%
+  );
+}
+
+/* ==================== BACK BUTTON SUPPORT ==================== */
+.backButton {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emr-glass-white-12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--emr-glass-white-20);
+  border-radius: 12px;
+  color: var(--emr-text-inverse);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: var(--emr-glass-white-20);
+  border-color: var(--emr-glass-white-35);
+  transform: translateX(-2px);
+}
+
+.backButton:active {
+  transform: translateX(-4px) scale(0.98);
+}
+
+.compact .backButton {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+/* ==================== BADGE SUPPORT ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--emr-glass-white-18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--emr-glass-white-25);
+  border-radius: 20px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-uppercase);
+  color: var(--emr-text-inverse);
+  box-shadow: 0 4px 12px var(--emr-primary-alpha-20);
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  background: var(--emr-glass-white-25);
+  transform: translateY(-1px);
+}
+
+.compact .badge {
+  padding: 4px 10px;
+  font-size: var(--emr-font-xs);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .heroInner {
+    padding: 18px 24px 22px;
+  }
+}
+
+@media (max-width: 992px) {
+  .heroInner {
+    padding: 16px 20px 20px;
+  }
+
+  .iconWrapper {
+    width: 46px;
+    height: 46px;
+  }
+
+  .title {
+    font-size: var(--emr-font-2xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .heroInner {
+    padding: 14px 16px 18px;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .titleBlock {
+    width: 100%;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .iconWrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: var(--emr-font-xl);
+  }
+
+  .subtitle {
+    font-size: var(--emr-font-sm);
+  }
+}
+
+@media (max-width: 576px) {
+  .heroInner {
+    padding: 12px 14px 16px;
+  }
+
+  .headerRow {
+    margin-bottom: 14px;
+  }
+
+  .titleBlock {
+    gap: 12px;
+  }
+
+  .iconWrapper {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .iconWrapper svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .title {
+    font-size: var(--emr-font-lg);
+    letter-spacing: var(--emr-letter-spacing-tight);
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    font-size: var(--emr-font-xs);
+    letter-spacing: var(--emr-letter-spacing-wider);
+  }
+
+  .backButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .hero::before,
+  .hero::after {
+    animation: none;
+  }
+
+  .iconWrapper::after {
+    animation: none;
+  }
+
+  .iconWrapper,
+  .backButton,
+  .badge {
+    transition: none;
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+  .hero {
+    background: var(--emr-primary) !important;
+  }
+
+  .hero::before,
+  .hero::after,
+  .iconWrapper::before,
+  .iconWrapper::after {
+    display: none;
+  }
+}

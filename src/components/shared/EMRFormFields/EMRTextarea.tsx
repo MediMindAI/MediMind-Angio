@@ -9,6 +9,7 @@ import './emr-fields.css';
 
 /**
  * EMRTextarea component
+ * A production-ready textarea with consistent styling
  */
 export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps>(
   (
@@ -28,6 +29,7 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
       readOnly,
       validationState,
       className = '',
+      classNames,
       style,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
@@ -41,6 +43,7 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
       onChangeEvent,
       onBlur,
       onFocus,
+      onKeyDown,
       rows = 4,
       minRows,
       maxRows,
@@ -52,8 +55,9 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
 
+    // Handle change event
     const handleChange = useCallback(
       (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         if (onChangeEvent) {
@@ -66,23 +70,26 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
       [onChange, onChangeEvent]
     );
 
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) { return validationState; }
-      if (error) { return 'error'; }
-      if (successMessage) { return 'success'; }
-      if (warningMessage) { return 'warning'; }
+    // Determine validation state
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
+      if (successMessage) {return 'success';}
+      if (warningMessage) {return 'warning';}
       return 'default';
     };
 
     const state = getValidationState();
 
+    // Build aria-describedby: link to the wrapper's error/message element
     const hasMessage = (state === 'error' && typeof error === 'string') ||
       (state === 'success' && !!successMessage) ||
       (state === 'warning' && !!warningMessage) ||
       (state === 'default' && !!helpText);
     const messageElementId = hasMessage ? `${inputId}-${state === 'default' ? 'help' : state}` : undefined;
-    const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
+    const computedAriaDescribedBy = ariaDescribedBy || messageElementId;
 
+    // Build input classes (caller's classNames.input is appended, never replaces)
     const inputClasses = [
       'emr-input',
       'emr-textarea',
@@ -91,15 +98,17 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
       state === 'success' && 'has-success',
       state === 'warning' && 'has-warning',
       resize === 'none' && 'no-resize',
+      classNames?.input,
     ]
       .filter(Boolean)
       .join(' ');
 
     // Character count
-    const currentLength = value?.length ?? 0;
+    const currentLength = value?.length || 0;
     const isAtLimit = maxLength && currentLength === maxLength;
     const isOverLimit = maxLength && currentLength > maxLength;
 
+    // Count class
     const countClass = [
       'emr-textarea-counter',
       isAtLimit && 'at-limit',
@@ -113,7 +122,7 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
         label={label}
         required={required}
         helpText={helpText}
-        error={error ?? undefined}
+        error={error}
         successMessage={successMessage}
         warningMessage={warningMessage}
         validationState={validationState}
@@ -133,6 +142,7 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
           onChange={handleChange}
           onBlur={onBlur}
           onFocus={onFocus}
+          onKeyDown={onKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
@@ -163,6 +173,23 @@ export const EMRTextarea = memo(forwardRef<HTMLTextAreaElement, EMRTextareaProps
               borderRadius: 'var(--emr-input-border-radius)',
               transition: 'var(--emr-input-transition)',
               resize: resize,
+              '&:focus': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-focus)',
+                boxShadow: state === 'error'
+                  ? 'var(--emr-input-error-glow)'
+                  : state === 'success'
+                  ? 'var(--emr-input-success-glow)'
+                  : state === 'warning'
+                  ? 'var(--emr-input-warning-glow)'
+                  : 'var(--emr-input-focus-ring)',
+              },
+              '&:hover:not(:disabled):not(:focus)': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-hover)',
+              },
             },
             wrapper: {
               width: fullWidth ? '100%' : undefined,

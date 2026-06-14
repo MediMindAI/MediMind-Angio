@@ -1,0 +1,59 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Action bar container */
+.actionBar {
+  background: var(--emr-bg-card);
+  border-top: 1px solid var(--emr-border-color);
+  box-shadow: 0 -2px 8px var(--emr-black-alpha-05);
+}
+
+.actionBar.sticky {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background: var(--emr-glass-white-95);
+}
+
+/* Dark mode handled by CSS variable */
+
+/* Inner container with padding and max-width */
+.actionBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--emr-spacing-md);
+  padding: var(--emr-spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Mobile responsive */
+@media (max-width: 576px) {
+  .actionBarInner {
+    padding: var(--emr-spacing-md);
+    gap: var(--emr-spacing-sm);
+  }
+
+  /* On very small screens, stack buttons if needed */
+  @media (max-width: 360px) {
+    .actionBarInner {
+      flex-direction: column-reverse;
+    }
+
+    .actionBarInner button {
+      width: 100%;
+    }
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 577px) and (max-width: 768px) {
+  .actionBarInner {
+    padding: var(--emr-spacing-lg) var(--emr-spacing-xl);
+  }
+}

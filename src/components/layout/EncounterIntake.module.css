@@ -90,7 +90,9 @@
 .heroInner {
   position: relative;
   z-index: 1;
-  max-width: 1320px;
+  /* Keep in lockstep with .container / .actionRowInner so the header content
+   * lines up with the body and footer at the shared 1600px page width. */
+  max-width: 1600px;
   margin: 0 auto;
   /* Two-row vertical stack — text on top, progress strip on bottom.
      Frees the right side entirely for the absolute-positioned controls. */
@@ -158,7 +160,7 @@
   line-height: var(--emr-line-height-tight);
   letter-spacing: var(--emr-letter-spacing-tight);
   margin: 0;
-  color: #ffffff;
+  color: var(--emr-text-white);
 }
 
 .heroSubtitle {
@@ -197,7 +199,7 @@
   font-weight: var(--emr-font-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--emr-text-white);
 }
 
 .heroProgressLabel {
@@ -240,7 +242,7 @@
 }
 
 .heroProgressTrackFill {
-  background: #ffffff;
+  background: var(--emr-text-white);
   /* Width is set inline via calc() — see TSX. Anchors at left:14px so
      the fill grows rightward across the inter-dot segments. */
   right: auto;
@@ -272,8 +274,8 @@
 
 /* Done — solid white pill, primary-blue check icon, no shadow blob */
 .heroProgressDotDone {
-  background: #ffffff;
-  border-color: #ffffff;
+  background: var(--emr-text-white);
+  border-color: var(--emr-text-white);
   color: var(--emr-secondary);
 }
 
@@ -281,8 +283,8 @@
    number, plus a subtle 4px ring to draw the eye without the
    old shadow blob. */
 .heroProgressDotCurrent {
-  background: #ffffff;
-  border-color: #ffffff;
+  background: var(--emr-text-white);
+  border-color: var(--emr-text-white);
   color: var(--emr-primary);
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
@@ -321,7 +323,9 @@
    CONTAINER + SPLIT LAYOUT
    ============================================================ */
 .container {
-  max-width: 1320px;
+  /* Page width matches the study forms (Venous LE = 1600px) so the intake and
+   * the per-study pages share the same side margins. */
+  max-width: 1600px;
   margin: 0 auto;
   padding: 32px 24px 32px;
 }
@@ -445,7 +449,7 @@
   justify-content: center;
   border-radius: 50%;
   background: var(--emr-success);
-  color: #ffffff;
+  color: var(--emr-text-white);
   flex-shrink: 0;
   box-shadow: var(--emr-shadow-success);
 }
@@ -608,7 +612,7 @@
 
 .studyCardSelected .studyCardIcon {
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
 }
 
 .studyCardBody {
@@ -653,7 +657,7 @@
 .studyCardCheck[data-checked='true'] {
   background: var(--emr-success);
   border-color: var(--emr-success);
-  color: #ffffff;
+  color: var(--emr-text-white);
   box-shadow: var(--emr-shadow-success);
 }
 
@@ -731,7 +735,7 @@
   font-size: var(--emr-font-lg);
   font-weight: var(--emr-font-semibold);
   margin: 0;
-  color: #ffffff;
+  color: var(--emr-text-white);
   letter-spacing: var(--emr-letter-spacing-tight);
 }
 
@@ -761,7 +765,7 @@
   align-items: center;
   justify-content: center;
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
   font-size: var(--emr-font-md);
   font-weight: var(--emr-font-bold);
   letter-spacing: 0.04em;
@@ -997,7 +1001,8 @@
 }
 
 .actionRowInner {
-  max-width: 1320px;
+  /* Matches .container / .heroInner so the footer buttons align with the body. */
+  max-width: 1600px;
   margin: 0 auto;
   padding: 14px 24px;
   display: flex;

@@ -1,0 +1,30 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * EMRCardActions Styles
+ * Composite action bar for card headers (save/print/delete/select)
+ */
+
+/* ==================== CONTAINER ==================== */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: var(--emr-spacing-xs, 4px);
+}
+
+/* ==================== DIVIDER ==================== */
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--emr-border-color, #e5e7eb);
+  margin: 0 var(--emr-spacing-xs, 4px);
+}
+
+/* ==================== CHECKBOX WRAPPER ==================== */
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  padding-left: var(--emr-spacing-xs, 4px);
+}
+

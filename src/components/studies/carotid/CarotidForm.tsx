@@ -23,7 +23,8 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
+import { Stack, Group } from '@mantine/core';
+import { EMRTextarea } from '../../shared/EMRFormFields';
 import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
 import type { DrawingStroke } from '../../../types/drawing';
 import type { SegmentId } from '../../../types/anatomy';
@@ -41,7 +42,7 @@ import type {
 import type { PatientPosition } from '../../../types/patient-position';
 import type { EncounterDraft } from '../../../types/encounter';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog, EMRButton } from '../../common';
+import { ConfirmDialog, EMRButton, EMRContentSection, EMRViewToggle } from '../../common';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
@@ -690,10 +691,11 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
         <EncounterContextBanner />
 
         <Group justify="space-between" wrap="wrap" gap="sm">
-          <SegmentedControl
+          <EMRViewToggle
             value={state.view}
             onChange={handleViewChange}
-            data={[
+            alwaysShowLabels
+            options={[
               { value: 'right', label: t('carotid.tabs.right', 'Right') },
               { value: 'bilateral', label: t('carotid.tabs.bilateral', 'Bilateral') },
               { value: 'left', label: t('carotid.tabs.left', 'Left') },
@@ -733,19 +735,16 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
           onChange={handleNascetChange}
         />
 
-        <Paper withBorder radius="md" shadow="sm" p="md">
+        <EMRContentSection
+          title={t('carotid.anatomy.title', 'Carotid anatomy')}
+          subtitle={t(
+            'carotid.anatomy.subtitle',
+            'Vessel colors reflect severity (normal → occluded).',
+          )}
+          showAccent={false}
+          padding="md"
+        >
           <Stack gap="sm">
-            <div>
-              <Title order={5} mb={2}>
-                {t('carotid.anatomy.title', 'Carotid anatomy')}
-              </Title>
-              <Text size="sm" c="dimmed">
-                {t(
-                  'carotid.anatomy.subtitle',
-                  'Vessel colors reflect severity (normal → occluded).',
-                )}
-              </Text>
-            </div>
             <AnatomyDiagramSection
               view="neck-carotid"
               segments={{}}
@@ -768,21 +767,21 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
               ariaLabel={t('carotid.anatomy.legendLabel', 'Stenosis severity legend')}
             />
           </Stack>
-        </Paper>
+        </EMRContentSection>
 
         <Stack gap="sm" className={classes.textSection}>
-          <Textarea
+          <EMRTextarea
             label={t('carotid.narrative.impression', 'Impression')}
             value={state.impression}
-            onChange={(e) => handleImpressionChange(e.currentTarget.value)}
+            onChange={handleImpressionChange}
             autosize
             minRows={4}
             data-testid="carotid-impression"
           />
-          <Textarea
+          <EMRTextarea
             label={t('carotid.narrative.clinicianComments', 'Clinician comments')}
             value={state.clinicianComments}
-            onChange={(e) => handleClinicianChange(e.currentTarget.value)}
+            onChange={handleClinicianChange}
             autosize
             minRows={2}
             data-testid="carotid-clinician"

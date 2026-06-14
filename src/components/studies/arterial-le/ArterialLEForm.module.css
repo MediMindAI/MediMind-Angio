@@ -1,9 +1,11 @@
 /* ArterialLEForm — top-level container */
 
 .wrap {
-  max-width: 1400px;
+  /* Page width matches the Venous LE container (1600px / 24px side padding) so
+   * every study form shows the same side margins instead of an inset 1400px. */
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 16px 20px 120px 20px;
+  padding: 16px 24px 120px 24px;
 }
 
 .newCaseButton {

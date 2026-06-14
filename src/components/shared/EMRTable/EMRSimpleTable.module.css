@@ -1,0 +1,68 @@
+/* EMRSimpleTable — Command-styled compound (JSX-API) table.
+ *
+ * This is the mechanical drop-in replacement for raw Mantine <Table> +
+ * Table.Thead/Tbody/Tr/Th/Td/Tfoot/Caption/ScrollContainer. It carries the
+ * locked "Command" identity (see styles/DESIGN-DIRECTION.md → Tables) so a
+ * conversion is a pure find-replace with zero per-cell restyling.
+ *
+ * All colors come from theme.css var(--emr-*) — safe in light + dark mode.
+ * NEVER add :root[data-mantine-color-scheme="dark"] overrides here.
+ */
+
+/* The root <table>. Borderless "deck" — Command tables have no outer frame;
+ * row separation is a single hairline bottom border per cell. */
+.root {
+  color: var(--emr-text-primary);
+}
+
+/* ── Header row: color-mix(primary 5%) bg, navy 10px uppercase 700 labels ── */
+.root thead tr {
+  background: var(--emr-table-header-bg);
+}
+
+.root thead th {
+  color: var(--emr-table-header-text);
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-uppercase);
+  border-bottom: 2px solid var(--emr-table-header-border);
+  white-space: nowrap;
+}
+
+/* ── Body cells: hairline row separators, primary text ── */
+.root tbody td {
+  color: var(--emr-text-primary);
+  border-bottom: 1px solid var(--emr-table-border);
+}
+
+/* ── Row hover (only when highlightOnHover is on — Mantine adds data-hover) ── */
+.root tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.root[data-hover] tbody tr:hover {
+  background-color: var(--emr-bg-hover);
+}
+
+/* ── Selected row: primary 6% tint + inset 3px navy left rail ──
+ * Apply with the exported `selectedRow` / data-selected helper on a <Tr>. */
+.root tbody tr.selected,
+.root tbody tr[data-selected='true'] {
+  background-color: var(--emr-primary-alpha-08);
+  box-shadow: inset 3px 0 0 var(--emr-primary);
+}
+
+/* ── Critical row: error tint + inset 3px error left rail ──
+ * Apply with the exported `criticalRow` / data-critical helper on a <Tr>. */
+.root tbody tr.critical,
+.root tbody tr[data-critical='true'] {
+  background-color: var(--emr-error-alpha-05);
+  box-shadow: inset 3px 0 0 var(--emr-error);
+}
+
+/* Selected wins over critical visually only if both set — keep them mutually
+ * exclusive at call sites; this just guards the box-shadow stacking. */
+.root tbody tr.selected.critical {
+  box-shadow: inset 3px 0 0 var(--emr-primary);
+}

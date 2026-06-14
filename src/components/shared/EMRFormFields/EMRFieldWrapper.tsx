@@ -10,7 +10,7 @@ import './emr-fields.css';
  * Validation state input
  */
 interface ValidationInput {
-  error?: string | boolean;
+  error?: string | boolean | null;
   successMessage?: string;
   warningMessage?: string;
   validationState?: EMRValidationState;
@@ -19,6 +19,7 @@ interface ValidationInput {
 
 /**
  * Determine validation state from props
+ * @param props
  */
 function getValidationState(props: ValidationInput): EMRValidationState {
   if (props.validationState) {
@@ -38,6 +39,7 @@ function getValidationState(props: ValidationInput): EMRValidationState {
 
 /**
  * Get validation message based on state
+ * @param props
  */
 function getValidationMessage(props: ValidationInput): string | undefined {
   const state = getValidationState(props);
@@ -56,6 +58,20 @@ function getValidationMessage(props: ValidationInput): string | undefined {
 /**
  * EMRFieldWrapper component
  * Wraps form inputs with consistent label, help text, and validation styling
+ * @param root0
+ * @param root0.label
+ * @param root0.required
+ * @param root0.helpText
+ * @param root0.error
+ * @param root0.successMessage
+ * @param root0.warningMessage
+ * @param root0.validationState
+ * @param root0.size
+ * @param root0.fullWidth
+ * @param root0.children
+ * @param root0.className
+ * @param root0.style
+ * @param root0.htmlFor
  */
 export function EMRFieldWrapper({
   label,
@@ -73,8 +89,8 @@ export function EMRFieldWrapper({
   htmlFor,
   fieldId,
 }: EMRFieldWrapperProps): React.JSX.Element {
-  const state = getValidationState({ error: error ?? undefined, successMessage, warningMessage, validationState });
-  const message = getValidationMessage({ helpText, error: error ?? undefined, successMessage, warningMessage, validationState });
+  const state = getValidationState({ error, successMessage, warningMessage, validationState });
+  const message = getValidationMessage({ helpText, error, successMessage, warningMessage, validationState });
 
   // Generate accessible IDs for validation messages so inputs can reference them via aria-describedby
   const messageId = fieldId && message ? `${fieldId}-${state === 'default' ? 'help' : state}` : undefined;

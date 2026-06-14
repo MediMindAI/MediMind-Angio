@@ -19,8 +19,8 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Alert, Grid, Stack, Group, Paper, SegmentedControl, Text, Textarea, Title } from '@mantine/core';
-import { EMRSelect } from '../../shared/EMRFormFields';
+import { Grid, Stack, Group, Text } from '@mantine/core';
+import { EMRSelect, EMRTextarea } from '../../shared/EMRFormFields';
 import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
 import { AnatomyLegend } from '../../anatomy';
 import { severityBandColor, severityLegendItems } from '../../anatomy/severityColor';
@@ -40,7 +40,7 @@ import type {
 import type { EncounterDraft } from '../../../types/encounter';
 import type { PatientPosition } from '../../../types/patient-position';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog, EMRButton } from '../../common';
+import { ConfirmDialog, EMRAlert, EMRButton, EMRContentSection, EMRViewToggle } from '../../common';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
@@ -736,10 +736,11 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
         <EncounterContextBanner />
 
         <Group justify="space-between" wrap="wrap" gap="sm">
-          <SegmentedControl
+          <EMRViewToggle
             value={state.view}
             onChange={handleViewChange}
-            data={[
+            alwaysShowLabels
+            options={[
               { value: 'right', label: t('arterialLE.tabs.right', 'Right') },
               { value: 'bilateral', label: t('arterialLE.tabs.bilateral', 'Bilateral') },
               { value: 'left', label: t('arterialLE.tabs.left', 'Left') },
@@ -784,9 +785,8 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
         </Grid>
 
         {warningMessages.length > 0 && (
-          <Alert
-            variant="light"
-            color="yellow"
+          <EMRAlert
+            variant="warning"
             icon={<IconAlertTriangle size={18} />}
             title={t('arterialLE.validation.title', 'Check these findings')}
             data-testid="arterial-warnings"
@@ -798,55 +798,47 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
                 </Text>
               ))}
             </Stack>
-          </Alert>
+          </EMRAlert>
         )}
 
-        <Paper withBorder radius="md" shadow="sm" p="md">
-          <Stack gap="sm">
-            <div>
-              <Title order={5} mb={2}>
-                {t('arterialLE.runoff.title', 'Distal run-off')}
-              </Title>
-              <Text size="sm" c="dimmed">
-                {t('arterialLE.runoff.subtitle', 'Tibial-vessel patency summary per side.')}
-              </Text>
-            </div>
-            <Group grow align="flex-start" wrap="wrap">
-              <EMRSelect
-                label={t('arterialLE.tabs.right', 'Right')}
-                value={state.runoff.right ?? ''}
-                onChange={(v) => handleRunoffChange('right', v === '' ? undefined : (v as Runoff))}
-                data={runoffData}
-                clearable
-                size="sm"
-                data-testid="arterial-runoff-right"
-              />
-              <EMRSelect
-                label={t('arterialLE.tabs.left', 'Left')}
-                value={state.runoff.left ?? ''}
-                onChange={(v) => handleRunoffChange('left', v === '' ? undefined : (v as Runoff))}
-                data={runoffData}
-                clearable
-                size="sm"
-                data-testid="arterial-runoff-left"
-              />
-            </Group>
-          </Stack>
-        </Paper>
+        <EMRContentSection
+          title={t('arterialLE.runoff.title', 'Distal run-off')}
+          subtitle={t('arterialLE.runoff.subtitle', 'Tibial-vessel patency summary per side.')}
+          showAccent={false}
+          padding="md"
+        >
+          <Group grow align="flex-start" wrap="wrap">
+            <EMRSelect
+              label={t('arterialLE.tabs.right', 'Right')}
+              value={state.runoff.right ?? ''}
+              onChange={(v) => handleRunoffChange('right', v === '' ? undefined : (v as Runoff))}
+              data={runoffData}
+              clearable
+              size="sm"
+              data-testid="arterial-runoff-right"
+            />
+            <EMRSelect
+              label={t('arterialLE.tabs.left', 'Left')}
+              value={state.runoff.left ?? ''}
+              onChange={(v) => handleRunoffChange('left', v === '' ? undefined : (v as Runoff))}
+              data={runoffData}
+              clearable
+              size="sm"
+              data-testid="arterial-runoff-left"
+            />
+          </Group>
+        </EMRContentSection>
 
-        <Paper withBorder radius="md" shadow="sm" p="md">
+        <EMRContentSection
+          title={t('arterialLE.anatomy.title', 'Arterial anatomy')}
+          subtitle={t(
+            'arterialLE.anatomy.subtitle',
+            'Segment colors reflect severity (normal → occluded).',
+          )}
+          showAccent={false}
+          padding="md"
+        >
           <Stack gap="sm">
-            <div>
-              <Title order={5} mb={2}>
-                {t('arterialLE.anatomy.title', 'Arterial anatomy')}
-              </Title>
-              <Text size="sm" c="dimmed">
-                {t(
-                  'arterialLE.anatomy.subtitle',
-                  'Segment colors reflect severity (normal → occluded).',
-                )}
-              </Text>
-            </div>
             <AnatomyDiagramSection
               view="le-arterial-anterior"
               segments={{}}
@@ -867,29 +859,29 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
               ariaLabel={t('arterialLE.anatomy.legendLabel', 'Stenosis severity legend')}
             />
           </Stack>
-        </Paper>
+        </EMRContentSection>
 
         <Stack gap="sm" className={classes.textSection}>
-          <Textarea
+          <EMRTextarea
             label={t('arterialLE.narrative.impression', 'Impression')}
             value={state.impression}
-            onChange={(e) => handleImpressionChange(e.currentTarget.value)}
+            onChange={handleImpressionChange}
             autosize
             minRows={4}
             data-testid="arterial-impression"
           />
-          <Textarea
+          <EMRTextarea
             label={t('arterialLE.narrative.sonographerComments', 'Sonographer comments')}
             value={state.sonographerComments}
-            onChange={(e) => handleSonographerChange(e.currentTarget.value)}
+            onChange={handleSonographerChange}
             autosize
             minRows={2}
             data-testid="arterial-sonographer"
           />
-          <Textarea
+          <EMRTextarea
             label={t('arterialLE.narrative.clinicianComments', 'Clinician comments')}
             value={state.clinicianComments}
-            onChange={(e) => handleClinicianChange(e.currentTarget.value)}
+            onChange={handleClinicianChange}
             autosize
             minRows={2}
             data-testid="arterial-clinician"

@@ -5,9 +5,10 @@ import { Modal, Box, Group, Text, LoadingOverlay } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconX, IconDeviceFloppy } from '@tabler/icons-react';
 import type { ReactNode, ComponentType, CSSProperties } from 'react';
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { EMRButton } from './EMRButton';
 import { useTranslation } from '../../contexts/TranslationContext';
+import classes from './EMRModal.module.css';
 
 /** T-shirt size options for modal width */
 export type EMRModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
@@ -17,7 +18,7 @@ const sizePixelMap: Record<EMRModalSize, number | string> = {
   md: 780,
   lg: 980,
   xl: 1200,
-  xxl: '95vw',
+  xxl: '95vw',  // Full-width for complex forms
 };
 
 const iconSizeMap: Record<EMRModalSize, number> = {
@@ -41,64 +42,7 @@ const minBodyHeightMap: Record<EMRModalSize, number | string> = {
   md: 280,
   lg: 360,
   xl: 440,
-  xxl: 'calc(92vh - 140px)',
-};
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Module-level style constants — hoisted out of the component because they
-   depend on nothing in render scope. Recomputing them per-render via
-   `useMemo(..., [])` allocates a fresh object on every modal mount, which
-   defeats memoization downstream. (Wave 4.5 — Area 06 MEDIUM.)
-   ───────────────────────────────────────────────────────────────────────── */
-
-const MODAL_BODY_STYLES: CSSProperties = {
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  minHeight: 0,
-  overflow: 'hidden',
-};
-
-const NOISE_TEXTURE_STYLES: CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  opacity: 0.03,
-  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-  pointerEvents: 'none',
-};
-
-const HIGHLIGHT_LINE_STYLES: CSSProperties = {
-  position: 'absolute',
-  top: 0,
-  left: 24,
-  right: 24,
-  height: 1,
-  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-  pointerEvents: 'none',
-};
-
-const TITLE_STYLES: CSSProperties = {
-  letterSpacing: '-0.01em',
-  lineHeight: 'var(--emr-line-height-snug)',
-};
-
-const HEADER_GROUP_STYLES: CSSProperties = {
-  position: 'relative',
-};
-
-const HEADER_INNER_GROUP_STYLES: CSSProperties = {
-  flex: 1,
-  minWidth: 0,
-};
-
-const TITLE_CONTAINER_STYLES: CSSProperties = {
-  minWidth: 0,
-  flex: 1,
-};
-
-const SUBTITLE_STYLES: CSSProperties = {
-  letterSpacing: '0.01em',
+  xxl: 'calc(92vh - 140px)',  // Takes most of the viewport height - increased for patient detail
 };
 
 export interface EMRModalProps {
@@ -109,7 +53,16 @@ export interface EMRModalProps {
   size?: EMRModalSize;
   icon?: ComponentType<{ size?: number | string; color?: string }>;
   subtitle?: string | ReactNode;
-  footer?: ReactNode;
+  /**
+   * Footer content. Three modes:
+   * - `undefined` (default): the standard cancel/submit action row (or nothing,
+   *   if `onSubmit` is also undefined and `showFooter` isn't forced).
+   * - a `ReactNode`: render this node in the footer chrome instead of the
+   *   default cancel/submit buttons.
+   * - `null`: render NO footer chrome at all (for consumers that own their own
+   *   footer/actions inside `children`, e.g. command palettes, detail views).
+   */
+  footer?: ReactNode | null;
   showFooter?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
@@ -130,6 +83,50 @@ export interface EMRModalProps {
   trapFocus?: boolean;
   /** When set alongside submitLoading, shows a blurred overlay with this message over the body */
   processingMessage?: string;
+  /**
+   * Chrome variant. When 'reading-room', the modal subtree re-skins to the
+   * fixed-dark PACS reading-room palette in BOTH light and dark app themes
+   * (radiology convention — see EMRModal.module.css). Default undefined keeps
+   * the standard theme-following rendering for every other call site.
+   */
+  chrome?: 'reading-room';
+  /**
+   * When false, renders NO header chrome at all (no tick bar, icon, title, or
+   * close button). For consumers that supply their own header inside `children`
+   * — command palettes, full-bleed detail views, gradient-header modals.
+   * The dialog still gets an accessible name from `title` (aria-label on the
+   * content node), so pass a meaningful `title` even when headerless.
+   * Default true keeps today's standard slim deck header.
+   */
+  withHeader?: boolean;
+  /**
+   * When true, the body has zero padding (the content area renders flush to the
+   * card edges). For consumers that own their own internal padding/layout.
+   * Default false keeps the standard 24px (16px fullscreen) body padding.
+   */
+  noBodyPadding?: boolean;
+  /**
+   * Card corner radius override (px). Defaults to 12 (0 when fullscreen). Passed
+   * straight through to Mantine. Fullscreen always wins (radius 0) regardless.
+   */
+  radius?: number;
+  /**
+   * Whether to vertically/horizontally center the card. Defaults to centered on
+   * desktop, top-anchored isn't used. Pass through for consumers that need to
+   * force a specific centering (rarely needed). Fullscreen ignores this.
+   */
+  centered?: boolean;
+  /**
+   * Overlay appearance passthrough (backgroundOpacity / blur). Defaults to the
+   * standard 0.35 opacity + 12px blur (0/0 when fullscreen). Override for
+   * consumers that want a different scrim (e.g. heavier dim for command palette).
+   */
+  overlayProps?: { backgroundOpacity?: number; blur?: number };
+  /** Extra className applied to the Mantine content card (additive — combined
+   *  with the reading-room class when both are set). */
+  contentClassName?: string;
+  /** Extra className applied to the modal body wrapper Box. */
+  bodyClassName?: string;
 }
 
 /**
@@ -137,6 +134,27 @@ export interface EMRModalProps {
  *
  * Refined, professional aesthetic for healthcare applications.
  * Features elegant gradients, subtle depth, and polished interactions.
+ * @param root0
+ * @param root0.opened
+ * @param root0.onClose
+ * @param root0.title
+ * @param root0.children
+ * @param root0.size
+ * @param root0.icon
+ * @param root0.subtitle
+ * @param root0.footer
+ * @param root0.showFooter
+ * @param root0.submitLabel
+ * @param root0.cancelLabel
+ * @param root0.onSubmit
+ * @param root0.submitLoading
+ * @param root0.submitDisabled
+ * @param root0.submitIcon
+ * @param root0.closeOnClickOutside
+ * @param root0.closeOnEscape
+ * @param root0.withCloseButton
+ * @param root0.zIndex
+ * @param root0.testId
  */
 export function EMRModal({
   opened,
@@ -162,19 +180,61 @@ export function EMRModal({
   fullScreen: forceFullScreen,
   trapFocus = true,
   processingMessage,
+  chrome,
+  withHeader = true,
+  noBodyPadding = false,
+  radius,
+  centered,
+  overlayProps,
+  contentClassName,
+  bodyClassName,
 }: EMRModalProps): React.ReactElement {
   const { t } = useTranslation();
+  // Mobile detection for full-screen mode
   const isMobile = useMediaQuery('(max-width: 768px)');
+  // Combine mobile and forced fullscreen for style calculations
   const isFullScreen = forceFullScreen || isMobile;
 
-  const sizePixels = isFullScreen ? '100%' : sizePixelMap[size];
+  // Resolve the card width as a raw CSS length (px or vw string).
+  //
+  // We do NOT hand this to Mantine's `size` prop: this app pins the document
+  // root font-size to 10px while Mantine's `--mantine-scale` stays 1, so
+  // Mantine's number→rem size conversion under-scales every modal to 62.5% of
+  // its intended px (xl 1200 → 750px). Instead we set the `--modal-size` CSS
+  // var DIRECTLY (in real px / vw) via styles.root below, which the Mantine
+  // content rule consumes verbatim (`flex: 0 0 var(--modal-size)`), immune to
+  // the root-font / scale mismatch.
+  const rawSize = sizePixelMap[size];
+  const rawSizeCss = typeof rawSize === 'number' ? `${rawSize}px` : rawSize;
+  const modalSizeCss = isFullScreen ? '100%' : rawSizeCss;
   const iconSize = iconSizeMap[size];
   const iconContainerSize = isMobile ? 40 : iconContainerSizeMap[size];
   const minBodyHeight = minBodyHeightMap[size];
-  const shouldShowFooter = showFooter ?? (footer !== undefined || onSubmit !== undefined);
+  // `footer === null` is the explicit "no footer chrome" opt-out (additive — no
+  // existing caller passes null). It wins over `showFooter` and `onSubmit`.
+  const shouldShowFooter =
+    footer === null ? false : (showFooter ?? (footer !== undefined || onSubmit !== undefined));
   const isProcessing = submitLoading && !!processingMessage;
 
-  const mobileContentStyles = useMemo<CSSProperties>(() =>
+  // Memoized style objects to prevent recreation on every render.
+  //
+  // Mantine v8 layout note (centering fix, 2026-06-11): the modal DOM is
+  //   .mantine-Modal-root
+  //     └ .mantine-Modal-inner    ← position:fixed; width:100vw;
+  //                                  display:flex; align/justify:center
+  //                                  → THIS element centers the card
+  //         └ .mantine-Modal-content  ← the actual card (width = --modal-size)
+  //
+  // Passing these flex-column/max-height/overflow styles via
+  // <Modal.Content style={...}> caused Mantine v8 to forward the SAME inline
+  // style onto BOTH the content card AND the centering `.inner` wrapper. The
+  // injected `flex-direction: column` flipped the inner's main axis, which let
+  // the card shrink-wrap its children (≈538px) instead of honoring the `size`
+  // width — making every EMRModal look narrow/cramped. We now route these
+  // card-only styles through `styles={{ content }}` (see <Modal.Root> below),
+  // so the `.inner` centering wrapper keeps Mantine's defaults untouched and
+  // the card fills its intended `size`.
+  const contentStyles = useMemo<CSSProperties>(() =>
     isFullScreen
       ? {
           overflow: 'hidden',
@@ -187,7 +247,7 @@ export function EMRModal({
         }
       : {
           overflow: 'hidden',
-          boxShadow: 'var(--emr-shadow-xl)',
+          boxShadow: 'var(--emr-modal-shadow)',
           maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
@@ -195,31 +255,64 @@ export function EMRModal({
     [isFullScreen]
   );
 
+  // styles.root injects --modal-size DIRECTLY (raw px/vw), bypassing Mantine's
+  // broken number→rem size conversion (see modalSizeCss note above). The card
+  // (.mantine-Modal-content) reads it via `flex: 0 0 var(--modal-size)`.
+  // styles.content keeps card-only layout off the `.inner` centering wrapper.
+  const rootStyles = useMemo<Record<string, CSSProperties>>(() => ({
+    root: { '--modal-size': modalSizeCss } as CSSProperties,
+    content: contentStyles,
+  }), [contentStyles, modalSizeCss]);
+
+  const modalBodyStyles = useMemo<CSSProperties>(() => ({
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
+  }), []);
+
+  // Command identity (2026-06-11): the slim header — a card-background row with
+  // a 4×15px gradient tick bar before the title, hairline separator below. The
+  // legacy full-width gradient band (+ frosted glass icon, noise texture,
+  // highlight line) is retired in favor of the calmer "deck" treatment.
   const headerStyles = useMemo<CSSProperties>(() => ({
     padding: isFullScreen ? '16px 16px' : '20px 24px',
-    background: 'var(--emr-gradient-primary)',
+    background: 'var(--emr-bg-card)',
     position: isFullScreen ? 'sticky' : 'relative',
     top: 0,
-    borderLeft: isFullScreen ? 'none' : '4px solid var(--emr-accent)',
-    boxShadow: 'inset 0 -1px 0 rgba(255, 255, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.15)',
+    borderBottom: '1px solid var(--emr-border-color)',
     flexShrink: 0,
     zIndex: 10,
     paddingTop: isMobile ? 'max(16px, env(safe-area-inset-top))' : '20px',
   }), [isFullScreen, isMobile]);
+
+  // 4×15px gradient tick bar preceding the title (Command section-header motif).
+  const tickBarStyles = useMemo<CSSProperties>(() => ({
+    width: 4,
+    height: 15,
+    minWidth: 4,
+    borderRadius: 2,
+    background: 'var(--emr-gradient-primary)',
+  }), []);
 
   const iconContainerStyles = useMemo<CSSProperties>(() => ({
     width: iconContainerSize,
     height: iconContainerSize,
     minWidth: iconContainerSize,
     borderRadius: 10,
-    background: 'var(--emr-glass-bg)',
-    backdropFilter: 'blur(8px)',
-    border: '1px solid var(--emr-glass-border)',
+    background: 'var(--emr-secondary-alpha-08)',
+    border: '1px solid var(--emr-border-color)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: 'var(--emr-shadow-sm)',
   }), [iconContainerSize]);
+
+  const titleStyles = useMemo<CSSProperties>(() => ({
+    letterSpacing: '-0.01em',
+    lineHeight: 'var(--emr-line-height-snug)',
+  }), []);
 
   const closeButtonStyles = useMemo<CSSProperties>(() => ({
     width: isMobile ? 44 : 36,
@@ -228,8 +321,8 @@ export function EMRModal({
     minHeight: isMobile ? 44 : 36,
     borderRadius: isMobile ? 12 : 8,
     border: 'none',
-    background: 'var(--emr-white-alpha-10)',
-    color: 'var(--emr-text-inverse)',
+    background: 'transparent',
+    color: 'var(--emr-text-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -238,17 +331,19 @@ export function EMRModal({
   }), [isMobile]);
 
   const bodyStyles = useMemo<CSSProperties>(() => ({
-    paddingTop: isFullScreen ? '16px' : '24px',
-    paddingRight: isFullScreen ? '16px' : '24px',
-    paddingLeft: isFullScreen ? '16px' : '24px',
-    paddingBottom: isMobile ? 'max(16px, env(safe-area-inset-bottom))' : (isFullScreen ? '16px' : '24px'),
+    paddingTop: noBodyPadding ? 0 : (isFullScreen ? '16px' : '24px'),
+    paddingRight: noBodyPadding ? 0 : (isFullScreen ? '16px' : '24px'),
+    paddingLeft: noBodyPadding ? 0 : (isFullScreen ? '16px' : '24px'),
+    paddingBottom: noBodyPadding
+      ? (isMobile ? 'env(safe-area-inset-bottom)' : 0)
+      : (isMobile ? 'max(16px, env(safe-area-inset-bottom))' : (isFullScreen ? '16px' : '24px')),
     background: 'var(--emr-bg-card)',
     minHeight: isFullScreen ? 0 : (typeof minBodyHeight === 'number' ? minBodyHeight : 200),
     flex: 1,
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
     position: 'relative',
-  }), [isFullScreen, isMobile, minBodyHeight]);
+  }), [isFullScreen, isMobile, minBodyHeight, noBodyPadding]);
 
   const footerStyles = useMemo<CSSProperties>(() => ({
     paddingTop: '16px',
@@ -268,53 +363,111 @@ export function EMRModal({
     [isFullScreen]
   );
 
+  // Static style objects (no dependencies, never change)
+  const headerGroupStyles = useMemo<CSSProperties>(() => ({
+    position: 'relative',
+  }), []);
+
+  const headerInnerGroupStyles = useMemo<CSSProperties>(() => ({
+    flex: 1,
+    minWidth: 0,
+  }), []);
+
+  const titleContainerStyles = useMemo<CSSProperties>(() => ({
+    minWidth: 0,
+    flex: 1,
+  }), []);
+
+  const subtitleStyles = useMemo<CSSProperties>(() => ({
+    letterSpacing: '0.01em',
+  }), []);
+
+  // C6-WH-H3 remediation 2026-05-20: stable id so screen readers announce the
+  // modal title. Cascades to every modal in the app (warehouse + everywhere).
+  // WCAG 4.1.2 (Name, Role, Value).
+  const titleId = useId();
+
+  // C6-M1 (WCAG 4.1.2): the dialog's accessible name. Mantine puts role="dialog"
+  // on its <section> content node and only wires aria-labelledby to it when a
+  // real <Modal.Title> is mounted. EMRModal renders a custom gradient header
+  // (not Modal.Title), so the dialog had NO accessible name. Using the compound
+  // <Modal.Root>/<Modal.Content> form lets us put aria-label directly on the
+  // content node — naming the dialog from `title` with no extra DOM heading.
+  const dialogAriaLabel = typeof title === 'string' ? title : undefined;
+
   return (
-    <Modal
+    <Modal.Root
       opened={opened}
       onClose={onClose}
-      size={sizePixels}
-      centered={!isMobile && !forceFullScreen}
+      // `size` intentionally omitted — width is driven by the `--modal-size`
+      // CSS var injected via styles.root (modalSizeCss). Mantine's own
+      // number→rem size conversion is broken by this app's 10px document root
+      // (see modalSizeCss note above), so we set the px value directly.
+      centered={centered ?? (!isMobile && !forceFullScreen)}
       fullScreen={forceFullScreen || isMobile}
       closeOnClickOutside={isProcessing ? false : closeOnClickOutside}
       closeOnEscape={isProcessing ? false : closeOnEscape}
       trapFocus={trapFocus}
-      withCloseButton={false}
+      // C6-M2 (WCAG 2.4.3): return focus to the element that opened the modal
+      // when it closes (Esc / outside-click / close button) instead of dumping
+      // focus to the top of the page. Mantine's default is already true — set
+      // explicitly so a future refactor can't silently regress it.
+      returnFocus
       padding={0}
       zIndex={zIndex}
-      radius={isFullScreen ? 0 : 12}
-      overlayProps={{
-        backgroundOpacity: isFullScreen ? 0 : 0.35,
-        blur: isFullScreen ? 0 : 12,
-      }}
+      radius={isFullScreen ? 0 : (radius ?? 12)}
+      // v8 centering fix (2026-06-11): route card-only layout styles through
+      // `styles.content` so they NEVER leak onto the `.inner` centering wrapper.
+      styles={rootStyles}
       transitionProps={{
         transition: isFullScreen ? 'slide-up' : 'fade',
         duration: 180,
       }}
-      styles={{
-        content: mobileContentStyles,
-        body: MODAL_BODY_STYLES,
-      }}
-      data-testid={testId}
     >
-      {/* Header */}
+      <Modal.Overlay
+        backgroundOpacity={isFullScreen ? 0 : (overlayProps?.backgroundOpacity ?? 0.35)}
+        blur={isFullScreen ? 0 : (overlayProps?.blur ?? 12)}
+      />
+      <Modal.Content
+        // C6-M1: name the role="dialog" node directly from `title` — see comment
+        // on dialogAriaLabel above. Additive ARIA, no behavior or layout change.
+        // Layout styles now flow through <Modal.Root styles.content> (above) so
+        // they don't leak onto the `.inner` centering wrapper in Mantine v8.
+        aria-label={dialogAriaLabel}
+        className={
+          [chrome === 'reading-room' ? classes.emrModalReadingRoom : undefined, contentClassName]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
+        data-testid={testId}
+      >
+        <Modal.Body style={modalBodyStyles}>
+      {/* ═══════════════════════════════════════════════════════════════
+          HEADER - Command slim deck: gradient tick bar + title on card bg.
+          Suppressed entirely when withHeader={false} (consumer owns header).
+          ═══════════════════════════════════════════════════════════════ */}
+      {withHeader && (
       <Box style={headerStyles}>
-        <Box style={NOISE_TEXTURE_STYLES} />
-        <Box style={HIGHLIGHT_LINE_STYLES} />
+        <Group justify="space-between" align="center" wrap="nowrap" style={headerGroupStyles}>
+          <Group gap="md" wrap="nowrap" style={headerInnerGroupStyles}>
+            {/* 4×15px gradient tick bar (Command section-header motif) */}
+            <Box style={tickBarStyles} />
 
-        <Group justify="space-between" align="center" wrap="nowrap" style={HEADER_GROUP_STYLES}>
-          <Group gap="md" wrap="nowrap" style={HEADER_INNER_GROUP_STYLES}>
+            {/* Optional icon - navy-tinted deck chip */}
             {Icon && (
               <Box style={iconContainerStyles}>
-                <Icon size={iconSize} color="var(--emr-text-inverse)" />
+                <Icon size={iconSize} color="var(--emr-modal-icon-color)" />
               </Box>
             )}
 
-            <Box style={TITLE_CONTAINER_STYLES}>
+            {/* Title & Subtitle */}
+            <Box style={titleContainerStyles}>
               <Text
-                fw={500}
+                id={titleId}
+                fw={600}
                 size="md"
-                c="var(--emr-text-inverse)"
-                style={TITLE_STYLES}
+                c="var(--emr-text-primary)"
+                style={titleStyles}
                 truncate
                 role="heading"
                 aria-level={2}
@@ -325,10 +478,10 @@ export function EMRModal({
                 typeof subtitle === 'string' ? (
                   <Text
                     size="xs"
-                    c="var(--emr-text-inverse-secondary)"
+                    c="var(--emr-text-secondary)"
                     mt={2}
                     truncate
-                    style={SUBTITLE_STYLES}
+                    style={subtitleStyles}
                   >
                     {subtitle}
                   </Text>
@@ -339,18 +492,21 @@ export function EMRModal({
             </Box>
           </Group>
 
+          {/* Close button - touch-friendly (44px on mobile) */}
           {withCloseButton && (
             <Box
               component="button"
               type="button"
               onClick={onClose}
               style={closeButtonStyles}
-              aria-label={t('common.close', 'Close')}
+              aria-label={t('common.close')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--emr-white-alpha-20)';
+                e.currentTarget.style.background = 'var(--emr-bg-hover)';
+                e.currentTarget.style.color = 'var(--emr-text-primary)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--emr-white-alpha-10)';
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--emr-text-secondary)';
               }}
             >
               <IconX size={16} strokeWidth={1.5} aria-hidden="true" />
@@ -358,9 +514,12 @@ export function EMRModal({
           )}
         </Group>
       </Box>
+      )}
 
-      {/* Body */}
-      <Box style={bodyStyles}>
+      {/* ═══════════════════════════════════════════════════════════════
+          BODY - Clean with subtle warmth (scrollable on mobile)
+          ═══════════════════════════════════════════════════════════════ */}
+      <Box style={bodyStyles} className={bodyClassName}>
         {isProcessing && (
           <>
             <LoadingOverlay
@@ -386,7 +545,9 @@ export function EMRModal({
         {children}
       </Box>
 
-      {/* Footer */}
+      {/* ═══════════════════════════════════════════════════════════════
+          FOOTER - Sticky on mobile with safe area padding
+          ═══════════════════════════════════════════════════════════════ */}
       {shouldShowFooter && (
         <Box style={footerStyles}>
           {footer ?? (
@@ -417,7 +578,9 @@ export function EMRModal({
           )}
         </Box>
       )}
-    </Modal>
+        </Modal.Body>
+      </Modal.Content>
+    </Modal.Root>
   );
 }
 
@@ -440,15 +603,16 @@ export function EMRModalSection({
   variant = 'primary',
   icon: SectionIcon,
 }: EMRModalSectionProps): React.ReactElement {
+  const primaryStyle: { accent: string; bg: string; border: string } = {
+    accent: 'var(--emr-primary)',
+    bg: 'var(--emr-gradient-subtle-primary)',
+    border: 'var(--emr-border-default)',
+  };
   const variantMap: Record<string, { accent: string; bg: string; border: string }> = {
-    primary: {
-      accent: 'var(--emr-primary)',
-      bg: 'var(--emr-gradient-subtle-primary)',
-      border: 'var(--emr-border-default)',
-    },
+    primary: primaryStyle,
     secondary: {
       accent: 'var(--emr-secondary)',
-      bg: 'var(--emr-gradient-subtle-primary)',
+      bg: 'var(--emr-gradient-subtle-secondary)',
       border: 'var(--emr-border-default)',
     },
     accent: {
@@ -462,7 +626,7 @@ export function EMRModalSection({
       border: 'var(--emr-border-default)',
     },
   };
-  const styles = variantMap[variant] ?? variantMap.primary!;
+  const styles = variantMap[variant] || primaryStyle;
 
   return (
     <Box
@@ -474,7 +638,9 @@ export function EMRModalSection({
         marginBottom: 16,
       }}
     >
+      {/* Section header */}
       <Group gap={10} mb={16}>
+        {/* Accent line */}
         <Box
           style={{
             width: 3,
@@ -484,6 +650,7 @@ export function EMRModalSection({
           }}
         />
 
+        {/* Optional icon */}
         {SectionIcon && (
           <Box
             style={{

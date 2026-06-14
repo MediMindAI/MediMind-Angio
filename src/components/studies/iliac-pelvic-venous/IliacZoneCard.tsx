@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * IliacZoneCard — presentational shell for one anatomical zone of the
- * iliac/pelvic venous form (icon-free Paper card with title + optional
- * subtitle + body slot). Keeps the form's JSX flat and the zones visually
- * consistent.
+ * iliac/pelvic venous form. A thin adapter over the standardized
+ * `EMRContentSection` (the Command gradient tick-bar header + hairline + deck),
+ * so every zone reads as a first-class section AND shares one source of truth
+ * with the rest of the platform instead of re-implementing the header.
  */
 
 import { memo, type ReactNode } from 'react';
-import { Paper, Stack, Title, Text } from '@mantine/core';
+import { EMRContentSection } from '../../common';
 
 export interface IliacZoneCardProps {
   readonly title: string;
@@ -23,21 +24,15 @@ export const IliacZoneCard = memo(function IliacZoneCard({
   testId,
 }: IliacZoneCardProps): React.ReactElement {
   return (
-    <Paper withBorder radius="md" shadow="sm" p="md" data-testid={testId}>
-      <Stack gap="sm">
-        <div>
-          <Title order={5} mb={2}>
-            {title}
-          </Title>
-          {subtitle ? (
-            <Text size="sm" c="dimmed">
-              {subtitle}
-            </Text>
-          ) : null}
-        </div>
-        {children}
-      </Stack>
-    </Paper>
+    <EMRContentSection
+      title={title}
+      subtitle={subtitle}
+      showAccent={false}
+      padding="lg"
+      {...(testId ? { 'data-testid': testId } : {})}
+    >
+      {children}
+    </EMRContentSection>
   );
 });
 

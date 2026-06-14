@@ -125,12 +125,15 @@ export const ILIAC_PELVIC_VENOUS_TEMPLATES: ReadonlyArray<IliacTemplate> = [
     context: { sex: 'female', symptoms: ['flank-pain', 'hematuria'], approaches: ['transabdominal'] },
     findings: Object.freeze({
       renal: {
-        peakVelocityRatio: 6,
+        peakVelocityRatio: 7.5,
         apDiameterRatio: 5,
-        aortoSmaAngleDeg: 28,
         beakSign: true,
         hilarVarices: true,
         confirmatoryImagingRecommended: true,
+      },
+      // SMA–aorta angle is classed under SMAS (< 25° positive), per protocol.
+      specialConsiderations: {
+        smas: { smaAortaAngleDeg: 22 },
       },
     }) as IliacPelvicVenousFindings,
     recommendations: [

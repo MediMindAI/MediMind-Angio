@@ -2,67 +2,55 @@
 
 .card {
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-sm);
+  box-shadow: var(--emr-shadow-card);
   overflow: hidden;
 }
 
 .head {
-  padding: 16px 20px;
-  background: var(--emr-gradient-section-header);
-  color: var(--emr-text-white);
-  border-bottom: 0;
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: transparent;
+  border-bottom: 1px solid var(--emr-border-color);
 }
 
-.head::after {
+.head::before {
   content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
-  pointer-events: none;
+  width: 4px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--emr-gradient-primary);
+  flex-shrink: 0;
 }
 
 .iconWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--emr-text-white);
+  color: var(--emr-secondary);
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  position: relative;
-  z-index: 1;
 }
 
 .title {
-  font-size: var(--emr-font-lg);
+  font-size: var(--emr-font-md);
   font-weight: 600;
-  color: var(--emr-text-white);
-  letter-spacing: -0.01em;
+  color: var(--emr-text-primary);
   margin: 0;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  position: relative;
-  z-index: 1;
 }
 
 .subtitle {
-  font-size: var(--emr-font-sm);
-  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
   margin: 2px 0 0 0;
-  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  position: relative;
-  z-index: 1;
 }
 
 .body {

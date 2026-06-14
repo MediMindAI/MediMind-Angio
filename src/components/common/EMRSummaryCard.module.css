@@ -1,0 +1,76 @@
+/**
+ * EMRSummaryCard Styles
+ *
+ * Unified card shell for all patient context summary cards.
+ * Polished design with gradient accent, elevated shadow, and smooth transitions.
+ */
+
+/* ==================== CARD CONTAINER ==================== */
+
+.card {
+  background: var(--emr-bg-card);
+  padding: 20px;
+  border-radius: var(--emr-border-radius-xl);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--emr-shadow-card);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Hover: subtle lift and deeper card shadow */
+.card:hover {
+  box-shadow: var(--emr-shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+/* Accent line - uses primary gradient for all cards */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--emr-gradient-primary);
+  border-radius: var(--emr-border-radius-xl) var(--emr-border-radius-xl) 0 0;
+}
+
+/* Subtle inner glow at top matching accent */
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(
+    180deg,
+    var(--emr-secondary-alpha-03) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border-radius: var(--emr-border-radius-xl) var(--emr-border-radius-xl) 0 0;
+}
+
+/* ==================== MOBILE RESPONSIVE ==================== */
+
+@media (max-width: 576px) {
+  .card {
+    padding: 14px;
+    border-radius: var(--emr-border-radius-xl);
+  }
+
+  .card::before {
+    border-radius: var(--emr-border-radius-xl) var(--emr-border-radius-xl) 0 0;
+  }
+
+  .card::after {
+    border-radius: var(--emr-border-radius-xl) var(--emr-border-radius-xl) 0 0;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}

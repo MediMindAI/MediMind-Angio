@@ -53,7 +53,7 @@ function hasBodySiteCode(obs: Observation[], code: string): boolean {
 
 describe('appendIliacObservations — audit data-loss + code fixes', () => {
   const FINDINGS: IliacPelvicVenousFindings = {
-    renal: { peakVelocityRatio: 6, confirmatoryImagingRecommended: true },
+    renal: { peakVelocityRatio: 8, confirmatoryImagingRecommended: true },
     caval: {
       'cfv-left': {
         patency: 'patent',
@@ -61,15 +61,21 @@ describe('appendIliacObservations — audit data-loss + code fixes', () => {
         confirmatoryImagingRecommended: true,
         velocityRatio: 3,
       },
-      'eiv-left': { patency: 'partial' },
+      // Per-level velocities (protocol multi-level capture) → derived ratio 3.0.
+      'eiv-left': { patency: 'partial', levels: { distal: { velocityCmS: 40 }, proximal: { velocityCmS: 120 } } },
     },
     gonadal: { left: { diameterMm: 8, refluxPresent: true } },
     plexus: { left: { largestDiameterMm: 9, refluxType: 'III' } },
     escapePoints: [{ id: 'e1', type: 'inguinal', side: 'left', diameterMm: 5 }],
+    specialConsiderations: {
+      smas: { smaAortaAngleDeg: 20 },
+      mals: { caInspiratoryPsvCmS: 100, caExpiratoryPsvCmS: 250, hookSign: true },
+    },
   };
   const CONTEXT: IliacContext = {
     sex: 'female',
     symptoms: ['chronic-pelvic-pain'],
+    riskFactors: ['endometriosis'],
     approaches: ['transvaginal'],
     positions: ['standing'],
     valsalvaPerformed: true,
@@ -108,6 +114,22 @@ describe('appendIliacObservations — audit data-loss + code fixes', () => {
     expect(hasBodySiteCode(obs, '4810005')).toBe(true); // uterine venous plexus
     // The discarded generic-vein placeholder must no longer appear.
     expect(hasBodySiteCode(obs, '29092000')).toBe(false);
+  });
+
+  it('emits Zone-0 risk factors (protocol)', () => {
+    expect(hasParam(obs, 'riskFactors')).toBe(true);
+  });
+
+  it('emits per-level caval velocities (protocol multi-level capture)', () => {
+    expect(hasParam(obs, 'cavalVelocity_distal')).toBe(true);
+    expect(hasParam(obs, 'cavalVelocity_proximal')).toBe(true);
+  });
+
+  it('emits SMAS + MALS arterial observations with mesenteric SNOMED body sites', () => {
+    expect(hasParam(obs, 'smaAortaAngleDeg')).toBe(true);
+    expect(hasParam(obs, 'caExpiratoryPsvCmS')).toBe(true);
+    expect(hasBodySiteCode(obs, '42258001')).toBe(true); // superior mesenteric artery (SMAS)
+    expect(hasBodySiteCode(obs, '57850000')).toBe(true); // celiac artery (MALS)
   });
 
   it('drops nothing for an empty study (no crash, no context observations)', () => {

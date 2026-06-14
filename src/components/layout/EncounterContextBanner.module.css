@@ -91,7 +91,7 @@
   align-items: center;
   justify-content: center;
   background: var(--emr-gradient-section-header);
-  color: #ffffff;
+  color: var(--emr-text-white);
   font-size: var(--emr-font-sm);
   font-weight: var(--emr-font-bold);
   letter-spacing: 0.04em;

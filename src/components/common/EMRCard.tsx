@@ -1,166 +1,193 @@
 // SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Box, Tooltip } from '@mantine/core';
-import type { ComponentType, ReactNode } from 'react';
-import styles from './EMRCard.module.css';
+import { Box, type BoxProps, type ElementProps } from '@mantine/core';
+import { forwardRef, type ReactNode } from 'react';
 
-/** Icon props type for Tabler icons */
-interface IconProps {
-  size?: number | string;
-  stroke?: number;
+export type EMRCardShadow = 'card' | 'card-hover' | 'none';
+export type EMRCardRibbon = 'gradient' | 'error' | 'none';
+
+export interface EMRCardProps
+  extends BoxProps,
+    ElementProps<'div', keyof BoxProps> {
+  /** Card content (any children — this is a GENERIC deck, not a structured card). */
+  children?: ReactNode;
+  /**
+   * Border radius. Defaults to the 12px Command deck radius
+   * (`--emr-border-radius-xl`). Pass a number/string to override.
+   */
+  radius?: number | string;
+  /**
+   * Resting shadow. `'card'` (default) = soft navy-tinted deck shadow,
+   * `'card-hover'` = the elevated shadow, `'none'` = flat (nested surfaces).
+   */
+  shadow?: EMRCardShadow;
+  /**
+   * Interactive cards elevate on hover and get a pointer cursor.
+   * Use for clickable list rows / KPI tiles / navigation cards.
+   */
+  interactive?: boolean;
+  /** Click handler (also implies interactive affordance when set). */
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  /**
+   * Render a subtle hairline border (`--emr-border-default`). Per Command,
+   * primary content decks are BORDERLESS — only set this for nested / inner
+   * secondary surfaces (a card inside a card, a bordered table wrapper).
+   */
+  withBorder?: boolean;
+  /**
+   * KPI/stat top ribbon. `'gradient'` = 3px brand-gradient ribbon,
+   * `'error'` = 3px error ribbon for critical tiles, `'none'` (default).
+   */
+  ribbon?: EMRCardRibbon;
+  /** Background override. Defaults to `var(--emr-bg-card)`. */
+  bg?: string;
+  /**
+   * The caller's CSS module owns the entire visual surface (background, radius,
+   * shadow, `:hover`, `::before` ribbons, animations, responsive radius, …).
+   * When true, EMRCard injects ZERO inline visual styles — it renders a pure
+   * semantic deck slot carrying only `className` / `style` / spacing props /
+   * `ref` / `data-*`, so the module class fully controls the look. Use this for
+   * components whose surface is styled via a `.module.css` class that inline
+   * background/borderRadius/boxShadow would otherwise clobber. The `radius`,
+   * `shadow`, `withBorder`, `ribbon`, and `bg` props are IGNORED in this mode;
+   * `interactive`/`onClick` still wire the click handler + pointer affordance
+   * but add no inline shadow (the module owns hover). Default false.
+   */
+  cssOwned?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-/** Action button configuration */
-export interface EMRCardAction {
-  /** Unique key for the action */
-  key: string;
-  /** Icon component for the button */
-  icon: ComponentType<IconProps>;
-  /** Tooltip label */
-  label: string;
-  /** Click handler */
-  onClick: () => void;
-  /** Button variant */
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'muted' | 'success';
-  /** Whether the action is hidden */
-  hidden?: boolean;
-}
+const SHADOW_VAR: Record<EMRCardShadow, string | undefined> = {
+  card: 'var(--emr-shadow-card)',
+  'card-hover': 'var(--emr-shadow-card-hover)',
+  none: undefined,
+};
 
-export interface EMRCardProps {
-  /** Card title */
-  title: string;
-  /** Card description (optional) */
-  description?: string;
-  /** Badges to display (render using EMRBadge) */
-  badges?: ReactNode;
-  /** Meta information (e.g., "Last modified: Dec 6, 2025") */
-  meta?: string;
-  /** Action buttons */
-  actions?: EMRCardAction[];
-  /** Click handler for the entire card */
-  onClick?: () => void;
-  /** Whether the card is archived/inactive */
-  archived?: boolean;
-  /** Enable entrance animation */
-  animated?: boolean;
-  /** Animation delay index (0-9) for staggered animations */
-  animationIndex?: number;
-  /** Test ID */
-  'data-testid'?: string;
-}
+const RIBBON_BG: Record<Exclude<EMRCardRibbon, 'none'>, string> = {
+  gradient: 'var(--emr-gradient-primary)',
+  error: 'var(--emr-error)',
+};
 
 /**
- * EMRCard - Reusable content card with badges and action buttons
+ * EMRCard — the generic "deck" surface for the Command design system.
  *
- * A standardized card component for displaying content items like forms,
- * documents, or templates. Features title, description, badges, meta info,
- * and configurable action buttons.
+ * This is the borderless, rounded, soft-shadowed white card that hosts ANY
+ * children. It is the wrapper replacement for raw `<Paper>` / generic `<Card>`:
+ *
+ * ```tsx
+ * // Before
+ * <Paper p="md" radius="md" withBorder>{children}</Paper>
+ * // After (primary deck — drop withBorder, it gets the Command shadow instead)
+ * <EMRCard p="md">{children}</EMRCard>
+ *
+ * // Clickable tile
+ * <EMRCard p="md" interactive onClick={handleOpen}>{children}</EMRCard>
+ *
+ * // KPI tile with gradient top ribbon
+ * <EMRCard p="lg" ribbon="gradient">{children}</EMRCard>
+ *
+ * // Nested inner surface (keep the hairline)
+ * <EMRCard p="sm" shadow="none" withBorder>{children}</EMRCard>
+ *
+ * // CSS-module-owned surface — the .module.css class owns background, radius,
+ * // shadow, :hover, ::before ribbon, animation. EMRCard injects NO inline
+ * // visual styles so the class is not clobbered. Conversion agents: use this
+ * // for any raw <Paper>/<Card> whose look lives entirely in a CSS module.
+ * <EMRCard cssOwned className={styles.notificationCard} p="md">{children}</EMRCard>
+ * ```
+ *
+ * For STRUCTURED cards with a title/badges/actions API use `EMRContentCard`;
+ * for a titled collapsible section use `EMRContentSection`. EMRCard is for the
+ * generic "put anything in a deck" case those two cannot express.
+ *
+ * Built on Mantine `Box`, so every spacing prop (`p`/`px`/`py`/`pt`/`pb`/`pl`/
+ * `pr`/`m`/`mt`/`mb`/...) and `data-*` attribute is forwarded natively.
  */
-export function EMRCard({
-  title,
-  description,
-  badges,
-  meta,
-  actions,
-  onClick,
-  archived = false,
-  animated = false,
-  animationIndex = 0,
-  'data-testid': dataTestId = 'emr-card',
-}: EMRCardProps): React.JSX.Element {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      onClick();
-    }
-  };
+export const EMRCard = forwardRef<HTMLDivElement, EMRCardProps>(function EMRCard(
+  {
+    children,
+    radius = 'var(--emr-border-radius-xl)',
+    shadow = 'card',
+    interactive = false,
+    onClick,
+    withBorder = false,
+    ribbon = 'none',
+    bg,
+    cssOwned = false,
+    className,
+    style,
+    ...rest
+  },
+  ref
+) {
+  const isInteractive = interactive || Boolean(onClick);
+  const restingShadow = SHADOW_VAR[shadow];
+  // Interactive cards rest on the card shadow and lift to card-hover; an
+  // explicit shadow="card-hover" keeps that elevated shadow at rest too.
+  // In cssOwned mode the module owns hover, so no inline hover shadow.
+  const hoverShadow = !cssOwned && isInteractive ? 'var(--emr-shadow-card-hover)' : undefined;
 
-  const handleActionClick = (e: React.MouseEvent, action: EMRCardAction) => {
-    e.stopPropagation();
-    action.onClick();
-  };
-
-  // Filter visible actions
-  const visibleActions = actions?.filter((action) => !action.hidden) ?? [];
-
-  // Build class names
-  const delayClassKey = `delay${animationIndex}` as const;
-  const cardClasses = [
-    styles.card,
-    onClick ? styles.clickable : '',
-    archived ? styles.archived : '',
-    animated ? styles.animated : '',
-    animated && animationIndex >= 0 && animationIndex <= 9 ? (styles[delayClassKey] ?? '') : '',
-  ].filter(Boolean).join(' ');
-
-  // Get action button class based on variant
-  const getActionClass = (variant: EMRCardAction['variant'] = 'secondary'): string => {
-    const variantClasses: Record<string, string> = {
-      primary: styles.actionPrimary ?? '',
-      secondary: styles.actionSecondary ?? '',
-      tertiary: styles.actionTertiary ?? '',
-      muted: styles.actionMuted ?? '',
-      success: styles.actionSuccess ?? '',
-    };
-    return `${styles.actionButton ?? ''} ${variantClasses[variant] ?? variantClasses.secondary ?? ''}`;
-  };
+  // cssOwned: the caller's CSS module fully owns the surface — render a pure
+  // semantic slot with NO inline visual styles (only the caller's style, the
+  // click affordance, and forwarded spacing/data-* props).
+  const cardStyle: React.CSSProperties = cssOwned
+    ? {
+        cursor: isInteractive ? 'pointer' : undefined,
+        ...style,
+      }
+    : {
+        position: 'relative',
+        background: bg ?? 'var(--emr-bg-card)',
+        borderRadius: typeof radius === 'number' ? `${radius}px` : radius,
+        boxShadow: restingShadow,
+        border: withBorder ? '1px solid var(--emr-border-default)' : undefined,
+        cursor: isInteractive ? 'pointer' : undefined,
+        transition: 'box-shadow 150ms ease, transform 150ms ease',
+        overflow: ribbon !== 'none' ? 'hidden' : undefined,
+        ...style,
+      };
 
   return (
     <Box
-      className={cardClasses}
+      ref={ref}
+      className={className}
+      style={cardStyle}
       onClick={onClick}
-      onKeyDown={handleKeyDown}
-      tabIndex={onClick ? 0 : undefined}
-      role={onClick ? 'button' : undefined}
-      aria-label={onClick ? `${title}${description ? ` - ${description}` : ''}` : undefined}
-      data-testid={dataTestId}
+      data-emr-card=""
+      data-interactive={isInteractive || undefined}
+      onMouseEnter={
+        hoverShadow
+          ? (e) => {
+              e.currentTarget.style.boxShadow = hoverShadow;
+            }
+          : undefined
+      }
+      onMouseLeave={
+        hoverShadow
+          ? (e) => {
+              e.currentTarget.style.boxShadow = restingShadow ?? '';
+            }
+          : undefined
+      }
+      {...rest}
     >
-      <div className={styles.content}>
-        {/* Header with title and description — fixed height for alignment */}
-        <div className={styles.header}>
-          <div className={styles.titleSection}>
-            <h3 className={styles.title}>{title}</h3>
-            <p className={styles.description}>{description || ' '}</p>
-          </div>
-        </div>
-
-        {/* Badges row */}
-        {badges && <div className={styles.badges}>{badges}</div>}
-
-        {/* Divider */}
-        {(meta || visibleActions.length > 0) && <hr className={styles.divider} />}
-
-        {/* Footer with meta and actions */}
-        {(meta || visibleActions.length > 0) && (
-          <div className={styles.footer}>
-            {meta && <span className={styles.meta}>{meta}</span>}
-            {visibleActions.length > 0 && (
-              <div className={styles.actions}>
-                {visibleActions.map((action) => (
-                  <Tooltip key={action.key} label={action.label} withArrow>
-                    <button
-                      type="button"
-                      className={getActionClass(action.variant)}
-                      onClick={(e) => handleActionClick(e, action)}
-                      data-testid={`action-${action.key}`}
-                    >
-                      <action.icon size={16} />
-                    </button>
-                  </Tooltip>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      {!cssOwned && ribbon !== 'none' && (
+        <Box
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            right: 0,
+            height: '3px',
+            background: RIBBON_BG[ribbon],
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      {children}
     </Box>
   );
-}
-
-// Re-export as EMRContentCard for drop-in compatibility with MediMind source
-export const EMRContentCard = EMRCard;
-export type EMRContentCardProps = EMRCardProps;
-export type EMRContentCardAction = EMRCardAction;
-
-export default EMRCard;
+});

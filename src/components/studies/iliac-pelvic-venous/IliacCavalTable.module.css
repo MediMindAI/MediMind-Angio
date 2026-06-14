@@ -1,41 +1,55 @@
-/* IliacCavalTable — iliac & caval vessel findings grid.
- * Mirrors CarotidSegmentTable.module.css: a fixed-column CSS grid with a single
- * header row and horizontal scroll on desktop, collapsing to stacked cards
- * (data-label pseudo-elements) under 992px. Replaces the previous flat
- * Group wrap="wrap" layout whose fixed-width controls overlapped (Part: audit H1). */
+/* IliacCavalTable — iliac & caval vessel findings grid (Command).
+ * A fixed-column CSS grid with a tinted header row and horizontal scroll on
+ * desktop, collapsing to stacked cards (data-label pseudo-elements) under
+ * 992px. The velocity column carries a per-level sub-grid: a small uppercase
+ * level tag + side-by-side velocity/diameter inputs, with the derived ratio
+ * shown as a chip below. Replaces the previous flat layout whose stacked
+ * full-sentence labels made the cell awkwardly tall (Part: audit H1). */
 
 .toolbar {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .tableWrap {
   width: 100%;
   overflow-x: auto;
+  /* The wide grid scrolls WITHIN this container — never the page. */
+  border-radius: var(--emr-border-radius-lg);
 }
 
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 130px 110px 120px 110px 84px 84px 110px 120px 64px 64px 84px;
-  gap: 8px;
-  align-items: start;
-  min-width: 1160px;
+  /* Select columns (patency/compressibility/thrombus/phasicity/valsalva) are
+   * sized to fit the long Georgian option labels — e.g. "ნაწილობრივ
+   * კომპრესირებადი", "მწვავე ქრონიკულზე" — rather than clipping them to a few
+   * glyphs. The grid scrolls within .tableWrap, so the extra width is fine. */
+  grid-template-columns: 132px 140px 172px 156px 232px 88px 136px 136px 64px 64px 88px;
+  gap: 10px;
+  align-items: center;
+  min-width: 1508px;
 }
 
 .headRow {
-  padding: 0 0 8px;
-  border-bottom: 1px solid var(--emr-border-color);
-  margin-bottom: 4px;
+  padding: 9px 8px;
+  background: color-mix(in srgb, var(--emr-primary) 5%, transparent);
+  border-radius: var(--emr-border-radius-lg);
+  margin-bottom: 2px;
 }
 
 .row {
-  padding: 6px 0;
-  border-radius: var(--emr-border-radius);
+  padding: 8px;
+  border-radius: var(--emr-border-radius-lg);
+  border-bottom: 1px solid var(--emr-border-color);
   transition: background-color 0.15s ease;
+}
+
+.row:last-of-type {
+  border-bottom: none;
 }
 
 .row:hover {
@@ -43,15 +57,13 @@
 }
 
 .headCell {
-  font-size: var(--emr-font-xs);
-  font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-secondary);
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-primary);
   text-transform: uppercase;
   letter-spacing: var(--emr-letter-spacing-wide);
   padding: 0 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .cell {
@@ -61,6 +73,7 @@
 .checkCell {
   display: flex;
   align-items: center;
+  justify-content: center;
   min-height: 36px;
 }
 
@@ -69,7 +82,7 @@
   align-items: center;
   min-height: 36px;
   font-size: var(--emr-font-sm);
-  font-weight: var(--emr-font-medium);
+  font-weight: var(--emr-font-semibold);
   color: var(--emr-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -79,9 +92,95 @@
 .muted {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 36px;
+  width: 100%;
   color: var(--emr-text-tertiary);
   font-size: var(--emr-font-xs);
+}
+
+/* Per-level velocity/diameter cluster inside the velocity column (protocol
+ * captures distal/mid/proximal velocities; the ratio chip below is derived). */
+.levelCluster {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.levelRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Small uppercase level tag (Distal / Mid / Proximal / SFJ). */
+.levelTag {
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Velocity + diameter sit side by side, evenly split. */
+.levelInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  align-items: end;
+}
+
+/* Keeps the single-input rows aligned to the same 2-column rhythm. */
+.diameterSpacer {
+  display: block;
+}
+
+/* Derived velocity-ratio chip below the level inputs. */
+.derivedRatio {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: var(--emr-border-radius);
+  background: color-mix(in srgb, var(--emr-primary) 6%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.derivedRatioLabel {
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+.derivedRatioValue {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+}
+
+/* Threshold breach — clinical danger coloring (carve-out, do not change). */
+.derivedRatioHigh {
+  background: color-mix(in srgb, var(--emr-text-danger) 8%, transparent);
+}
+
+.derivedRatioHigh .derivedRatioLabel,
+.derivedRatioHigh .derivedRatioValue {
+  color: var(--emr-text-danger, #c92a2a);
+}
+
+.bladderFlags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--emr-border-color);
 }
 
 @media (max-width: 992px) {
@@ -93,13 +192,18 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
-    padding: 12px;
+    gap: 12px;
+    padding: 14px;
     background: var(--emr-bg-card);
     border: 1px solid var(--emr-border-color);
     border-radius: var(--emr-border-radius-lg);
-    margin-bottom: 10px;
+    box-shadow: var(--emr-shadow-card);
+    margin-bottom: 12px;
     min-width: 0;
+  }
+
+  .row:hover {
+    background: var(--emr-bg-card);
   }
 
   .tableWrap {
@@ -111,20 +215,33 @@
     min-width: 0;
   }
 
+  .checkCell {
+    justify-content: flex-start;
+  }
+
   .segmentCell {
     font-size: var(--emr-font-md);
-    font-weight: var(--emr-font-semibold);
+    font-weight: var(--emr-font-bold);
+    color: var(--emr-primary);
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--emr-border-color);
+    width: 100%;
+  }
+
+  .levelInputs {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .cell[data-label]::before {
     content: attr(data-label);
     display: block;
-    font-size: var(--emr-font-xs);
+    font-size: var(--emr-font-2xs);
     color: var(--emr-text-secondary);
     text-transform: uppercase;
     letter-spacing: var(--emr-letter-spacing-wide);
-    font-weight: var(--emr-font-semibold);
-    margin-bottom: 4px;
+    font-weight: var(--emr-font-bold);
+    margin-bottom: 6px;
   }
 
   /* On mobile the CFV-only "—" placeholder cells add nothing — hide them. */

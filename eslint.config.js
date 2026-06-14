@@ -23,6 +23,7 @@ import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
+import noRawMantineVisual from './eslint-rules/no-raw-mantine-visual.mjs';
 
 export default tseslint.config(
   {
@@ -69,14 +70,27 @@ export default tseslint.config(
       'react/no-danger': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+        // `ignoreRestSiblings`: a prop destructured solely to EXCLUDE it from a
+        // `...rest` passthrough (the EMR wrappers do this so EMR-owned props
+        // aren't spread onto the underlying Mantine component) is intentional,
+        // not dead — this matches TypeScript's own noUnusedLocals behavior.
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
     },
   },
   // ─── src/** only: tightened rules ──────────────────────────────────────
   {
     files: ['src/**/*.{ts,tsx}'],
+    plugins: {
+      // "Command" design-system guard: flags raw Mantine VISUAL components
+      // imported outside the EMR wrapper dirs (use EMRButton/EMRModal/… instead).
+      // Promoted `warn` → `error` after the full Command-UI rebuild (2026-06-13)
+      // drove `npm run ui:orphans` to zero convertible raw-import files. New raw
+      // Mantine visuals now fail lint; build with the EMR wrappers.
+      'medimind-ui': { rules: { 'no-raw-mantine-visual': noRawMantineVisual } },
+    },
     rules: {
+      'medimind-ui/no-raw-mantine-visual': 'error',
       // Production code may not use bare `console.log`. `console.warn` and
       // `console.error` remain legal — they're how we surface fallback /
       // error paths the user-visible UI doesn't otherwise show.
@@ -103,6 +117,16 @@ export default tseslint.config(
     files: ['src/components/studies/carotid/narrativeGenerator.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'warn',
+    },
+  },
+  // ─── silentLog: intentional debug-level logger ───────────────────────
+  // This best-effort catch-block logger deliberately emits at `console.debug`
+  // (hidden in production browsers, visible under DevTools verbose) so failures
+  // leave a dev trail without surfacing to users — `debug` is the whole point.
+  {
+    files: ['src/utils/silentLog.ts'],
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error', 'debug'] }],
     },
   },
   // ─── scripts/** + test/**: CLI/test conveniences ──────────────────────

@@ -1,45 +1,66 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { useId, forwardRef, memo, useCallback, useMemo } from 'react';
-import { MultiSelect, Text } from '@mantine/core';
-import type { ComboboxData, ComboboxItem } from '@mantine/core';
-import type { EMRFieldBaseProps, EMRSelectOption } from './EMRFieldTypes';
+import React, { useId, forwardRef, useCallback, useMemo } from 'react';
+import type { ComboboxData } from '@mantine/core';
+import { MultiSelect } from '@mantine/core';
+import type { EMRMultiSelectProps, EMRSelectOption } from './EMRFieldTypes';
 import { EMRFieldWrapper } from './EMRFieldWrapper';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import './emr-fields.css';
 
-export interface EMRMultiSelectProps extends EMRFieldBaseProps {
-  data: EMRSelectOption[] | string[];
-  value?: string[];
-  defaultValue?: string[];
-  onChange?: (value: string[]) => void;
-  searchable?: boolean;
-  hidePickedOptions?: boolean;
-  maxDropdownHeight?: number;
-  nothingFoundMessage?: string;
-  maxValues?: number;
-}
+// Simple option type
+type SimpleOption = { value: string; label: string; disabled?: boolean };
+type GroupedOption = { group: string; items: SimpleOption[] };
 
-function renderOption({ option }: { option: ComboboxItem }): React.ReactNode {
-  return (
-    <Text
-      size="sm"
-      style={{
-        color: 'var(--emr-text-primary)',
-        fontWeight: 'var(--emr-font-normal)',
-      }}
-    >
-      {option.label}
-    </Text>
-  );
-}
+// Constants for dropdown sizing
+const ITEM_HEIGHT = 40; // Height per dropdown item (includes padding)
+const MIN_VISIBLE_ITEMS = 8; // Minimum items to show when dropdown has more items
+const DEFAULT_MAX_DROPDOWN_HEIGHT = ITEM_HEIGHT * MIN_VISIBLE_ITEMS; // 320px
 
+/**
+ * Convert EMRSelectOption[] or string[] to Mantine ComboboxData format
+ * @param data
+ */
 function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
-  if (data.length === 0) return [];
+  if (data.length === 0) {return [];}
+
+  // Check if it's string array
   if (typeof data[0] === 'string') {
     return (data as string[]).map((item) => ({ value: item, label: item }));
   }
-  return (data as EMRSelectOption[]).map((opt) => ({
+
+  // It's EMRSelectOption[]
+  const options = data as EMRSelectOption[];
+
+  // Group options if they have group property
+  const hasGroups = options.some((opt) => opt.group);
+
+  if (hasGroups) {
+    const groups: Record<string, SimpleOption[]> = {};
+    const ungrouped: SimpleOption[] = [];
+
+    options.forEach((opt) => {
+      const item: SimpleOption = { value: opt.value, label: opt.label, disabled: opt.disabled };
+      if (opt.group) {
+        (groups[opt.group] ??= []).push(item);
+      } else {
+        ungrouped.push(item);
+      }
+    });
+
+    const result: (SimpleOption | GroupedOption)[] = [...ungrouped];
+
+    // Add grouped items
+    Object.entries(groups).forEach(([group, items]) => {
+      result.push({ group, items });
+    });
+
+    return result;
+  }
+
+  // No groups, just return options
+  return options.map((opt) => ({
     value: opt.value,
     label: opt.label,
     disabled: opt.disabled,
@@ -47,14 +68,13 @@ function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
 }
 
 /**
- * EMRMultiSelect — multi-select dropdown wrapper that mirrors EMRSelect's
- * field wrapper, validation states, and visual language. Built on top of
- * Mantine's MultiSelect (same engine as EMRSelect) so all input fields on
- * a page render identically.
+ * EMRMultiSelect component
+ * A production-ready multi-select dropdown with consistent styling
  */
-export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectProps>(
+export const EMRMultiSelect = forwardRef<HTMLInputElement, EMRMultiSelectProps>(
   (
     {
+      // Field wrapper props
       id,
       name,
       label,
@@ -77,53 +97,77 @@ export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectPr
       'aria-describedby': ariaDescribedBy,
       clearable = true,
       fullWidth = true,
+
+      // MultiSelect specific props
       data,
       value,
       defaultValue,
       onChange,
+      onBlur,
       searchable = true,
-      hidePickedOptions = true,
-      maxDropdownHeight = 320,
       nothingFoundMessage,
+      maxDropdownHeight,
       maxValues,
+      hidePickedOptions = false,
+      // Destructured to keep EMR-owned props out of the Mantine `...rest`
+      // passthrough; not otherwise consumed by this wrapper.
+      dropdownPosition,
+      filter,
+
+      // Full Mantine MultiSelectProps passthrough (e.g. RoleSelector spreads
+      // arbitrary Mantine props). Spread onto the underlying MultiSelect BEFORE
+      // the owned controlled props so the wrapper's contract/defaults win.
+      ...rest
     },
-    ref,
+    ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
     const { t } = useTranslation();
-    const finalNothingFoundMessage =
-      nothingFoundMessage ?? t('common.noOptionsFound', 'No options found');
+    const finalNothingFoundMessage = nothingFoundMessage || t('common.noOptionsFound');
 
+    // Normalize options to Mantine format
     const normalizedData = useMemo(() => normalizeOptions(data), [data]);
 
+    // Calculate optimal dropdown height based on number of items
+    // If more than MIN_VISIBLE_ITEMS, show at least MIN_VISIBLE_ITEMS
+    // If fewer items, show all of them
+    const calculatedDropdownHeight = useMemo(() => {
+      if (maxDropdownHeight !== undefined) {
+        return maxDropdownHeight; // User override
+      }
+
+      const itemCount = data.length;
+      if (itemCount <= MIN_VISIBLE_ITEMS) {
+        // Show all items - no need to limit height
+        return itemCount * ITEM_HEIGHT + 16; // +16 for dropdown padding
+      }
+      return DEFAULT_MAX_DROPDOWN_HEIGHT;
+    }, [data.length, maxDropdownHeight]);
+
+    // Handle change event
     const handleChange = useCallback(
       (newValue: string[]) => {
-        onChange?.(newValue);
+        if (onChange) {
+          onChange(newValue);
+        }
       },
-      [onChange],
+      [onChange]
     );
 
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) return validationState;
-      if (error) return 'error';
-      if (successMessage) return 'success';
-      if (warningMessage) return 'warning';
+    // Determine validation state
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
+      if (successMessage) {return 'success';}
+      if (warningMessage) {return 'warning';}
       return 'default';
     };
 
     const state = getValidationState();
-    const hasMessage =
-      (state === 'error' && typeof error === 'string') ||
-      (state === 'success' && !!successMessage) ||
-      (state === 'warning' && !!warningMessage) ||
-      (state === 'default' && !!helpText);
-    const messageElementId = hasMessage
-      ? `${inputId}-${state === 'default' ? 'help' : state}`
-      : undefined;
-    const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
 
-    const heights: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
+    // Calculate heights based on size
+    const heights = {
       xs: 30,
       sm: 36,
       md: 42,
@@ -131,6 +175,7 @@ export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectPr
       xl: 54,
     };
 
+    // Build input classes
     const inputClasses = [
       'emr-input',
       'emr-multiselect-input',
@@ -142,12 +187,109 @@ export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectPr
       .filter(Boolean)
       .join(' ');
 
+    // Pull the visual-slot props out of the forwarded Mantine surface so we can
+    // MERGE them with the wrapper's own (rather than let the explicit JSX props
+    // clobber a caller's classNames/comboboxProps/styles).
+    const {
+      classNames: callerClassNames,
+      comboboxProps: callerComboboxProps,
+      styles: callerStyles,
+      ...restForward
+    } = rest;
+
+    const mergedClassNames =
+      typeof callerClassNames === 'function'
+        ? callerClassNames
+        : {
+            ...callerClassNames,
+            input: callerClassNames?.input
+              ? `${inputClasses} ${callerClassNames.input}`
+              : inputClasses,
+          };
+
+    const mergedComboboxProps = {
+      offset: 4,
+      shadow: 'md' as const,
+      ...callerComboboxProps,
+    };
+
+    const wrapperStyles = {
+      input: {
+        minHeight: heights[size],
+        fontSize: 'var(--emr-input-font-size)',
+        borderColor: state === 'error'
+          ? 'var(--emr-input-error-border)'
+          : state === 'success'
+          ? 'var(--emr-input-success-border)'
+          : state === 'warning'
+          ? 'var(--emr-input-warning-border)'
+          : 'var(--emr-input-border)',
+        borderRadius: 'var(--emr-input-border-radius)',
+        backgroundColor: state === 'error'
+          ? 'var(--emr-input-error-bg)'
+          : state === 'success'
+          ? 'var(--emr-input-success-bg)'
+          : state === 'warning'
+          ? 'var(--emr-input-warning-bg)'
+          : 'var(--emr-input-bg-solid)',
+        transition: 'var(--emr-input-transition)',
+        cursor: readOnly ? 'default' : 'pointer',
+        '&:focus': {
+          borderColor: state === 'error'
+            ? 'var(--emr-input-error-border)'
+            : 'var(--emr-input-border-focus)',
+          boxShadow: state === 'error'
+            ? 'var(--emr-input-error-glow)'
+            : state === 'success'
+            ? 'var(--emr-input-success-glow)'
+            : state === 'warning'
+            ? 'var(--emr-input-warning-glow)'
+            : 'var(--emr-input-focus-ring)',
+        },
+        '&:hover:not(:disabled):not(:focus)': {
+          borderColor: state === 'error'
+            ? 'var(--emr-input-error-border)'
+            : 'var(--emr-input-border-hover)',
+        },
+        '&:disabled': {
+          backgroundColor: 'var(--emr-input-bg-disabled)',
+          color: 'var(--emr-input-text-disabled)',
+          cursor: 'not-allowed',
+        },
+      },
+      wrapper: {
+        width: fullWidth ? '100%' : undefined,
+      },
+      dropdown: {
+        borderRadius: 'var(--emr-input-border-radius)',
+        border: '1px solid var(--emr-input-border)',
+        boxShadow: 'var(--emr-shadow-md)',
+      },
+      option: {
+        fontSize: 'var(--emr-input-font-size)',
+        padding: '10px 12px',
+        borderRadius: 'var(--emr-border-radius-sm)',
+      },
+    };
+
+    // Merge caller styles slot-by-slot (input slot deep-merged so the EMR look
+    // is preserved while caller overrides like minHeight win). Function-form
+    // caller styles are forwarded verbatim.
+    const mergedStyles =
+      typeof callerStyles === 'function'
+        ? callerStyles
+        : {
+            ...wrapperStyles,
+            ...callerStyles,
+            input: { ...wrapperStyles.input, ...callerStyles?.input },
+          };
+
     return (
       <EMRFieldWrapper
         label={label}
         required={required}
         helpText={helpText}
-        error={error ?? undefined}
+        error={error}
         successMessage={successMessage}
         warningMessage={warningMessage}
         validationState={validationState}
@@ -156,9 +298,9 @@ export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectPr
         className={className}
         style={style}
         htmlFor={inputId}
-        fieldId={inputId}
       >
         <MultiSelect
+          {...restForward}
           ref={ref}
           id={inputId}
           name={name}
@@ -166,77 +308,32 @@ export const EMRMultiSelect = memo(forwardRef<HTMLInputElement, EMRMultiSelectPr
           value={value}
           defaultValue={defaultValue}
           onChange={handleChange}
+          onBlur={onBlur}
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
           searchable={searchable}
-          hidePickedOptions={hidePickedOptions}
           nothingFoundMessage={finalNothingFoundMessage}
-          maxDropdownHeight={maxDropdownHeight}
+          maxDropdownHeight={calculatedDropdownHeight}
           clearable={clearable}
+          maxValues={maxValues}
+          hidePickedOptions={hidePickedOptions}
           required={required}
           aria-label={ariaLabel}
-          aria-describedby={computedAriaDescribedBy}
+          aria-describedby={ariaDescribedBy}
           aria-invalid={state === 'error'}
           data-testid={dataTestId}
           leftSection={leftSection}
           rightSection={rightSection}
           error={!!error}
-          maxValues={maxValues}
-          renderOption={renderOption}
-          comboboxProps={{
-            offset: 8,
-            shadow: 'md',
-            withinPortal: true,
-            zIndex: 10000,
-            position: 'bottom-start',
-            middlewares: { flip: true, shift: true },
-          }}
-          classNames={{ input: inputClasses }}
-          styles={{
-            input: {
-              minHeight: heights[size],
-              fontSize: 'var(--emr-input-font-size)',
-              borderColor:
-                state === 'error'
-                  ? 'var(--emr-input-error-border)'
-                  : state === 'success'
-                  ? 'var(--emr-input-success-border)'
-                  : state === 'warning'
-                  ? 'var(--emr-input-warning-border)'
-                  : 'var(--emr-input-border)',
-              borderRadius: 'var(--emr-input-border-radius)',
-              transition: 'var(--emr-input-transition)',
-              cursor: readOnly ? 'default' : 'text',
-              padding: '6px 10px',
-            },
-            wrapper: {
-              width: fullWidth ? '100%' : undefined,
-            },
-            pill: {
-              backgroundColor: 'var(--emr-secondary-alpha-10)',
-              color: 'var(--emr-secondary)',
-              fontWeight: 'var(--emr-font-medium)',
-              borderRadius: 'var(--emr-border-radius)',
-              border: '1px solid var(--emr-secondary-alpha-20)',
-            },
-            dropdown: {
-              borderRadius: 'var(--emr-input-border-radius)',
-              border: '1px solid var(--emr-input-border)',
-              boxShadow: 'var(--emr-shadow-md)',
-            },
-            option: {
-              fontSize: 'var(--emr-input-font-size)',
-              padding: '10px 12px',
-              borderRadius: 'var(--emr-border-radius-sm)',
-              color: 'var(--emr-text-primary)',
-            },
-          }}
+          comboboxProps={mergedComboboxProps}
+          classNames={mergedClassNames}
+          styles={mergedStyles}
         />
       </EMRFieldWrapper>
     );
-  },
-));
+  }
+);
 
 EMRMultiSelect.displayName = 'EMRMultiSelect';
 

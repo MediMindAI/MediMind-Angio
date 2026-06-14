@@ -1,0 +1,8 @@
+/* EMRCodeBadge - Standardized medical code badge styling */
+
+.codeBadge {
+  font-family: var(--emr-font-mono, 'Menlo', 'Monaco', 'Courier New', monospace);
+  font-weight: var(--emr-font-semibold);
+  letter-spacing: var(--emr-letter-spacing-wide);
+  text-transform: uppercase;
+}

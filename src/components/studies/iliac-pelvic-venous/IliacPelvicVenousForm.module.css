@@ -1,0 +1,59 @@
+/* IliacPelvicVenousForm — presentational layout helpers (Command).
+ * Field-group labels (uppercase letterspaced), per-side sub-deck headers, and
+ * checkbox-group framing. Layout/typography only — no data flow. */
+
+/* A small uppercase letterspaced label that introduces a group of fields. */
+.groupLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  margin: 0;
+}
+
+/* Side header inside a per-side sub-deck (Left / Right) — a navy chip. */
+.sideHeader {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: var(--emr-border-radius);
+  background: color-mix(in srgb, var(--emr-primary) 8%, transparent);
+  color: var(--emr-primary);
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+}
+
+/* Checkbox cluster framing: a hairline-topped row so flag groups read as a unit
+ * rather than floating loose under the inputs. */
+.flagGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--emr-border-color);
+}
+
+/* Escape-point row: aligned, gives the remove button room on the right. */
+.escapeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-bg-hover);
+}
+
+/* Helper caption above a tightly-grouped row of inputs. */
+.fieldHint {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+  margin: 0 0 6px 0;
+}

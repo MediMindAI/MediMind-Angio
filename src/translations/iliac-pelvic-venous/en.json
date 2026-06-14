@@ -33,21 +33,37 @@
       "plexus": { "title": "Pelvic venous plexus", "short": "Pelvic plexus" },
       "escape": { "title": "Escape points & extrapelvic varices", "short": "Escape points" },
       "extrapelvic": { "short": "Extrapelvic varices" },
+      "special": {
+        "title": "Special considerations (SMAS / MALS)",
+        "subtitle": "Arterial compression syndromes — interrogate MALS in hypermobile patients regardless of referral.",
+        "short": "Special considerations (SMAS / MALS)"
+      },
       "diagram": {
         "title": "Pelvic venous map",
         "subtitle": "Draw findings and add text labels directly on the illustration."
       },
       "impression": { "title": "Impression" }
     },
+    "special": {
+      "smas": "SMA syndrome (SMAS)",
+      "mals": "Median arcuate ligament syndrome (MALS)"
+    },
     "field": {
       "sex": "Sex",
       "symptoms": "Symptoms",
+      "riskFactors": "Risk factors",
       "approaches": "Approaches used",
       "positions": "Patient positions",
       "valsalva": "Valsalva performed",
       "peakVelocityRatio": "Peak-velocity ratio",
       "apDiameterRatio": "AP-diameter ratio",
       "aortoSmaAngle": "Aorto-SMA angle (°)",
+      "lrvLevels": "LRV velocities (cm/s) — proximal (IVC) · mid (pre-aortic) · distal (hilum)",
+      "lrvVelocityProximal": "Proximal LRV velocity",
+      "lrvVelocityMid": "Mid LRV velocity",
+      "lrvVelocityDistal": "Distal LRV velocity",
+      "hilarDiameterMm": "Hilar (distal) LRV diameter (mm)",
+      "retroAortic": "Retro-aortic left renal vein",
       "beakSign": "Beak sign",
       "hilarVarices": "Renal hilar varices",
       "confirmImaging": "Confirmatory imaging recommended",
@@ -57,11 +73,14 @@
       "compressibility": "Compressibility",
       "thrombus": "Thrombus",
       "velocityRatio": "Velocity ratio",
+      "velocityCmS": "Velocity (cm/s)",
       "stenosisPct": "Stenosis %",
       "phasicity": "Phasicity",
       "valsalvaResponse": "Valsalva response",
       "collaterals": "Collaterals",
       "reflux": "Reflux",
+      "bladderArtifact": "Bladder-distension artifact",
+      "remeasuredAfterVoiding": "Remeasured after voiding",
       "diameterMm": "Diameter (mm)",
       "refluxPresent": "Reflux present",
       "refluxTrigger": "Reflux trigger",
@@ -73,6 +92,12 @@
       "tortuosity": "Tortuosity",
       "crossingVeins": "Crossing (arcuate) veins",
       "crossPelvicCollateral": "Cross-pelvic collateral",
+      "smaAortaAngle": "SMA–aorta angle (°)",
+      "caInspiratoryPsv": "Celiac PSV — inspiration (cm/s)",
+      "caExpiratoryPsv": "Celiac PSV — expiration (cm/s)",
+      "chaPsv": "Common hepatic artery PSV (cm/s)",
+      "splenicPsv": "Splenic artery PSV (cm/s)",
+      "hookSign": "Hook-shaped celiac artery",
       "escapePoints": "Escape points",
       "escapePointType": "Point",
       "side": "Side",
@@ -80,8 +105,10 @@
     },
     "param": {
       "peakVelocityRatio": "LRV peak-velocity ratio",
-      "aortoSmaAngleDeg": "Aorto-SMA angle",
+      "smaAortaAngleDeg": "SMA–aorta angle",
       "velocityRatio": "Velocity ratio",
+      "velocityCmS": "Peak velocity",
+      "caPsvCmS": "Celiac artery PSV",
       "stenosisPct": "Stenosis percent",
       "diameterMm": "Vein diameter",
       "refluxDurationS": "Reflux duration",
@@ -89,8 +116,10 @@
     },
     "warn": {
       "ratio5": "≥ 5",
-      "angle35": "≤ 35°",
-      "dia6": "≥ 6 mm",
+      "ratio7": "≥ 7.0",
+      "angle25": "< 25°",
+      "gonadalDia5": "> 5 mm",
+      "psv200": "> 200 cm/s",
       "dia5": "≥ 5 mm",
       "dur1": "> 1 s",
       "velocityRatio": "≥ 2.5",
@@ -106,7 +135,30 @@
       "hematuria": "Hematuria",
       "vulvar-varices": "Vulvar varices",
       "leg-varices": "Leg varices",
-      "recurrent-varices": "Recurrent leg varices"
+      "recurrent-varices": "Recurrent leg varices",
+      "pelvic-pain": "Pelvic pain",
+      "cold-feet": "Cold feet",
+      "limb-swelling": "Lower-extremity swelling",
+      "leg-aching": "Aching / throbbing / stinging legs",
+      "hip-pain": "Hip pain",
+      "ibs": "Irritable bowel symptoms",
+      "hemorrhoids": "Hemorrhoids",
+      "menstrual-leg-pain": "Leg pain during menstruation",
+      "lower-abdominal-pain": "Lower abdominal pain",
+      "lower-back-pain": "Lower back pain",
+      "venous-claudication": "Venous claudication"
+    },
+    "riskFactor": {
+      "endometriosis": "Endometriosis",
+      "back-surgery-hardware": "Back surgery with hardware",
+      "adenomyosis": "Adenomyosis",
+      "nerve-injury": "Nerve injury",
+      "chronic-pid": "Chronic pelvic inflammatory disease",
+      "ovarian-remnant": "Ovarian remnant",
+      "fibroids": "Fibroids",
+      "ibs": "Irritable bowel syndrome",
+      "polycystic-ovaries": "Polycystic ovaries",
+      "retroverted-uterus": "Retroverted (tipped) uterus"
     },
     "approach": {
       "transabdominal": "Transabdominal",
@@ -114,10 +166,23 @@
       "transperineal": "Transperineal"
     },
     "position": {
-      "supine": "Supine",
+      "supine": "Supine (hips externally rotated, knee slightly bent)",
       "left-lateral": "Left lateral",
       "reverse-trendelenburg": "Reverse Trendelenburg",
-      "standing": "Standing"
+      "standing": "Standing",
+      "prone": "Prone",
+      "decubitus": "Decubitus"
+    },
+    "level": {
+      "sfj": "SFJ-level",
+      "distal": "Distal",
+      "mid": "Mid",
+      "proximal": "Proximal"
+    },
+    "severity": {
+      "none": "non-significant",
+      "moderate": "moderate",
+      "significant": "significant"
     },
     "patency": { "patent": "Patent", "partial": "Partial", "occluded": "Occluded" },
     "cavalCompressibility": {
@@ -165,19 +230,22 @@
     "narrative": {
       "ovarianReflux": "{side}: dilated, refluxing ovarian vein ({diameterMm} mm, reflux {durationS} s).",
       "plexusCongestion": "{side}: congested pelvic venous plexus (largest vein {diameterMm} mm).",
-      "cavalStenosis": "{side} {vessel}: stenosis {pct}% (velocity ratio {ratio}).",
+      "cavalStenosis": "{side} {vessel}: {severity} stenosis {pct}% (velocity ratio {ratio}).",
       "escapePoint": "{side}: pelvic escape point — {type}.",
       "normalSide": "{side}: no significant pelvic venous reflux or obstruction.",
       "sonographerComments": "Sonographer comments",
       "clinicianComments": "Clinician comments"
     },
     "conclusion": {
-      "nutcracker": "Left renal vein compression — nutcracker phenomenon suggested (screening).",
+      "nutcracker": "Left renal vein compression — nutcracker phenomenon suggested (velocity ratio ≥ 7.0; screening).",
       "confirmRenal": "Confirm renal vein compression with CT/MR venography.",
       "ivcObstruction": "Inferior vena cava obstruction identified.",
       "mayThurner": "{side} common iliac vein compression — May-Thurner pattern (screening).",
       "confirmIliac": "Confirm iliac obstruction with IVUS or CT/MR venography.",
       "pelvicCongestion": "Pelvic venous reflux consistent with pelvic congestion.",
+      "smas": "Superior mesenteric artery syndrome suspected (SMA–aorta angle {angle}°, < 25°).",
+      "smasWithNutcracker": "SMA syndrome is commonly associated with left renal vein (nutcracker) compression — correlate.",
+      "mals": "Median arcuate ligament syndrome suspected (celiac expiratory PSV {expPsv} cm/s).",
       "normal": "No pelvic venous reflux or obstruction identified."
     },
     "findings": {

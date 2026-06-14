@@ -5,11 +5,12 @@
  * EMRCollapsibleSection - Standardized Collapsible Section Component
  *
  * A unified collapsible section component with a bold blue gradient header.
+ * Used for form sections in patient history forms (ER Reception, Anamnesis, etc.)
  *
  * Features:
- * - Unified blue gradient header (uses --emr-gradient-section-header)
+ * - Unified blue gradient header (uses --emr-gradient-primary)
  * - Smooth collapse animation with chevron rotation
- * - Dark mode support (automatic via theme variables)
+ * - Dark mode support
  * - Mobile responsive
  * - Accessible (keyboard navigation, ARIA)
  */
@@ -32,7 +33,7 @@ export interface EMRCollapsibleSectionProps {
   defaultOpen?: boolean;
   /** Test ID for testing purposes */
   testId?: string;
-  /** Optional content rendered on the right side of the header */
+  /** Optional content rendered on the right side of the header (e.g. SaveStatusIndicator) */
   rightSection?: React.ReactNode;
   /** When true, forces the section open (one-way: only opens, never auto-closes) */
   forceOpen?: boolean;
@@ -43,13 +44,39 @@ export interface EMRCollapsibleSectionProps {
   /** Increment to collapse this section (signal-based collapse all) */
   collapseAllSignal?: number;
   /** Header visual weight.
-   *  - 'primary' (default): bold blue gradient header
-   *  - 'soft': light surface with dark text — use when nested */
+   *  - 'primary' (default): bold blue gradient header — use at the top level.
+   *  - 'soft': light surface with dark text — use when nested inside another
+   *    container so the section reads as a child, not a peer. */
   variant?: 'primary' | 'soft';
 }
 
 /**
  * EMRCollapsibleSection - Unified blue gradient collapsible section
+ *
+ * @param root0
+ * @param root0.title
+ * @param root0.subtitle
+ * @param root0.icon
+ * @param root0.children
+ * @param root0.defaultOpen
+ * @param root0.testId
+ * @example
+ * ```tsx
+ * import { EMRCollapsibleSection } from '../common/EMRCollapsibleSection';
+ * import { IconClipboardList } from '@tabler/icons-react';
+ *
+ * <EMRCollapsibleSection
+ *   title="რეგისტრაციის მონაცემები"
+ *   icon={IconClipboardList}
+ *   defaultOpen={true}
+ * >
+ *   <Grid gutter="md">
+ *     <Grid.Col span={6}>
+ *       <TextInput label="Field 1" />
+ *     </Grid.Col>
+ *   </Grid>
+ * </EMRCollapsibleSection>
+ * ```
  */
 export function EMRCollapsibleSection({
   title,
@@ -129,7 +156,7 @@ export function EMRCollapsibleSection({
       radius="sm"
       data-testid={testId}
     >
-      {/* Header */}
+      {/* Header - 'primary' (blue gradient) by default; 'soft' for nested use */}
       <Box
         className={`${classes.sectionHeader} ${variant === 'soft' ? classes.sectionHeaderSoft : ''}`}
         onClick={handleToggle}
@@ -157,7 +184,7 @@ export function EMRCollapsibleSection({
             {subtitle && <Text className={classes.sectionSubtitle}>{subtitle}</Text>}
           </Box>
 
-          {/* Optional right section */}
+          {/* Optional right section (e.g. save status indicator) */}
           {rightSection && (
             <Box style={{ marginLeft: 'auto' }} onClick={(e) => e.stopPropagation()}>
               {rightSection}

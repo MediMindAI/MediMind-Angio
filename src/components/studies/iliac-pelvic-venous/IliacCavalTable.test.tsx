@@ -26,7 +26,7 @@ describe('IliacCavalTable', () => {
   it("shows only the selected side's rows in 'right' view", () => {
     render(
       <Wrap>
-        <IliacCavalTable findings={{}} view="right" onViewChange={vi.fn()} onChange={vi.fn()} />
+        <IliacCavalTable findings={{}} view="right" onViewChange={vi.fn()} onChange={vi.fn()} onLevelChange={vi.fn()} />
       </Wrap>,
     );
     expect(screen.getByTestId('iliac-caval-row-cfv-right')).toBeInTheDocument();
@@ -34,14 +34,16 @@ describe('IliacCavalTable', () => {
     expect(screen.getByTestId('iliac-caval-row-ivc')).toBeInTheDocument();
   });
 
-  it('disables velocity/stenosis inputs on an occluded segment (M3 lock)', () => {
+  it('disables per-level velocity + stenosis inputs on an occluded segment (M3 lock)', () => {
     const findings: IliacCavalFindings = { 'cfv-right': { patency: 'occluded' } };
     render(
       <Wrap>
-        <IliacCavalTable findings={findings} view="right" onViewChange={vi.fn()} onChange={vi.fn()} />
+        <IliacCavalTable findings={findings} view="right" onViewChange={vi.fn()} onChange={vi.fn()} onLevelChange={vi.fn()} />
       </Wrap>,
     );
-    expect(screen.getByTestId('iliac-cfv-right-velocity-ratio')).toBeDisabled();
+    // Velocity is now captured per anatomical level (CFV: proximal + SFJ); an
+    // occluded vein disables every level input and the stenosis input.
+    expect(screen.getByTestId('iliac-cfv-right-vel-proximal')).toBeDisabled();
     expect(screen.getByTestId('iliac-cfv-right-stenosis')).toBeDisabled();
   });
 
@@ -49,7 +51,7 @@ describe('IliacCavalTable', () => {
     const findings: IliacCavalFindings = { 'cfv-right': { compressibility: 'full' } };
     render(
       <Wrap>
-        <IliacCavalTable findings={findings} view="right" onViewChange={vi.fn()} onChange={vi.fn()} />
+        <IliacCavalTable findings={findings} view="right" onViewChange={vi.fn()} onChange={vi.fn()} onLevelChange={vi.fn()} />
       </Wrap>,
     );
     // EMRSelect renders the testid on its input element.

@@ -14,22 +14,16 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import {
-  Stack,
-  Group,
-  Grid,
-  Paper,
-  Text,
-  Select,
-  NumberInput,
-  Checkbox,
-  MultiSelect,
-  Textarea,
-  ActionIcon,
-  Menu,
-} from '@mantine/core';
+import { Stack, Group, Grid, Text, Menu } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconStack2, IconTrash, IconRefresh } from '@tabler/icons-react';
+import {
+  EMRSelect,
+  EMRNumberInput,
+  EMRCheckbox,
+  EMRMultiSelect,
+  EMRTextarea,
+} from '../../shared/EMRFormFields';
 import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
 import type { DrawingStroke } from '../../../types/drawing';
 import { useTranslation } from '../../../contexts/TranslationContext';
@@ -45,7 +39,7 @@ import type { SvpClassification } from '../../../types/svp';
 import type { PatientPosition } from '../../../types/patient-position';
 import type { EncounterDraft } from '../../../types/encounter';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog, EMRButton } from '../../common';
+import { ConfirmDialog, EMRButton, EMRCard, EMRIconButton } from '../../common';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
@@ -62,15 +56,21 @@ import {
   type IliacPelvicVenousFindings,
   type IliacCavalFinding,
   type IliacCavalFullId,
+  type CavalLevel,
   type RenalVeinFinding,
+  type LrvLevel,
+  type VesselLevelMeasurement,
   type GonadalVeinFinding,
   type PelvicPlexusFinding,
   type EscapePoint,
   type EscapePointType,
   type ExtrapelvicVarices,
+  type SmasFinding,
+  type MalsFinding,
   type Side,
   type Sex,
   type Symptom,
+  type RiskFactor,
   type Approach,
   type StudyPositionValue,
   type RefluxTrigger,
@@ -79,18 +79,23 @@ import {
   type Tortuosity,
   SEX_VALUES,
   SYMPTOM_VALUES,
+  RISK_FACTOR_VALUES,
   APPROACH_VALUES,
   POSITION_VALUES,
+  LRV_LEVELS,
   REFLUX_TRIGGER_VALUES,
   REFLUX_TYPE_VALUES,
   FLOW_DIRECTION_VALUES,
   TORTUOSITY_VALUES,
   ESCAPE_POINT_VALUES,
   ILIAC_THRESHOLDS,
+  deriveCavalVelocityRatio,
+  migrateIliacFindingsV1toV2,
 } from './config';
 import { IliacZoneCard } from './IliacZoneCard';
 import { IliacCavalTable, type CavalView } from './IliacCavalTable';
 import { ILIAC_PELVIC_VENOUS_TEMPLATES, type IliacTemplate } from './templates';
+import classes from './IliacPelvicVenousForm.module.css';
 
 const STUDY_ID = 'iliacPelvicVenous';
 
@@ -105,8 +110,8 @@ interface IliacStudyFields {
   readonly quality?: StudyQuality;
 }
 
-export interface IliacPelvicVenousFormStateV1 extends IliacStudyFields {
-  readonly schemaVersion: 1;
+export interface IliacPelvicVenousFormStateV2 extends IliacStudyFields {
+  readonly schemaVersion: 2;
   readonly studyType: 'iliacPelvicVenous';
   readonly context: IliacContext;
   readonly findings: IliacPelvicVenousFindings;
@@ -126,6 +131,10 @@ type Action =
   | { type: 'SET_RENAL'; patch: Partial<RenalVeinFinding> }
   | { type: 'SET_CAVAL_VIEW'; view: CavalView }
   | { type: 'SET_CAVAL_FINDING'; id: IliacCavalFullId; patch: Partial<IliacCavalFinding> }
+  | { type: 'SET_CAVAL_LEVEL'; id: IliacCavalFullId; level: CavalLevel; patch: Partial<VesselLevelMeasurement> }
+  | { type: 'SET_RENAL_LEVEL'; level: LrvLevel; patch: Partial<VesselLevelMeasurement> }
+  | { type: 'SET_SMAS'; patch: Partial<SmasFinding> }
+  | { type: 'SET_MALS'; patch: Partial<MalsFinding> }
   | { type: 'SET_GONADAL'; side: Side; patch: Partial<GonadalVeinFinding> }
   | { type: 'SET_PLEXUS'; side: Side; patch: Partial<PelvicPlexusFinding> }
   | { type: 'ADD_ESCAPE_POINT'; point: EscapePoint }
@@ -150,16 +159,16 @@ type Action =
   | { type: 'UNDO_STROKE' }
   | { type: 'CLEAR_DRAWINGS' }
   | { type: 'RESET' }
-  | { type: 'HYDRATE'; state: IliacPelvicVenousFormStateV1 };
+  | { type: 'HYDRATE'; state: IliacPelvicVenousFormStateV2 };
 
 function defaultIliacCpt(): CptCode {
   const cpt = defaultCptForStudy('iliacPelvicVenous');
   return { code: cpt.code, display: cptDisplay(cpt, 'en') };
 }
 
-function initialState(): IliacPelvicVenousFormStateV1 {
+function initialState(): IliacPelvicVenousFormStateV2 {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     studyType: 'iliacPelvicVenous',
     studyDate: localDateToIso(new Date()) ?? '',
     cptCode: defaultIliacCpt(),
@@ -187,9 +196,9 @@ function mergeSide<T extends object>(
 }
 
 function reducer(
-  state: IliacPelvicVenousFormStateV1,
+  state: IliacPelvicVenousFormStateV2,
   action: Action,
-): IliacPelvicVenousFormStateV1 {
+): IliacPelvicVenousFormStateV2 {
   switch (action.type) {
     case 'SET_CONTEXT':
       return { ...state, context: { ...state.context, ...action.patch } };
@@ -211,6 +220,66 @@ function reducer(
         },
       };
     }
+    case 'SET_CAVAL_LEVEL': {
+      const prevCaval = state.findings.caval ?? {};
+      const prevFinding = prevCaval[action.id] ?? {};
+      const prevLevels = prevFinding.levels ?? {};
+      const merged: IliacCavalFinding = {
+        ...prevFinding,
+        levels: {
+          ...prevLevels,
+          [action.level]: { ...(prevLevels[action.level] ?? {}), ...action.patch },
+        },
+      };
+      // Keep the flat ratio in sync so FHIR/PDF/narrative (which read
+      // velocityRatio) stay correct; the derive returns undefined with < 2
+      // measured levels, leaving any prior manual value untouched.
+      const derived = deriveCavalVelocityRatio(merged);
+      const next = derived !== undefined ? { ...merged, velocityRatio: derived } : merged;
+      return {
+        ...state,
+        findings: { ...state.findings, caval: { ...prevCaval, [action.id]: next } },
+      };
+    }
+    case 'SET_RENAL_LEVEL': {
+      const prevRenal = state.findings.renal ?? {};
+      const prevLevels = prevRenal.levels ?? {};
+      return {
+        ...state,
+        findings: {
+          ...state.findings,
+          renal: {
+            ...prevRenal,
+            levels: {
+              ...prevLevels,
+              [action.level]: { ...(prevLevels[action.level] ?? {}), ...action.patch },
+            },
+          },
+        },
+      };
+    }
+    case 'SET_SMAS':
+      return {
+        ...state,
+        findings: {
+          ...state.findings,
+          specialConsiderations: {
+            ...state.findings.specialConsiderations,
+            smas: { ...state.findings.specialConsiderations?.smas, ...action.patch },
+          },
+        },
+      };
+    case 'SET_MALS':
+      return {
+        ...state,
+        findings: {
+          ...state.findings,
+          specialConsiderations: {
+            ...state.findings.specialConsiderations,
+            mals: { ...state.findings.specialConsiderations?.mals, ...action.patch },
+          },
+        },
+      };
     case 'SET_GONADAL':
       return {
         ...state,
@@ -320,30 +389,46 @@ function structuredCloneFindings(f: IliacPelvicVenousFindings): IliacPelvicVenou
       : undefined,
     escapePoints: f.escapePoints ? f.escapePoints.map((p) => ({ ...p })) : undefined,
     extrapelvic: f.extrapelvic ? { ...f.extrapelvic } : undefined,
+    specialConsiderations: f.specialConsiderations
+      ? {
+          smas: f.specialConsiderations.smas ? { ...f.specialConsiderations.smas } : undefined,
+          mals: f.specialConsiderations.mals ? { ...f.specialConsiderations.mals } : undefined,
+        }
+      : undefined,
   };
 }
 
-function isHydratableState(value: unknown): value is IliacPelvicVenousFormStateV1 {
+function isHydratableState(value: unknown): value is IliacPelvicVenousFormStateV2 {
   if (typeof value !== 'object' || value === null) return false;
-  const v = value as Partial<IliacPelvicVenousFormStateV1>;
-  return v.schemaVersion === 1 && v.studyType === 'iliacPelvicVenous';
+  const v = value as { schemaVersion?: unknown; studyType?: unknown };
+  // Accept BOTH V1 and V2 — a V1 draft is migrated (not rejected → wiped) by
+  // normalizeHydratedState. Rejecting stale V1 would silently lose a clinician's
+  // in-flight encounter.
+  return (
+    (v.schemaVersion === 1 || v.schemaVersion === 2) && v.studyType === 'iliacPelvicVenous'
+  );
 }
 
-function normalizeHydratedState(raw: IliacPelvicVenousFormStateV1): IliacPelvicVenousFormStateV1 {
-  const legacy = raw as IliacPelvicVenousFormStateV1 & { header?: unknown };
+function normalizeHydratedState(raw: IliacPelvicVenousFormStateV2): IliacPelvicVenousFormStateV2 {
+  const legacy = raw as IliacPelvicVenousFormStateV2 & { header?: unknown };
+  let base: IliacPelvicVenousFormStateV2;
   if ('header' in legacy) {
     const { header: _h, ...rest } = legacy;
     void _h;
-    return { ...initialState(), ...(rest as Partial<IliacPelvicVenousFormStateV1>) } as IliacPelvicVenousFormStateV1;
+    base = { ...initialState(), ...(rest as Partial<IliacPelvicVenousFormStateV2>) };
+  } else {
+    // Backfill any fields a partial/older blob is missing (cavalView, svp, ceap,
+    // drawings) by spreading over a fresh initialState (audit L2). JSON has no
+    // `undefined`, so present-but-undefined overwrites are not a concern here.
+    base = { ...initialState(), ...raw, drawings: raw.drawings ?? [] };
   }
-  // Backfill any fields a partial/older blob is missing (cavalView, svp, ceap,
-  // drawings) by spreading over a fresh initialState (audit L2). JSON has no
-  // `undefined`, so present-but-undefined overwrites are not a concern here.
-  return { ...initialState(), ...raw, drawings: raw.drawings ?? [] };
+  // V1→V2 findings migration (caval per-level shape + renal SMA-angle → SMAS) and
+  // version stamp. Idempotent, so re-hydrating a V2 draft is a no-op.
+  return { ...base, schemaVersion: 2, findings: migrateIliacFindingsV1toV2(base.findings) };
 }
 
 export function stateToFormState(
-  s: IliacPelvicVenousFormStateV1,
+  s: IliacPelvicVenousFormStateV2,
   encounter: EncounterDraft | null,
 ): FormState {
   const eh = encounter?.header;
@@ -394,7 +479,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
   const [state, dispatch] = useReducer(reducer, undefined, () => {
     const fromEncounter = encounter?.studies?.iliacPelvicVenous;
     if (isHydratableState(fromEncounter)) return normalizeHydratedState(fromEncounter);
-    const persisted = loadDraft<IliacPelvicVenousFormStateV1>(STUDY_ID);
+    const persisted = loadDraft<IliacPelvicVenousFormStateV2>(STUDY_ID);
     if (isHydratableState(persisted)) return normalizeHydratedState(persisted);
     return initialState();
   });
@@ -408,7 +493,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
   }, [encounter?.studies?.iliacPelvicVenous]);
 
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
-  const lastPersistedRef = useRef<IliacPelvicVenousFormStateV1 | null>(null);
+  const lastPersistedRef = useRef<IliacPelvicVenousFormStateV2 | null>(null);
   useEffect(() => {
     if (!encounter) return;
     if (lastPersistedRef.current === null) {
@@ -417,7 +502,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
     }
     if (lastPersistedRef.current === state) return;
     lastPersistedRef.current = state;
-    setStudyState<IliacPelvicVenousFormStateV1>('iliacPelvicVenous', state);
+    setStudyState<IliacPelvicVenousFormStateV2>('iliacPelvicVenous', state);
     setLastSavedAt(new Date());
   }, [encounter, setStudyState, state]);
 
@@ -439,6 +524,13 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
       !!(f.plexus && Object.keys(f.plexus).length > 0) ||
       !!(f.escapePoints && f.escapePoints.length > 0) ||
       !!(f.extrapelvic && Object.values(f.extrapelvic).some(Boolean)) ||
+      !!(
+        f.specialConsiderations &&
+        ((f.specialConsiderations.smas &&
+          Object.keys(f.specialConsiderations.smas).length > 0) ||
+          (f.specialConsiderations.mals &&
+            Object.keys(f.specialConsiderations.mals).length > 0))
+      ) ||
       !!(state.context.symptoms && state.context.symptoms.length > 0) ||
       !!(
         svp &&
@@ -454,12 +546,21 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
   const setRenal = useCallback((patch: Partial<RenalVeinFinding>) => {
     dispatch({ type: 'SET_RENAL', patch });
   }, []);
+  const setRenalLevel = useCallback((level: LrvLevel, patch: Partial<VesselLevelMeasurement>) => {
+    dispatch({ type: 'SET_RENAL_LEVEL', level, patch });
+  }, []);
   const setCavalView = useCallback((view: CavalView) => {
     dispatch({ type: 'SET_CAVAL_VIEW', view });
   }, []);
   const setCavalFinding = useCallback((id: IliacCavalFullId, patch: Partial<IliacCavalFinding>) => {
     dispatch({ type: 'SET_CAVAL_FINDING', id, patch });
   }, []);
+  const setCavalLevel = useCallback(
+    (id: IliacCavalFullId, level: CavalLevel, patch: Partial<VesselLevelMeasurement>) => {
+      dispatch({ type: 'SET_CAVAL_LEVEL', id, level, patch });
+    },
+    [],
+  );
   const setGonadal = useCallback((side: Side, patch: Partial<GonadalVeinFinding>) => {
     dispatch({ type: 'SET_GONADAL', side, patch });
   }, []);
@@ -468,6 +569,12 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
   }, []);
   const setExtrapelvic = useCallback((patch: Partial<ExtrapelvicVarices>) => {
     dispatch({ type: 'SET_EXTRAPELVIC', patch });
+  }, []);
+  const setSmas = useCallback((patch: Partial<SmasFinding>) => {
+    dispatch({ type: 'SET_SMAS', patch });
+  }, []);
+  const setMals = useCallback((patch: Partial<MalsFinding>) => {
+    dispatch({ type: 'SET_MALS', patch });
   }, []);
   const handleCeap = useCallback((ceap: CeapClassification | undefined) => {
     dispatch({ type: 'SET_CEAP', ceap });
@@ -544,6 +651,8 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
   );
 
   const renal = state.findings.renal ?? {};
+  const smas = state.findings.specialConsiderations?.smas ?? {};
+  const mals = state.findings.specialConsiderations?.mals ?? {};
 
   return (
     <Stack gap="md" data-testid="iliac-pelvic-venous-form">
@@ -582,7 +691,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
       >
         <Grid>
           <Grid.Col span={{ base: 12, sm: 4 }}>
-            <Select
+            <EMRSelect
               label={t('iliacPelvicVenous.field.sex', 'Sex')}
               data={opts(SEX_VALUES, 'sex')}
               value={state.context.sex ?? null}
@@ -590,7 +699,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 8 }}>
-            <MultiSelect
+            <EMRMultiSelect
               label={t('iliacPelvicVenous.field.symptoms', 'Symptoms')}
               data={opts(SYMPTOM_VALUES, 'symptom')}
               value={[...(state.context.symptoms ?? [])]}
@@ -599,8 +708,18 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
               clearable
             />
           </Grid.Col>
+          <Grid.Col span={12}>
+            <EMRMultiSelect
+              label={t('iliacPelvicVenous.field.riskFactors', 'Risk factors')}
+              data={opts(RISK_FACTOR_VALUES, 'riskFactor')}
+              value={[...(state.context.riskFactors ?? [])]}
+              onChange={(v) => setContext({ riskFactors: v as RiskFactor[] })}
+              searchable
+              clearable
+            />
+          </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <MultiSelect
+            <EMRMultiSelect
               label={t('iliacPelvicVenous.field.approaches', 'Approaches used')}
               data={opts(APPROACH_VALUES, 'approach')}
               value={[...(state.context.approaches ?? [])]}
@@ -608,7 +727,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <MultiSelect
+            <EMRMultiSelect
               label={t('iliacPelvicVenous.field.positions', 'Patient positions')}
               data={opts(POSITION_VALUES, 'position')}
               value={[...(state.context.positions ?? [])]}
@@ -616,10 +735,10 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             />
           </Grid.Col>
           <Grid.Col span={12}>
-            <Checkbox
+            <EMRCheckbox
               label={t('iliacPelvicVenous.field.valsalva', 'Valsalva performed')}
               checked={state.context.valsalvaPerformed ?? false}
-              onChange={(e) => setContext({ valsalvaPerformed: e.currentTarget.checked })}
+              onChange={(checked) => setContext({ valsalvaPerformed: checked })}
             />
           </Grid.Col>
         </Grid>
@@ -636,7 +755,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
       >
         <Grid>
           <Grid.Col span={{ base: 6, sm: 4 }}>
-            <NumberInput
+            <EMRNumberInput
               label={t('iliacPelvicVenous.field.peakVelocityRatio', 'Peak-velocity ratio')}
               value={renal.peakVelocityRatio ?? ''}
               onChange={(v) => setRenal({ peakVelocityRatio: toNum(v) })}
@@ -646,13 +765,13 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
               decimalScale={1}
               error={
                 (renal.peakVelocityRatio ?? 0) >= ILIAC_THRESHOLDS.renalPeakVelocityRatio
-                  ? t('iliacPelvicVenous.warn.ratio5', '≥ 5')
+                  ? t('iliacPelvicVenous.warn.ratio7', '≥ 7.0')
                   : undefined
               }
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, sm: 4 }}>
-            <NumberInput
+            <EMRNumberInput
               label={t('iliacPelvicVenous.field.apDiameterRatio', 'AP-diameter ratio')}
               value={renal.apDiameterRatio ?? ''}
               onChange={(v) => setRenal({ apDiameterRatio: toNum(v) })}
@@ -668,39 +787,61 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, sm: 4 }}>
-            <NumberInput
-              label={t('iliacPelvicVenous.field.aortoSmaAngle', 'Aorto-SMA angle (°)')}
-              value={renal.aortoSmaAngleDeg ?? ''}
-              onChange={(v) => setRenal({ aortoSmaAngleDeg: toNum(v) })}
+            <EMRNumberInput
+              label={t('iliacPelvicVenous.field.hilarDiameterMm', 'Hilar (distal) LRV diameter (mm)')}
+              value={renal.levels?.distal?.diameterMm ?? ''}
+              onChange={(v) => setRenalLevel('distal', { diameterMm: toNum(v) })}
               min={0}
-              max={180}
-              step={1}
-              error={
-                renal.aortoSmaAngleDeg !== undefined &&
-                renal.aortoSmaAngleDeg <= ILIAC_THRESHOLDS.renalAortoSmaAngleDeg
-                  ? t('iliacPelvicVenous.warn.angle35', '≤ 35°')
-                  : undefined
-              }
+              max={30}
+              step={0.1}
+              decimalScale={1}
             />
           </Grid.Col>
           <Grid.Col span={12}>
-            <Group gap="lg">
-              <Checkbox
+            <Text className={classes.fieldHint}>
+              {t(
+                'iliacPelvicVenous.field.lrvLevels',
+                'LRV velocities (cm/s) — proximal (IVC) · mid (pre-aortic) · distal (hilum)',
+              )}
+            </Text>
+            <Group gap="sm" grow>
+              {LRV_LEVELS.map((lvl) => (
+                <EMRNumberInput
+                  key={lvl}
+                  label={t(`iliacPelvicVenous.level.${lvl}`, lvl)}
+                  value={renal.levels?.[lvl]?.velocityCmS ?? ''}
+                  onChange={(v) => setRenalLevel(lvl, { velocityCmS: toNum(v) })}
+                  min={0}
+                  max={400}
+                  step={1}
+                  data-testid={`iliac-renal-vel-${lvl}`}
+                />
+              ))}
+            </Group>
+          </Grid.Col>
+          <Grid.Col span={12}>
+            <div className={classes.flagGroup}>
+              <EMRCheckbox
                 label={t('iliacPelvicVenous.field.beakSign', 'Beak sign')}
                 checked={renal.beakSign ?? false}
-                onChange={(e) => setRenal({ beakSign: e.currentTarget.checked })}
+                onChange={(checked) => setRenal({ beakSign: checked })}
               />
-              <Checkbox
+              <EMRCheckbox
                 label={t('iliacPelvicVenous.field.hilarVarices', 'Renal hilar varices')}
                 checked={renal.hilarVarices ?? false}
-                onChange={(e) => setRenal({ hilarVarices: e.currentTarget.checked })}
+                onChange={(checked) => setRenal({ hilarVarices: checked })}
               />
-              <Checkbox
+              <EMRCheckbox
+                label={t('iliacPelvicVenous.field.retroAortic', 'Retro-aortic left renal vein')}
+                checked={renal.retroAortic ?? false}
+                onChange={(checked) => setRenal({ retroAortic: checked })}
+              />
+              <EMRCheckbox
                 label={t('iliacPelvicVenous.field.confirmImaging', 'Confirmatory imaging recommended')}
                 checked={renal.confirmatoryImagingRecommended ?? false}
-                onChange={(e) => setRenal({ confirmatoryImagingRecommended: e.currentTarget.checked })}
+                onChange={(checked) => setRenal({ confirmatoryImagingRecommended: checked })}
               />
-            </Group>
+            </div>
           </Grid.Col>
         </Grid>
       </IliacZoneCard>
@@ -719,6 +860,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
           view={state.cavalView}
           onViewChange={setCavalView}
           onChange={setCavalFinding}
+          onLevelChange={setCavalLevel}
         />
       </IliacZoneCard>
 
@@ -732,12 +874,12 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             const g = state.findings.gonadal?.[side] ?? {};
             return (
               <Grid.Col span={{ base: 12, md: 6 }} key={side}>
-                <Paper withBorder radius="sm" p="sm">
-                  <Stack gap="xs">
-                    <Text fw={600} size="sm">
+                <EMRCard withBorder shadow="none" radius="var(--emr-border-radius-lg)" p="md">
+                  <Stack gap="sm">
+                    <span className={classes.sideHeader}>
                       {t(`iliacPelvicVenous.side.${side}`, side)}
-                    </Text>
-                    <NumberInput
+                    </span>
+                    <EMRNumberInput
                       label={t('iliacPelvicVenous.field.diameterMm', 'Diameter (mm)')}
                       value={g.diameterMm ?? ''}
                       onChange={(v) => setGonadal(side, { diameterMm: toNum(v) })}
@@ -746,25 +888,25 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                       step={0.1}
                       decimalScale={1}
                       error={
-                        (g.diameterMm ?? 0) >= ILIAC_THRESHOLDS.gonadalDiameterMm
-                          ? t('iliacPelvicVenous.warn.dia6', '≥ 6 mm')
+                        (g.diameterMm ?? 0) > ILIAC_THRESHOLDS.gonadalDiameterMm
+                          ? t('iliacPelvicVenous.warn.gonadalDia5', '> 5 mm')
                           : undefined
                       }
                     />
-                    <Checkbox
+                    <EMRCheckbox
                       label={t('iliacPelvicVenous.field.refluxPresent', 'Reflux present')}
                       checked={g.refluxPresent ?? false}
-                      onChange={(e) => setGonadal(side, { refluxPresent: e.currentTarget.checked })}
+                      onChange={(checked) => setGonadal(side, { refluxPresent: checked })}
                     />
                     <Group gap="sm" grow>
-                      <Select
+                      <EMRSelect
                         label={t('iliacPelvicVenous.field.refluxTrigger', 'Trigger')}
                         data={opts(REFLUX_TRIGGER_VALUES, 'refluxTrigger')}
                         value={g.refluxTrigger ?? null}
                         onChange={(v) => setGonadal(side, { refluxTrigger: (v as RefluxTrigger) ?? undefined })}
                         clearable
                       />
-                      <Select
+                      <EMRSelect
                         label={t('iliacPelvicVenous.field.refluxType', 'Reflux type')}
                         data={opts(REFLUX_TYPE_VALUES, 'refluxType')}
                         value={g.refluxType ?? null}
@@ -773,7 +915,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                       />
                     </Group>
                     <Group gap="sm" grow>
-                      <NumberInput
+                      <EMRNumberInput
                         label={t('iliacPelvicVenous.field.refluxDurationS', 'Reflux duration (s)')}
                         value={g.refluxDurationS ?? ''}
                         onChange={(v) => setGonadal(side, { refluxDurationS: toNum(v) })}
@@ -787,7 +929,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                             : undefined
                         }
                       />
-                      <Select
+                      <EMRSelect
                         label={t('iliacPelvicVenous.field.flowDirection', 'Flow direction')}
                         data={opts(FLOW_DIRECTION_VALUES, 'flowDirection')}
                         value={g.flowDirection ?? null}
@@ -796,7 +938,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                       />
                     </Group>
                   </Stack>
-                </Paper>
+                </EMRCard>
               </Grid.Col>
             );
           })}
@@ -813,13 +955,13 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
             const p = state.findings.plexus?.[side] ?? {};
             return (
               <Grid.Col span={{ base: 12, md: 6 }} key={side}>
-                <Paper withBorder radius="sm" p="sm">
-                  <Stack gap="xs">
-                    <Text fw={600} size="sm">
+                <EMRCard withBorder shadow="none" radius="var(--emr-border-radius-lg)" p="md">
+                  <Stack gap="sm">
+                    <span className={classes.sideHeader}>
                       {t(`iliacPelvicVenous.side.${side}`, side)}
-                    </Text>
+                    </span>
                     <Group gap="sm" grow>
-                      <NumberInput
+                      <EMRNumberInput
                         label={t('iliacPelvicVenous.field.largestDiameterMm', 'Largest diameter (mm)')}
                         value={p.largestDiameterMm ?? ''}
                         onChange={(v) => setPlexus(side, { largestDiameterMm: toNum(v) })}
@@ -833,7 +975,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                             : undefined
                         }
                       />
-                      <NumberInput
+                      <EMRNumberInput
                         label={t('iliacPelvicVenous.field.flowVelocityCmS', 'Flow velocity (cm/s)')}
                         value={p.flowVelocityCmS ?? ''}
                         onChange={(v) => setPlexus(side, { flowVelocityCmS: toNum(v) })}
@@ -843,7 +985,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                       />
                     </Group>
                     <Group gap="sm" grow>
-                      <NumberInput
+                      <EMRNumberInput
                         label={t('iliacPelvicVenous.field.refluxDurationS', 'Reflux duration (s)')}
                         value={p.refluxDurationS ?? ''}
                         onChange={(v) => setPlexus(side, { refluxDurationS: toNum(v) })}
@@ -852,7 +994,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                         step={0.1}
                         decimalScale={1}
                       />
-                      <Select
+                      <EMRSelect
                         label={t('iliacPelvicVenous.field.tortuosity', 'Tortuosity')}
                         data={opts(TORTUOSITY_VALUES, 'tortuosity')}
                         value={p.tortuosity ?? null}
@@ -860,20 +1002,20 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                         clearable
                       />
                     </Group>
-                    <Group gap="lg">
-                      <Checkbox
+                    <div className={classes.flagGroup}>
+                      <EMRCheckbox
                         label={t('iliacPelvicVenous.field.crossingVeins', 'Crossing (arcuate) veins')}
                         checked={p.crossingVeins ?? false}
-                        onChange={(e) => setPlexus(side, { crossingVeins: e.currentTarget.checked })}
+                        onChange={(checked) => setPlexus(side, { crossingVeins: checked })}
                       />
-                      <Checkbox
+                      <EMRCheckbox
                         label={t('iliacPelvicVenous.field.crossPelvicCollateral', 'Cross-pelvic collateral')}
                         checked={p.crossPelvicCollateral ?? false}
-                        onChange={(e) => setPlexus(side, { crossPelvicCollateral: e.currentTarget.checked })}
+                        onChange={(checked) => setPlexus(side, { crossPelvicCollateral: checked })}
                       />
-                    </Group>
+                    </div>
                   </Stack>
-                </Paper>
+                </EMRCard>
               </Grid.Col>
             );
           })}
@@ -887,16 +1029,16 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
       >
         <Stack gap="sm">
           <Group justify="space-between">
-            <Text fw={600} size="sm">
+            <span className={classes.groupLabel}>
               {t('iliacPelvicVenous.field.escapePoints', 'Escape points')}
-            </Text>
+            </span>
             <EMRButton variant="secondary" size="xs" icon={IconPlus} onClick={addEscapePoint}>
               {t('iliacPelvicVenous.actions.addEscapePoint', 'Add')}
             </EMRButton>
           </Group>
           {(state.findings.escapePoints ?? []).map((ep) => (
-            <Group key={ep.id} gap="sm" align="flex-end" wrap="wrap">
-              <Select
+            <div key={ep.id} className={classes.escapeRow}>
+              <EMRSelect
                 label={t('iliacPelvicVenous.field.escapePointType', 'Point')}
                 data={opts(ESCAPE_POINT_VALUES, 'escapePoint')}
                 value={ep.type}
@@ -907,9 +1049,10 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                     patch: { type: (v as EscapePointType) ?? 'perineal' },
                   })
                 }
-                w={150}
+                fullWidth={false}
+                style={{ width: 150 }}
               />
-              <Select
+              <EMRSelect
                 label={t('iliacPelvicVenous.field.side', 'Side')}
                 data={[
                   { value: 'left', label: t('iliacPelvicVenous.side.left', 'Left') },
@@ -923,9 +1066,10 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                     patch: { side: (v as Side) ?? 'left' },
                   })
                 }
-                w={120}
+                fullWidth={false}
+                style={{ width: 120 }}
               />
-              <NumberInput
+              <EMRNumberInput
                 label={t('iliacPelvicVenous.field.diameterMm', 'Diameter (mm)')}
                 value={ep.diameterMm ?? ''}
                 onChange={(v) =>
@@ -935,22 +1079,22 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                 max={20}
                 step={0.1}
                 decimalScale={1}
-                w={130}
+                fullWidth={false}
+                style={{ width: 130 }}
               />
-              <ActionIcon
+              <EMRIconButton
+                icon={IconTrash}
                 color="red"
                 variant="subtle"
-                aria-label={t('iliacPelvicVenous.actions.removeEscapePoint', 'Remove')}
+                label={t('iliacPelvicVenous.actions.removeEscapePoint', 'Remove')}
                 onClick={() => dispatch({ type: 'REMOVE_ESCAPE_POINT', id: ep.id })}
-              >
-                <IconTrash size={18} />
-              </ActionIcon>
-            </Group>
+              />
+            </div>
           ))}
-          <Text fw={600} size="sm" mt="xs">
+          <span className={classes.groupLabel} style={{ marginTop: 6 }}>
             {t('iliacPelvicVenous.field.extrapelvic', 'Extrapelvic varices')}
-          </Text>
-          <Group gap="lg" wrap="wrap">
+          </span>
+          <div className={classes.flagGroup}>
             {(
               [
                 ['vulvar', 'Vulvar'],
@@ -960,14 +1104,107 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
                 ['sciatic', 'Sciatic'],
               ] as const
             ).map(([key, fallback]) => (
-              <Checkbox
+              <EMRCheckbox
                 key={key}
                 label={t(`iliacPelvicVenous.extrapelvic.${key}`, fallback)}
                 checked={state.findings.extrapelvic?.[key] ?? false}
-                onChange={(e) => setExtrapelvic({ [key]: e.currentTarget.checked })}
+                onChange={(checked) => setExtrapelvic({ [key]: checked })}
               />
             ))}
-          </Group>
+          </div>
+        </Stack>
+      </IliacZoneCard>
+
+      {/* Zone 6 — special considerations (SMAS / MALS) */}
+      <IliacZoneCard
+        title={t('iliacPelvicVenous.zone.special.title', 'Special considerations (SMAS / MALS)')}
+        subtitle={t(
+          'iliacPelvicVenous.zone.special.subtitle',
+          'Arterial compression syndromes — interrogate MALS in hypermobile patients regardless of referral.',
+        )}
+        testId="iliac-zone-special"
+      >
+        <Stack gap="sm">
+          <span className={classes.groupLabel}>
+            {t('iliacPelvicVenous.special.smas', 'SMA syndrome (SMAS)')}
+          </span>
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <EMRNumberInput
+                label={t('iliacPelvicVenous.field.smaAortaAngle', 'SMA–aorta angle (°)')}
+                value={smas.smaAortaAngleDeg ?? ''}
+                onChange={(v) => setSmas({ smaAortaAngleDeg: toNum(v) })}
+                min={0}
+                max={180}
+                step={1}
+                data-testid="iliac-smas-angle"
+                error={
+                  smas.smaAortaAngleDeg !== undefined &&
+                  smas.smaAortaAngleDeg < ILIAC_THRESHOLDS.smasAortaAngleDeg
+                    ? t('iliacPelvicVenous.warn.angle25', '< 25°')
+                    : undefined
+                }
+              />
+            </Grid.Col>
+          </Grid>
+          <span className={classes.groupLabel} style={{ marginTop: 6 }}>
+            {t('iliacPelvicVenous.special.mals', 'Median arcuate ligament syndrome (MALS)')}
+          </span>
+          <Grid>
+            <Grid.Col span={{ base: 6, sm: 3 }}>
+              <EMRNumberInput
+                label={t('iliacPelvicVenous.field.caInspiratoryPsv', 'Celiac PSV — inspiration (cm/s)')}
+                value={mals.caInspiratoryPsvCmS ?? ''}
+                onChange={(v) => setMals({ caInspiratoryPsvCmS: toNum(v) })}
+                min={0}
+                max={600}
+                step={1}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 6, sm: 3 }}>
+              <EMRNumberInput
+                label={t('iliacPelvicVenous.field.caExpiratoryPsv', 'Celiac PSV — expiration (cm/s)')}
+                value={mals.caExpiratoryPsvCmS ?? ''}
+                onChange={(v) => setMals({ caExpiratoryPsvCmS: toNum(v) })}
+                min={0}
+                max={600}
+                step={1}
+                data-testid="iliac-mals-ca-exp"
+                error={
+                  (mals.caExpiratoryPsvCmS ?? 0) > ILIAC_THRESHOLDS.malsExpiratoryPsvCmS
+                    ? t('iliacPelvicVenous.warn.psv200', '> 200 cm/s')
+                    : undefined
+                }
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 6, sm: 3 }}>
+              <EMRNumberInput
+                label={t('iliacPelvicVenous.field.chaPsv', 'Common hepatic artery PSV (cm/s)')}
+                value={mals.chaPsvCmS ?? ''}
+                onChange={(v) => setMals({ chaPsvCmS: toNum(v) })}
+                min={0}
+                max={600}
+                step={1}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 6, sm: 3 }}>
+              <EMRNumberInput
+                label={t('iliacPelvicVenous.field.splenicPsv', 'Splenic artery PSV (cm/s)')}
+                value={mals.splenicPsvCmS ?? ''}
+                onChange={(v) => setMals({ splenicPsvCmS: toNum(v) })}
+                min={0}
+                max={600}
+                step={1}
+              />
+            </Grid.Col>
+            <Grid.Col span={12}>
+              <EMRCheckbox
+                label={t('iliacPelvicVenous.field.hookSign', 'Hook-shaped celiac artery')}
+                checked={mals.hookSign ?? false}
+                onChange={(checked) => setMals({ hookSign: checked })}
+              />
+            </Grid.Col>
+          </Grid>
         </Stack>
       </IliacZoneCard>
 
@@ -1013,24 +1250,24 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
               {t('iliacPelvicVenous.actions.generateImpression', 'Generate from findings')}
             </EMRButton>
           </Group>
-          <Textarea
+          <EMRTextarea
             value={state.impression}
-            onChange={(e) => dispatch({ type: 'SET_IMPRESSION', impression: e.currentTarget.value })}
+            onChange={(v) => dispatch({ type: 'SET_IMPRESSION', impression: v })}
             autosize
             minRows={4}
             data-testid="iliac-impression"
           />
-          <Textarea
+          <EMRTextarea
             label={t('iliacPelvicVenous.narrative.sonographerComments', 'Sonographer comments')}
             value={state.sonographerComments}
-            onChange={(e) => dispatch({ type: 'SET_SONOGRAPHER', comments: e.currentTarget.value })}
+            onChange={(v) => dispatch({ type: 'SET_SONOGRAPHER', comments: v })}
             autosize
             minRows={2}
           />
-          <Textarea
+          <EMRTextarea
             label={t('iliacPelvicVenous.narrative.clinicianComments', 'Clinician comments')}
             value={state.clinicianComments}
-            onChange={(e) => dispatch({ type: 'SET_CLINICIAN', comments: e.currentTarget.value })}
+            onChange={(v) => dispatch({ type: 'SET_CLINICIAN', comments: v })}
             autosize
             minRows={2}
             data-testid="iliac-clinician"
@@ -1047,7 +1284,7 @@ export const IliacPelvicVenousForm = memo(function IliacPelvicVenousForm(): Reac
         onSaveDraft={() => {
           if (encounter) {
             lastPersistedRef.current = state;
-            setStudyState<IliacPelvicVenousFormStateV1>('iliacPelvicVenous', state);
+            setStudyState<IliacPelvicVenousFormStateV2>('iliacPelvicVenous', state);
             setLastSavedAt(new Date());
           }
         }}

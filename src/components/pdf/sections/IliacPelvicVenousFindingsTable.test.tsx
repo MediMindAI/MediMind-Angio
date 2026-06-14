@@ -39,8 +39,9 @@ const LABELS: IliacPelvicVenousFindingsTableLabels = {
     plexus: 'Pelvic plexus',
     escape: 'Escape points',
     extrapelvic: 'Extrapelvic varices',
+    special: 'Special considerations (SMAS / MALS)',
   },
-  segment: { 'cfv-left': 'CFV (left)' },
+  segment: { 'cfv-left': 'CFV (left)', 'civ-left': 'CIV (left)' },
   side: { left: 'Left', right: 'Right' },
   field: {
     sex: 'Sex',
@@ -49,12 +50,21 @@ const LABELS: IliacPelvicVenousFindingsTableLabels = {
     valsalvaResponse: 'Valsalva response',
     confirmImaging: 'Confirmatory imaging recommended',
     ratio: 'Ratio',
+    velocityRatio: 'Velocity ratio',
+    smaAortaAngle: 'SMA–aorta angle',
+    caExpiratoryPsv: 'Celiac PSV — expiration',
   },
   value: {
     'sex.female': 'Female',
     'symptom.chronic-pelvic-pain': 'Chronic pelvic pain',
     'patency.patent': 'Patent',
+    'patency.partial': 'Partial',
     'valsalvaResponse.absent': 'Absent',
+    'severity.moderate': 'moderate',
+    'severity.significant': 'significant',
+    'level.distal': 'Distal',
+    'level.mid': 'Mid',
+    'level.proximal': 'Proximal',
   },
   yes: 'Present',
 };
@@ -94,5 +104,25 @@ describe('IliacPelvicVenousFindingsTable', () => {
       IliacPelvicVenousFindingsTable({ findings: {}, labels: LABELS }),
     );
     expect(text).toContain('No findings recorded.');
+  });
+
+  it('derives the velocity ratio from per-level velocities and tags the severity tier', () => {
+    const findings: IliacPelvicVenousFindings = {
+      caval: { 'civ-left': { patency: 'partial', levels: { distal: { velocityCmS: 40 }, proximal: { velocityCmS: 120 } } } },
+    };
+    const text = flattenText(IliacPelvicVenousFindingsTable({ findings, labels: LABELS }));
+    expect(text).toContain('Distal 40'); // per-level velocity surfaced
+    expect(text).toContain('3.0'); // derived ratio 120/40
+    expect(text).toContain('significant'); // ≥ 2.5 → significant tier
+  });
+
+  it('renders the SMAS / MALS special-considerations zone', () => {
+    const findings: IliacPelvicVenousFindings = {
+      specialConsiderations: { smas: { smaAortaAngleDeg: 20 }, mals: { caExpiratoryPsvCmS: 250 } },
+    };
+    const text = flattenText(IliacPelvicVenousFindingsTable({ findings, labels: LABELS }));
+    expect(text).toContain('Special considerations (SMAS / MALS)');
+    expect(text).toContain('SMA–aorta angle');
+    expect(text).toContain('Celiac PSV — expiration');
   });
 });

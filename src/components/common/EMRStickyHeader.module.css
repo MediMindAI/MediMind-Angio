@@ -1,0 +1,115 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EMRStickyHeader - Scroll-aware sticky header component
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.container {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--emr-bg-card);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s ease,
+    height 0.2s ease;
+  will-change: transform, box-shadow;
+  /* iOS safe area support */
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLED STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.scrolled {
+  box-shadow:
+    0 2px 8px var(--emr-black-alpha-10),
+    0 1px 2px var(--emr-black-alpha-08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HIDDEN STATE (for hide-on-scroll behavior)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPACT STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.compact {
+  /* Container adjustments for compact mode */
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTENT AREAS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.content {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.contentHidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  position: absolute;
+  pointer-events: none;
+}
+
+.compactContent {
+  opacity: 0;
+  transform: translateY(10px);
+  position: absolute;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.compactContentVisible {
+  opacity: 1;
+  transform: translateY(0);
+  position: relative;
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 576px) {
+  .container {
+    /* Slightly faster transitions on mobile */
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.15s ease,
+      height 0.15s ease;
+  }
+
+  .scrolled {
+    box-shadow:
+      0 1px 4px var(--emr-black-alpha-10),
+      0 0.5px 1px var(--emr-black-alpha-08);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .container,
+  .content,
+  .compactContent {
+    transition: none;
+  }
+}

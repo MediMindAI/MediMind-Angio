@@ -1,0 +1,374 @@
+/* EMRAnalyticsSummaryStrip - Premium analytics KPI banner */
+/* Inspired by Stripe/Linear dashboard KPI strips */
+
+@keyframes stripEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cellReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== MAIN STRIP ==================== */
+.strip {
+  display: flex;
+  align-items: stretch;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--emr-shadow-card);
+  transition: all 0.25s ease;
+  position: relative;
+  animation: stripEnter 0.4s ease both;
+}
+
+.strip:hover {
+  box-shadow: var(--emr-shadow-card-hover);
+}
+
+/* Top accent rainbow bar */
+.strip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--emr-primary) 0%,
+    var(--emr-secondary) 20%,
+    var(--emr-success) 40%,
+    var(--emr-accent) 60%,
+    var(--emr-warning) 80%,
+    var(--emr-error) 100%
+  );
+  opacity: 0.8;
+  z-index: 1;
+}
+
+/* ==================== INDIVIDUAL METRIC CELL ==================== */
+.cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px 22px;
+  position: relative;
+  min-width: 0;
+  transition: background-color 0.2s ease;
+  animation: cellReveal 0.35s ease both;
+}
+
+.cell:nth-child(1) { animation-delay: 0.05s; }
+.cell:nth-child(2) { animation-delay: 0.10s; }
+.cell:nth-child(3) { animation-delay: 0.15s; }
+.cell:nth-child(4) { animation-delay: 0.20s; }
+.cell:nth-child(5) { animation-delay: 0.25s; }
+.cell:nth-child(6) { animation-delay: 0.30s; }
+
+.cell:hover {
+  background-color: var(--emr-bg-hover);
+}
+
+/* Vertical divider between cells */
+.cell + .cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 1px;
+  background: var(--emr-border-color);
+}
+
+/* Primary cells get more width */
+.cellPrimary {
+  flex: 1.4;
+  padding: 20px 26px;
+}
+
+/* Secondary cells are more compact */
+.cellSecondary {
+  flex: 1;
+  padding: 18px 22px;
+}
+
+/* ==================== HEADER: ICON + LABEL ==================== */
+.cellHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Icon container */
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cell:hover .iconWrap {
+  transform: scale(1.1);
+}
+
+/* Variant-specific icon backgrounds + glow on hover */
+.iconPrimary {
+  background: var(--emr-icon-gradient-primary);
+  color: var(--emr-primary);
+}
+.cell:hover .iconPrimary {
+  box-shadow: 0 2px 10px var(--emr-primary-alpha-20, rgba(26, 54, 93, 0.2));
+}
+
+.iconSecondary {
+  background: var(--emr-icon-gradient-secondary);
+  color: var(--emr-secondary);
+}
+.cell:hover .iconSecondary {
+  box-shadow: 0 2px 10px var(--emr-secondary-alpha-20, rgba(43, 108, 176, 0.2));
+}
+
+.iconSuccess {
+  background: var(--emr-icon-gradient-success);
+  color: var(--emr-success);
+}
+.cell:hover .iconSuccess {
+  box-shadow: 0 2px 10px var(--emr-success-alpha-20, rgba(34, 197, 94, 0.2));
+}
+
+.iconWarning {
+  background: var(--emr-icon-gradient-warning);
+  color: var(--emr-warning);
+}
+.cell:hover .iconWarning {
+  box-shadow: 0 2px 10px var(--emr-warning-alpha-20, rgba(245, 158, 11, 0.2));
+}
+
+.iconError {
+  background: var(--emr-icon-gradient-error);
+  color: var(--emr-error);
+}
+.cell:hover .iconError {
+  box-shadow: 0 2px 10px var(--emr-error-alpha-20, rgba(239, 68, 68, 0.2));
+}
+
+.iconInfo {
+  background: var(--emr-icon-gradient-info);
+  color: var(--emr-info);
+}
+.cell:hover .iconInfo {
+  box-shadow: 0 2px 10px var(--emr-info-alpha-15, rgba(49, 130, 206, 0.15));
+}
+
+/* Label text */
+.label {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  letter-spacing: 0.02em;
+  line-height: var(--emr-line-height-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==================== VALUE + TREND ==================== */
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Primary emphasis value */
+.valuePrimary {
+  font-size: var(--emr-font-3xl);
+  font-weight: var(--emr-font-extrabold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-none);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  white-space: nowrap;
+}
+
+/* Secondary emphasis value */
+.valueSecondary {
+  font-size: var(--emr-font-xl);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  word-break: break-word;
+}
+
+/* Trend badge */
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  line-height: var(--emr-line-height-none);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.trendUp {
+  background: var(--emr-success-alpha-10);
+  color: var(--emr-success);
+}
+
+.trendDown {
+  background: var(--emr-error-alpha-10);
+  color: var(--emr-error);
+}
+
+.trendNeutral {
+  background: var(--emr-secondary-alpha-08);
+  color: var(--emr-text-secondary);
+}
+
+/* ==================== SUBTITLE ==================== */
+.subtitle {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-tight);
+  margin-top: 2px;
+}
+
+/* ==================== SPARKLINE ==================== */
+.sparkline {
+  margin-top: 8px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.cell:hover .sparkline {
+  opacity: 1;
+  transform: scaleY(1.05);
+  transform-origin: bottom;
+}
+
+/* ==================== LOADING SKELETON ==================== */
+.skeletonStrip {
+  display: flex;
+  align-items: stretch;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--emr-shadow-card);
+}
+
+.skeletonCell {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonCell + .skeletonCell {
+  border-left: 1px solid var(--emr-border-color);
+}
+
+/* ==================== REDUCED MOTION ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .strip,
+  .cell {
+    animation: none;
+  }
+  .cell:hover .sparkline {
+    transform: none;
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+/* Tablet: wrap into 2 rows of 3 */
+@media (max-width: 992px) {
+  .strip {
+    flex-wrap: wrap;
+  }
+
+  .cellPrimary,
+  .cellSecondary {
+    flex-basis: calc(33.33% - 1px);
+    flex-grow: 1;
+    flex-shrink: 0;
+  }
+
+  /* Adjust vertical divider height */
+  .cell + .cell::before {
+    top: 14px;
+    bottom: 14px;
+  }
+
+  /* Horizontal divider for wrapped rows */
+  .cell:nth-child(n+4) {
+    border-top: 1px solid var(--emr-border-color);
+  }
+
+  /* Remove left divider for first cell in second row */
+  .cell:nth-child(4)::before {
+    display: none;
+  }
+}
+
+/* Small tablet: 2 columns */
+@media (max-width: 768px) {
+  .cellPrimary,
+  .cellSecondary {
+    flex-basis: calc(50% - 1px);
+  }
+
+  .cell:nth-child(n+3) {
+    border-top: 1px solid var(--emr-border-color);
+  }
+
+  .cell:nth-child(3)::before,
+  .cell:nth-child(5)::before {
+    display: none;
+  }
+}
+
+/* Mobile: single column stack */
+@media (max-width: 576px) {
+  .strip {
+    flex-direction: column;
+  }
+
+  .cellPrimary,
+  .cellSecondary {
+    flex-basis: auto;
+    padding: 14px 16px;
+  }
+
+  /* Remove vertical dividers on mobile */
+  .cell + .cell::before {
+    display: none;
+  }
+
+  /* Horizontal dividers between all stacked cells */
+  .cell + .cell {
+    border-top: 1px solid var(--emr-border-color);
+  }
+
+  .valuePrimary {
+    font-size: var(--emr-font-2xl);
+  }
+
+  .valueSecondary {
+    font-size: var(--emr-font-xl);
+  }
+}

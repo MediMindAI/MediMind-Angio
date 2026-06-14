@@ -1,31 +1,31 @@
 /* EMRButton variant styles with pseudo-selectors */
 
 .primaryButton {
-  background: var(--emr-gradient-primary);
+  background: var(--emr-gradient-add-button);
   border: none;
   color: var(--emr-text-white);
-  box-shadow: 0 2px 4px var(--emr-secondary-alpha-20), 0 4px 12px var(--emr-secondary-alpha-15), inset 0 1px 0 var(--emr-white-alpha-10);
+  box-shadow: var(--emr-shadow-primary-sm);
 }
 
 .primaryButton:hover:not(:disabled) {
-  box-shadow: 0 4px 8px var(--emr-secondary-alpha-30), 0 8px 16px var(--emr-secondary-alpha-20), inset 0 1px 0 var(--emr-white-alpha-10);
+  box-shadow: 0 4px 8px var(--emr-secondary-alpha-25), 0 8px 16px var(--emr-secondary-alpha-20);
   filter: brightness(1.05);
 }
 
 .primaryButton:active:not(:disabled) {
-  box-shadow: 0 1px 2px var(--emr-secondary-alpha-20), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px var(--emr-secondary-alpha-20), inset 0 1px 2px var(--emr-black-alpha-10);
 }
 
 .primaryButton:focus-visible {
   outline: none;
-  box-shadow: 0 2px 4px var(--emr-secondary-alpha-20), 0 4px 12px var(--emr-secondary-alpha-15), 0 0 0 3px var(--emr-accent-alpha-20);
+  box-shadow: 0 2px 4px var(--emr-secondary-alpha-20), 0 4px 12px var(--emr-secondary-alpha-15), 0 0 0 3px var(--emr-form-accent-blue-alpha-40);
 }
 
 .primaryButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  background: var(--emr-gradient-primary);
+  background: var(--emr-gradient-add-button);
 }
 
 .secondaryButton {
@@ -37,19 +37,21 @@
 }
 
 .secondaryButton:hover:not(:disabled) {
-  background: var(--emr-bg-hover);
-  border-color: var(--emr-border-focus);
+  background: var(--emr-bg-card);
+  border-color: var(--emr-secondary);
+  color: var(--emr-secondary);
   box-shadow: var(--emr-shadow-md);
 }
 
 .secondaryButton:active:not(:disabled) {
   background: var(--emr-bg-hover);
-  filter: brightness(0.95);
+  border-color: var(--emr-secondary);
+  color: var(--emr-secondary);
 }
 
 .secondaryButton:focus-visible {
   outline: none;
-  box-shadow: var(--emr-shadow-sm), 0 0 0 3px var(--emr-accent-alpha-20);
+  box-shadow: var(--emr-shadow-sm), var(--emr-focus-ring);
 }
 
 .secondaryButton:disabled {
@@ -75,7 +77,7 @@
 
 .dangerButton:focus-visible {
   outline: none;
-  box-shadow: var(--emr-shadow-error), 0 0 0 3px var(--emr-error-alpha-20);
+  box-shadow: var(--emr-shadow-error), 0 0 0 3px var(--emr-bg-accent-error);
 }
 
 .dangerButton:disabled {
@@ -91,17 +93,17 @@
 }
 
 .ghostButton:hover:not(:disabled) {
-  background: var(--emr-bg-hover);
-  color: var(--emr-text-primary);
+  background: var(--emr-hover-bg);
+  color: var(--emr-secondary);
 }
 
 .ghostButton:active:not(:disabled) {
-  background: var(--emr-accent-alpha-10);
+  background: var(--emr-selected-bg);
 }
 
 .ghostButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--emr-accent-alpha-20);
+  box-shadow: var(--emr-focus-ring);
 }
 
 .ghostButton:disabled {
@@ -110,22 +112,88 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Soft variant — light navy tint                                             */
+/*                                                                             */
+/*  Maps raw Mantine `variant="light"` (a soft tinted fill). Low-emphasis      */
+/*  navy-tinted chip-button. Stays inside the theme blue family — no Mantine   */
+/*  pastel.                                                                    */
+/* -------------------------------------------------------------------------- */
+.softButton {
+  background: var(--emr-primary-alpha-08);
+  border: none;
+  color: var(--emr-secondary);
+  box-shadow: none;
+}
+
+.softButton:hover:not(:disabled) {
+  background: var(--emr-primary-alpha-12);
+  color: var(--emr-primary);
+}
+
+.softButton:active:not(:disabled) {
+  background: var(--emr-primary-alpha-16);
+}
+
+.softButton:focus-visible {
+  outline: none;
+  box-shadow: var(--emr-focus-ring);
+}
+
+.softButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Success variant — solid green                                              */
+/*                                                                             */
+/*  Maps raw `color="green"`. Solid green action button, mirrors dangerButton  */
+/*  for the positive/confirm case.                                             */
+/* -------------------------------------------------------------------------- */
+.successButton {
+  background: var(--emr-success);
+  border: none;
+  color: var(--emr-text-white);
+  box-shadow: 0 2px 6px var(--emr-success-alpha-30);
+}
+
+.successButton:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 10px var(--emr-success-alpha-30);
+}
+
+.successButton:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.successButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--emr-success-alpha-30);
+}
+
+.successButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------- */
 /*  On-gradient variant                                                        */
 /*                                                                             */
-/*  White-background button meant to sit on a dark/gradient bar. Gives the    */
-/*  same look without the Mantine label height clipping bug — EMRButton        */
-/*  always sets label overflow visible.                                        */
+/*  White-background button meant to sit on a dark/gradient bar (e.g. the     */
+/*  form-builder sticky top bar). Gives the same look the legacy hero used    */
+/*  to get from raw `<Button variant="white">` without the Mantine label     */
+/*  height clipping bug — EMRButton always sets label overflow visible.        */
 /* -------------------------------------------------------------------------- */
 .onGradientButton {
   background-color: var(--emr-bg-card);
   color: var(--emr-primary);
   border: 1px solid var(--emr-border-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px var(--emr-black-alpha-10);
 }
 
 .onGradientButton:hover:not(:disabled) {
   background-color: var(--emr-bg-hover);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px var(--emr-black-alpha-10);
   filter: brightness(1.02);
 }
 
@@ -135,7 +203,7 @@
 
 .onGradientButton:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--emr-white-alpha-20);
+  box-shadow: 0 0 0 3px var(--emr-glass-white-25);
 }
 
 .onGradientButton:disabled {

@@ -1,0 +1,159 @@
+/* EMRContentSection.module.css - T298 CSS Module extraction */
+
+/* ============================================= */
+/*  Base Container                               */
+/* ============================================= */
+.container {
+  position: relative;
+  /* Note: no `overflow: hidden` here — it clipped tall tables inside a flex-auto
+     ancestor on the coordinator landing page. Rounded-corner clipping is handled
+     at the header/body level instead, so children with their own scroll (EMRTable)
+     render fully. */
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* ============================================= */
+/*  Command identity — "decks": no outer border, */
+/*  soft navy-tinted card shadow. `outlined`      */
+/*  keeps a hairline; `elevated` gets stronger    */
+/*  shadow.                                        */
+/* ============================================= */
+
+/* ============================================= */
+/*  Light Mode - Default Variant                 */
+/* ============================================= */
+.lightDefault {
+  background: var(--emr-bg-card);
+  border: 1px solid transparent;
+  box-shadow: var(--emr-shadow-card);
+}
+
+.lightDefault:hover {
+  box-shadow: var(--emr-shadow-card-hover);
+}
+
+/* ============================================= */
+/*  Light Mode - Elevated Variant                */
+/* ============================================= */
+.lightElevated {
+  background: var(--emr-bg-card);
+  border: 1px solid transparent;
+  box-shadow: var(--emr-shadow-card-hover);
+}
+
+.lightElevated:hover {
+  box-shadow: var(--emr-shadow-card-hover);
+}
+
+/* ============================================= */
+/*  Light Mode - Outlined Variant                */
+/* ============================================= */
+.lightOutlined {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  box-shadow: var(--emr-shadow-card);
+}
+
+.lightOutlined:hover {
+  border-color: var(--emr-selected-border);
+  box-shadow: var(--emr-shadow-card-hover);
+}
+
+/* ============================================= */
+/*  Dark Mode - Default Variant                  */
+/* ============================================= */
+.darkDefault {
+  background: var(--emr-card-bg);
+  border: 1px solid transparent;
+  box-shadow: var(--emr-shadow-card-dark);
+}
+
+.darkDefault:hover {
+  box-shadow: var(--emr-shadow-card-dark-hover);
+}
+
+/* ============================================= */
+/*  Dark Mode - Elevated Variant                 */
+/* ============================================= */
+.darkElevated {
+  background: var(--emr-card-bg-elevated);
+  border: 1px solid transparent;
+  box-shadow: var(--emr-shadow-card-dark-hover), var(--emr-card-inner-glow);
+}
+
+.darkElevated:hover {
+  box-shadow: var(--emr-shadow-card-dark-hover), var(--emr-card-inner-glow);
+}
+
+/* ============================================= */
+/*  Dark Mode - Outlined Variant                 */
+/* ============================================= */
+.darkOutlined {
+  background: var(--emr-card-bg);
+  border: 1px solid var(--emr-card-border-subtle);
+  box-shadow: var(--emr-shadow-card-dark);
+}
+
+.darkOutlined:hover {
+  border-color: var(--emr-card-border-hover);
+  box-shadow: var(--emr-shadow-card-dark-hover), var(--emr-card-glow-subtle);
+}
+
+/* ============================================= */
+/*  Left Accent Border                           */
+/* ============================================= */
+.accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--emr-gradient-primary);
+  border-radius: 12px 0 0 12px;
+}
+
+/* ============================================= */
+/*  Header Styles                                */
+/* ============================================= */
+.headerClickable {
+  cursor: pointer;
+}
+
+.headerClickable:hover {
+  background: var(--emr-bg-hover);
+}
+
+.headerIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+}
+
+.headerTitle {
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+}
+
+.collapseIcon {
+  transition: transform 0.2s ease;
+}
+
+.collapseIconExpanded {
+  transform: rotate(90deg);
+}
+
+/* ============================================= */
+/*  Empty State                                  */
+/* ============================================= */
+.emptyState {
+  text-align: center;
+  color: var(--emr-text-secondary);
+  font-style: italic;
+}

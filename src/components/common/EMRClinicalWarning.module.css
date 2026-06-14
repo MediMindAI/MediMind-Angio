@@ -1,0 +1,78 @@
+/* EMRClinicalWarning — three severities mapped to theme tokens.
+ * Severity colours are pulled from --emr-info / --emr-warning / --emr-error
+ * so they auto-switch in dark mode (no hardcoded hex). */
+
+.root {
+  display: flex;
+  align-items: flex-start;
+  /* Allow the action block to wrap onto its own line in narrow panels (e.g. the
+   * TAVI right rail) instead of crushing the message body to a one-word-per-line
+   * column. Stays inline on wide layouts. */
+  flex-wrap: wrap;
+  gap: var(--emr-spacing-sm);
+  padding: var(--emr-spacing-sm) var(--emr-spacing-md);
+  border-radius: var(--emr-radius-sm);
+  border-left: 3px solid var(--severity-color, var(--emr-info));
+  background: var(--severity-bg, var(--emr-bg-hover));
+  color: var(--emr-text-primary);
+  font-size: var(--emr-font-sm);
+  line-height: 1.4;
+}
+
+.root[data-severity='info'] {
+  --severity-color: var(--emr-info);
+  --severity-bg: rgba(49, 130, 206, 0.08);
+}
+
+.root[data-severity='advisory'] {
+  --severity-color: var(--emr-warning);
+  --severity-bg: rgba(255, 0, 0, 0.06);
+}
+
+.root[data-severity='block'] {
+  --severity-color: var(--emr-error);
+  --severity-bg: rgba(220, 38, 38, 0.09);
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--severity-color);
+  margin-top: 1px;
+}
+
+.body {
+  /* Floor the message width so it can't collapse to a one-word column when a
+   * non-shrinking action sits beside it; the floor also drives the row-wrap
+   * above. `flex-basis` lets it still grow to fill wide panels. */
+  flex: 1 1 12rem;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  color: var(--emr-text-secondary);
+  font-size: var(--emr-font-xs);
+}
+
+.helpLink {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: var(--emr-font-xs);
+  color: var(--emr-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.action {
+  flex-shrink: 0;
+  align-self: center;
+}

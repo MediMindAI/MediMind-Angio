@@ -1,0 +1,172 @@
+/* EMRStatusSelector - Premium pill-style status selector */
+
+.emr-status-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Label */
+.emr-status-selector-label {
+  font-size: var(--emr-font-base);
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-primary);
+  margin-bottom: 2px;
+}
+
+.emr-status-selector.dark .emr-status-selector-label {
+  color: var(--emr-text-primary);
+}
+
+.emr-status-selector-required {
+  color: var(--emr-error);
+  margin-left: 2px;
+}
+
+/* Options container */
+.emr-status-selector-options {
+  display: flex;
+}
+
+.emr-status-selector-options.vertical {
+  flex-direction: column;
+}
+
+/* Individual option */
+.emr-status-selector-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--emr-bg-input);
+  border: 1px solid var(--emr-border-color);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  font-weight: var(--emr-font-medium);
+  color: var(--emr-text-secondary);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.emr-status-selector-option::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.emr-status-selector.dark .emr-status-selector-option {
+  background: var(--emr-bg-input);
+  border-color: var(--emr-card-border);
+  color: var(--emr-text-secondary);
+}
+
+/* Hover state */
+.emr-status-selector-option:not(.disabled):not(.selected):hover {
+  border-color: var(--emr-border-hover);
+  background: var(--emr-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.emr-status-selector.dark .emr-status-selector-option:not(.disabled):not(.selected):hover {
+  border-color: var(--emr-gray-400);
+  background: var(--emr-bg-hover);
+}
+
+/* Focus state */
+.emr-status-selector-option:focus-visible {
+  outline: 2px solid var(--status-dot-color);
+  outline-offset: 2px;
+}
+
+/* Selected state */
+.emr-status-selector-option.selected {
+  background: var(--status-selected-bg);
+  border-color: var(--status-selected-border);
+  color: var(--status-selected-text);
+  box-shadow: 0 2px 8px var(--status-selected-bg);
+}
+
+.emr-status-selector-option.selected:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--status-selected-bg);
+}
+
+/* Disabled state */
+.emr-status-selector-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.emr-status-selector.disabled .emr-status-selector-option {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status dot */
+.emr-status-selector-dot {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--emr-border-color);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.emr-status-selector-option.selected .emr-status-selector-dot {
+  background: var(--status-dot-color);
+  box-shadow: 0 0 0 3px var(--status-selected-bg);
+  animation: dot-pulse 0.3s ease-out;
+}
+
+@keyframes dot-pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Option label */
+.emr-status-selector-option-label {
+  font-weight: var(--emr-font-medium);
+  transition: color 0.2s ease;
+}
+
+/* Option description */
+.emr-status-selector-option-description {
+  display: block;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-normal);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* Help text */
+.emr-status-selector-help {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+}
+
+/* Error message */
+.emr-status-selector-error {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-error);
+}
+
+.emr-status-selector.error .emr-status-selector-option:not(.selected) {
+  border-color: var(--emr-error-light);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+  .emr-status-selector-options.horizontal {
+    flex-wrap: wrap;
+  }
+
+  .emr-status-selector-option {
+    font-size: var(--emr-font-sm);
+    padding: 6px 12px;
+  }
+}

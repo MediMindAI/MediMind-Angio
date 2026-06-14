@@ -22,11 +22,12 @@ import {
   saveEncounter,
 } from '../../../services/encounterStore';
 import type { EncounterDraft } from '../../../types/encounter';
-import type { IliacPelvicVenousFindings } from './config';
+import type { IliacPelvicVenousFindings, RenalVeinFinding } from './config';
+import { migrateIliacFindingsV1toV2 } from './config';
 import {
   stateToFormState,
   IliacPelvicVenousForm,
-  type IliacPelvicVenousFormStateV1,
+  type IliacPelvicVenousFormStateV2,
 } from './IliacPelvicVenousForm';
 
 function buildDraft(overrides: Partial<EncounterDraft> = {}): EncounterDraft {
@@ -52,9 +53,9 @@ function buildDraft(overrides: Partial<EncounterDraft> = {}): EncounterDraft {
 
 function baseState(
   findings: IliacPelvicVenousFindings = {},
-): IliacPelvicVenousFormStateV1 {
+): IliacPelvicVenousFormStateV2 {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     studyType: 'iliacPelvicVenous',
     studyDate: '2026-06-05',
     context: { sex: 'female' },
@@ -121,5 +122,31 @@ describe('IliacPelvicVenousForm', () => {
     await saveEncounter(draft);
     render(<Harness encounterId={draft.encounterId} />);
     expect(await screen.findByTestId('iliac-pelvic-venous-form')).toBeInTheDocument();
+  });
+
+  it('migrates a V1 findings blob to V2 (caval levels default + renal SMA angle → SMAS)', () => {
+    // V1 stored the SMA–aorta angle on the renal finding and a flat caval
+    // velocityRatio with no per-level `levels`.
+    const renalV1: RenalVeinFinding & { aortoSmaAngleDeg?: number } = {
+      peakVelocityRatio: 8,
+      aortoSmaAngleDeg: 22,
+    };
+    const v1: IliacPelvicVenousFindings = {
+      renal: renalV1,
+      caval: { 'civ-left': { patency: 'partial', velocityRatio: 3, stenosisPct: 60 } },
+    };
+
+    const migrated = migrateIliacFindingsV1toV2(v1);
+
+    // Caval gains an empty `levels` record; the legacy ratio is preserved.
+    expect(migrated.caval?.['civ-left']?.levels).toEqual({});
+    expect(migrated.caval?.['civ-left']?.velocityRatio).toBe(3);
+    // The SMA angle is relocated to SMAS and stripped from the renal finding.
+    expect(migrated.specialConsiderations?.smas?.smaAortaAngleDeg).toBe(22);
+    expect((migrated.renal as Record<string, unknown>).aortoSmaAngleDeg).toBeUndefined();
+    expect(migrated.renal?.peakVelocityRatio).toBe(8);
+
+    // Idempotent: re-migrating a V2 blob is a no-op.
+    expect(migrateIliacFindingsV1toV2(migrated)).toBe(migrated);
   });
 });

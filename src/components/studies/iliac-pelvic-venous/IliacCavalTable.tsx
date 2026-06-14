@@ -15,13 +15,16 @@
  */
 
 import { memo, useCallback } from 'react';
-import { SegmentedControl } from '@mantine/core';
 import { EMRSelect, EMRNumberInput, EMRCheckbox } from '../../shared/EMRFormFields';
+import { EMRViewToggle } from '../../common';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import {
   type IliacCavalFindings,
   type IliacCavalFinding,
   type IliacCavalFullId,
+  type IliacCavalBase,
+  type CavalLevel,
+  type VesselLevelMeasurement,
   type Side,
   type Patency,
   type CavalCompressibility,
@@ -33,7 +36,10 @@ import {
   THROMBUS_CHRONICITY_VALUES,
   CFV_PHASICITY_VALUES,
   VALSALVA_RESPONSE_VALUES,
+  CAVAL_LEVELS_FOR_BASE,
   ILIAC_THRESHOLDS,
+  effectiveCavalVelocityRatio,
+  cavalStenosisSeverity,
 } from './config';
 import { numInputToNumber as toNum } from '../../../utils/numberInput';
 import classes from './IliacCavalTable.module.css';
@@ -45,9 +51,25 @@ export interface IliacCavalTableProps {
   readonly view: CavalView;
   readonly onViewChange: (view: CavalView) => void;
   readonly onChange: (id: IliacCavalFullId, patch: Partial<IliacCavalFinding>) => void;
+  readonly onLevelChange: (
+    id: IliacCavalFullId,
+    level: CavalLevel,
+    patch: Partial<VesselLevelMeasurement>,
+  ) => void;
 }
 
 const PER_SIDE_BASES = ['civ', 'eiv', 'iiv', 'cfv'] as const;
+
+/** The vein base for a full id (`cfv-left` → `cfv`, `ivc` → `ivc`). */
+function baseOf(id: IliacCavalFullId): IliacCavalBase {
+  return (id === 'ivc' ? 'ivc' : id.slice(0, id.lastIndexOf('-'))) as IliacCavalBase;
+}
+
+/** Levels that capture a B-mode diameter per protocol: CFV SFJ-level + IVC. */
+function levelCapturesDiameter(base: IliacCavalBase, level: CavalLevel): boolean {
+  if (base === 'cfv') return level === 'sfj';
+  return base === 'ivc';
+}
 
 /** Header columns, in grid order. Each maps to an `iliacPelvicVenous.field.*` key. */
 const COLUMNS = [
@@ -78,6 +100,7 @@ export const IliacCavalTable = memo(function IliacCavalTable({
   view,
   onViewChange,
   onChange,
+  onLevelChange,
 }: IliacCavalTableProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -97,10 +120,11 @@ export const IliacCavalTable = memo(function IliacCavalTable({
   return (
     <div data-testid="iliac-caval-table">
       <div className={classes.toolbar}>
-        <SegmentedControl
+        <EMRViewToggle
           value={view}
           onChange={(v) => onViewChange(v as CavalView)}
-          data={[
+          alwaysShowLabels
+          options={[
             { value: 'right', label: t('iliacPelvicVenous.tabs.right', 'Right') },
             { value: 'bilateral', label: t('iliacPelvicVenous.tabs.bilateral', 'Bilateral') },
             { value: 'left', label: t('iliacPelvicVenous.tabs.left', 'Left') },
@@ -119,10 +143,16 @@ export const IliacCavalTable = memo(function IliacCavalTable({
 
         {segments.map((id) => {
           const f: IliacCavalFinding = findings[id] ?? {};
-          const isCfv = id.startsWith('cfv');
+          const base = baseOf(id);
+          const isCfv = base === 'cfv';
+          const isEiv = base === 'eiv';
           const segLabel = t(`iliacPelvicVenous.segment.${id}`, id);
           const stenosisHigh = (f.stenosisPct ?? 0) >= ILIAC_THRESHOLDS.cavalStenosisPct;
-          const ratioHigh = (f.velocityRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio;
+          // Ratio is derived from the per-level velocities (falls back to any
+          // stored/legacy value); graded by cavalStenosisSeverity for the chip.
+          const effRatio = effectiveCavalVelocityRatio(f);
+          const ratioHigh = (effRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio;
+          const severity = cavalStenosisSeverity(effRatio);
           // Contradiction locks (audit M3).
           const occluded = f.patency === 'occluded';
           const fullyCompressible = f.compressibility === 'full';
@@ -149,11 +179,13 @@ export const IliacCavalTable = memo(function IliacCavalTable({
                             stenosisPct: undefined,
                             phasicity: undefined,
                             valsalvaResponse: undefined,
+                            levels: {},
                           }
                         : { patency },
                     );
                   }}
                   size="sm"
+                  clearable={false}
                   data-testid={`iliac-${id}-patency`}
                 />
               </div>
@@ -174,6 +206,7 @@ export const IliacCavalTable = memo(function IliacCavalTable({
                     );
                   }}
                   size="sm"
+                  clearable={false}
                   data-testid={`iliac-${id}-compressibility`}
                 />
               </div>
@@ -188,24 +221,88 @@ export const IliacCavalTable = memo(function IliacCavalTable({
                   }
                   disabled={fullyCompressible}
                   size="sm"
+                  clearable={false}
                   data-testid={`iliac-${id}-thrombus`}
                 />
               </div>
 
               <div className={classes.cell} data-label={fieldLabel('velocityRatio')}>
-                <EMRNumberInput
-                  aria-label={`${segLabel} ${fieldLabel('velocityRatio')}`}
-                  value={f.velocityRatio ?? ''}
-                  onChange={(v) => onChange(id, { velocityRatio: toNum(v) })}
-                  min={0}
-                  max={20}
-                  step={0.1}
-                  decimalScale={1}
-                  size="sm"
-                  disabled={occluded}
-                  error={ratioHigh ? t('iliacPelvicVenous.warn.velocityRatio', '≥ 2.5') : undefined}
-                  data-testid={`iliac-${id}-velocity-ratio`}
-                />
+                <div className={classes.levelCluster}>
+                  {CAVAL_LEVELS_FOR_BASE[base].map((lvl) => {
+                    const lvlLabel = t(`iliacPelvicVenous.level.${lvl}`, lvl);
+                    const hasDiameter = levelCapturesDiameter(base, lvl);
+                    return (
+                      <div key={lvl} className={classes.levelRow}>
+                        <span className={classes.levelTag} title={lvlLabel}>
+                          {lvlLabel}
+                        </span>
+                        <div className={classes.levelInputs}>
+                          <EMRNumberInput
+                            aria-label={`${segLabel} ${lvlLabel} ${fieldLabel('velocityCmS')}`}
+                            label={fieldLabel('velocityCmS')}
+                            value={f.levels?.[lvl]?.velocityCmS ?? ''}
+                            onChange={(v) => onLevelChange(id, lvl, { velocityCmS: toNum(v) })}
+                            min={0}
+                            max={400}
+                            step={1}
+                            size="sm"
+                            disabled={occluded}
+                            data-testid={`iliac-${id}-vel-${lvl}`}
+                          />
+                          {hasDiameter ? (
+                            <EMRNumberInput
+                              aria-label={`${segLabel} ${lvlLabel} ${fieldLabel('diameterMm')}`}
+                              label={fieldLabel('diameterMm')}
+                              value={f.levels?.[lvl]?.diameterMm ?? ''}
+                              onChange={(v) => onLevelChange(id, lvl, { diameterMm: toNum(v) })}
+                              min={0}
+                              max={40}
+                              step={0.1}
+                              decimalScale={1}
+                              size="sm"
+                              disabled={occluded}
+                              data-testid={`iliac-${id}-dia-${lvl}`}
+                            />
+                          ) : (
+                            <span className={classes.diameterSpacer} aria-hidden />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div
+                    className={`${classes.derivedRatio} ${ratioHigh ? classes.derivedRatioHigh : ''}`}
+                    data-testid={`iliac-${id}-velocity-ratio`}
+                  >
+                    <span className={classes.derivedRatioLabel}>{fieldLabel('velocityRatio')}</span>
+                    <span className={classes.derivedRatioValue}>
+                      {effRatio !== undefined ? effRatio.toFixed(1) : '—'}
+                      {severity !== 'none'
+                        ? ` · ${t(`iliacPelvicVenous.severity.${severity}`, severity)}`
+                        : ''}
+                    </span>
+                  </div>
+                  {isEiv ? (
+                    <div className={classes.bladderFlags}>
+                      <EMRCheckbox
+                        label={fieldLabel('bladderArtifact')}
+                        checked={f.bladderArtifactSuspected ?? false}
+                        onChange={(c) => onChange(id, { bladderArtifactSuspected: c })}
+                        size="sm"
+                        data-testid={`iliac-${id}-bladder-artifact`}
+                      />
+                      {f.bladderArtifactSuspected ? (
+                        <EMRCheckbox
+                          label={fieldLabel('remeasuredAfterVoiding')}
+                          checked={f.remeasuredAfterVoiding ?? false}
+                          onChange={(c) => onChange(id, { remeasuredAfterVoiding: c })}
+                          size="sm"
+                          data-testid={`iliac-${id}-remeasured`}
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
               <div className={classes.cell} data-label={fieldLabel('stenosisPct')}>
@@ -234,6 +331,7 @@ export const IliacCavalTable = memo(function IliacCavalTable({
                     onChange={(v) => onChange(id, { phasicity: (v as CfvPhasicity | null) ?? undefined })}
                     disabled={occluded}
                     size="sm"
+                    clearable={false}
                     data-testid={`iliac-${id}-phasicity`}
                   />
                 ) : (
@@ -252,6 +350,7 @@ export const IliacCavalTable = memo(function IliacCavalTable({
                     }
                     disabled={occluded}
                     size="sm"
+                    clearable={false}
                     data-testid={`iliac-${id}-valsalva`}
                   />
                 ) : (

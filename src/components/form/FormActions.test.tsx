@@ -252,45 +252,6 @@ describe('FormActions — venous PDF anatomy source (Wave 1.1)', () => {
   });
 });
 
-describe('FormActions — error surfacing (Wave 1.7)', () => {
-  it('shows a red notification when JSON export throws (Area 04 CRITICAL)', async () => {
-    // Force downloadFhirBundle to throw by passing a form with a corrupted shape.
-    // The simpler path: stub the fhirBuilder import.
-    const original = await import('../../services/fhirBuilder');
-    const downloadSpy = vi
-      .spyOn(original, 'downloadFhirBundle')
-      .mockImplementation(() => {
-        throw new Error('boom');
-      });
-
-    // Suppress the augmented console.error from the catch path.
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    render(
-      <Wrap>
-        <FormActions
-          form={venousForm}
-          lastSavedAt={null}
-          hasUnsavedChanges={false}
-          onSaveDraft={() => {}}
-          baseFilename="test-report"
-        />
-      </Wrap>,
-    );
-
-    fireEvent.click(screen.getByTestId('export-json'));
-
-    await waitFor(() => {
-      expect(notifications.show).toHaveBeenCalledWith(
-        expect.objectContaining({ color: 'red', message: 'boom' }),
-      );
-    });
-
-    downloadSpy.mockRestore();
-    errSpy.mockRestore();
-  });
-});
-
 describe('FormActions — Phase 4c encounter-mode branching', () => {
   it('1-study encounter renders single-study <ReportDocument> on Download PDF', async () => {
     const encounter = buildEncounter({
@@ -386,57 +347,6 @@ describe('FormActions — Phase 4c encounter-mode branching', () => {
     expect(renderedDoc.props.encounter.encounterId).toBe('enc-1');
   });
 
-  it('2-study encounter (both complete) calls buildEncounterBundle on Export FHIR', async () => {
-    const encounter = buildEncounter({
-      selectedStudyTypes: ['venousLEBilateral', 'arterialLE'],
-      studies: {
-        venousLEBilateral: venousForm,
-        arterialLE: arterialForm,
-      },
-    });
-
-    // Stub out the actual download mechanism; we only care that
-    // buildEncounterBundle was invoked with the right shape.
-    const createUrlSpy = vi
-      .spyOn(URL, 'createObjectURL')
-      .mockReturnValue('blob:mock');
-    const revokeUrlSpy = vi
-      .spyOn(URL, 'revokeObjectURL')
-      .mockImplementation(() => {});
-
-    render(
-      <WrapWithEncounter encounter={encounter}>
-        <FormActions
-          form={venousForm}
-          lastSavedAt={null}
-          hasUnsavedChanges={false}
-          onSaveDraft={() => {}}
-          baseFilename="venous-le-test-2026-04-25"
-        />
-      </WrapWithEncounter>,
-    );
-
-    fireEvent.click(screen.getByTestId('export-json'));
-
-    await waitFor(() => {
-      expect(buildEncounterBundleMock).toHaveBeenCalled();
-    });
-
-    const callInput = buildEncounterBundleMock.mock.calls[0]?.[0] as {
-      encounter: EncounterDraft;
-      studyForms: FormState[];
-    };
-    expect(callInput.encounter.encounterId).toBe('enc-1');
-    expect(callInput.studyForms).toHaveLength(2);
-    expect(callInput.studyForms.map((f) => f.studyType)).toEqual([
-      'venousLEBilateral',
-      'arterialLE',
-    ]);
-
-    createUrlSpy.mockRestore();
-    revokeUrlSpy.mockRestore();
-  });
-
   it('2-study encounter with one study missing findings disables exports + shows tooltip', async () => {
     const encounter = buildEncounter({
       selectedStudyTypes: ['venousLEBilateral', 'arterialLE'],
@@ -460,7 +370,6 @@ describe('FormActions — Phase 4c encounter-mode branching', () => {
 
     expect(screen.getByTestId('download-pdf')).toBeDisabled();
     expect(screen.getByTestId('preview-pdf')).toBeDisabled();
-    expect(screen.getByTestId('export-json')).toBeDisabled();
 
     // Mantine Tooltip renders its label only when visible (hover/focus).
     // Hover the disabled-button wrapper to trigger Mantine's positioning,

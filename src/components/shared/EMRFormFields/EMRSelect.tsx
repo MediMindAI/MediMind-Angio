@@ -11,6 +11,9 @@ import './emr-fields.css';
 
 /**
  * Custom render function for dropdown options
+ * Uses explicit inline styles to ensure text is ALWAYS visible
+ * @param root0
+ * @param root0.option
  */
 function renderSelectOption({ option }: { option: ComboboxItem }): React.ReactNode {
   return (
@@ -32,9 +35,10 @@ type GroupedOption = { group: string; items: SimpleOption[] };
 
 /**
  * Convert EMRSelectOption[] or string[] to Mantine ComboboxData format
+ * @param data
  */
 function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
-  if (data.length === 0) { return []; }
+  if (data.length === 0) {return [];}
 
   // Check if it's string array
   if (typeof data[0] === 'string') {
@@ -54,10 +58,7 @@ function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
     options.forEach((opt) => {
       const item: SimpleOption = { value: opt.value, label: opt.label, disabled: opt.disabled };
       if (opt.group) {
-        if (!groups[opt.group]) {
-          groups[opt.group] = [];
-        }
-        groups[opt.group]!.push(item);
+        (groups[opt.group] ??= []).push(item);
       } else {
         ungrouped.push(item);
       }
@@ -65,6 +66,7 @@ function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
 
     const result: (SimpleOption | GroupedOption)[] = [...ungrouped];
 
+    // Add grouped items
     Object.entries(groups).forEach(([group, items]) => {
       result.push({ group, items });
     });
@@ -72,7 +74,7 @@ function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
     return result;
   }
 
-  // No groups
+  // No groups, just return options
   return options.map((opt) => ({
     value: opt.value,
     label: opt.label,
@@ -82,6 +84,7 @@ function normalizeOptions(data: EMRSelectOption[] | string[]): ComboboxData {
 
 /**
  * EMRSelect component
+ * A production-ready dropdown select with consistent styling
  */
 export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
   (
@@ -129,16 +132,21 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
     const { t } = useTranslation();
-    const finalNothingFoundMessage = nothingFoundMessage ?? t('common.noOptionsFound', 'No options found');
+    const finalNothingFoundMessage = nothingFoundMessage || t('common.noOptionsFound');
 
-    const helpTextValue = description ?? helpText;
+    // Use description if provided, otherwise use helpText
+    const helpTextValue = description || helpText;
 
+    // Normalize options to Mantine format
     const normalizedData = useMemo(() => normalizeOptions(data), [data]);
 
+    // Set very generous height to avoid clipping - CSS will handle final constraints
+    // Mantine defaults to 250px which clips Georgian text
     const calculatedDropdownHeight = maxDropdownHeight ?? 600;
 
+    // Handle change event
     const handleChange = useCallback(
       (newValue: string | null) => {
         if (onChange) {
@@ -148,24 +156,27 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
       [onChange]
     );
 
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) { return validationState; }
-      if (error) { return 'error'; }
-      if (successMessage) { return 'success'; }
-      if (warningMessage) { return 'warning'; }
+    // Determine validation state
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
+      if (successMessage) {return 'success';}
+      if (warningMessage) {return 'warning';}
       return 'default';
     };
 
     const state = getValidationState();
 
+    // Build aria-describedby: link to the wrapper's error/message element
     const hasMessage = (state === 'error' && typeof error === 'string') ||
       (state === 'success' && !!successMessage) ||
       (state === 'warning' && !!warningMessage) ||
       (state === 'default' && !!helpTextValue);
     const messageElementId = hasMessage ? `${inputId}-${state === 'default' ? 'help' : state}` : undefined;
-    const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
+    const computedAriaDescribedBy = ariaDescribedBy || messageElementId;
 
-    const heights: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
+    // Calculate heights based on size
+    const heights = {
       xs: 30,
       sm: 36,
       md: 42,
@@ -173,6 +184,7 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
       xl: 54,
     };
 
+    // Build input classes
     const inputClasses = [
       'emr-input',
       'emr-select-input',
@@ -189,7 +201,7 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
         label={label}
         required={required}
         helpText={helpTextValue}
-        error={error ?? undefined}
+        error={error}
         successMessage={successMessage}
         warningMessage={warningMessage}
         validationState={validationState}
@@ -216,6 +228,13 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
           nothingFoundMessage={finalNothingFoundMessage}
           maxDropdownHeight={calculatedDropdownHeight}
           clearable={clearable}
+          clearButtonProps={{
+            'aria-label': t('common.clearInput'),
+            // Sized to sit inside the right-section slot Mantine reserves.
+            // (A previous 44px override rendered a giant X that overlapped the
+            // selected value and stole space from narrow table-cell selects.)
+            size: 'sm',
+          }}
           allowDeselect={allowDeselect}
           checkIconPosition={checkIconPosition}
           required={required}
@@ -228,7 +247,7 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
           error={!!error}
           filter={filter as Parameters<typeof Select>[0]['filter']}
           onSearchChange={onSearchChange}
-          renderOption={customRenderOption ?? renderSelectOption}
+          renderOption={customRenderOption || renderSelectOption}
           comboboxProps={{
             offset: 8,
             shadow: 'md',
@@ -254,6 +273,23 @@ export const EMRSelect = memo(forwardRef<HTMLInputElement, EMRSelectProps>(
               borderRadius: 'var(--emr-input-border-radius)',
               transition: 'var(--emr-input-transition)',
               cursor: readOnly ? 'default' : 'pointer',
+              '&:focus': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-focus)',
+                boxShadow: state === 'error'
+                  ? 'var(--emr-input-error-glow)'
+                  : state === 'success'
+                  ? 'var(--emr-input-success-glow)'
+                  : state === 'warning'
+                  ? 'var(--emr-input-warning-glow)'
+                  : 'var(--emr-input-focus-ring)',
+              },
+              '&:hover:not(:disabled):not(:focus)': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-hover)',
+              },
             },
             wrapper: {
               width: fullWidth ? '100%' : undefined,

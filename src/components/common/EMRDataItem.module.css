@@ -1,0 +1,105 @@
+/* EMRDataItem - Medical data item card styling */
+
+.dataItem {
+  position: relative;
+  width: 100%;
+}
+
+/* Light mode base styles */
+.dataItemLight {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  box-shadow: var(--emr-shadow-sm);
+  border-radius: var(--emr-border-radius-lg);
+  transition: var(--emr-transition-base);
+}
+
+.dataItemLight:hover {
+  border-color: var(--emr-accent-transparent);
+  box-shadow: var(--emr-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Dark mode base styles */
+.dataItemDark {
+  background: var(--emr-card-bg-gradient);
+  border: 1px solid var(--emr-card-border-subtle);
+  box-shadow: var(--emr-shadow-card-dark), var(--emr-card-inner-glow);
+  border-radius: var(--emr-border-radius-lg);
+  transition: var(--emr-transition-base);
+}
+
+.dataItemDark:hover {
+  border-color: var(--emr-card-border-hover);
+  box-shadow: var(--emr-shadow-card-dark-hover), var(--emr-card-inner-glow);
+  transform: translateY(-1px);
+}
+
+/* Left accent stripe */
+.accentStripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Main content area */
+.content {
+  position: relative;
+}
+
+/* Name text styling */
+.nameText {
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+}
+
+/* Metadata row */
+.metaRow {
+  color: var(--emr-text-secondary);
+}
+
+/* Doctor comment section */
+.commentSection {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius-sm);
+  border-left: 3px solid var(--emr-secondary);
+}
+
+/* Action buttons container */
+.actions {
+  transition: opacity var(--emr-transition-fast);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.dataItemLight:hover .actions,
+.dataItemDark:hover .actions {
+  opacity: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 576px) {
+  .dataItem {
+    padding: 8px 10px !important;
+  }
+
+  .nameText {
+    font-size: var(--emr-font-sm);
+  }
+
+  .metaRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .actions {
+    opacity: 1 !important;
+  }
+}
+

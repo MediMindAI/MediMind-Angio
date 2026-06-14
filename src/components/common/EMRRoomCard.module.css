@@ -1,0 +1,444 @@
+/* EMRRoomCard - Collapsible room card containing bed cards
+   Uses EMR theme variables for consistent styling */
+
+/* ==================== ROOM CARD ==================== */
+.roomCard {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.roomCard:hover {
+  box-shadow: var(--emr-shadow-sm);
+}
+
+/* ==================== HEADER ==================== */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--emr-bg-card);
+  transition: background 0.2s ease;
+}
+
+.header:hover {
+  background: var(--emr-bg-hover);
+}
+
+.header:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: -2px;
+}
+
+/* ==================== ICON WRAPPER ==================== */
+.iconWrapper {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emr-bg-accent-secondary);
+  border-radius: 12px;
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.header:hover .iconWrapper {
+  background: var(--emr-secondary);
+  color: var(--emr-text-inverse);
+}
+
+/* ==================== INFO SECTION ==================== */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  margin: 2px 0 0 0;
+}
+
+/* ==================== BADGE ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--emr-bg-accent-secondary);
+  color: var(--emr-secondary);
+  border-radius: 8px;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-medium);
+  flex-shrink: 0;
+}
+
+/* ==================== CAPACITY SECTION ==================== */
+.capacitySection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ==================== CAPACITY INDICATOR ==================== */
+.capacity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--emr-bg-accent-primary);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.capacityIcon {
+  color: var(--emr-primary);
+}
+
+.capacityText {
+  font-size: var(--emr-font-base);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-primary);
+}
+
+/* Full capacity warning */
+.capacityFull {
+  background: var(--emr-error-alpha-10, rgba(229, 62, 62, 0.1));
+}
+
+.capacityFull .capacityIcon,
+.capacityFull .capacityText {
+  color: var(--emr-error);
+}
+
+/* ==================== OCCUPANCY BAR ==================== */
+.occupancyBar {
+  width: 100%;
+  height: 4px;
+  background: var(--emr-bg-input);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.occupancyFill {
+  height: 100%;
+  background: var(--emr-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.occupancyFull {
+  background: var(--emr-error);
+}
+
+/* ==================== QUICK ACTIONS ==================== */
+.actionsWrapper {
+  flex-shrink: 0;
+}
+
+.actionsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--emr-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.actionsButton:hover {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.actionsButton:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 2px;
+}
+
+/* ==================== STATUS SUMMARY BAR ==================== */
+.statusSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--emr-bg-page);
+  border-top: 1px solid var(--emr-border-color);
+}
+
+.statusItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  border-radius: 6px;
+}
+
+.statusAvailable {
+  background: var(--emr-success-alpha-12, rgba(56, 161, 105, 0.12));
+  color: var(--emr-success);
+}
+
+.statusOccupied {
+  background: var(--emr-error-alpha-12, rgba(229, 62, 62, 0.12));
+  color: var(--emr-error);
+}
+
+.statusCleaning {
+  background: var(--emr-cleaning-alpha-15, rgba(236, 201, 75, 0.15));
+  color: var(--emr-warning);
+}
+
+.statusReserved {
+  background: var(--emr-reserved-alpha-12, rgba(66, 153, 225, 0.12));
+  color: var(--emr-secondary);
+}
+
+.statusOutOfService {
+  background: var(--emr-gray-alpha-12);
+  color: var(--emr-text-secondary);
+}
+
+/* ==================== CHEVRON ==================== */
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--emr-text-secondary);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+/* ==================== CONTENT AREA ==================== */
+.content {
+  display: none;
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid var(--emr-border-color);
+  background: var(--emr-bg-page);
+}
+
+.expanded .content {
+  display: block;
+}
+
+/* ==================== BED GRID ==================== */
+.bedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding-top: 16px;
+}
+
+/* ==================== LOADING STATE ==================== */
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading .iconWrapper,
+.loading .title,
+.loading .badge {
+  background: var(--emr-bg-hover);
+  color: transparent;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ==================== ANIMATED ENTRANCE ==================== */
+.animated {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: slideIn 0.4s ease forwards;
+}
+
+.delay0 { animation-delay: 0ms; }
+.delay1 { animation-delay: 50ms; }
+.delay2 { animation-delay: 100ms; }
+.delay3 { animation-delay: 150ms; }
+.delay4 { animation-delay: 200ms; }
+.delay5 { animation-delay: 250ms; }
+.delay6 { animation-delay: 300ms; }
+.delay7 { animation-delay: 350ms; }
+.delay8 { animation-delay: 400ms; }
+.delay9 { animation-delay: 450ms; }
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .iconWrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .title {
+    font-size: var(--emr-font-md);
+  }
+
+  .badge {
+    display: none;
+  }
+
+  .capacitySection {
+    order: 5;
+    margin-left: auto;
+  }
+
+  .statusSummary {
+    padding: 8px 16px;
+    gap: 6px;
+  }
+
+  .statusItem {
+    font-size: var(--emr-font-xs);
+    padding: 3px 8px;
+  }
+
+  .content {
+    padding: 0 16px 16px 16px;
+  }
+
+  .bedGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 10px 12px;
+  }
+
+  .iconWrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .statusSummary {
+    padding: 6px 12px;
+  }
+
+  .occupancyBar {
+    min-width: 60px;
+  }
+
+  .actionsButton {
+    width: 28px;
+    height: 28px;
+  }
+
+  .bedGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .roomCard,
+  .header,
+  .iconWrapper,
+  .chevron {
+    transition: none;
+  }
+
+  .animated {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .loading .iconWrapper,
+  .loading .title,
+  .loading .badge {
+    animation: none;
+  }
+}
+
+/* ==================== COMPACT MODE ==================== */
+/* Placed after media queries so compact styles take precedence */
+.roomCard.compact .header {
+  padding: 6px 8px;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.roomCard.compact .title {
+  font-size: var(--emr-font-sm);
+}
+
+.roomCard.compact .capacity {
+  padding: 2px 6px;
+  min-height: 28px;
+  min-width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roomCard.compact .capacityText {
+  font-size: var(--emr-font-xs);
+}
+
+.roomCard.compact .content {
+  padding: 0;
+}
+
+.roomCard.compact .bedGrid {
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  padding-top: 8px;
+}
+
+.roomCard.compact .chevron {
+  width: 20px;
+  height: 20px;
+}

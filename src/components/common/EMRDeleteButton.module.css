@@ -1,0 +1,19 @@
+/* EMRDeleteButton - Standardized delete button styling */
+
+.deleteButton {
+  transition: all 0.2s ease;
+}
+
+.deleteButton:hover:not(:disabled) {
+  transform: scale(1.1);
+  background: var(--emr-bg-hover);
+}
+
+.deleteButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

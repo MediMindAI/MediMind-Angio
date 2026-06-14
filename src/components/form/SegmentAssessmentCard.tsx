@@ -12,7 +12,7 @@
  */
 
 import { memo } from 'react';
-import { Box, Grid, Group, Text, Tooltip } from '@mantine/core';
+import { Box, Grid, Group, Text } from '@mantine/core';
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -20,7 +20,7 @@ import {
   IconStethoscope,
   IconTrash,
 } from '@tabler/icons-react';
-import { EMRTabs, EMRButton } from '../common';
+import { EMRTabs, EMRButton, EMRTooltip } from '../common';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { SegmentTable, type SegmentTableView } from './SegmentTable';
 import { ReflexTimeTable } from './ReflexTimeTable';
@@ -112,7 +112,7 @@ export const SegmentAssessmentCard = memo(function SegmentAssessmentCard({
       <Box className={classes.toolbar}>
         <Group gap="xs" wrap="wrap" className={classes.toolbarInner}>
           <div className={classes.toolbarGroup}>
-            <Tooltip
+            <EMRTooltip
               label={t(
                 'venousLE.bulk.allNormalTooltip',
                 'Fill every segment with normal findings (⌘N)',
@@ -131,8 +131,8 @@ export const SegmentAssessmentCard = memo(function SegmentAssessmentCard({
                   {t('venousLE.bulk.allNormal', 'All normal')}
                 </EMRButton>
               </span>
-            </Tooltip>
-            <Tooltip
+            </EMRTooltip>
+            <EMRTooltip
               label={t('venousLE.bulk.clearAllTooltip', 'Clear every finding in this tab')}
               withArrow
               openDelay={500}
@@ -148,8 +148,8 @@ export const SegmentAssessmentCard = memo(function SegmentAssessmentCard({
                   {t('venousLE.bulk.clearAll', 'Clear all')}
                 </EMRButton>
               </span>
-            </Tooltip>
-            <Tooltip
+            </EMRTooltip>
+            <EMRTooltip
               label={t(
                 'venousLE.bulk.copyRightToLeftTooltip',
                 'Duplicate right-side findings to left (⌘D)',
@@ -168,8 +168,8 @@ export const SegmentAssessmentCard = memo(function SegmentAssessmentCard({
                   {t('venousLE.bulk.copyRightToLeft', 'Copy R → L')}
                 </EMRButton>
               </span>
-            </Tooltip>
-            <Tooltip
+            </EMRTooltip>
+            <EMRTooltip
               label={t(
                 'venousLE.bulk.copyLeftToRightTooltip',
                 'Duplicate left-side findings to right',
@@ -188,7 +188,7 @@ export const SegmentAssessmentCard = memo(function SegmentAssessmentCard({
                   {t('venousLE.bulk.copyLeftToRight', 'Copy L → R')}
                 </EMRButton>
               </span>
-            </Tooltip>
+            </EMRTooltip>
           </div>
           <div className={classes.toolbarDivider} aria-hidden />
           <div className={classes.toolbarGroup}>

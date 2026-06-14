@@ -9,6 +9,7 @@ import './emr-fields.css';
 
 /**
  * EMRRadioGroup component
+ * A production-ready radio group with consistent styling
  */
 export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>(
   (
@@ -43,8 +44,9 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const groupId = id ?? generatedId;
+    const groupId = id || generatedId;
 
+    // Handle change event
     const handleChange = useCallback(
       (newValue: string) => {
         if (onChange) {
@@ -54,15 +56,17 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
       [onChange]
     );
 
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) { return validationState; }
-      if (error) { return 'error'; }
+    // Determine validation state
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
       return 'default';
     };
 
     const state = getValidationState();
     const hasError = state === 'error';
 
+    // Spacing values
     const spacingValues: Record<EMRInputSize, number> = {
       xs: 6,
       sm: 8,
@@ -72,14 +76,14 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
     };
 
     // Render options
-    const renderOptions = (): React.ReactNode => {
+    const renderOptions = () => {
       return options.map((option) => (
         <Radio
           key={option.value}
           value={option.value}
           label={option.label}
           description={option.description}
-          disabled={disabled ?? readOnly ?? option.disabled}
+          disabled={disabled || readOnly || option.disabled}
           styles={{
             root: {
               width: orientation === 'vertical' ? '100%' : 'auto',
@@ -88,6 +92,18 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
               cursor: disabled || option.disabled ? 'not-allowed' : 'pointer',
               borderColor: hasError ? 'var(--emr-input-error-border)' : 'var(--emr-input-border)',
               transition: 'var(--emr-input-transition)',
+              // Checked = solid Command navy per DESIGN-DIRECTION.md.
+              // Per-instance `color` override must be a theme-sanctioned value
+              // (theme blues / --emr-success / --emr-error) — never an off-palette hex.
+              '&:checked': {
+                backgroundColor: color || 'var(--emr-primary)',
+                borderColor: color || 'var(--emr-primary)',
+              },
+              '&:focus': {
+                boxShadow: hasError
+                  ? 'var(--emr-input-error-glow)'
+                  : 'var(--emr-input-focus-ring)',
+              },
             },
             label: {
               fontSize: 'var(--emr-input-font-size)',
@@ -100,7 +116,6 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
               color: 'var(--emr-input-help-color)',
             },
           }}
-          color={color}
         />
       ));
     };
@@ -113,7 +128,7 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
         label={label}
         required={required}
         helpText={helpText}
-        error={error ?? undefined}
+        error={error}
         validationState={validationState}
         size={size}
         fullWidth={fullWidth}
@@ -124,7 +139,7 @@ export const EMRRadioGroup = memo(forwardRef<HTMLDivElement, EMRRadioGroupProps>
         <Radio.Group
           ref={ref}
           id={groupId}
-          name={name ?? groupId}
+          name={name || groupId}
           value={value}
           defaultValue={defaultValue}
           onChange={handleChange}

@@ -1,0 +1,132 @@
+/* EMRInterventionGroup - Styled container for intervention checkboxes */
+
+.emr-intervention-group {
+  position: relative;
+  padding: 14px 16px;
+  background: linear-gradient(135deg,
+    var(--emr-light-accent-alpha-04, rgba(99, 179, 237, 0.04)) 0%,
+    var(--emr-accent-blue-alpha-02, rgba(66, 153, 225, 0.02)) 50%,
+    transparent 100%
+  );
+  border: 1px solid var(--emr-light-accent-alpha-12, rgba(99, 179, 237, 0.12));
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.emr-intervention-group:hover {
+  border-color: var(--emr-light-accent-alpha-20, rgba(99, 179, 237, 0.2));
+  background: linear-gradient(135deg,
+    var(--emr-light-accent-alpha-06, rgba(99, 179, 237, 0.06)) 0%,
+    var(--emr-accent-blue-alpha-03, rgba(66, 153, 225, 0.03)) 50%,
+    transparent 100%
+  );
+}
+
+.emr-intervention-group.dark {
+  background: linear-gradient(135deg,
+    var(--emr-light-accent-alpha-08, rgba(99, 179, 237, 0.08)) 0%,
+    var(--emr-accent-blue-alpha-04, rgba(66, 153, 225, 0.04)) 50%,
+    transparent 100%
+  );
+  border-color: var(--emr-light-accent-alpha-15, rgba(99, 179, 237, 0.15));
+}
+
+.emr-intervention-group.dark:hover {
+  border-color: var(--emr-light-accent-alpha-25, rgba(99, 179, 237, 0.25));
+}
+
+.emr-intervention-group.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Decorative corner accent */
+.emr-intervention-group-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg,
+    var(--emr-light-accent-alpha-15, rgba(99, 179, 237, 0.15)) 0%,
+    transparent 70%
+  );
+  border-radius: 12px 0 20px 0;
+}
+
+.emr-intervention-group.dark .emr-intervention-group-accent {
+  background: linear-gradient(135deg,
+    var(--emr-light-accent-alpha-20, rgba(99, 179, 237, 0.2)) 0%,
+    transparent 70%
+  );
+}
+
+/* Header */
+.emr-intervention-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.emr-intervention-group-icon {
+  display: flex;
+  align-items: center;
+  color: var(--emr-secondary);
+  opacity: 0.8;
+}
+
+.emr-intervention-group-title {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  letter-spacing: var(--emr-letter-spacing-uppercase);
+  text-transform: uppercase;
+  color: var(--emr-text-secondary, #6b7280);
+}
+
+.emr-intervention-group.dark .emr-intervention-group-title {
+  color: var(--emr-text-secondary-dark, #9ca3af);
+}
+
+/* Options container */
+.emr-intervention-group-options {
+  position: relative;
+  z-index: 1;
+}
+
+.emr-intervention-group-options.vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Extra content area */
+.emr-intervention-group-extra {
+  padding-top: 12px;
+  border-top: 1px dashed var(--emr-light-accent-alpha-15, rgba(99, 179, 237, 0.15));
+  margin-top: 12px;
+}
+
+.emr-intervention-group.dark .emr-intervention-group-extra {
+  border-top-color: var(--emr-light-accent-alpha-20, rgba(99, 179, 237, 0.2));
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+  .emr-intervention-group {
+    padding: 12px 14px;
+  }
+
+  .emr-intervention-group-options {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  /* For SimpleGrid on mobile */
+  .emr-intervention-group-options.mantine-SimpleGrid-root {
+    grid-template-columns: 1fr !important;
+  }
+}

@@ -1,0 +1,440 @@
+/* EMRDataList - Responsive data display component with card/list views */
+
+/* ============================================================================
+   Base Container Styles
+   ============================================================================ */
+
+.listContainer {
+  width: 100%;
+}
+
+.scrollContainer {
+  width: 100%;
+}
+
+.emptyWrapper {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-md) 0;
+}
+
+/* ============================================================================
+   View Mode - Desktop List View
+   ============================================================================ */
+
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listViewHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius, 8px);
+  border: 1px solid var(--emr-border-color, #e5e7eb);
+  gap: 12px;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: var(--emr-font-semibold);
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.columnHeaderSortable {
+  cursor: pointer;
+  transition: color var(--emr-transition-fast, 150ms);
+}
+
+.columnHeaderSortable:hover {
+  color: var(--emr-primary);
+}
+
+.sortIcon {
+  transition: transform var(--emr-transition-fast, 150ms);
+  opacity: 0.5;
+}
+
+.sortIconActive {
+  opacity: 1;
+  color: var(--emr-primary);
+}
+
+.sortIconDesc {
+  transform: rotate(180deg);
+}
+
+/* ============================================================================
+   View Mode - Mobile Card View
+   ============================================================================ */
+
+.cardView {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.cardItem {
+  position: relative;
+  background: var(--emr-bg-card);
+  border-radius: var(--emr-border-radius-lg, 12px);
+  border: 1px solid var(--emr-border-color, #e5e7eb);
+  padding: 16px;
+  transition: all var(--emr-transition-base, 200ms);
+  box-shadow: var(--emr-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.cardItem:hover {
+  border-color: var(--emr-accent-transparent, rgba(49, 130, 206, 0.2));
+  box-shadow: var(--emr-shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.cardItemExpanded {
+  border-color: var(--emr-accent-transparent-strong, rgba(49, 130, 206, 0.3));
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-weight: var(--emr-font-semibold);
+  font-size: var(--emr-font-lg);
+  color: var(--emr-text-primary);
+  margin-bottom: 4px;
+  line-height: var(--emr-line-height-1-3);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+}
+
+.cardMetaIcon {
+  color: var(--emr-text-secondary);
+  opacity: 0.7;
+}
+
+.cardActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   Expandable Details
+   ============================================================================ */
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: var(--emr-border-radius, 8px);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--emr-text-secondary);
+  transition: all var(--emr-transition-fast, 150ms);
+}
+
+.expandButton:hover {
+  background: var(--emr-bg-hover);
+  color: var(--emr-primary);
+}
+
+.expandIcon {
+  transition: transform var(--emr-transition-base, 200ms);
+}
+
+.expandIconRotated {
+  transform: rotate(180deg);
+}
+
+.expandedDetails {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--emr-border-color, #e5e7eb);
+  overflow: hidden;
+  animation: slideDown 200ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  font-weight: var(--emr-font-medium);
+}
+
+.detailValue {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-primary);
+}
+
+/* ============================================================================
+   List View Row Item
+   ============================================================================ */
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  background: var(--emr-bg-card);
+  border-radius: var(--emr-border-radius-lg, 12px);
+  border: 1px solid var(--emr-border-color, #e5e7eb);
+  transition: all var(--emr-transition-base, 200ms);
+  overflow: hidden;
+}
+
+.listItem:hover {
+  border-color: var(--emr-accent-transparent, rgba(49, 130, 206, 0.2));
+  box-shadow: var(--emr-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.listItemExpanded {
+  border-color: var(--emr-accent-transparent-strong, rgba(49, 130, 206, 0.3));
+}
+
+.listItemRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.listItemCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listItemExpanded .expandedDetails {
+  padding: 12px 16px 16px;
+  margin-top: 0;
+  background: var(--emr-bg-hover);
+  border-top: 1px solid var(--emr-border-color, #e5e7eb);
+}
+
+/* ============================================================================
+   Animation
+   ============================================================================ */
+
+.animated .animatedItem {
+  animation: fadeSlideIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   View Toggle
+   ============================================================================ */
+
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actionBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewToggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius, 8px);
+}
+
+.viewToggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--emr-text-secondary);
+  transition: all var(--emr-transition-fast, 150ms);
+}
+
+.viewToggleButton:hover {
+  color: var(--emr-primary);
+}
+
+.viewToggleButtonActive {
+  background: var(--emr-bg-card);
+  color: var(--emr-primary);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+/* ============================================================================
+   Scroll area styling
+   ============================================================================ */
+
+.scrollContainer :global(.mantine-ScrollArea-viewport) {
+  padding-right: var(--mantine-spacing-xs);
+}
+
+/* ============================================================================
+   Empty State Enhancement
+   ============================================================================ */
+
+.emptyStateWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.emptyStateIllustration {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+  color: var(--emr-text-secondary);
+}
+
+/* ============================================================================
+   Responsive Styles
+   ============================================================================ */
+
+/* Mobile */
+@media (max-width: 576px) {
+  .cardItem {
+    padding: 12px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .listViewHeader {
+    display: none;
+  }
+
+  .actionBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionBarRight {
+    justify-content: flex-end;
+  }
+
+  .emptyWrapper {
+    padding: var(--mantine-spacing-sm) 0;
+    min-height: 140px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 577px) and (max-width: 768px) {
+  .detailsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+  .detailsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cardView {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1200px) {
+  .cardView {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .detailsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+

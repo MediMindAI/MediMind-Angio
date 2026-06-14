@@ -1,0 +1,74 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+   SPDX-License-Identifier: Apache-2.0 */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   EMRModal — reading-room chrome (opt-in via chrome="reading-room")
+   ──────────────────────────────────────────────────────────────────────────
+   Applied ONLY to viewer-origin modals (PACS report panel, viewer share).
+   Default EMRModal rendering is untouched: this class is strictly additive
+   and attaches to the Mantine Modal content root via classNames.content.
+
+   It re-declares the auto-switching `--emr-*` surface/text/border custom
+   properties INSIDE the modal subtree so every child (EMRTextInput, EMRSelect,
+   the duration pills, EMRModalSection, plain Text, the share success card)
+   re-skins to the fixed-dark reading-room palette automatically — no child
+   edits required.
+
+   This mirrors the COMPLIANCE NOTE precedent in PACSToolbar.css (~line 354):
+   fixed-dark chrome in BOTH app themes is the sanctioned radiology convention.
+   The reading tokens are global in styles/theme.css (lines 162-167), so no new
+   hardcoded hex is introduced here.
+
+   Mantine v7 paints `.mantine-Modal-content` with
+   `background-color: var(--mantine-color-body)` from a class rule that loads
+   AFTER inline styles cannot override it cleanly, so we set `background`
+   explicitly on the content root here (scoped to this opt-in class only). */
+
+.emrModalReadingRoom {
+  /* Surfaces */
+  --emr-bg-modal: var(--emr-pacs-reading-bg);
+  --emr-bg-card: var(--emr-pacs-reading-elevated);
+  --emr-bg-input: var(--emr-pacs-reading-elevated);
+  --emr-bg-page: var(--emr-pacs-reading-bg);
+  --emr-bg-hover: var(--emr-pacs-reading-hover);
+
+  /* Accent surfaces consumed by share form (section icon, pills, badges) */
+  --emr-bg-accent-secondary: var(--emr-pacs-reading-hover);
+  --emr-bg-accent-success: var(--emr-pacs-reading-elevated);
+  --emr-bg-accent-error: var(--emr-pacs-reading-elevated);
+
+  /* Borders */
+  --emr-border-color: var(--emr-pacs-reading-border);
+  --emr-border-default: var(--emr-pacs-reading-border);
+  --emr-border-secondary: var(--emr-pacs-reading-border);
+
+  /* Text */
+  --emr-text-primary: var(--emr-pacs-reading-text);
+  --emr-text-secondary: var(--emr-pacs-reading-text-dim);
+
+  /* EMR form-field tokens (EMRTextInput / EMRTextarea / EMRSelect use their
+     own --emr-input-* family, not --emr-bg-input, so remap them too). */
+  --emr-input-bg-solid: var(--emr-pacs-reading-elevated);
+  --emr-input-bg-focus: var(--emr-pacs-reading-hover);
+  --emr-input-border: var(--emr-pacs-reading-border);
+  --emr-input-text: var(--emr-pacs-reading-text);
+  --emr-input-placeholder: var(--emr-pacs-reading-text-dim);
+  --emr-input-text-disabled: var(--emr-pacs-reading-text-dim);
+
+  /* Validation-state backgrounds. Without these remaps the field keeps the
+     LIGHT-theme tints (e.g. --emr-input-error-bg #fff5f5), so an error-state
+     input renders a near-white box behind the remapped light reading-room
+     text — making typed text invisible (the share-link email bug). Use the
+     dark-theme tints (mirrors theme.css dark scope) so the red/green/amber
+     border still reads against a dark fill. */
+  --emr-input-error-bg: rgba(229, 62, 62, 0.15);
+  --emr-input-success-bg: rgba(34, 197, 94, 0.15);
+  --emr-input-warning-bg: rgba(251, 113, 133, 0.15);
+
+  /* Paint the Mantine content root itself (wins over --mantine-color-body) */
+  background: var(--emr-pacs-reading-bg) !important;
+}
+
+/* Body of the modal uses inline `var(--emr-bg-card)` which we've remapped to
+   the elevated reading tone above; the content root stays the darker base.
+   No further selectors are needed — every child reads the remapped vars. */

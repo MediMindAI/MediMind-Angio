@@ -127,6 +127,11 @@
   font-weight: var(--emr-font-semibold);
   color: var(--emr-text-primary);
   line-height: var(--emr-line-height-tight);
+  /* Truncate instead of spilling onto the count pill when the header row gets
+     tight (narrow / mobile widths). The flex parent has min-width: 0. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .panelHeaderCount {
@@ -253,6 +258,11 @@
   }
   .panelHeader {
     padding: 12px 16px;
+  }
+  /* Hide the verbose "N visits on this device" pill on phones — it crowds out
+     the title. The count is redundant once the panel is expanded. */
+  .panelHeaderCount {
+    display: none;
   }
   .panelBody {
     padding: 12px 16px 10px;

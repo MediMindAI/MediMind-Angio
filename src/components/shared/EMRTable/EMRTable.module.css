@@ -1,0 +1,240 @@
+/* EMRTable Component Styles */
+/* Uses CSS variables from theme.css - supports light/dark mode */
+
+/* T321: CSS containment for performance */
+.tableContainer {
+  contain: layout style paint;
+}
+
+/* T065: Header gradient styles - enhanced with blue tint for dark mode visibility */
+.tableHeader {
+  background: var(--emr-table-header-bg);
+  color: var(--emr-table-header-text);
+  border-bottom: 2px solid var(--emr-table-header-border);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.tableHeader th {
+  color: var(--emr-table-header-text);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  font-size: var(--emr-font-2xs);
+  letter-spacing: var(--emr-letter-spacing-uppercase);
+  padding: 14px 16px;
+  border-bottom: none;
+}
+
+/* T066: Row hover effect with subtle navy left rail (Command identity) */
+.tableRow {
+  transition: background-color 0.15s ease, border-left-color 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.tableRow:hover {
+  background-color: var(--emr-bg-hover);
+  border-left: 3px solid var(--emr-primary);
+}
+
+.tableRowDisableHover:hover {
+  background-color: transparent;
+}
+
+/* T067: Action column styling */
+.actionColumn {
+  text-align: center;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.actionColumn button {
+  margin: 0 var(--emr-spacing-xs);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
+
+/* T069: Dark mode support - uses CSS variables automatically */
+/* All colors use CSS variables that switch automatically based on data-mantine-color-scheme */
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .tableHeader th {
+    font-size: var(--emr-font-xs);
+    padding: var(--emr-spacing-xs) var(--emr-spacing-sm);
+  }
+
+  .actionColumn button {
+    margin: 0 2px;
+    padding: 6px;
+  }
+
+  /* Make table scrollable horizontally on mobile */
+  .tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce cell padding on mobile */
+  .tableRow td {
+    padding: var(--emr-spacing-xs) var(--emr-spacing-sm);
+    font-size: var(--emr-font-md);
+  }
+
+  /* Ensure minimum touch target for action buttons */
+  .actionColumn button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .tableHeader th {
+    font-size: var(--emr-font-xs);
+    padding: 8px 10px;
+  }
+
+  .tableRow td {
+    padding: 8px 10px;
+    font-size: var(--emr-font-base);
+  }
+
+  .actionColumn {
+    position: sticky;
+    right: 0;
+    background-color: inherit;
+    box-shadow: -2px 0 4px var(--emr-black-alpha-05);
+  }
+}
+
+/* ============================================= */
+/*  T301: EMRVirtualTable Row Styles             */
+/* ============================================= */
+
+/* T321: CSS containment for virtual table performance */
+.virtualTableContainer {
+  contain: layout style;
+}
+
+/* Virtual row - base styles (odd rows) */
+.virtualRow {
+  background-color: var(--emr-bg-card);
+  border-bottom: 1px solid var(--emr-border-color);
+  transition: background 0.15s ease;
+}
+
+.virtualRow:hover {
+  background-color: var(--emr-bg-hover);
+}
+
+/* Virtual row - striped (even rows) */
+.virtualRowStriped {
+  background-color: var(--emr-bg-page);
+  border-bottom: 1px solid var(--emr-border-color);
+  transition: background 0.15s ease;
+}
+
+.virtualRowStriped:hover {
+  background-color: var(--emr-bg-hover);
+}
+
+/* ============================================= */
+/*  T302: EMRTableActions Hover Styles           */
+/* ============================================= */
+
+/* More actions button (dots menu) */
+.moreActionsButton {
+  transition: var(--emr-transition-fast);
+  background-color: transparent;
+}
+
+.moreActionsButton:hover {
+  background-color: var(--emr-table-action-hover);
+}
+
+/* Primary action button with dynamic color */
+.primaryActionButton {
+  transition: var(--emr-transition-fast);
+  background-color: transparent;
+}
+
+.primaryActionButton:hover:not(:disabled) {
+  background-color: var(--action-hover-bg, var(--emr-bg-accent-secondary));
+  transform: scale(1.05);
+}
+
+.primaryActionButton:not(:hover) {
+  transform: scale(1);
+}
+
+/* ============================================= */
+/*  Row Action Menu (3-dot dropdown) polish      */
+/* ============================================= */
+
+/* Dropdown container — elevated, rounded, themed */
+.actionsMenuDropdown {
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-default);
+  border-radius: var(--emr-border-radius-lg);
+  box-shadow: var(--emr-shadow-lg);
+  padding: 6px;
+  min-width: 220px;
+}
+
+/* Base menu item — comfortable spacing, themed colors, 44px tap target */
+.actionsMenuItem {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-normal);
+  color: var(--emr-text-primary);
+  padding: 10px 14px;
+  border-radius: var(--emr-border-radius);
+  min-height: 44px;
+  transition: background-color var(--emr-transition-fast), color var(--emr-transition-fast);
+  white-space: nowrap;
+}
+
+.actionsMenuItem:hover:not([data-disabled]) {
+  background-color: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+.actionsMenuItem:focus-visible {
+  background-color: var(--emr-bg-accent-secondary);
+  outline: none;
+}
+
+/* Default icon color — secondary so labels remain the primary visual weight */
+.actionsMenuItem :global(.mantine-Menu-itemSection) {
+  color: var(--emr-text-secondary);
+}
+
+/* Destructive item (delete/archive-like red actions) */
+.actionsMenuItemDestructive {
+  color: var(--emr-error);
+}
+
+.actionsMenuItemDestructive :global(.mantine-Menu-itemSection) {
+  color: var(--emr-error);
+}
+
+.actionsMenuItemDestructive:hover:not([data-disabled]) {
+  background-color: var(--emr-bg-accent-error);
+  color: var(--emr-error);
+}
+
+/* Thin divider above destructive items */
+.actionsMenuDivider {
+  height: 1px;
+  background-color: var(--emr-border-default);
+  opacity: 0.6;
+  margin: 6px 4px;
+  border: none;
+}

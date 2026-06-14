@@ -34,6 +34,7 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
       leftSection,
       rightSection,
       className = '',
+      classNames,
       style,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
@@ -60,11 +61,11 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
     const { t } = useTranslation();
 
     // Use description if provided, otherwise use helpText
-    const helpTextValue = description ?? helpText;
+    const helpTextValue = description || helpText;
 
     // Handle change event
     const handleChange = useCallback(
@@ -89,25 +90,26 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
     }, [onClear, onChange]);
 
     // Determine validation state
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) { return validationState; }
-      if (error) { return 'error'; }
-      if (successMessage) { return 'success'; }
-      if (warningMessage) { return 'warning'; }
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
+      if (successMessage) {return 'success';}
+      if (warningMessage) {return 'warning';}
       return 'default';
     };
 
     const state = getValidationState();
 
-    // Build aria-describedby
+    // Build aria-describedby: link to the wrapper's error/message element
+    // Check if a message will be rendered by EMRFieldWrapper based on state
     const hasMessage = (state === 'error' && typeof error === 'string') ||
       (state === 'success' && !!successMessage) ||
       (state === 'warning' && !!warningMessage) ||
       (state === 'default' && !!helpTextValue);
     const messageElementId = hasMessage ? `${inputId}-${state === 'default' ? 'help' : state}` : undefined;
-    const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
+    const computedAriaDescribedBy = ariaDescribedBy || messageElementId;
 
-    // Build input classes
+    // Build input classes (caller's classNames.input is appended, never replaces)
     const inputClasses = [
       'emr-input',
       `size-${size}`,
@@ -116,12 +118,13 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
       state === 'warning' && 'has-warning',
       leftSection && 'has-left-section',
       (rightSection || (clearable && value)) && 'has-right-section',
+      classNames?.input,
     ]
       .filter(Boolean)
       .join(' ');
 
     // Calculate heights based on size
-    const heights: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
+    const heights = {
       xs: 30,
       sm: 36,
       md: 42,
@@ -136,7 +139,7 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
         className="emr-input-clear-btn"
         onClick={handleClear}
         tabIndex={-1}
-        aria-label={t('common.clearInput', 'Clear')}
+        aria-label={t('common.clearInput')}
       >
         <IconX size={14} />
       </button>
@@ -147,7 +150,7 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
         label={label}
         required={required}
         helpText={helpTextValue}
-        error={error ?? undefined}
+        error={error}
         successMessage={successMessage}
         warningMessage={warningMessage}
         validationState={validationState}
@@ -187,6 +190,8 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
           error={!!error}
           classNames={{
             input: inputClasses,
+            ...(classNames?.wrapper ? { wrapper: classNames.wrapper } : {}),
+            ...(classNames?.section ? { section: classNames.section } : {}),
           }}
           styles={{
             input: {
@@ -201,6 +206,23 @@ export const EMRTextInput = memo(forwardRef<HTMLInputElement, EMRTextInputProps>
                 : 'var(--emr-input-border)',
               borderRadius: 'var(--emr-input-border-radius)',
               transition: 'var(--emr-input-transition)',
+              '&:focus': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-focus)',
+                boxShadow: state === 'error'
+                  ? 'var(--emr-input-error-glow)'
+                  : state === 'success'
+                  ? 'var(--emr-input-success-glow)'
+                  : state === 'warning'
+                  ? 'var(--emr-input-warning-glow)'
+                  : 'var(--emr-input-focus-ring)',
+              },
+              '&:hover:not(:disabled):not(:focus)': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-hover)',
+              },
             },
             wrapper: {
               width: fullWidth ? '100%' : undefined,

@@ -1,0 +1,203 @@
+/* ============================================================================
+   EMRStepper - Command identity (locked 2026-06-11)
+   Compound stepper with content panels. Active/completed indicators are solid
+   navy / gradient accents; connectors are hairline. Theme tokens only.
+   ============================================================================ */
+
+.container {
+  width: 100%;
+}
+
+/* ---- Indicator row ---------------------------------------------------- */
+.indicators {
+  position: relative;
+  width: 100%;
+  justify-content: space-between;
+  padding: 4px 0 12px;
+}
+
+.stepWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 160px;
+  padding: 8px;
+  border-radius: var(--emr-border-radius-lg);
+  border: 1px solid transparent;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  cursor: default;
+  outline: none;
+}
+
+.selectable {
+  cursor: pointer;
+}
+
+.selectable:hover {
+  background: var(--emr-bg-hover);
+}
+
+.selectable:focus-visible {
+  border-color: var(--emr-primary);
+  box-shadow: 0 0 0 3px var(--emr-primary-alpha-12);
+}
+
+/* ---- Indicator circle ------------------------------------------------- */
+.indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  flex-shrink: 0;
+}
+
+.indicatorNumber {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-bold);
+  line-height: 1;
+}
+
+/* Pending — calm outline */
+.pending {
+  background: var(--emr-bg-input);
+  color: var(--emr-text-secondary);
+  border: 1px solid var(--emr-border-color);
+}
+
+/* Active — solid navy by default (gradient accent), white glyph */
+.active {
+  background: var(--emr-gradient-primary);
+  color: var(--emr-text-inverse);
+  box-shadow: 0 3px 10px var(--emr-primary-alpha-32);
+}
+
+/* Completed — solid navy fill */
+.completed {
+  background: var(--emr-primary);
+  color: var(--emr-text-inverse);
+}
+
+/* Per-step semantic color overrides for active/completed */
+.color_success.active {
+  background: var(--emr-success);
+  box-shadow: 0 3px 10px var(--emr-success-alpha-20);
+}
+.color_success.completed {
+  background: var(--emr-success);
+}
+
+.color_error.active {
+  background: var(--emr-error);
+  box-shadow: 0 3px 10px var(--emr-error-alpha-15);
+}
+.color_error.completed {
+  background: var(--emr-error);
+}
+
+/* ---- Labels ----------------------------------------------------------- */
+.label {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+  letter-spacing: var(--emr-letter-spacing-tight);
+}
+
+.description {
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-base);
+}
+
+/* ---- Connector hairline ----------------------------------------------- */
+.connector {
+  position: absolute;
+  top: 28px;
+  left: calc(50% + 28px);
+  right: calc(-50% + 28px);
+  height: 2px;
+  z-index: 1;
+  transition: background 0.18s ease;
+  border-radius: 1px;
+}
+
+.connectorCompleted {
+  background: var(--emr-primary);
+}
+
+.connectorPending {
+  background: var(--emr-border-color);
+}
+
+/* ---- Content panel ---------------------------------------------------- */
+.panel {
+  width: 100%;
+  padding-top: 8px;
+}
+
+/* ---- Small size ------------------------------------------------------- */
+.sizeSm .indicator {
+  width: 32px;
+  height: 32px;
+}
+
+.sizeSm .connector {
+  top: 24px;
+}
+
+.sizeSm .label {
+  font-size: var(--emr-font-xs);
+}
+
+/* ---- Mobile ----------------------------------------------------------- */
+@media (max-width: 768px) {
+  .indicators {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .step {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 8px 12px;
+  }
+
+  .label,
+  .description {
+    text-align: left;
+  }
+
+  .connector {
+    display: none;
+  }
+}
+
+/* ---- Reduced motion --------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .indicator,
+  .step,
+  .connector {
+    transition: none;
+  }
+}
+
+/* ---- Touch targets ---------------------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  .selectable {
+    min-height: 44px;
+  }
+}

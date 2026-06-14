@@ -1,0 +1,398 @@
+/* EMRDashboardCard - Clickable card for department/entity selection
+   Uses EMR theme variables for consistent styling */
+
+/* ==================== CARD CONTAINER ==================== */
+.card {
+  position: relative;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-border-color);
+  border-radius: var(--emr-border-radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s ease;
+}
+
+/* Gradient accent bar (top) */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--emr-gradient-secondary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+
+/* Hover glow border */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--emr-border-radius-lg);
+  padding: 1px;
+  background: var(--emr-gradient-secondary);
+  -webkit-mask:
+    linear-gradient(white 0 0) content-box,
+    linear-gradient(white 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--emr-shadow-lg);
+  border-color: var(--emr-secondary);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
+}
+
+.card:hover::after {
+  opacity: 1;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--emr-accent);
+  outline-offset: 2px;
+}
+
+/* ==================== CARD HEADER ==================== */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 18px 14px;
+}
+
+/* ==================== ICON ==================== */
+.iconWrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emr-bg-accent-secondary);
+  border-radius: 12px;
+  color: var(--emr-secondary);
+  flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease;
+  overflow: hidden;
+}
+
+/* Gradient overlay for hover */
+.iconWrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--emr-gradient-secondary);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.iconWrapper svg {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  transition: color 0.25s ease;
+}
+
+.card:hover .iconWrapper::before {
+  opacity: 1;
+}
+
+.card:hover .iconWrapper {
+  color: var(--emr-text-inverse);
+}
+
+/* ==================== INFO SECTION ==================== */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--emr-font-lg);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  margin: 0 0 5px;
+  line-height: var(--emr-line-height-1-3);
+  transition: color 0.25s ease;
+}
+
+.card:hover .title {
+  color: var(--emr-primary);
+}
+
+.subtitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  margin: 0;
+}
+
+.subtitle svg {
+  width: 14px;
+  height: 14px;
+  color: var(--emr-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ==================== BADGE ==================== */
+.badge {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  background: var(--emr-bg-hover);
+  border-radius: var(--emr-border-radius);
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wider);
+  color: var(--emr-text-secondary);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.card:hover .badge {
+  background: var(--emr-gradient-primary);
+  color: var(--emr-text-inverse);
+}
+
+/* ==================== PROGRESS SECTION ==================== */
+.progressSection {
+  padding: 0 18px 14px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressLabel {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wider);
+  color: var(--emr-text-secondary);
+}
+
+.progressPercent {
+  font-size: var(--emr-font-base);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-secondary);
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--emr-bg-hover);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--emr-secondary), var(--emr-accent));
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== STATS FOOTER ==================== */
+.statsFooter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--emr-bg-page);
+  border-top: 1px solid var(--emr-border-color);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  text-align: center;
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.stat:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--emr-border-color);
+}
+
+.card:hover .stat {
+  background: var(--emr-secondary-alpha-03);
+}
+
+.statValue {
+  font-size: var(--emr-font-2xl);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-none);
+  margin-bottom: 4px;
+}
+
+.statHighlight .statValue {
+  color: var(--emr-secondary);
+}
+
+.statLabel {
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-medium);
+  color: var(--emr-text-secondary);
+}
+
+/* ==================== ARROW INDICATOR ==================== */
+.arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-10px);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emr-bg-accent-secondary);
+  border-radius: 50%;
+  color: var(--emr-secondary);
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover .arrow {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ==================== LOADING STATE ==================== */
+.loading {
+  pointer-events: none;
+}
+
+.loading .header,
+.loading .progressSection,
+.loading .statsFooter {
+  opacity: 0.5;
+}
+
+/* ==================== STAGGERED ANIMATION ==================== */
+.animated {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: cardEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes cardEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation delays */
+.delay0 { animation-delay: 0.05s; }
+.delay1 { animation-delay: 0.1s; }
+.delay2 { animation-delay: 0.15s; }
+.delay3 { animation-delay: 0.2s; }
+.delay4 { animation-delay: 0.25s; }
+.delay5 { animation-delay: 0.3s; }
+.delay6 { animation-delay: 0.35s; }
+.delay7 { animation-delay: 0.4s; }
+.delay8 { animation-delay: 0.45s; }
+.delay9 { animation-delay: 0.5s; }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .header {
+    padding: 14px 14px 12px;
+  }
+
+  .iconWrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .iconWrapper svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .title {
+    font-size: var(--emr-font-lg);
+  }
+
+  .progressSection {
+    padding: 0 14px 12px;
+  }
+
+  .stat {
+    padding: 12px 6px;
+  }
+
+  .statValue {
+    font-size: var(--emr-font-xl);
+  }
+}
+
+@media (max-width: 576px) {
+  .statsFooter {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat:nth-child(2)::after {
+    display: none;
+  }
+
+  .stat:nth-child(3) {
+    border-top: 1px solid var(--emr-border-color);
+  }
+
+  .stat:nth-child(4) {
+    border-top: 1px solid var(--emr-border-color);
+  }
+
+  .arrow {
+    display: none;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::before,
+  .card::after,
+  .iconWrapper,
+  .iconWrapper::before,
+  .progressFill,
+  .arrow {
+    transition: none;
+  }
+
+  .animated {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

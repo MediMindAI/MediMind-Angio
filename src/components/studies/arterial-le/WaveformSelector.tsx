@@ -9,7 +9,7 @@
  */
 
 import { memo } from 'react';
-import { Tooltip } from '@mantine/core';
+import { EMRTooltip } from '../../common';
 import { WAVEFORM_VALUES, type Waveform } from './config';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import triphasicGlyph from './waveformGlyphs/triphasic.svg?url';
@@ -64,7 +64,7 @@ export const WaveformSelector = memo(function WaveformSelector({
         const labelFallback = WAVEFORM_FALLBACK[w];
         const label = t(labelKey, labelFallback);
         return (
-          <Tooltip
+          <EMRTooltip
             key={w}
             label={label}
             withArrow
@@ -84,7 +84,7 @@ export const WaveformSelector = memo(function WaveformSelector({
             >
               <img src={GLYPHS[w]} alt="" aria-hidden className={classes.glyph} />
             </button>
-          </Tooltip>
+          </EMRTooltip>
         );
       })}
     </div>

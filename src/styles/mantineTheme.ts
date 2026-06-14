@@ -58,19 +58,88 @@ export const mantineTheme = createTheme({
     xl: '1.125rem',
   },
   components: {
+    // Georgian script has tall descenders (ყ, ფ, ქ) that get clipped by
+    // Mantine's default fixed-height Badge. Setting height: auto lets the
+    // badge grow to fit any script, preventing bottom-cut text globally.
+    // Command identity: radius 6px + weight 700 for solid status chips.
     Badge: {
       styles: () => ({
-        root: { height: 'auto', paddingTop: 3, paddingBottom: 3 },
+        root: { height: 'auto', paddingTop: 3, paddingBottom: 3, borderRadius: 6, fontWeight: 700 },
         label: { lineHeight: 1.4 },
       }),
     },
     Table: {
       styles: () => ({
-        table: { color: 'var(--emr-text-primary)' },
-        thead: { color: 'var(--emr-text-primary)' },
-        tbody: { color: 'var(--emr-text-primary)' },
-        th: { color: 'var(--emr-text-primary) !important' },
-        td: { color: 'var(--emr-text-primary) !important' },
+        table: {
+          color: 'var(--emr-text-primary)',
+        },
+        thead: {
+          color: 'var(--emr-text-primary)',
+        },
+        tbody: {
+          color: 'var(--emr-text-primary)',
+        },
+        th: {
+          color: 'var(--emr-text-primary) !important',
+        },
+        td: {
+          color: 'var(--emr-text-primary) !important',
+        },
+        tr: {
+          color: 'var(--emr-text-primary)',
+        },
+      }),
+    },
+    // Command "decks": 12px radius, no global border removal (too risky —
+    // hairline borders stay inside cards for row separation).
+    Paper: {
+      styles: () => ({
+        root: { borderRadius: 12 },
+      }),
+    },
+    Card: {
+      styles: () => ({
+        root: { borderRadius: 12 },
+      }),
+    },
+    Modal: {
+      styles: () => ({
+        content: { borderRadius: 12 },
+      }),
+    },
+    // Borderless alert deck rounded to match cards (semantic colors untouched —
+    // variants vary, so we don't override them globally).
+    Alert: {
+      styles: () => ({
+        root: { borderRadius: 12 },
+      }),
+    },
+    ActionIcon: {
+      styles: () => ({
+        root: { borderRadius: 8 },
+      }),
+    },
+    // Raw Buttons get a Command radius only. NEVER set padding on Button root
+    // (breaks Mantine's label height calc). The brand gradient lives in EMRButton.
+    Button: {
+      defaultProps: {
+        radius: 8,
+      },
+    },
+    Tabs: {
+      styles: () => ({
+        tab: { fontWeight: 600 },
+      }),
+    },
+    // Navy tooltip on white text — matches the commanding interaction chrome.
+    Tooltip: {
+      styles: () => ({
+        tooltip: {
+          background: 'var(--emr-primary)',
+          color: '#fff',
+          fontSize: 'var(--emr-font-xs)',
+          borderRadius: 6,
+        },
       }),
     },
   },

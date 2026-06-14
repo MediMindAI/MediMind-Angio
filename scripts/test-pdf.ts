@@ -462,6 +462,7 @@ const labels: ReportLabels = {
       plexus: 'Pelvic plexus',
       escape: 'Escape points',
       extrapelvic: 'Extrapelvic varices',
+      special: 'Special considerations (SMAS/MALS)',
     },
     segment: {},
     side: { left: 'Left', right: 'Right' },

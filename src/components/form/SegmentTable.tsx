@@ -13,7 +13,7 @@
  */
 
 import { memo, useCallback, useMemo } from 'react';
-import { Box, Group, Text, Tooltip, UnstyledButton } from '@mantine/core';
+import { Box, Group, Text, UnstyledButton } from '@mantine/core';
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -21,7 +21,7 @@ import {
   IconStethoscope,
   IconTrash,
 } from '@tabler/icons-react';
-import { EMRTabs, EMRButton } from '../common';
+import { EMRTabs, EMRButton, EMRTooltip } from '../common';
 import { EMRSelect } from '../shared/EMRFormFields';
 import type { EMRSelectOption } from '../shared/EMRFormFields';
 import {
@@ -164,7 +164,7 @@ const ParamCell = memo(function ParamCell({
   );
   if (!tooltip) return select;
   return (
-    <Tooltip
+    <EMRTooltip
       label={tooltip}
       openDelay={500}
       withArrow
@@ -174,7 +174,7 @@ const ParamCell = memo(function ParamCell({
       maw={280}
     >
       <div style={{ width: '100%' }}>{select}</div>
-    </Tooltip>
+    </EMRTooltip>
   );
 });
 
@@ -257,7 +257,7 @@ const SegmentRow = memo(function SegmentRow({
       data-testid={`segment-row-${fullId}`}
     >
       <div className={`${classes.cell} ${classes.segmentCell}`}>
-        <Tooltip label={fullLabel} withArrow position="right" openDelay={250}>
+        <EMRTooltip label={fullLabel} withArrow position="right" openDelay={250}>
           <UnstyledButton
             className={classes.segmentButton}
             onClick={handleFocusRow}
@@ -269,7 +269,7 @@ const SegmentRow = memo(function SegmentRow({
               {side === 'left' ? 'L' : 'R'}
             </span>
           </UnstyledButton>
-        </Tooltip>
+        </EMRTooltip>
       </div>
 
       {PARAMS.map((p, i) => {
@@ -487,7 +487,7 @@ export const SegmentTable = memo(function SegmentTable({
       {/* Bulk-action toolbar */}
       <Box className={classes.bulkToolbar}>
         <Group gap="xs" wrap="wrap">
-          <Tooltip
+          <EMRTooltip
             label={t('venousLE.bulk.allNormalTooltip', 'Fill every segment with normal findings (⌘N)')}
             withArrow
             openDelay={500}
@@ -503,8 +503,8 @@ export const SegmentTable = memo(function SegmentTable({
                 {t('venousLE.bulk.allNormal', 'All normal')}
               </EMRButton>
             </span>
-          </Tooltip>
-          <Tooltip
+          </EMRTooltip>
+          <EMRTooltip
             label={t('venousLE.bulk.clearAllTooltip', 'Clear every finding in this tab')}
             withArrow
             openDelay={500}
@@ -520,8 +520,8 @@ export const SegmentTable = memo(function SegmentTable({
                 {t('venousLE.bulk.clearAll', 'Clear all')}
               </EMRButton>
             </span>
-          </Tooltip>
-          <Tooltip
+          </EMRTooltip>
+          <EMRTooltip
             label={t('venousLE.bulk.copyRightToLeftTooltip', 'Duplicate right-side findings to left (⌘D)')}
             withArrow
             openDelay={500}
@@ -537,8 +537,8 @@ export const SegmentTable = memo(function SegmentTable({
                 {t('venousLE.bulk.copyRightToLeft', 'Copy R → L')}
               </EMRButton>
             </span>
-          </Tooltip>
-          <Tooltip
+          </EMRTooltip>
+          <EMRTooltip
             label={t('venousLE.bulk.copyLeftToRightTooltip', 'Duplicate left-side findings to right')}
             withArrow
             openDelay={500}
@@ -554,7 +554,7 @@ export const SegmentTable = memo(function SegmentTable({
                 {t('venousLE.bulk.copyLeftToRight', 'Copy L → R')}
               </EMRButton>
             </span>
-          </Tooltip>
+          </EMRTooltip>
         </Group>
       </Box>
 

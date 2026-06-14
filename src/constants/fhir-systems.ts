@@ -262,6 +262,18 @@ export const VASCULAR_SEGMENTS_SNOMED: Readonly<Record<string, { code: string; d
   /** Pelvic (uterine / parametrial) venous plexus — the peri-uterine plexus
    * assessed in PeVD. HIGH — verified 2026-06-05 via tx.fhir.org ($expand). */
   'pelvic-plexus': { code: '4810005', display: 'Structure of uterine venous plexus' }, // HIGH
+
+  // ------- Splanchnic arteries (iliacPelvicVenous SMAS / MALS) --------------
+  // Unpaired midline vessels (no laterality). HIGH — verified 2026-06-13 via
+  // tx.fhir.org ($lookup; all active body-structure concepts).
+  /** Coeliac (celiac) artery — MALS. */
+  'celiac-artery': { code: '57850000', display: 'Celiac artery' }, // HIGH
+  /** Superior mesenteric artery — SMAS (SMA–aorta angle). */
+  'superior-mesenteric-artery': { code: '42258001', display: 'Superior mesenteric artery' }, // HIGH
+  /** Common hepatic artery — MALS post-stenotic assessment. */
+  'common-hepatic-artery': { code: '66559000', display: 'Common hepatic artery' }, // HIGH
+  /** Splenic artery — MALS post-stenotic assessment. */
+  'splenic-artery': { code: '22083002', display: 'Splenic artery' }, // HIGH
 } as const;
 
 // ============================================================================

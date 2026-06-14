@@ -31,13 +31,33 @@ import { VASCULAR_LOINC } from '../../../constants/fhir-systems';
 export type { Side };
 
 // ============================================================================
+// Shared — per-level vessel measurement
+// ============================================================================
+
+/**
+ * One anatomical level's capture, shared by the caval veins (Zone 2) and the
+ * left renal vein (Zone 1). `velocityCmS` is the absolute spectral peak velocity
+ * the protocol records at each level; `diameterMm` is the B-mode diameter, only
+ * meaningful where the protocol captures it (CFV SFJ-level, IVC, LRV hilum).
+ */
+export interface VesselLevelMeasurement {
+  readonly velocityCmS?: number;
+  readonly diameterMm?: number;
+}
+
+// ============================================================================
 // Zone 0 — context / technique
 // ============================================================================
 
 export const SEX_VALUES = ['female', 'male', 'other'] as const;
 export type Sex = (typeof SEX_VALUES)[number];
 
-/** Presenting symptoms — drive the SVP S-axis. */
+/**
+ * Presenting symptoms / indications — drive the SVP S-axis. The first nine are
+ * the original SVP-oriented set; the remainder are the Pelvic Venous Duplex
+ * protocol's indication list (folded in here rather than a parallel enum, since
+ * every consumer already iterates `SYMPTOM_VALUES`).
+ */
 export const SYMPTOM_VALUES = [
   'chronic-pelvic-pain',
   'dyspareunia',
@@ -48,8 +68,35 @@ export const SYMPTOM_VALUES = [
   'vulvar-varices',
   'leg-varices',
   'recurrent-varices',
+  // Pelvic Venous Duplex protocol indications
+  'pelvic-pain',
+  'cold-feet',
+  'limb-swelling',
+  'leg-aching',
+  'hip-pain',
+  'ibs',
+  'hemorrhoids',
+  'menstrual-leg-pain',
+  'lower-abdominal-pain',
+  'lower-back-pain',
+  'venous-claudication',
 ] as const;
 export type Symptom = (typeof SYMPTOM_VALUES)[number];
+
+/** Risk factors (Pelvic Venous Duplex protocol). */
+export const RISK_FACTOR_VALUES = [
+  'endometriosis',
+  'back-surgery-hardware',
+  'adenomyosis',
+  'nerve-injury',
+  'chronic-pid',
+  'ovarian-remnant',
+  'fibroids',
+  'ibs',
+  'polycystic-ovaries',
+  'retroverted-uterus',
+] as const;
+export type RiskFactor = (typeof RISK_FACTOR_VALUES)[number];
 
 export const APPROACH_VALUES = ['transabdominal', 'transvaginal', 'transperineal'] as const;
 export type Approach = (typeof APPROACH_VALUES)[number];
@@ -59,6 +106,9 @@ export const POSITION_VALUES = [
   'left-lateral',
   'reverse-trendelenburg',
   'standing',
+  // Protocol alternatives
+  'prone',
+  'decubitus',
 ] as const;
 export type StudyPositionValue = (typeof POSITION_VALUES)[number];
 
@@ -66,6 +116,7 @@ export interface IliacContext {
   /** Defaults to 'female' (this study is female-focused). */
   readonly sex?: Sex;
   readonly symptoms?: ReadonlyArray<Symptom>;
+  readonly riskFactors?: ReadonlyArray<RiskFactor>;
   readonly approaches?: ReadonlyArray<Approach>;
   readonly positions?: ReadonlyArray<StudyPositionValue>;
   readonly valsalvaPerformed?: boolean;
@@ -75,18 +126,34 @@ export interface IliacContext {
 // Zone 1 — left renal vein (nutcracker screening)
 // ============================================================================
 
+/**
+ * LRV interrogation levels (proximal = closest to IVC; mid = pre-aortic /
+ * aortomesenteric; distal = renal hilum). Mirrors the caval multi-level keys.
+ */
+export const LRV_LEVELS = ['proximal', 'mid', 'distal'] as const;
+export type LrvLevel = (typeof LRV_LEVELS)[number];
+
 export interface RenalVeinFinding {
-  /** Peak-velocity ratio (aortomesenteric:hilar). Abnormal ≥ 5. */
+  /**
+   * Peak-velocity ratio (aortomesenteric:hilar). Significant LRV compression
+   * ≥ 7.0 per the Pelvic Venous Duplex protocol. (OLD: ≥ 5, Kim 2024 screening
+   * cut-off — superseded.)
+   */
   readonly peakVelocityRatio?: number;
   /** AP-diameter ratio (hilar:aortomesenteric). Abnormal ≥ 5. */
   readonly apDiameterRatio?: number;
-  /** Aorto-SMA angle in degrees. Abnormal ≤ 35°. */
-  readonly aortoSmaAngleDeg?: number;
+  /** Per-level LRV velocity (cm/s) + diameter (mm), keyed proximal/mid/distal. */
+  readonly levels?: Readonly<Partial<Record<LrvLevel, VesselLevelMeasurement>>>;
   readonly beakSign?: boolean;
   readonly hilarVarices?: boolean;
+  /** Retro-aortic left renal vein variant — sought when the LRV is not seen in
+   * the standard pre-aortic plane. */
+  readonly retroAortic?: boolean;
   /** US is screening for nutcracker → confirmatory CT/MR venography. */
   readonly confirmatoryImagingRecommended?: boolean;
   readonly note?: string;
+  // NOTE: `aortoSmaAngleDeg` REMOVED — the SMA–aorta angle is now classed under
+  // SMA Syndrome (specialConsiderations.smas), per protocol.
 }
 
 // ============================================================================
@@ -97,6 +164,18 @@ export interface RenalVeinFinding {
 export const ILIAC_CAVAL_BASES = ['ivc', 'civ', 'eiv', 'iiv', 'cfv'] as const;
 export type IliacCavalBase = (typeof ILIAC_CAVAL_BASES)[number];
 export type IliacCavalFullId = 'ivc' | `${Exclude<IliacCavalBase, 'ivc'>}-${Side}`;
+
+/** Anatomical levels a vein base captures, in acquisition order (per protocol). */
+export const CAVAL_LEVEL_VALUES = ['sfj', 'distal', 'mid', 'proximal'] as const;
+export type CavalLevel = (typeof CAVAL_LEVEL_VALUES)[number];
+
+export const CAVAL_LEVELS_FOR_BASE = {
+  ivc: ['distal', 'proximal'],
+  civ: ['distal', 'mid', 'proximal'],
+  eiv: ['distal', 'mid', 'proximal'],
+  iiv: ['distal'], // sampled at the distal IIV only (per protocol)
+  cfv: ['proximal', 'sfj'], // proximal CFV + SFJ-level (diameter captured at sfj)
+} as const satisfies Record<IliacCavalBase, ReadonlyArray<CavalLevel>>;
 
 export const PATENCY_VALUES = ['patent', 'partial', 'occluded'] as const;
 export type Patency = (typeof PATENCY_VALUES)[number];
@@ -117,15 +196,29 @@ export interface IliacCavalFinding {
   readonly patency?: Patency;
   readonly compressibility?: CavalCompressibility;
   readonly thrombusChronicity?: ThrombusChronicity;
-  /** Peak-velocity ratio across the stenosis. Abnormal ≥ 2.5. */
+  /**
+   * Peak-velocity ratio across the stenosis. Graded by `cavalStenosisSeverity`
+   * (Moderate 2.0–2.49 · Significant ≥ 2.5). Auto-derived from `levels` when ≥ 2
+   * level velocities exist (read-only in the UI); retained as a writable slot for
+   * manual override / legacy drafts — see `effectiveCavalVelocityRatio`.
+   */
   readonly velocityRatio?: number;
   /** % stenosis. ≥ 50% significant. */
   readonly stenosisPct?: number;
+  /** Per-level velocity (cm/s) + diameter (mm), keyed by anatomical level. */
+  readonly levels?: Readonly<Partial<Record<CavalLevel, VesselLevelMeasurement>>>;
   /** CFV waveform phasicity (most relevant to the cfv rows). */
   readonly phasicity?: CfvPhasicity;
   readonly valsalvaResponse?: ValsalvaResponse;
   readonly collateralsPresent?: boolean;
   readonly reflux?: boolean;
+  /**
+   * EIV only — a high-velocity color bruit in the proximal EIV with a distended
+   * bladder suggests intrinsic compression; `remeasuredAfterVoiding` marks that
+   * the level velocities reflect the post-void remeasurement.
+   */
+  readonly bladderArtifactSuspected?: boolean;
+  readonly remeasuredAfterVoiding?: boolean;
   /** Obstruction is US-screening → confirmatory IVUS/CT venography. */
   readonly confirmatoryImagingRecommended?: boolean;
   readonly note?: string;
@@ -205,6 +298,36 @@ export interface ExtrapelvicVarices {
 }
 
 // ============================================================================
+// Zone 6 — arterial special considerations (SMAS / MALS)
+// ============================================================================
+
+export interface SmasFinding {
+  /** SMA–aorta angle (degrees). SMA Syndrome highly suspected < 25° (almost
+   * always with LRV compression). Replaces the old nutcracker aorto-SMA marker. */
+  readonly smaAortaAngleDeg?: number;
+  readonly note?: string;
+}
+
+export interface MalsFinding {
+  /** Celiac artery PSV at INSPIRATION (cm/s). */
+  readonly caInspiratoryPsvCmS?: number;
+  /** Celiac artery PSV at EXPIRATION (cm/s). MALS if > 200 or > 2× inspiratory. */
+  readonly caExpiratoryPsvCmS?: number;
+  /** Classic 'hook-shaped' celiac artery on sagittal imaging (supportive). */
+  readonly hookSign?: boolean;
+  /** Common hepatic artery PSV (cm/s) — post-stenotic / collateral assessment. */
+  readonly chaPsvCmS?: number;
+  /** Splenic artery PSV (cm/s) — post-stenotic / collateral assessment. */
+  readonly splenicPsvCmS?: number;
+  readonly note?: string;
+}
+
+export interface SpecialConsiderationsFindings {
+  readonly smas?: SmasFinding;
+  readonly mals?: MalsFinding;
+}
+
+// ============================================================================
 // Top-level zone-grouped findings
 // ============================================================================
 
@@ -215,6 +338,7 @@ export interface IliacPelvicVenousFindings {
   readonly plexus?: Partial<Record<Side, PelvicPlexusFinding>>;
   readonly escapePoints?: ReadonlyArray<EscapePoint>;
   readonly extrapelvic?: ExtrapelvicVarices;
+  readonly specialConsiderations?: SpecialConsiderationsFindings;
 }
 
 /** Data-bearing zone keys, in report order. */
@@ -225,6 +349,7 @@ export const ILIAC_PELVIC_VENOUS_ZONES = [
   'plexus',
   'escapePoints',
   'extrapelvic',
+  'specialConsiderations',
 ] as const;
 export type IliacZoneKey = (typeof ILIAC_PELVIC_VENOUS_ZONES)[number];
 
@@ -233,12 +358,21 @@ export type IliacZoneKey = (typeof ILIAC_PELVIC_VENOUS_ZONES)[number];
 // ============================================================================
 
 export const ILIAC_THRESHOLDS = {
-  renalPeakVelocityRatio: 5,
+  /** Nutcracker: LRV peak-velocity ratio significant ≥ 7.0 (Pelvic Venous Duplex
+   *  protocol). OLD: 5 (Kim 2024 aortomesenteric:hilar screening) — superseded. */
+  renalPeakVelocityRatio: 7,
   renalApDiameterRatio: 5,
-  renalAortoSmaAngleDeg: 35,
+  /** SMA Syndrome: SMA–aorta angle < 25° (protocol). OLD nutcracker angle ≤ 35°
+   *  (Kim 2024) — reframed as SMAS and superseded. */
+  smasAortaAngleDeg: 25,
+  /** MALS: celiac expiratory PSV > 200 cm/s, or expiratory > 2× inspiratory. */
+  malsExpiratoryPsvCmS: 200,
+  malsInspToExpRatio: 2,
   cavalVelocityRatio: 2.5,
   cavalStenosisPct: 50,
-  gonadalDiameterMm: 6,
+  /** Gonadal/ovarian vein significant > 5 mm (protocol, strict greater-than).
+   *  OLD: ≥ 6 mm (Gavrilov) — superseded. */
+  gonadalDiameterMm: 5,
   refluxDurationS: 1,
   plexusDiameterMm: 5,
   plexusSevereDiameterMm: 8,
@@ -246,12 +380,62 @@ export const ILIAC_THRESHOLDS = {
   escapePointDiameterMm: 3.5,
 } as const;
 
+/**
+ * Derive the peak-velocity ratio from captured level velocities:
+ *   ratio = max(level velocities) / min(level velocities)
+ * The min is the reference (least-stenotic) level, the max the peak/stenotic
+ * level — the Metzger/Labropoulos cross-stenosis method. Returns undefined when
+ * fewer than two levels carry a velocity (no ratio computable).
+ */
+export function deriveCavalVelocityRatio(f: IliacCavalFinding | undefined): number | undefined {
+  const vels = f?.levels
+    ? Object.values(f.levels)
+        .map((m) => m?.velocityCmS)
+        .filter((v): v is number => typeof v === 'number' && v > 0)
+    : [];
+  if (vels.length < 2) return undefined;
+  const max = Math.max(...vels);
+  const min = Math.min(...vels);
+  return min > 0 ? max / min : undefined;
+}
+
+/**
+ * Effective ratio for display/diagnosis: prefer the derived value (source of
+ * truth when ≥ 2 levels measured), else the stored/legacy/override `velocityRatio`.
+ * Single accessor so every consumer agrees.
+ */
+export function effectiveCavalVelocityRatio(f: IliacCavalFinding | undefined): number | undefined {
+  return deriveCavalVelocityRatio(f) ?? f?.velocityRatio;
+}
+
+export const CAVAL_SEVERITY_VALUES = ['none', 'moderate', 'significant'] as const;
+export type CavalStenosisSeverity = (typeof CAVAL_SEVERITY_VALUES)[number];
+
+/**
+ * Graded iliac/caval cross-stenosis severity (protocol):
+ *   Significant ≥ 2.5 · Moderate 2.0–2.49 · Tandem (serial) lesion significant > 2.0.
+ * A tandem lesion is flagged significant once the ratio exceeds 2.0 (a serial
+ * pressure drop is haemodynamically additive). Replaces the single binary ≥ 2.5.
+ */
+export function cavalStenosisSeverity(
+  velocityRatio: number | undefined,
+  opts?: { readonly tandem?: boolean },
+): CavalStenosisSeverity {
+  const r = velocityRatio ?? 0;
+  if (opts?.tandem) return r > 2.0 ? 'significant' : 'none';
+  if (r >= ILIAC_THRESHOLDS.cavalVelocityRatio) return 'significant';
+  if (r >= 2.0) return 'moderate';
+  return 'none';
+}
+
 export function isNutcrackerScreenPositive(r: RenalVeinFinding | undefined): boolean {
   if (!r) return false;
+  // Driven by velocity ratio ≥ 7.0, AP-diameter ratio ≥ 5, or beak sign. Hilar
+  // varices are recorded but supportive (not an independent trigger). The SMA
+  // angle is no longer a nutcracker term — it now drives SMAS.
   return (
     (r.peakVelocityRatio ?? 0) >= ILIAC_THRESHOLDS.renalPeakVelocityRatio ||
     (r.apDiameterRatio ?? 0) >= ILIAC_THRESHOLDS.renalApDiameterRatio ||
-    (r.aortoSmaAngleDeg !== undefined && r.aortoSmaAngleDeg <= ILIAC_THRESHOLDS.renalAortoSmaAngleDeg) ||
     r.beakSign === true
   );
 }
@@ -261,7 +445,7 @@ export function isCavalObstructive(f: IliacCavalFinding | undefined): boolean {
   return (
     f.patency === 'occluded' ||
     f.patency === 'partial' ||
-    (f.velocityRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio ||
+    (effectiveCavalVelocityRatio(f) ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio ||
     (f.stenosisPct ?? 0) >= ILIAC_THRESHOLDS.cavalStenosisPct ||
     f.compressibility === 'non-compressible' ||
     f.compressibility === 'partial' ||
@@ -275,7 +459,7 @@ export function isGonadalRefluxAbnormal(f: GonadalVeinFinding | undefined): bool
   if (!f) return false;
   return (
     f.refluxPresent === true ||
-    (f.diameterMm ?? 0) >= ILIAC_THRESHOLDS.gonadalDiameterMm ||
+    (f.diameterMm ?? 0) > ILIAC_THRESHOLDS.gonadalDiameterMm ||
     (f.refluxDurationS ?? 0) > ILIAC_THRESHOLDS.refluxDurationS
   );
 }
@@ -291,6 +475,91 @@ export function isPlexusCongested(f: PelvicPlexusFinding | undefined): boolean {
 
 export function isEscapePointSignificant(p: EscapePoint): boolean {
   return (p.diameterMm ?? 0) > ILIAC_THRESHOLDS.escapePointDiameterMm;
+}
+
+export function isSmasPositive(s: SmasFinding | undefined): boolean {
+  return (
+    !!s &&
+    s.smaAortaAngleDeg !== undefined &&
+    s.smaAortaAngleDeg < ILIAC_THRESHOLDS.smasAortaAngleDeg
+  );
+}
+
+export function isMalsPositive(m: MalsFinding | undefined): boolean {
+  if (!m) return false;
+  const { caExpiratoryPsvCmS: exp, caInspiratoryPsvCmS: insp } = m;
+  const highExp = exp !== undefined && exp > ILIAC_THRESHOLDS.malsExpiratoryPsvCmS;
+  const ratioHigh =
+    exp !== undefined &&
+    insp !== undefined &&
+    insp > 0 &&
+    exp / insp > ILIAC_THRESHOLDS.malsInspToExpRatio;
+  // Hook sign is recorded but supportive — not an independent positivity trigger.
+  return highExp || ratioHigh;
+}
+
+// ============================================================================
+// V1 → V2 schema migration (findings shape)
+// ============================================================================
+
+function migrateCavalFindingV1toV2(f: IliacCavalFinding): IliacCavalFinding {
+  // Already V2-shaped (carries a levels record) → no-op.
+  return f.levels !== undefined ? f : { ...f, levels: {} };
+}
+
+function migrateCavalFindingsV1toV2(
+  caval: IliacCavalFindings | undefined,
+): IliacCavalFindings | undefined {
+  if (!caval) return caval;
+  let mutated = false;
+  const out: Record<string, IliacCavalFinding> = {};
+  for (const [id, f] of Object.entries(caval)) {
+    if (!f) continue;
+    const next = migrateCavalFindingV1toV2(f);
+    if (next !== f) mutated = true;
+    out[id] = next;
+  }
+  return mutated ? (out as IliacCavalFindings) : caval;
+}
+
+/**
+ * V1→V2 findings migration. V1 carried a single composite per caval vein with a
+ * flat `velocityRatio` (preserved as the override/legacy slot), and stored the
+ * SMA–aorta angle on the renal finding. V2 adds per-level `levels` and classes
+ * the SMA angle under SMAS. Idempotent and pure (returns the same reference when
+ * nothing changes), so re-hydrating a V2 draft is a no-op.
+ */
+export function migrateIliacFindingsV1toV2(
+  findings: IliacPelvicVenousFindings,
+): IliacPelvicVenousFindings {
+  let next = findings;
+
+  const caval = migrateCavalFindingsV1toV2(findings.caval);
+  if (caval !== findings.caval) next = { ...next, caval };
+
+  // Relocate a legacy renal aorto-SMA angle into SMAS (the key is no longer on
+  // RenalVeinFinding, so read it through a widened view).
+  const legacyRenal = next.renal as
+    | (RenalVeinFinding & { aortoSmaAngleDeg?: number })
+    | undefined;
+  const legacyAngle = legacyRenal?.aortoSmaAngleDeg;
+  if (
+    legacyAngle !== undefined &&
+    next.specialConsiderations?.smas?.smaAortaAngleDeg === undefined
+  ) {
+    const renalCopy: RenalVeinFinding & { aortoSmaAngleDeg?: number } = { ...legacyRenal };
+    delete renalCopy.aortoSmaAngleDeg;
+    next = {
+      ...next,
+      renal: renalCopy,
+      specialConsiderations: {
+        ...next.specialConsiderations,
+        smas: { ...next.specialConsiderations?.smas, smaAortaAngleDeg: legacyAngle },
+      },
+    };
+  }
+
+  return next;
 }
 
 // ============================================================================
@@ -317,6 +586,11 @@ export const ILIAC_PELVIC_VENOUS_SEGMENTS = [
   'gonadal-vein-right',
   'pelvic-plexus-left',
   'pelvic-plexus-right',
+  // Arterial special considerations (SMAS / MALS) — unpaired midline vessels.
+  'celiac-artery',
+  'superior-mesenteric-artery',
+  'common-hepatic-artery',
+  'splenic-artery',
 ] as const;
 
 // ============================================================================
@@ -334,8 +608,8 @@ export const ILIAC_PELVIC_VENOUS_PARAMETERS: ReadonlyArray<ParameterDef> = [
     step: 0.1,
   },
   {
-    id: 'aortoSmaAngleDeg',
-    label: 'iliacPelvicVenous.param.aortoSmaAngleDeg',
+    id: 'smaAortaAngleDeg',
+    label: 'iliacPelvicVenous.param.smaAortaAngleDeg',
     kind: 'number',
     unit: 'deg',
     min: 0,
@@ -385,6 +659,24 @@ export const ILIAC_PELVIC_VENOUS_PARAMETERS: ReadonlyArray<ParameterDef> = [
     unit: 'cm/s',
     min: 0,
     max: 200,
+    step: 1,
+  },
+  {
+    id: 'velocityCmS',
+    label: 'iliacPelvicVenous.param.velocityCmS',
+    kind: 'velocity-cm-s',
+    unit: 'cm/s',
+    min: 0,
+    max: 400,
+    step: 1,
+  },
+  {
+    id: 'caPsvCmS',
+    label: 'iliacPelvicVenous.param.caPsvCmS',
+    kind: 'velocity-cm-s',
+    unit: 'cm/s',
+    min: 0,
+    max: 600,
     step: 1,
   },
 ];

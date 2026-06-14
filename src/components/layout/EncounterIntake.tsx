@@ -660,7 +660,7 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                     <EMRDatePicker
                       label={t('encounter.intake.identity.patientBirthDate')}
                       value={isoToLocalDate(state.patientBirthDate)}
-                      onChange={(d) => setField('patientBirthDate', localDateToIso(d))}
+                      onChange={(d: Date | null) => setField('patientBirthDate', localDateToIso(d))}
                       size="md"
                       data-testid="intake-birthDate"
                     />
@@ -734,7 +734,7 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                     <EMRDatePicker
                       label={t('encounter.intake.visit.encounterDate')}
                       value={isoToLocalDate(state.encounterDate)}
-                      onChange={(d) => setField('encounterDate', localDateToIso(d) ?? '')}
+                      onChange={(d: Date | null) => setField('encounterDate', localDateToIso(d) ?? '')}
                       size="md"
                       data-testid="intake-encounterDate"
                     />
@@ -752,7 +752,7 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                         <EMRDatePicker
                           label={t('encounter.intake.visit.informedConsentSignedAt')}
                           value={isoToLocalDate(state.informedConsentSignedAt)}
-                          onChange={(d) =>
+                          onChange={(d: Date | null) =>
                             setField('informedConsentSignedAt', localDateToIso(d))
                           }
                           size="md"

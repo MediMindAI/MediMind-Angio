@@ -4,7 +4,8 @@
 /**
  * EMRTabs Component
  *
- * A standardized tab navigation component with icon support, animated underline indicator,
+ * A standardized tab navigation component for the MediMind EMR.
+ * Provides consistent styling with icon support, animated underline indicator,
  * and seamless dark/light mode integration.
  *
  * @example
@@ -18,9 +19,20 @@
  *   <EMRTabs.Panel value="details">Details content</EMRTabs.Panel>
  * </EMRTabs>
  * ```
+ *
+ * @module components/common/EMRTabs
  */
 
-import React, { createContext, useContext, useCallback, useMemo, type ComponentType, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+  useState,
+  type ComponentType,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { Box, UnstyledButton, Text } from '@mantine/core';
 import styles from './EMRTabs.module.css';
 
@@ -32,10 +44,12 @@ export type EMRTabsVariant = 'default' | 'pills' | 'outline';
 export type EMRTabsSize = 'sm' | 'md' | 'lg';
 
 export interface EMRTabsProps {
-  /** Currently active tab value */
-  value: string | null;
+  /** Currently active tab value (controlled mode) */
+  value?: string | null;
+  /** Initial active tab value (uncontrolled mode) */
+  defaultValue?: string | null;
   /** Callback when tab changes */
-  onChange: (value: string | null) => void;
+  onChange?: (value: string | null) => void;
   /** Tab content (List and Panels) */
   children: ReactNode;
   /** Visual variant */
@@ -46,8 +60,15 @@ export interface EMRTabsProps {
   allowDeselect?: boolean;
   /** Full width tabs that stretch to fill container */
   grow?: boolean;
+  /**
+   * Mantine parity prop. EMRTabs always unmounts inactive panels, so this is a
+   * no-op kept only so raw `<Tabs keepMounted={false}>` converts mechanically.
+   */
+  keepMounted?: boolean;
   /** Custom className for the root element */
   className?: string;
+  /** Inline style for the root element */
+  style?: CSSProperties;
   /** Test ID for testing */
   'data-testid'?: string;
 }
@@ -57,8 +78,14 @@ export interface EMRTabsListProps {
   children: ReactNode;
   /** Position of the tab list */
   position?: 'left' | 'center' | 'right' | 'apart';
+  /** Full width tabs that stretch to fill container (Mantine puts grow on List) */
+  grow?: boolean;
+  /** Bottom-margin spacing token (Mantine spacing parity: xs/sm/md/lg/xl or number) */
+  mb?: string | number;
   /** Custom className */
   className?: string;
+  /** Inline style for the list element */
+  style?: CSSProperties;
 }
 
 export interface EMRTabsTabProps {
@@ -68,12 +95,20 @@ export interface EMRTabsTabProps {
   children: ReactNode;
   /** Icon component to show before label */
   icon?: ComponentType<{ size?: number; stroke?: number }>;
+  /** Rendered node before the label (Mantine parity — alternative to `icon`) */
+  leftSection?: ReactNode;
+  /** Rendered node after the label (Mantine parity) */
+  rightSection?: ReactNode;
   /** Disable this tab */
   disabled?: boolean;
   /** Custom className */
   className?: string;
+  /** Inline style for the tab element */
+  style?: CSSProperties;
   /** Badge/count to show */
   badge?: ReactNode;
+  /** Test ID for testing */
+  'data-testid'?: string;
 }
 
 export interface EMRTabsPanelProps {
@@ -85,6 +120,8 @@ export interface EMRTabsPanelProps {
   pt?: string | number;
   /** Custom className */
   className?: string;
+  /** Inline style for the panel element */
+  style?: CSSProperties;
 }
 
 // ============================================================================
@@ -114,14 +151,6 @@ function useEMRTabsContext(): EMRTabsContextValue {
 // Size Configurations
 // ============================================================================
 
-/**
- * Wave 3.9 (Pattern D — tap-target hardening):
- * Default `md` height MUST be ≥ 44px to satisfy the project-wide 44×44
- * tap-target floor (CLAUDE.md mandate; iPad clinicians wearing gloves on
- * a duty shift miss-tap anything smaller). `sm` is opt-in for dense
- * desktop layouts only and is documented as not meeting the mobile
- * tap-target requirement.
- */
 export const SIZE_CONFIG = {
   sm: {
     height: 36,
@@ -144,17 +173,33 @@ export const SIZE_CONFIG = {
     padding: '0 20px',
     gap: 10,
   },
-} as const;
+};
 
 // ============================================================================
 // Sub-Components
 // ============================================================================
 
+const SPACING_TOKENS: Record<string, number> = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
+
+function resolveSpacing(value: string | number | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === 'number') return value;
+  return SPACING_TOKENS[value] ?? 0;
+}
+
 /**
  * EMRTabs.List - Container for tab buttons
  */
-function EMRTabsList({ children, position = 'left', className }: EMRTabsListProps): React.JSX.Element {
-  const { grow } = useEMRTabsContext();
+function EMRTabsList({
+  children,
+  position = 'left',
+  grow: growProp,
+  mb,
+  className,
+  style,
+}: EMRTabsListProps): React.JSX.Element {
+  const { grow: contextGrow } = useEMRTabsContext();
+  const grow = growProp ?? contextGrow;
 
   const justifyContent = useMemo(() => {
     switch (position) {
@@ -171,8 +216,8 @@ function EMRTabsList({ children, position = 'left', className }: EMRTabsListProp
 
   return (
     <Box
-      className={`${styles.list} ${className ?? ''}`}
-      style={{ justifyContent }}
+      className={`${styles.list} ${className || ''}`}
+      style={{ justifyContent, marginBottom: resolveSpacing(mb), ...style }}
       role="tablist"
       data-grow={grow || undefined}
     >
@@ -188,9 +233,13 @@ function EMRTabsTab({
   value,
   children,
   icon: Icon,
+  leftSection,
+  rightSection,
   disabled,
   className,
+  style,
   badge,
+  'data-testid': testId,
 }: EMRTabsTabProps): React.JSX.Element {
   const { value: activeValue, onChange, variant, size, allowDeselect, grow } = useEMRTabsContext();
   const isActive = activeValue === value;
@@ -205,13 +254,9 @@ function EMRTabsTab({
     }
   }, [disabled, isActive, allowDeselect, onChange, value]);
 
-  const variantClass = styles[`tab--${variant}`] ?? '';
-  const activeClass = isActive ? (styles['tab--active'] ?? '') : '';
-  const disabledClass = disabled ? (styles['tab--disabled'] ?? '') : '';
-
   return (
     <UnstyledButton
-      className={`${styles.tab} ${variantClass} ${activeClass} ${disabledClass} ${className ?? ''}`}
+      className={`${styles.tab} ${styles[`tab--${variant}`]} ${isActive ? styles['tab--active'] : ''} ${disabled ? styles['tab--disabled'] : ''} ${className || ''}`}
       onClick={handleClick}
       disabled={disabled}
       role="tab"
@@ -219,19 +264,30 @@ function EMRTabsTab({
       aria-disabled={disabled}
       data-active={isActive || undefined}
       data-grow={grow || undefined}
+      data-testid={testId}
       style={{
         height: config.height,
         padding: config.padding,
         fontSize: config.fontSize,
         gap: config.gap,
+        ...style,
       }}
     >
-      {Icon && (
+      {Icon ? (
         <Icon size={config.iconSize} stroke={1.5} />
-      )}
+      ) : leftSection ? (
+        <span className={styles.tabSection} aria-hidden="true">
+          {leftSection}
+        </span>
+      ) : null}
       <Text component="span" className={styles.tabLabel}>
         {children}
       </Text>
+      {rightSection && (
+        <span className={styles.tabSection} aria-hidden="true">
+          {rightSection}
+        </span>
+      )}
       {badge && (
         <span className={styles.tabBadge}>{badge}</span>
       )}
@@ -250,6 +306,7 @@ function EMRTabsPanel({
   children,
   pt = 'md',
   className,
+  style,
 }: EMRTabsPanelProps): React.JSX.Element | null {
   const { value: activeValue } = useEMRTabsContext();
   const isActive = activeValue === value;
@@ -262,9 +319,9 @@ function EMRTabsPanel({
 
   return (
     <Box
-      className={`${styles.panel} ${className ?? ''}`}
+      className={`${styles.panel} ${className || ''}`}
       role="tabpanel"
-      style={{ paddingTop }}
+      style={{ paddingTop, ...style }}
     >
       {children}
     </Box>
@@ -282,30 +339,49 @@ function EMRTabsPanel({
  */
 function EMRTabsRoot({
   value,
+  defaultValue = null,
   onChange,
   children,
   variant = 'default',
   size = 'md',
   allowDeselect = false,
   grow = false,
+  keepMounted: _keepMounted,
   className,
+  style,
   'data-testid': testId,
 }: EMRTabsProps): React.JSX.Element {
+  // Controlled when `value` is explicitly provided (including `null`); otherwise
+  // uncontrolled and seeded from `defaultValue`.
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = useState<string | null>(defaultValue);
+  const resolvedValue = isControlled ? value : internalValue;
+
+  const handleChange = useCallback(
+    (next: string | null) => {
+      if (!isControlled) {
+        setInternalValue(next);
+      }
+      onChange?.(next);
+    },
+    [isControlled, onChange]
+  );
+
   const contextValue = useMemo<EMRTabsContextValue>(
     () => ({
-      value,
-      onChange,
+      value: resolvedValue,
+      onChange: handleChange,
       variant,
       size,
       allowDeselect,
       grow,
     }),
-    [value, onChange, variant, size, allowDeselect, grow]
+    [resolvedValue, handleChange, variant, size, allowDeselect, grow]
   );
 
   return (
     <EMRTabsContext.Provider value={contextValue}>
-      <Box className={`${styles.root} ${className ?? ''}`} data-testid={testId}>
+      <Box className={`${styles.root} ${className || ''}`} style={style} data-testid={testId}>
         {children}
       </Box>
     </EMRTabsContext.Provider>

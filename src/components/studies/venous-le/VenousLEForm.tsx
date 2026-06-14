@@ -43,7 +43,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Box, Grid, Group, Stack, Text } from '@mantine/core';
+import { Box, Grid, Group, Stack } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus } from '@tabler/icons-react';
@@ -63,7 +63,7 @@ import type {
 import type { EncounterDraft } from '../../../types/encounter';
 import type { PatientPosition } from '../../../types/patient-position';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog } from '../../common';
+import { ConfirmDialog, EMRContentSection } from '../../common';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
@@ -1130,16 +1130,13 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
             onDeleteCustomTemplate={handleRequestDeleteCustom}
           />
 
-          <Box className={classes.anatomyCard}>
-            <Box className={classes.anatomyHead}>
-              <Text className={classes.anatomyTitle}>
-                {t('venousLE.anatomy.title')}
-              </Text>
-              <Text className={classes.anatomySubtitle}>
-                {t('venousLE.anatomy.subtitle')}
-              </Text>
-            </Box>
-            <div className={classes.anatomyBody}>
+          <EMRContentSection
+            title={t('venousLE.anatomy.title')}
+            subtitle={t('venousLE.anatomy.subtitle')}
+            showAccent={false}
+            padding="md"
+          >
+            <Stack gap="sm">
               <AnatomyDiagramSection
                 segments={competencyMap}
                 overlay={false}
@@ -1158,8 +1155,8 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
               <Box className={classes.anatomyLegend}>
                 <AnatomyLegend />
               </Box>
-            </div>
-          </Box>
+            </Stack>
+          </EMRContentSection>
 
           <ImpressionBlock
             findings={state.findings}

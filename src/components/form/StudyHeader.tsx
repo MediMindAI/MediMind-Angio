@@ -14,7 +14,7 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Collapse, Grid, Group, MultiSelect, Text, UnstyledButton } from '@mantine/core';
+import { Box, Collapse, Grid, Group, Text, UnstyledButton } from '@mantine/core';
 import {
   IconChevronDown,
   IconChevronUp,
@@ -24,6 +24,7 @@ import {
   EMRTextInput,
   EMRDatePicker,
   EMRSelect,
+  EMRMultiSelect,
   EMRTextarea,
   EMRCheckbox,
 } from '../shared/EMRFormFields';
@@ -311,7 +312,7 @@ export const StudyHeader = memo(function StudyHeader({
               <EMRDatePicker
                 label={t('venousLE.header.birthDate')}
                 value={isoToLocalDate(value.patientBirthDate)}
-                onChange={(d) => update('patientBirthDate', localDateToIso(d))}
+                onChange={(d: Date | null) => update('patientBirthDate', localDateToIso(d))}
                 size="md"
                 data-testid="header-birthDate"
               />
@@ -343,7 +344,7 @@ export const StudyHeader = memo(function StudyHeader({
               <EMRDatePicker
                 label={t('venousLE.header.studyDate')}
                 value={isoToLocalDate(value.studyDate)}
-                onChange={(d) => update('studyDate', localDateToIso(d) ?? '')}
+                onChange={(d: Date | null) => update('studyDate', localDateToIso(d) ?? '')}
                 size="md"
                 data-testid="header-studyDate"
               />
@@ -449,7 +450,7 @@ export const StudyHeader = memo(function StudyHeader({
                 <label className={classes.icd10Label} htmlFor="header-icd10">
                   {t('venousLE.header.icd10Codes')}
                 </label>
-                <MultiSelect
+                <EMRMultiSelect
                   id="header-icd10"
                   data={icd10Options}
                   value={selectedIcd10Codes as string[]}
@@ -482,7 +483,7 @@ export const StudyHeader = memo(function StudyHeader({
               <EMRDatePicker
                 label={t('venousLE.header.informedConsentSignedAt')}
                 value={isoToLocalDate(value.informedConsentSignedAt)}
-                onChange={(d) => update('informedConsentSignedAt', localDateToIso(d))}
+                onChange={(d: Date | null) => update('informedConsentSignedAt', localDateToIso(d))}
                 size="md"
                 disabled={value.informedConsent !== true}
                 data-testid="header-informedConsentSignedAt"

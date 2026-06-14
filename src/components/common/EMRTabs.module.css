@@ -1,5 +1,8 @@
 /**
  * EMRTabs Styles - Premium Design
+ *
+ * Modern tab component with glass morphism, gradient accents,
+ * and smooth animations for a polished dashboard experience.
  */
 
 /* ============================================================================
@@ -22,8 +25,6 @@
   background: var(--emr-bg-hover);
   border: 1px solid var(--emr-border-color);
   border-radius: 14px;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   position: relative;
   overflow-x: auto;
   scrollbar-width: none;
@@ -72,10 +73,8 @@
 }
 
 .tab:focus-visible {
-  /* Wave 5.3: use box-shadow instead of outline so the ring isn't clipped
-   * by the parent overflow-x:auto scroll container (Audit Part 08 MEDIUM). */
-  outline: none;
-  box-shadow: 0 0 0 2px var(--emr-primary);
+  outline: 2px solid var(--emr-primary);
+  outline-offset: 2px;
 }
 
 .tab[data-grow="true"] {
@@ -83,24 +82,27 @@
 }
 
 /* ============================================================================
-   Active State - Theme Blue Gradient Glow
+   Active State - Command Identity (navy)
+   Default variant: navy text + navy underline. Pills/outline handled below.
    ============================================================================ */
 
 .tab--active {
-  color: var(--emr-text-white) !important;
-  background: var(--emr-gradient-primary) !important;
-  border: 1px solid transparent;
-  box-shadow:
-    0 2px 8px var(--emr-secondary-alpha-30),
-    0 4px 12px rgba(0, 0, 0, 0.1);
+  color: var(--emr-primary) !important;
+  background: transparent;
+  border: none;
 }
 
 .tab--active .tabLabel {
-  font-weight: var(--emr-font-semibold);
+  font-weight: var(--emr-font-bold);
+}
+
+.tab--default.tab--active {
+  border-radius: 8px 8px 0 0;
+  box-shadow: inset 0 -3px 0 0 var(--emr-primary);
 }
 
 .tab--active svg {
-  filter: drop-shadow(0 0 4px var(--emr-secondary-alpha-50));
+  opacity: 1;
 }
 
 /* Disabled State */
@@ -111,7 +113,24 @@
 
 /* Tab Label */
 .tabLabel {
-  line-height: var(--emr-line-height-tight);
+  line-height: var(--emr-line-height-1-2);
+}
+
+/* Left/right section wrappers (leftSection / rightSection — Mantine parity).
+   Mirrors the icon opacity transition so converted icon tabs look identical. */
+.tabSection {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.25s ease;
+}
+
+.tab:hover:not(.tab--disabled) .tabSection {
+  opacity: 0.9;
+}
+
+.tab--active .tabSection {
+  opacity: 1;
 }
 
 /* Tab Icon Styling */
@@ -138,11 +157,16 @@
   padding: 0 7px;
   font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-bold);
-  background: var(--emr-gradient-primary);
-  color: var(--emr-text-white);
+  background: var(--emr-bg-accent-secondary);
+  color: var(--emr-primary);
   border-radius: 10px;
   margin-left: 8px;
-  box-shadow: 0 2px 8px var(--emr-secondary-alpha-30);
+}
+
+/* Active tab: solid navy count badge with white text (Command identity) */
+.tab--active .tabBadge {
+  background: var(--emr-primary);
+  color: var(--emr-text-inverse);
 }
 
 /* ============================================================================
@@ -172,11 +196,15 @@
 }
 
 .tab--pills.tab--active {
-  background: var(--emr-gradient-primary) !important;
+  color: var(--emr-text-inverse) !important;
+  background: var(--emr-primary) !important;
   border: none;
-  box-shadow:
-    0 4px 15px var(--emr-secondary-alpha-30),
-    0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+}
+
+.tab--pills.tab--active .tabBadge {
+  background: var(--emr-text-inverse);
+  color: var(--emr-primary);
 }
 
 /* ============================================================================
@@ -188,8 +216,8 @@
 }
 
 .tab--outline:hover:not(.tab--disabled):not(.tab--active) {
-  border-color: var(--emr-white-alpha-10);
-  background: var(--emr-white-alpha-05);
+  border-color: var(--emr-glass-white-10);
+  background: var(--emr-glass-white-03);
 }
 
 .tab--outline.tab--active {
@@ -197,7 +225,7 @@
   background: var(--emr-secondary-alpha-10) !important;
   box-shadow:
     0 0 15px var(--emr-secondary-alpha-15),
-    inset 0 1px 0 var(--emr-white-alpha-05);
+    inset 0 1px 0 var(--emr-glass-white-05);
 }
 
 /* ============================================================================
@@ -223,18 +251,21 @@
    Size Variants
    ============================================================================ */
 
+/* Small - Compact */
 .tab[style*="height: 36px"] {
   padding: 0 14px;
   font-size: var(--emr-font-sm);
   gap: 6px;
 }
 
+/* Medium - Default */
 .tab[style*="height: 42px"] {
   padding: 0 18px;
   font-size: var(--emr-font-base);
   gap: 8px;
 }
 
+/* Large - Prominent */
 .tab[style*="height: 48px"] {
   padding: 0 22px;
   font-size: var(--emr-font-md);
@@ -254,7 +285,7 @@
 
   .tab {
     padding: 0 12px !important;
-    font-size: var(--emr-font-sm) !important;
+    font-size: var(--emr-font-sm)!important;
     border-radius: 8px;
   }
 
@@ -267,11 +298,12 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
   .tab {
     padding: 0 10px !important;
   }
 
+  /* Hide label on very small screens when icon exists */
   .tab svg + .tabLabel {
     display: none;
   }
@@ -297,7 +329,7 @@
   opacity: 0;
   background: radial-gradient(
     circle at center,
-    var(--emr-white-alpha-10) 0%,
+    var(--emr-glass-white-10) 0%,
     transparent 70%
   );
   transition: opacity 0.3s ease;

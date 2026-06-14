@@ -9,10 +9,11 @@
  */
 
 import { memo, useCallback } from 'react';
-import { Box, Group, SegmentedControl, Text, Tooltip, UnstyledButton } from '@mantine/core';
+import { Box, Group, Text, UnstyledButton } from '@mantine/core';
 import { IconArrowBackUp, IconEraser, IconLetterT, IconPencil, IconPointer, IconRoute, IconTrash } from '@tabler/icons-react';
 import type { SegmentId } from '../../types/anatomy';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { EMRTooltip, EMRViewToggle, type EMRViewToggleOption } from '../common';
 import {
   DRAWING_COLORS,
   DRAWING_COLOR_HEX,
@@ -78,46 +79,23 @@ export const DrawingToolbar = memo(function DrawingToolbar({
     onClear();
   }, [onClear, t]);
 
+  const modeOptions: EMRViewToggleOption[] = [
+    { value: 'click', icon: IconPointer, label: t('venousLE.drawing.modeClick', 'Click') },
+    { value: 'draw', icon: IconPencil, label: t('venousLE.drawing.modeDraw', 'Draw') },
+    ...(showEditSegment
+      ? [{ value: 'edit-segment', icon: IconRoute, label: t('venousLE.drawing.modeEditSegment', 'Edit segment') }]
+      : []),
+  ];
+
   return (
     <Box className={classes.toolbar} role="toolbar" aria-label={t('venousLE.drawing.ariaLabel', 'Drawing tools')}>
       <Group gap="md" wrap="wrap" align="center">
-        <SegmentedControl
+        <EMRViewToggle
           value={mode}
           onChange={(v) => setMode(v as DrawingMode)}
           size="sm"
-          data={[
-            {
-              value: 'click',
-              label: (
-                <Group gap={6} align="center" wrap="nowrap">
-                  <IconPointer size={14} stroke={1.75} />
-                  <span>{t('venousLE.drawing.modeClick', 'Click')}</span>
-                </Group>
-              ),
-            },
-            {
-              value: 'draw',
-              label: (
-                <Group gap={6} align="center" wrap="nowrap">
-                  <IconPencil size={14} stroke={1.75} />
-                  <span>{t('venousLE.drawing.modeDraw', 'Draw')}</span>
-                </Group>
-              ),
-            },
-            ...(showEditSegment
-              ? [
-                  {
-                    value: 'edit-segment',
-                    label: (
-                      <Group gap={6} align="center" wrap="nowrap">
-                        <IconRoute size={14} stroke={1.75} />
-                        <span>{t('venousLE.drawing.modeEditSegment', 'Edit segment')}</span>
-                      </Group>
-                    ),
-                  },
-                ]
-              : []),
-          ]}
+          alwaysShowLabels
+          options={modeOptions}
           data-testid="drawing-mode-toggle"
         />
 
@@ -131,7 +109,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             {t('venousLE.drawing.color.label', 'Color')}
           </Text>
           {DRAWING_COLORS.map((c) => (
-            <Tooltip key={c} label={t(`venousLE.drawing.color.${c}`, c)} withArrow openDelay={300}>
+            <EMRTooltip key={c} label={t(`venousLE.drawing.color.${c}`, c)} withArrow openDelay={300}>
               <UnstyledButton
                 type="button"
                 onClick={() => setColor(c)}
@@ -143,7 +121,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
                 disabled={mode !== 'draw'}
                 style={{ background: DRAWING_COLOR_HEX[c] }}
               />
-            </Tooltip>
+            </EMRTooltip>
           ))}
         </Group>
 
@@ -157,7 +135,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             {t('venousLE.drawing.size.label', 'Size')}
           </Text>
           {DRAWING_SIZES.map((s) => (
-            <Tooltip
+            <EMRTooltip
               key={s}
               label={t(
                 `venousLE.drawing.size.${s === 2 ? 'thin' : s === 4 ? 'medium' : 'thick'}`,
@@ -180,7 +158,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
                   style={{ width: `${s * 2}px`, height: `${s * 2}px` }}
                 />
               </UnstyledButton>
-            </Tooltip>
+            </EMRTooltip>
           ))}
         </Group>
 
@@ -190,7 +168,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
           className={classes.subgroup}
           data-disabled={mode !== 'draw' ? 'true' : undefined}
         >
-          <Tooltip label={t('venousLE.drawing.tools.pen', 'Pen')} withArrow openDelay={300}>
+          <EMRTooltip label={t('venousLE.drawing.tools.pen', 'Pen')} withArrow openDelay={300}>
             <UnstyledButton
               type="button"
               onClick={() => setTool('pen')}
@@ -202,8 +180,8 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             >
               <IconPencil size={16} stroke={1.75} />
             </UnstyledButton>
-          </Tooltip>
-          <Tooltip label={t('venousLE.drawing.tools.eraser', 'Eraser')} withArrow openDelay={300}>
+          </EMRTooltip>
+          <EMRTooltip label={t('venousLE.drawing.tools.eraser', 'Eraser')} withArrow openDelay={300}>
             <UnstyledButton
               type="button"
               onClick={() => setTool('eraser')}
@@ -215,8 +193,8 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             >
               <IconEraser size={16} stroke={1.75} />
             </UnstyledButton>
-          </Tooltip>
-          <Tooltip label={t('venousLE.drawing.tools.text', 'Text')} withArrow openDelay={300}>
+          </EMRTooltip>
+          <EMRTooltip label={t('venousLE.drawing.tools.text', 'Text')} withArrow openDelay={300}>
             <UnstyledButton
               type="button"
               onClick={() => setTool('text')}
@@ -228,11 +206,11 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             >
               <IconLetterT size={16} stroke={1.75} />
             </UnstyledButton>
-          </Tooltip>
+          </EMRTooltip>
         </Group>
 
         <Group gap={6} wrap="nowrap" className={classes.subgroup}>
-          <Tooltip label={t('venousLE.drawing.actions.undo', 'Undo')} withArrow openDelay={300}>
+          <EMRTooltip label={t('venousLE.drawing.actions.undo', 'Undo')} withArrow openDelay={300}>
             <UnstyledButton
               type="button"
               onClick={onUndo}
@@ -243,8 +221,8 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             >
               <IconArrowBackUp size={16} stroke={1.75} />
             </UnstyledButton>
-          </Tooltip>
-          <Tooltip label={t('venousLE.drawing.actions.clear', 'Clear all')} withArrow openDelay={300}>
+          </EMRTooltip>
+          <EMRTooltip label={t('venousLE.drawing.actions.clear', 'Clear all')} withArrow openDelay={300}>
             <UnstyledButton
               type="button"
               onClick={handleClear}
@@ -255,7 +233,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
             >
               <IconTrash size={16} stroke={1.75} />
             </UnstyledButton>
-          </Tooltip>
+          </EMRTooltip>
         </Group>
 
         {mode === 'edit-segment' && (
@@ -265,7 +243,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
                 ? `${editingSegmentId} — ${t('venousLE.drawing.actions.clearOverride', 'Reset segment path')}`
                 : t('venousLE.drawing.editSegmentHint', 'Tap a vein, then redraw it to replace its geometry')}
             </Text>
-            <Tooltip
+            <EMRTooltip
               label={t('venousLE.drawing.actions.clearOverride', 'Reset segment path')}
               withArrow
               openDelay={300}
@@ -280,7 +258,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
               >
                 <IconArrowBackUp size={16} stroke={1.75} />
               </UnstyledButton>
-            </Tooltip>
+            </EMRTooltip>
           </Group>
         )}
       </Group>

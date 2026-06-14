@@ -21,9 +21,13 @@ import type {
   PelvicPlexusFinding,
   EscapePoint,
   ExtrapelvicVarices,
+  SpecialConsiderationsFindings,
   Side,
 } from '../../../components/studies/iliac-pelvic-venous/config';
-import { ILIAC_THRESHOLDS } from '../../../components/studies/iliac-pelvic-venous/config';
+import {
+  ILIAC_THRESHOLDS,
+  effectiveCavalVelocityRatio,
+} from '../../../components/studies/iliac-pelvic-venous/config';
 import { MEDIMIND_CODESYSTEMS } from '../../../constants/fhir-systems';
 import type { BundleEntry, Observation } from '../../../types/fhir';
 import type { BuildContext } from '../context';
@@ -64,6 +68,9 @@ export function appendIliacObservations(
   }
   for (const ep of findings.escapePoints ?? []) appendEscapePoint(ctx, out, ep);
   if (findings.extrapelvic) appendExtrapelvic(ctx, out, findings.extrapelvic);
+  if (findings.specialConsiderations) {
+    appendSpecialConsiderations(ctx, out, findings.specialConsiderations);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +91,15 @@ function appendContext(
       paramId: 'presentingSymptoms',
       paramLabel: 'Presenting symptoms',
       value: c.symptoms.join(', '),
+      tag,
+    });
+  }
+  if (c.riskFactors && c.riskFactors.length > 0) {
+    pushStringObservation(ctx, out, {
+      sideText,
+      paramId: 'riskFactors',
+      paramLabel: 'Risk factors',
+      value: c.riskFactors.join(', '),
       tag,
     });
   }
@@ -151,19 +167,46 @@ function appendRenal(
     tag,
     isAbnormal: (f.apDiameterRatio ?? 0) >= ILIAC_THRESHOLDS.renalApDiameterRatio,
   });
-  pushCustomNumeric(ctx, out, {
-    bodySite,
-    sideText,
-    paramId: 'aortoSmaAngleDeg',
-    paramLabel: 'Aorto-SMA angle',
-    value: f.aortoSmaAngleDeg,
-    system: medimindParamSystem(ctx, 'aortoSmaAngleDeg'),
-    unit: 'deg',
-    tag,
-    isAbnormal:
-      f.aortoSmaAngleDeg !== undefined &&
-      f.aortoSmaAngleDeg <= ILIAC_THRESHOLDS.renalAortoSmaAngleDeg,
-  });
+  // Per-level LRV velocities (proximal/mid/distal) + hilar (distal) diameter.
+  for (const [lvl, m] of Object.entries(f.levels ?? {})) {
+    if (m?.velocityCmS !== undefined) {
+      pushCustomNumeric(ctx, out, {
+        bodySite,
+        sideText,
+        paramId: `lrvVelocity_${lvl}`,
+        paramLabel: `LRV peak velocity (${lvl})`,
+        value: m.velocityCmS,
+        system: medimindParamSystem(ctx, 'velocityCmS'),
+        unit: 'cm/s',
+        tag: `${tag};level=${lvl}`,
+        isAbnormal: false,
+      });
+    }
+    if (m?.diameterMm !== undefined) {
+      pushCustomNumeric(ctx, out, {
+        bodySite,
+        sideText,
+        paramId: `lrvDiameter_${lvl}`,
+        paramLabel: `LRV diameter (${lvl})`,
+        value: m.diameterMm,
+        system: medimindParamSystem(ctx, 'diameterMm'),
+        unit: 'mm',
+        tag: `${tag};level=${lvl}`,
+        isAbnormal: false,
+      });
+    }
+  }
+  if (f.retroAortic === true) {
+    pushBooleanObservation(ctx, out, {
+      bodySite,
+      sideText,
+      paramId: 'retroAortic',
+      paramLabel: 'Retro-aortic left renal vein',
+      value: true,
+      tag,
+      isAbnormal: true,
+    });
+  }
   if (f.beakSign === true) {
     pushBooleanObservation(ctx, out, {
       bodySite,
@@ -269,17 +312,47 @@ function appendCaval(
       isAbnormal: true,
     });
   }
+  const effRatio = effectiveCavalVelocityRatio(f);
   pushCustomNumeric(ctx, out, {
     bodySite,
     sideText,
     paramId: 'velocityRatio',
     paramLabel: 'Cross-stenosis velocity ratio',
-    value: f.velocityRatio,
+    value: effRatio,
     system: MEDIMIND_CODESYSTEMS.VELOCITY_RATIO,
     unit: '1',
     tag,
-    isAbnormal: (f.velocityRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio,
+    isAbnormal: (effRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio,
   });
+  // Per-level velocities (distal/mid/proximal) + diameters (CFV SFJ-level, IVC).
+  for (const [lvl, m] of Object.entries(f.levels ?? {})) {
+    if (m?.velocityCmS !== undefined) {
+      pushCustomNumeric(ctx, out, {
+        bodySite,
+        sideText,
+        paramId: `cavalVelocity_${lvl}`,
+        paramLabel: `Peak velocity (${lvl})`,
+        value: m.velocityCmS,
+        system: medimindParamSystem(ctx, 'velocityCmS'),
+        unit: 'cm/s',
+        tag: `${tag};level=${lvl}`,
+        isAbnormal: false,
+      });
+    }
+    if (m?.diameterMm !== undefined) {
+      pushCustomNumeric(ctx, out, {
+        bodySite,
+        sideText,
+        paramId: `cavalDiameter_${lvl}`,
+        paramLabel: `Diameter (${lvl})`,
+        value: m.diameterMm,
+        system: medimindParamSystem(ctx, 'diameterMm'),
+        unit: 'mm',
+        tag: `${tag};level=${lvl}`,
+        isAbnormal: false,
+      });
+    }
+  }
   pushCustomNumeric(ctx, out, {
     bodySite,
     sideText,
@@ -344,6 +417,28 @@ function appendCaval(
       isAbnormal: false,
     });
   }
+  if (f.bladderArtifactSuspected === true) {
+    pushBooleanObservation(ctx, out, {
+      bodySite,
+      sideText,
+      paramId: 'bladderArtifactSuspected',
+      paramLabel: 'Bladder-distension artifact suspected',
+      value: true,
+      tag,
+      isAbnormal: false,
+    });
+  }
+  if (f.remeasuredAfterVoiding === true) {
+    pushBooleanObservation(ctx, out, {
+      bodySite,
+      sideText,
+      paramId: 'remeasuredAfterVoiding',
+      paramLabel: 'Remeasured after voiding',
+      value: true,
+      tag,
+      isAbnormal: false,
+    });
+  }
   pushStringObservation(ctx, out, {
     bodySite,
     sideText,
@@ -375,7 +470,7 @@ function appendGonadal(
     system: medimindParamSystem(ctx, 'gonadalDiameterMm'),
     unit: 'mm',
     tag,
-    isAbnormal: (f.diameterMm ?? 0) >= ILIAC_THRESHOLDS.gonadalDiameterMm,
+    isAbnormal: (f.diameterMm ?? 0) > ILIAC_THRESHOLDS.gonadalDiameterMm,
   });
   pushCustomNumeric(ctx, out, {
     bodySite,
@@ -590,5 +685,121 @@ function appendExtrapelvic(
         isAbnormal: true,
       });
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Zone 6 — arterial special considerations (SMAS / MALS)
+// ---------------------------------------------------------------------------
+function appendSpecialConsiderations(
+  ctx: BuildContext,
+  out: Array<BundleEntry<Observation>>,
+  sc: SpecialConsiderationsFindings,
+): void {
+  const smas = sc.smas;
+  if (smas?.smaAortaAngleDeg !== undefined || smas?.note) {
+    const smaSite = bodySiteForSegment('superior-mesenteric-artery');
+    const smasTag = 'zone=specialConsiderations;syndrome=smas';
+    if (smas.smaAortaAngleDeg !== undefined) {
+      pushCustomNumeric(ctx, out, {
+        bodySite: smaSite,
+        sideText: 'Midline',
+        paramId: 'smaAortaAngleDeg',
+        paramLabel: 'SMA-aorta angle',
+        value: smas.smaAortaAngleDeg,
+        system: medimindParamSystem(ctx, 'smaAortaAngleDeg'),
+        unit: 'deg',
+        tag: smasTag,
+        isAbnormal: smas.smaAortaAngleDeg < ILIAC_THRESHOLDS.smasAortaAngleDeg,
+      });
+    }
+    if (smas.note) {
+      pushStringObservation(ctx, out, {
+        bodySite: smaSite,
+        sideText: 'Midline',
+        paramId: 'smasNote',
+        paramLabel: 'SMAS note',
+        value: smas.note,
+        tag: smasTag,
+      });
+    }
+  }
+
+  const mals = sc.mals;
+  if (!mals) return;
+  const celiac = bodySiteForSegment('celiac-artery');
+  const malsTag = 'zone=specialConsiderations;syndrome=mals';
+  if (mals.caInspiratoryPsvCmS !== undefined) {
+    pushCustomNumeric(ctx, out, {
+      bodySite: celiac,
+      sideText: 'Midline',
+      paramId: 'caInspiratoryPsvCmS',
+      paramLabel: 'Celiac artery PSV (inspiration)',
+      value: mals.caInspiratoryPsvCmS,
+      system: medimindParamSystem(ctx, 'caInspiratoryPsvCmS'),
+      unit: 'cm/s',
+      tag: malsTag,
+      isAbnormal: false,
+    });
+  }
+  if (mals.caExpiratoryPsvCmS !== undefined) {
+    pushCustomNumeric(ctx, out, {
+      bodySite: celiac,
+      sideText: 'Midline',
+      paramId: 'caExpiratoryPsvCmS',
+      paramLabel: 'Celiac artery PSV (expiration)',
+      value: mals.caExpiratoryPsvCmS,
+      system: medimindParamSystem(ctx, 'caExpiratoryPsvCmS'),
+      unit: 'cm/s',
+      tag: malsTag,
+      isAbnormal: mals.caExpiratoryPsvCmS > ILIAC_THRESHOLDS.malsExpiratoryPsvCmS,
+    });
+  }
+  if (mals.chaPsvCmS !== undefined) {
+    pushCustomNumeric(ctx, out, {
+      bodySite: bodySiteForSegment('common-hepatic-artery'),
+      sideText: 'Midline',
+      paramId: 'chaPsvCmS',
+      paramLabel: 'Common hepatic artery PSV',
+      value: mals.chaPsvCmS,
+      system: medimindParamSystem(ctx, 'chaPsvCmS'),
+      unit: 'cm/s',
+      tag: malsTag,
+      isAbnormal: false,
+    });
+  }
+  if (mals.splenicPsvCmS !== undefined) {
+    pushCustomNumeric(ctx, out, {
+      bodySite: bodySiteForSegment('splenic-artery'),
+      sideText: 'Midline',
+      paramId: 'splenicPsvCmS',
+      paramLabel: 'Splenic artery PSV',
+      value: mals.splenicPsvCmS,
+      system: medimindParamSystem(ctx, 'splenicPsvCmS'),
+      unit: 'cm/s',
+      tag: malsTag,
+      isAbnormal: false,
+    });
+  }
+  if (mals.hookSign === true) {
+    pushBooleanObservation(ctx, out, {
+      bodySite: celiac,
+      sideText: 'Midline',
+      paramId: 'hookSign',
+      paramLabel: 'Hook-shaped celiac artery',
+      value: true,
+      tag: malsTag,
+      isAbnormal: true,
+    });
+  }
+  if (mals.note) {
+    pushStringObservation(ctx, out, {
+      bodySite: celiac,
+      sideText: 'Midline',
+      paramId: 'malsNote',
+      paramLabel: 'MALS note',
+      value: mals.note,
+      tag: malsTag,
+    });
   }
 }

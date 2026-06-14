@@ -1,0 +1,83 @@
+/* EMRPullToRefresh Component Styles */
+/* Touch-based refresh gesture for mobile devices */
+/* Uses ONLY theme CSS variables from theme.css */
+
+.container {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--emr-bg-card);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+
+.arrowIcon {
+  color: var(--emr-text-secondary);
+  transition: transform 0.1s ease;
+}
+
+.readyIcon {
+  color: var(--emr-primary);
+  animation: emrPullRefreshPulse 0.8s ease infinite;
+}
+
+.checkIcon {
+  color: var(--emr-success);
+  animation: emrPullRefreshBounce 0.3s ease;
+}
+
+@keyframes emrPullRefreshPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes emrPullRefreshBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .readyIcon,
+  .checkIcon {
+    animation: none;
+  }
+
+  .arrowIcon {
+    transition: none;
+  }
+}

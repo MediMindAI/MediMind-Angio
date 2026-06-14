@@ -3,7 +3,7 @@
 
 import React, { useId, forwardRef, memo, useCallback } from 'react';
 import { Box, Text, Group } from '@mantine/core';
-import { IconCheck } from '@tabler/icons-react';
+import { IconCheck, IconMinus } from '@tabler/icons-react';
 import type { EMRCheckboxProps } from './EMRFieldTypes';
 import './emr-fields.css';
 
@@ -33,22 +33,25 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
       // Checkbox specific props
       checked,
       defaultChecked,
+      indeterminate = false,
       onChange,
       onChangeEvent,
       labelPosition = 'right',
       description,
+
+      styles: _styles, // Ignored - using new design
     },
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
 
     // Internal state for uncontrolled mode
-    const [internalChecked, setInternalChecked] = React.useState(defaultChecked ?? false);
+    const [internalChecked, setInternalChecked] = React.useState(defaultChecked || false);
     const isChecked = checked !== undefined ? checked : internalChecked;
 
     // Size configurations
-    const sizeConfig: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', { box: number; icon: number; fontSize: string; gap: number }> = {
+    const sizeConfig = {
       xs: { box: 16, icon: 10, fontSize: 'var(--emr-font-sm)', gap: 8 },
       sm: { box: 18, icon: 12, fontSize: 'var(--emr-font-base)', gap: 10 },
       md: { box: 22, icon: 14, fontSize: 'var(--emr-font-md)', gap: 12 },
@@ -56,19 +59,15 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
       xl: { box: 30, icon: 18, fontSize: 'var(--emr-font-lg)', gap: 16 },
     };
 
-    const config = sizeConfig[size] ?? sizeConfig.md;
+    const config = sizeConfig[size] || sizeConfig.md;
 
+    // Handle change event
     const handleChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (disabled || readOnly) { return; }
+        if (disabled || readOnly) {return;}
 
         const newChecked = event.target.checked;
-        // Only mutate internal state in uncontrolled mode. Mirroring it in
-        // controlled mode would race with the parent and could re-fire the
-        // handler when the parent rebroadcasts the same value.
-        if (checked === undefined) {
-          setInternalChecked(newChecked);
-        }
+        setInternalChecked(newChecked);
 
         if (onChangeEvent) {
           onChangeEvent(event);
@@ -77,13 +76,14 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
           onChange(newChecked);
         }
       },
-      [checked, onChange, onChangeEvent, disabled, readOnly]
+      [onChange, onChangeEvent, disabled, readOnly]
     );
 
+    // Determine error state
     const hasError = !!error;
 
     // Use description as fallback for helpText (backward compatibility)
-    const displayHelpText = helpText ?? description;
+    const displayHelpText = helpText || description;
 
     return (
       <Box className={className} style={style}>
@@ -109,7 +109,7 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
             onChange={handleChange}
             disabled={disabled || readOnly}
             required={required}
-            aria-label={ariaLabel ?? (typeof label === 'string' ? label : undefined)}
+            aria-label={ariaLabel || (typeof label === 'string' ? label : undefined)}
             aria-describedby={ariaDescribedBy}
             aria-invalid={hasError}
             data-testid={dataTestId}
@@ -132,18 +132,18 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
               border: `2px solid ${
                 hasError
                   ? 'var(--emr-error)'
-                  : isChecked
+                  : isChecked || indeterminate
                   ? 'var(--emr-primary)'
                   : 'var(--emr-border-color)'
               }`,
-              background: isChecked
+              background: isChecked || indeterminate
                 ? 'var(--emr-gradient-primary)'
                 : 'var(--emr-bg-card)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: isChecked
+              boxShadow: isChecked || indeterminate
                 ? 'var(--emr-shadow-md)'
                 : 'var(--emr-shadow-sm)',
               cursor: disabled ? 'not-allowed' : 'pointer',
@@ -153,7 +153,7 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
             onMouseEnter={(e) => {
               if (!disabled && !readOnly) {
                 e.currentTarget.style.transform = 'scale(1.05)';
-                if (!isChecked) {
+                if (!isChecked && !indeterminate) {
                   e.currentTarget.style.borderColor = 'var(--emr-border-color)';
                   e.currentTarget.style.boxShadow = 'var(--emr-shadow-md)';
                 }
@@ -161,31 +161,45 @@ export const EMRCheckbox = memo(forwardRef<HTMLInputElement, EMRCheckboxProps>(
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              if (!isChecked) {
+              if (!isChecked && !indeterminate) {
                 e.currentTarget.style.borderColor = hasError ? 'var(--emr-error)' : 'var(--emr-border-color)';
                 e.currentTarget.style.boxShadow = 'var(--emr-shadow-sm)';
               }
             }}
           >
+            {/* Check icon — shown when checked (not indeterminate) */}
             <IconCheck
               size={config.icon}
               strokeWidth={3}
               color="var(--emr-text-inverse)"
               style={{
-                opacity: isChecked ? 1 : 0,
-                transform: isChecked ? 'scale(1)' : 'scale(0.5)',
+                position: 'absolute',
+                opacity: isChecked && !indeterminate ? 1 : 0,
+                transform: isChecked && !indeterminate ? 'scale(1)' : 'scale(0.5)',
+                transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
+            {/* Indeterminate dash — shown only when indeterminate (overrides check) */}
+            <IconMinus
+              size={config.icon}
+              strokeWidth={3}
+              color="var(--emr-text-inverse)"
+              style={{
+                position: 'absolute',
+                opacity: indeterminate ? 1 : 0,
+                transform: indeterminate ? 'scale(1)' : 'scale(0.5)',
                 transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             />
           </Box>
 
-          {/* Label */}
+          {/* Label - using span to avoid nested <p> tags when label contains other elements */}
           {label && (
             <Text
               component="span"
               size={config.fontSize}
               fw={500}
-              c={disabled ? 'var(--emr-text-tertiary)' : 'var(--emr-text-primary)'}
+              c={disabled ? 'var(--emr-text-muted)' : 'var(--emr-text-primary)'}
               style={{
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 userSelect: 'none',

@@ -57,8 +57,11 @@ import {
   ESCAPE_POINT_VALUES,
   SEX_VALUES,
   SYMPTOM_VALUES,
+  RISK_FACTOR_VALUES,
   APPROACH_VALUES,
   POSITION_VALUES,
+  CAVAL_LEVEL_VALUES,
+  CAVAL_SEVERITY_VALUES,
 } from '../studies/iliac-pelvic-venous/config';
 import type { DiagramLegendItem } from './sections/DiagramSection';
 import type { Competency } from '../../types/anatomy';
@@ -291,8 +294,12 @@ function buildSingleReportLabels(
   // Zone-0 technique/context value labels (audit H3 — render technique block).
   addIliacVals('sex', SEX_VALUES);
   addIliacVals('symptom', SYMPTOM_VALUES);
+  addIliacVals('riskFactor', RISK_FACTOR_VALUES);
   addIliacVals('approach', APPROACH_VALUES);
   addIliacVals('position', POSITION_VALUES);
+  // Protocol additions: graded stenosis tiers + per-level velocity labels.
+  addIliacVals('severity', CAVAL_SEVERITY_VALUES);
+  addIliacVals('level', CAVAL_LEVEL_VALUES);
 
   const iliacSegment: Record<string, string> = {};
   for (const id of [
@@ -321,7 +328,12 @@ function buildSingleReportLabels(
     ratio: t('iliacPelvicVenous.field.ratio', 'Ratio'),
     peakVelocityRatio: t('iliacPelvicVenous.field.peakVelocityRatio', 'Peak-velocity ratio'),
     apDiameterRatio: t('iliacPelvicVenous.field.apDiameterRatio', 'AP-diameter ratio'),
-    aortoSmaAngleDeg: t('iliacPelvicVenous.field.aortoSmaAngle', 'Aorto-SMA angle'),
+    velocityRatio: t('iliacPelvicVenous.field.velocityRatio', 'Velocity ratio'),
+    lrvVelocity_proximal: t('iliacPelvicVenous.field.lrvVelocityProximal', 'Proximal LRV velocity'),
+    lrvVelocity_mid: t('iliacPelvicVenous.field.lrvVelocityMid', 'Mid LRV velocity'),
+    lrvVelocity_distal: t('iliacPelvicVenous.field.lrvVelocityDistal', 'Distal LRV velocity'),
+    hilarDiameterMm: t('iliacPelvicVenous.field.hilarDiameterMm', 'Hilar (distal) LRV diameter (mm)'),
+    retroAortic: t('iliacPelvicVenous.field.retroAortic', 'Retro-aortic left renal vein'),
     beakSign: t('iliacPelvicVenous.field.beakSign', 'Beak sign'),
     hilarVarices: t('iliacPelvicVenous.field.hilarVarices', 'Renal hilar varices'),
     reflux: t('iliacPelvicVenous.field.reflux', 'Reflux'),
@@ -340,6 +352,13 @@ function buildSingleReportLabels(
       'iliacPelvicVenous.field.crossPelvicCollateral',
       'Cross-pelvic collateral',
     ),
+    riskFactors: t('iliacPelvicVenous.field.riskFactors', 'Risk factors'),
+    smaAortaAngle: t('iliacPelvicVenous.field.smaAortaAngle', 'SMA–aorta angle (°)'),
+    caInspiratoryPsv: t('iliacPelvicVenous.field.caInspiratoryPsv', 'Celiac PSV — inspiration (cm/s)'),
+    caExpiratoryPsv: t('iliacPelvicVenous.field.caExpiratoryPsv', 'Celiac PSV — expiration (cm/s)'),
+    chaPsv: t('iliacPelvicVenous.field.chaPsv', 'Common hepatic artery PSV (cm/s)'),
+    splenicPsv: t('iliacPelvicVenous.field.splenicPsv', 'Splenic artery PSV (cm/s)'),
+    hookSign: t('iliacPelvicVenous.field.hookSign', 'Hook-shaped celiac artery'),
     'extrapelvic.vulvar': t('iliacPelvicVenous.extrapelvic.vulvar', 'Vulvar'),
     'extrapelvic.perineal': t('iliacPelvicVenous.extrapelvic.perineal', 'Perineal'),
     'extrapelvic.gluteal': t('iliacPelvicVenous.extrapelvic.gluteal', 'Gluteal'),
@@ -468,6 +487,7 @@ function buildSingleReportLabels(
         plexus: t('iliacPelvicVenous.zone.plexus.short', 'Pelvic plexus'),
         escape: t('iliacPelvicVenous.zone.escape.short', 'Escape points'),
         extrapelvic: t('iliacPelvicVenous.zone.extrapelvic.short', 'Extrapelvic varices'),
+        special: t('iliacPelvicVenous.zone.special.short', 'Special considerations (SMAS / MALS)'),
       },
       segment: iliacSegment,
       side: {

@@ -21,6 +21,10 @@ import {
   isGonadalRefluxAbnormal,
   isPlexusCongested,
   isEscapePointSignificant,
+  isSmasPositive,
+  isMalsPositive,
+  cavalStenosisSeverity,
+  effectiveCavalVelocityRatio,
 } from './config';
 
 export type { NarrativeKeyEntry, NarrativeOutput };
@@ -83,13 +87,15 @@ function buildSide(findings: IliacPelvicVenousFindings, side: Side): NarrativeKe
     const id = `${base}-${side}` as IliacCavalFullId;
     const f = findings.caval?.[id];
     if (f && isCavalObstructive(f)) {
+      const effRatio = effectiveCavalVelocityRatio(f);
       entries.push({
         key: `${NS}.narrative.cavalStenosis`,
         params: {
           vessel: `${NS}.vessel.${base}`,
           side: sideKey,
+          severity: `${NS}.severity.${cavalStenosisSeverity(effRatio)}`,
           pct: f.stenosisPct ?? 0,
-          ratio: r1(f.velocityRatio ?? 0),
+          ratio: r1(effRatio ?? 0),
         },
       });
     }
@@ -149,6 +155,25 @@ function buildConclusions(findings: IliacPelvicVenousFindings): NarrativeKeyEntr
     isPlexusCongested(findings.plexus?.left) || isPlexusCongested(findings.plexus?.right);
   if (anyGonadal || anyPlexus) {
     conclusions.push({ key: `${NS}.conclusion.pelvicCongestion` });
+  }
+
+  // Zone 6 — SMAS / MALS (arterial special considerations)
+  const sc = findings.specialConsiderations;
+  if (isSmasPositive(sc?.smas)) {
+    conclusions.push({
+      key: `${NS}.conclusion.smas`,
+      params: { angle: r1(sc?.smas?.smaAortaAngleDeg ?? 0) },
+    });
+    // Protocol: SMAS is almost always associated with LRV (nutcracker) compression.
+    if (isNutcrackerScreenPositive(findings.renal)) {
+      conclusions.push({ key: `${NS}.conclusion.smasWithNutcracker` });
+    }
+  }
+  if (isMalsPositive(sc?.mals)) {
+    conclusions.push({
+      key: `${NS}.conclusion.mals`,
+      params: { expPsv: r1(sc?.mals?.caExpiratoryPsvCmS ?? 0) },
+    });
   }
 
   if (conclusions.length === 0) {

@@ -1,0 +1,95 @@
+/* ============================================================================
+   EMRNotice - Command identity (locked 2026-06-11)
+   Inline always-visible notification. Borderless white "deck" + 4px solid
+   semantic LEFT rail + card shadow. Bold title, calm body. Theme tokens only.
+   Dark-safe via semantic surface vars (no dark overrides per CLAUDE.md #5).
+   ============================================================================ */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--emr-bg-card);
+  border: none;
+  border-left: 4px solid var(--emr-secondary);
+  border-radius: var(--emr-border-radius-xl);
+  box-shadow: var(--emr-shadow-card);
+}
+
+.iconCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-tight);
+}
+
+.message {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-primary);
+  line-height: var(--emr-line-height-base);
+}
+
+.closeCell {
+  flex-shrink: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--emr-border-radius-md);
+  color: var(--emr-text-secondary);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.closeButton:hover {
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
+}
+
+/* ---- Semantic rail + icon color --------------------------------------- */
+.color_info {
+  border-left-color: var(--emr-secondary);
+}
+.color_info .iconCell {
+  color: var(--emr-secondary);
+}
+
+.color_success {
+  border-left-color: var(--emr-success);
+}
+.color_success .iconCell {
+  color: var(--emr-success);
+}
+
+.color_error {
+  border-left-color: var(--emr-error);
+}
+.color_error .iconCell {
+  color: var(--emr-error);
+}
+
+/* ---- Touch targets ---------------------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  .closeButton {
+    width: 44px;
+    height: 44px;
+  }
+}

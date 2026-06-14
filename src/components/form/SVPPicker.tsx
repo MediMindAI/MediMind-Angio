@@ -10,10 +10,10 @@
  */
 
 import { memo, useCallback, useMemo } from 'react';
-import { Box, Group, Text, Select, ActionIcon, Button, Stack } from '@mantine/core';
+import { Box, Group, Text, Stack } from '@mantine/core';
 import { IconSitemap, IconPlus, IconTrash } from '@tabler/icons-react';
-import { EMRCollapsibleSection } from '../common';
-import { EMRCheckbox } from '../shared/EMRFormFields';
+import { EMRCollapsibleSection, EMRButton, EMRIconButton } from '../common';
+import { EMRCheckbox, EMRSelect } from '../shared/EMRFormFields';
 import type {
   SvpClassification,
   SvpEtiology,
@@ -183,7 +183,7 @@ export const SVPPicker = memo(function SVPPicker({
               <Text className={classes.axisTitle} style={{ marginBottom: 0, border: 'none', paddingBottom: 0 }}>
                 {t('svp.section.pAxis', 'P — Pathophysiology')}
               </Text>
-              <Button
+              <EMRButton
                 variant="light"
                 size="xs"
                 leftSection={<IconPlus size={14} />}
@@ -191,7 +191,7 @@ export const SVPPicker = memo(function SVPPicker({
                 data-testid="svp-p-add"
               >
                 {t('svp.p.add', 'Add segment')}
-              </Button>
+              </EMRButton>
             </Group>
 
             {current.p.length === 0 ? (
@@ -204,23 +204,26 @@ export const SVPPicker = memo(function SVPPicker({
               {current.p.map((row, i) => (
                 <div key={row.id ?? `p-${i}`} className={classes.pRow}>
                   <Group gap="xs" align="flex-end" wrap="wrap">
-                    <Select
+                    <EMRSelect
                       label={t('svp.p.col.segment', 'Segment')}
                       data={SEGMENTS.map((s) => ({ value: s, label: t(`svp.segment.${s}`, s) }))}
                       value={row.segment}
                       onChange={(v) => updateRow(i, { segment: (v as SvpSegment) ?? 'CIV' })}
-                      w={140}
+                      clearable={false}
+                      fullWidth={false}
+                      style={{ width: 140 }}
                       size="xs"
                       data-testid={`svp-p-segment-${i}`}
                     />
-                    <Select
+                    <EMRSelect
                       label={t('svp.p.col.laterality', 'Side')}
                       data={LATERALITIES.map((l) => ({ value: l, label: t(`svp.laterality.${l}`, l) }))}
                       value={row.laterality ?? null}
                       onChange={(v) => updateRow(i, { laterality: (v as SvpLaterality) ?? undefined })}
                       disabled={row.segment === 'IVC'}
                       clearable
-                      w={110}
+                      fullWidth={false}
+                      style={{ width: 110 }}
                       size="xs"
                       data-testid={`svp-p-laterality-${i}`}
                     />
@@ -240,12 +243,14 @@ export const SVPPicker = memo(function SVPPicker({
                         size="sm"
                       />
                     </span>
-                    <Select
+                    <EMRSelect
                       label={t('svp.p.col.etiology', 'Etiology')}
                       data={ETIOLOGIES.map((e) => ({ value: e, label: t(`svp.e.${e}`, e) }))}
                       value={row.etiology}
                       onChange={(v) => updateRow(i, { etiology: (v as SvpEtiology) ?? 'NT' })}
-                      w={140}
+                      clearable={false}
+                      fullWidth={false}
+                      style={{ width: 140 }}
                       size="xs"
                       data-testid={`svp-p-etiology-${i}`}
                     />
@@ -257,15 +262,15 @@ export const SVPPicker = memo(function SVPPicker({
                         size="sm"
                       />
                     </span>
-                    <ActionIcon
+                    <EMRIconButton
+                      icon={IconTrash}
                       color="red"
                       variant="subtle"
+                      withTooltip={false}
                       onClick={() => removeRow(i)}
-                      aria-label={t('svp.p.remove', 'Remove')}
+                      label={t('svp.p.remove', 'Remove')}
                       data-testid={`svp-p-remove-${i}`}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
+                    />
                   </Group>
                 </div>
               ))}

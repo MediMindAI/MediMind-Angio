@@ -1,0 +1,257 @@
+/* EMRAssessmentCard - Premium card styling for behavioral assessments */
+
+.emr-assessment-card {
+  position: relative;
+  background: var(--emr-bg-card);
+  border: 1px solid var(--emr-card-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.emr-assessment-card:hover {
+  border-color: var(--assessment-border-color);
+  box-shadow: var(--emr-shadow-md);
+}
+
+.emr-assessment-card.dark {
+  background: var(--emr-bg-card);
+  border-color: var(--emr-card-border);
+  box-shadow: var(--emr-shadow-sm);
+}
+
+.emr-assessment-card.dark:hover {
+  border-color: var(--assessment-border-color);
+  box-shadow: var(--emr-shadow-md);
+}
+
+/* Left accent line */
+.emr-assessment-card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg,
+    var(--assessment-accent-color) 0%,
+    color-mix(in srgb, var(--assessment-accent-color) 70%, transparent) 100%
+  );
+  border-radius: 3px 0 0 3px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.emr-assessment-card:hover .emr-assessment-card-accent {
+  opacity: 1;
+}
+
+/* Header */
+.emr-assessment-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 14px 20px;
+  gap: 12px;
+  background: linear-gradient(135deg,
+    var(--assessment-accent-bg) 0%,
+    transparent 50%
+  );
+  border-bottom: 1px solid var(--emr-border-color);
+}
+
+.emr-assessment-card.dark .emr-assessment-card-header {
+  background: linear-gradient(135deg,
+    var(--assessment-accent-bg) 0%,
+    transparent 50%
+  );
+  border-bottom-color: var(--emr-card-border);
+}
+
+/* Toggle button */
+.emr-assessment-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--emr-bg-input);
+  border: 1px solid var(--emr-border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.emr-assessment-card-toggle:hover {
+  background: var(--assessment-accent-bg);
+  border-color: var(--assessment-border-color);
+}
+
+.emr-assessment-card.dark .emr-assessment-card-toggle {
+  background: var(--emr-bg-input);
+  border-color: var(--emr-card-border);
+}
+
+.emr-assessment-card.dark .emr-assessment-card-toggle:hover {
+  background: var(--assessment-accent-bg);
+  border-color: var(--assessment-border-color);
+}
+
+.emr-assessment-card-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--emr-text-secondary);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.emr-assessment-card-toggle-icon.expanded {
+  color: var(--assessment-accent-color);
+}
+
+/* Icon wrapper */
+.emr-assessment-card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--assessment-icon-bg);
+  border: 1px solid var(--assessment-border-color);
+  color: var(--assessment-accent-color);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.emr-assessment-card:hover .emr-assessment-card-icon-wrapper {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px var(--assessment-accent-bg);
+}
+
+/* Title group */
+.emr-assessment-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.emr-assessment-card-title {
+  font-size: var(--emr-font-md);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  letter-spacing: var(--emr-letter-spacing-tight);
+  line-height: var(--emr-line-height-1-3);
+}
+
+.emr-assessment-card.dark .emr-assessment-card-title {
+  color: var(--emr-text-primary);
+}
+
+.emr-assessment-card-subtitle {
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-1-3);
+}
+
+/* Status dot */
+.emr-assessment-card-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+/* Header action */
+.emr-assessment-card-action {
+  flex-shrink: 0;
+}
+
+/* Content */
+.emr-assessment-card-content {
+  padding: 16px 20px 18px;
+}
+
+/* ============================================================
+ * FLAT MODE — used inside the Unified Clinical Form.
+ * Strips all card chrome so the block reads as a document
+ * subsection rather than a colored card. The semantic variant
+ * color is preserved only for the tiny status-dot indicator.
+ * ============================================================ */
+.emr-assessment-card.flat,
+.emr-assessment-card.flat:hover,
+.emr-assessment-card.dark.flat,
+.emr-assessment-card.dark.flat:hover {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.emr-assessment-card.flat .emr-assessment-card-header,
+.emr-assessment-card.dark.flat .emr-assessment-card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--emr-border-color);
+  padding: 10px 0 10px 0;
+  gap: 10px;
+}
+
+.emr-assessment-card.flat .emr-assessment-card-icon-wrapper,
+.emr-assessment-card.dark.flat .emr-assessment-card-icon-wrapper {
+  width: auto;
+  height: auto;
+  border: none;
+  background: transparent;
+  color: var(--emr-text-secondary);
+  box-shadow: none;
+}
+
+.emr-assessment-card.flat:hover .emr-assessment-card-icon-wrapper {
+  transform: none;
+  box-shadow: none;
+}
+
+.emr-assessment-card.flat .emr-assessment-card-toggle,
+.emr-assessment-card.dark.flat .emr-assessment-card-toggle {
+  background: transparent;
+  border: none;
+}
+
+.emr-assessment-card.flat .emr-assessment-card-toggle:hover {
+  background: var(--emr-bg-hover);
+  border: none;
+}
+
+.emr-assessment-card.flat .emr-assessment-card-content {
+  padding: 14px 0 6px 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+  .emr-assessment-card-header {
+    padding: 12px 14px 12px 16px;
+  }
+
+  .emr-assessment-card-content {
+    padding: 14px 16px 16px;
+  }
+
+  .emr-assessment-card-icon-wrapper {
+    width: 30px;
+    height: 30px;
+  }
+
+  .emr-assessment-card-title {
+    font-size: var(--emr-font-base);
+  }
+}

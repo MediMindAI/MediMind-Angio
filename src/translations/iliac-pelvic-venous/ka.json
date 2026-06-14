@@ -33,21 +33,37 @@
       "plexus": { "title": "მენჯის ვენური წნული", "short": "მენჯის წნული" },
       "escape": { "title": "გამოსავალი წერტილები და ექსტრამენჯური ვარიკოზი", "short": "გამოსავალი წერტილები" },
       "extrapelvic": { "short": "ექსტრამენჯური ვარიკოზი" },
+      "special": {
+        "title": "სპეციალური მოსაზრებები (SMAS / MALS)",
+        "subtitle": "არტერიული კომპრესიის სინდრომები — MALS შეაფასეთ ჰიპერმობილურ პაციენტებში მიმართვის მიუხედავად.",
+        "short": "სპეციალური მოსაზრებები (SMAS / MALS)"
+      },
       "diagram": {
         "title": "მენჯის ვენების სქემა",
         "subtitle": "დახაზეთ ნაპოვნი და დაამატეთ ტექსტი პირდაპირ ილუსტრაციაზე."
       },
       "impression": { "title": "დასკვნა" }
     },
+    "special": {
+      "smas": "SMA სინდრომი (SMAS)",
+      "mals": "შუა რკალისებრი იოგის სინდრომი (MALS)"
+    },
     "field": {
       "sex": "სქესი",
       "symptoms": "სიმპტომები",
+      "riskFactors": "რისკ-ფაქტორები",
       "approaches": "გამოყენებული მიდგომები",
       "positions": "პაციენტის პოზიციები",
       "valsalva": "ვალსალვა შესრულდა",
       "peakVelocityRatio": "პიკური სიჩქარის თანაფარდობა",
       "apDiameterRatio": "AP დიამეტრის თანაფარდობა",
       "aortoSmaAngle": "აორტო-SMA კუთხე (°)",
+      "lrvLevels": "LRV სიჩქარეები (სმ/წმ) — პროქსიმალური (IVC) · შუა (აორტის წინ) · დისტალური (ჰილუსი)",
+      "lrvVelocityProximal": "პროქსიმალური LRV სიჩქარე",
+      "lrvVelocityMid": "შუა LRV სიჩქარე",
+      "lrvVelocityDistal": "დისტალური LRV სიჩქარე",
+      "hilarDiameterMm": "ჰილარული (დისტალური) LRV დიამეტრი (მმ)",
+      "retroAortic": "რეტროაორტული მარცხენა თირკმლის ვენა",
       "beakSign": "ნისკარტის ნიშანი",
       "hilarVarices": "თირკმლის ჰილარული ვარიკოზი",
       "confirmImaging": "რეკომენდებულია დამადასტურებელი გამოსახვა",
@@ -57,11 +73,14 @@
       "compressibility": "კომპრესირებადობა",
       "thrombus": "თრომბი",
       "velocityRatio": "სიჩქარის თანაფარდობა",
+      "velocityCmS": "სიჩქარე (სმ/წმ)",
       "stenosisPct": "სტენოზი %",
       "phasicity": "ფაზურობა",
       "valsalvaResponse": "ვალსალვაზე პასუხი",
       "collaterals": "კოლატერალები",
       "reflux": "რეფლუქსი",
+      "bladderArtifact": "შარდის ბუშტის არტეფაქტი",
+      "remeasuredAfterVoiding": "ხელახლა გაზომილი დაცლის შემდეგ",
       "diameterMm": "დიამეტრი (მმ)",
       "refluxPresent": "რეფლუქსი არსებობს",
       "refluxTrigger": "რეფლუქსის გამომწვევი",
@@ -73,6 +92,12 @@
       "tortuosity": "კლაკნილობა",
       "crossingVeins": "გადამკვეთი (არკუატული) ვენები",
       "crossPelvicCollateral": "მენჯთაშორისი კოლატერალი",
+      "smaAortaAngle": "SMA–აორტის კუთხე (°)",
+      "caInspiratoryPsv": "ცელიაკის PSV — ჩასუნთქვა (სმ/წმ)",
+      "caExpiratoryPsv": "ცელიაკის PSV — ამოსუნთქვა (სმ/წმ)",
+      "chaPsv": "საერთო ღვიძლის არტერიის PSV (სმ/წმ)",
+      "splenicPsv": "ელენთის არტერიის PSV (სმ/წმ)",
+      "hookSign": "კაუჭისებრი ცელიაკის არტერია",
       "escapePoints": "გამოსავალი წერტილები",
       "escapePointType": "წერტილი",
       "side": "მხარე",
@@ -80,8 +105,10 @@
     },
     "param": {
       "peakVelocityRatio": "LRV პიკური სიჩქარის თანაფარდობა",
-      "aortoSmaAngleDeg": "აორტო-SMA კუთხე",
+      "smaAortaAngleDeg": "SMA–აორტის კუთხე",
       "velocityRatio": "სიჩქარის თანაფარდობა",
+      "velocityCmS": "პიკური სიჩქარე",
+      "caPsvCmS": "ცელიაკის არტერიის PSV",
       "stenosisPct": "სტენოზის პროცენტი",
       "diameterMm": "ვენის დიამეტრი",
       "refluxDurationS": "რეფლუქსის ხანგრძლივობა",
@@ -89,8 +116,10 @@
     },
     "warn": {
       "ratio5": "≥ 5",
-      "angle35": "≤ 35°",
-      "dia6": "≥ 6 მმ",
+      "ratio7": "≥ 7.0",
+      "angle25": "< 25°",
+      "gonadalDia5": "> 5 მმ",
+      "psv200": "> 200 სმ/წმ",
       "dia5": "≥ 5 მმ",
       "dur1": "> 1 წმ",
       "velocityRatio": "≥ 2.5",
@@ -106,7 +135,30 @@
       "hematuria": "ჰემატურია",
       "vulvar-varices": "ვულვარული ვარიკოზი",
       "leg-varices": "ფეხის ვარიკოზი",
-      "recurrent-varices": "ფეხის რეციდიული ვარიკოზი"
+      "recurrent-varices": "ფეხის რეციდიული ვარიკოზი",
+      "pelvic-pain": "მენჯის ტკივილი",
+      "cold-feet": "ცივი ტერფები",
+      "limb-swelling": "ქვედა კიდურის შეშუპება",
+      "leg-aching": "ფეხის მტკივნეულობა / ფეთქვა",
+      "hip-pain": "მენჯ-ბარძაყის ტკივილი",
+      "ibs": "გაღიზიანებული ნაწლავის სიმპტომები",
+      "hemorrhoids": "ჰემოროიდები",
+      "menstrual-leg-pain": "ფეხის ტკივილი მენსტრუაციისას",
+      "lower-abdominal-pain": "ქვედა მუცლის ტკივილი",
+      "lower-back-pain": "წელის ტკივილი",
+      "venous-claudication": "ვენური კოჭლობა"
+    },
+    "riskFactor": {
+      "endometriosis": "ენდომეტრიოზი",
+      "back-surgery-hardware": "ზურგის ოპერაცია მეტალოკონსტრუქციით",
+      "adenomyosis": "ადენომიოზი",
+      "nerve-injury": "ნერვის დაზიანება",
+      "chronic-pid": "ქრონიკული მენჯის ანთებითი დაავადება",
+      "ovarian-remnant": "საკვერცხის ნარჩენი",
+      "fibroids": "ფიბრომა (მიომა)",
+      "ibs": "გაღიზიანებული ნაწლავის სინდრომი",
+      "polycystic-ovaries": "პოლიკისტოზური საკვერცხეები",
+      "retroverted-uterus": "რეტროვერსიული (გადახრილი) საშვილოსნო"
     },
     "approach": {
       "transabdominal": "ტრანსაბდომინური",
@@ -114,10 +166,23 @@
       "transperineal": "ტრანსპერინეული"
     },
     "position": {
-      "supine": "ზურგზე",
+      "supine": "ზურგზე (თეძოები გარეთ მობრუნებული, მუხლი ოდნავ მოხრილი)",
       "left-lateral": "მარცხენა გვერდით",
       "reverse-trendelenburg": "შებრუნებული ტრენდელენბურგი",
-      "standing": "ფეხზე"
+      "standing": "ფეხზე",
+      "prone": "მუცელზე",
+      "decubitus": "გვერდით წოლა"
+    },
+    "level": {
+      "sfj": "SFJ დონე",
+      "distal": "დისტალური",
+      "mid": "შუა",
+      "proximal": "პროქსიმალური"
+    },
+    "severity": {
+      "none": "არამნიშვნელოვანი",
+      "moderate": "ზომიერი",
+      "significant": "მნიშვნელოვანი"
     },
     "patency": { "patent": "გამავალი", "partial": "ნაწილობრივი", "occluded": "ოკლუზირებული" },
     "cavalCompressibility": {
@@ -165,19 +230,22 @@
     "narrative": {
       "ovarianReflux": "{side}: გაფართოებული, რეფლუქსური საკვერცხის ვენა ({diameterMm} მმ, რეფლუქსი {durationS} წმ).",
       "plexusCongestion": "{side}: შეგუბებული მენჯის ვენური წნული (უდიდესი ვენა {diameterMm} მმ).",
-      "cavalStenosis": "{side} {vessel}: სტენოზი {pct}% (სიჩქარის თანაფარდობა {ratio}).",
+      "cavalStenosis": "{side} {vessel}: {severity} სტენოზი {pct}% (სიჩქარის თანაფარდობა {ratio}).",
       "escapePoint": "{side}: მენჯის გამოსავალი წერტილი — {type}.",
       "normalSide": "{side}: მენჯის მნიშვნელოვანი ვენური რეფლუქსი ან ობსტრუქცია არ ვლინდება.",
       "sonographerComments": "სონოგრაფისტის კომენტარები",
       "clinicianComments": "კლინიცისტის კომენტარები"
     },
     "conclusion": {
-      "nutcracker": "მარცხენა თირკმლის ვენის კომპრესია — სავარაუდოა nutcracker ფენომენი (სკრინინგი).",
+      "nutcracker": "მარცხენა თირკმლის ვენის კომპრესია — სავარაუდოა nutcracker ფენომენი (სიჩქარის თანაფარდობა ≥ 7.0; სკრინინგი).",
       "confirmRenal": "დაადასტურეთ თირკმლის ვენის კომპრესია CT/MR ვენოგრაფიით.",
       "ivcObstruction": "გამოვლენილია ქვედა ღრუ ვენის ობსტრუქცია.",
       "mayThurner": "{side} საერთო თეძოს ვენის კომპრესია — May-Thurner ტიპი (სკრინინგი).",
       "confirmIliac": "დაადასტურეთ თეძოს ობსტრუქცია IVUS-ით ან CT/MR ვენოგრაფიით.",
       "pelvicCongestion": "მენჯის ვენური რეფლუქსი შეესაბამება მენჯის შეგუბებას.",
+      "smas": "სავარაუდოა ზედა მეზენტერიული არტერიის სინდრომი (SMA–აორტის კუთხე {angle}°, < 25°).",
+      "smasWithNutcracker": "SMA სინდრომი ხშირად ასოცირდება მარცხენა თირკმლის ვენის (nutcracker) კომპრესიასთან — შეუსაბამეთ.",
+      "mals": "სავარაუდოა შუა რკალისებრი იოგის სინდრომი (ცელიაკის ამოსუნთქვის PSV {expPsv} სმ/წმ).",
       "normal": "მენჯის ვენური რეფლუქსი ან ობსტრუქცია არ ვლინდება."
     },
     "findings": {

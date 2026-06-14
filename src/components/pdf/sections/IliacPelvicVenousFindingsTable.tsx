@@ -17,12 +17,21 @@ import type {
   IliacCavalFinding,
   IliacCavalFullId,
 } from '../../studies/iliac-pelvic-venous/config';
+import {
+  cavalStenosisSeverity,
+  effectiveCavalVelocityRatio,
+  CAVAL_LEVELS_FOR_BASE,
+  LRV_LEVELS,
+} from '../../studies/iliac-pelvic-venous/config';
 
 export interface IliacPelvicVenousFindingsTableLabels {
   readonly heading: string;
   readonly none: string;
   readonly zone: Readonly<
-    Record<'technique' | 'renal' | 'caval' | 'gonadal' | 'plexus' | 'escape' | 'extrapelvic', string>
+    Record<
+      'technique' | 'renal' | 'caval' | 'gonadal' | 'plexus' | 'escape' | 'extrapelvic' | 'special',
+      string
+    >
   >;
   readonly segment: Readonly<Record<string, string>>;
   readonly side: Readonly<Record<'left' | 'right', string>>;
@@ -98,6 +107,7 @@ export function IliacPelvicVenousFindingsTable({
     ctx &&
     (ctx.sex ||
       (ctx.symptoms && ctx.symptoms.length > 0) ||
+      (ctx.riskFactors && ctx.riskFactors.length > 0) ||
       (ctx.approaches && ctx.approaches.length > 0) ||
       (ctx.positions && ctx.positions.length > 0) ||
       ctx.valsalvaPerformed)
@@ -106,6 +116,9 @@ export function IliacPelvicVenousFindingsTable({
     fieldRow('sex', vlabel('sex', ctx.sex));
     if (ctx.symptoms && ctx.symptoms.length > 0) {
       fieldRow('symptoms', ctx.symptoms.map((s) => vlabel('symptom', s) ?? s).join(', '));
+    }
+    if (ctx.riskFactors && ctx.riskFactors.length > 0) {
+      fieldRow('riskFactors', ctx.riskFactors.map((r) => vlabel('riskFactor', r) ?? r).join(', '));
     }
     if (ctx.approaches && ctx.approaches.length > 0) {
       fieldRow('approaches', ctx.approaches.map((a) => vlabel('approach', a) ?? a).join(', '));
@@ -122,9 +135,13 @@ export function IliacPelvicVenousFindingsTable({
     zoneTitle(labels.zone.renal);
     fieldRow('peakVelocityRatio', renal.peakVelocityRatio);
     fieldRow('apDiameterRatio', renal.apDiameterRatio);
-    fieldRow('aortoSmaAngleDeg', renal.aortoSmaAngleDeg, '°');
+    for (const lvl of LRV_LEVELS) {
+      fieldRow(`lrvVelocity_${lvl}`, renal.levels?.[lvl]?.velocityCmS, 'cm/s');
+    }
+    fieldRow('hilarDiameterMm', renal.levels?.distal?.diameterMm, 'mm');
     if (renal.beakSign) fieldRow('beakSign', labels.yes);
     if (renal.hilarVarices) fieldRow('hilarVarices', labels.yes);
+    if (renal.retroAortic) fieldRow('retroAortic', labels.yes);
     if (renal.confirmatoryImagingRecommended) fieldRow('confirmImaging', labels.yes);
   }
 
@@ -149,8 +166,21 @@ export function IliacPelvicVenousFindingsTable({
         ? vlabel('thrombusChronicity', f.thrombusChronicity)
         : undefined;
       if (th) parts.push(th);
-      if (f.velocityRatio !== undefined) {
-        parts.push(`${labels.field['ratio'] ?? 'ratio'} ${f.velocityRatio}`);
+      const base = (
+        id === 'ivc' ? 'ivc' : id.slice(0, id.lastIndexOf('-'))
+      ) as keyof typeof CAVAL_LEVELS_FOR_BASE;
+      const lvlParts = CAVAL_LEVELS_FOR_BASE[base]
+        .map((lvl) => {
+          const v = f.levels?.[lvl]?.velocityCmS;
+          return v !== undefined ? `${vlabel('level', lvl) ?? lvl} ${v}` : undefined;
+        })
+        .filter((x): x is string => x !== undefined);
+      if (lvlParts.length > 0) parts.push(lvlParts.join(', '));
+      const effRatio = effectiveCavalVelocityRatio(f);
+      if (effRatio !== undefined) {
+        const sev = cavalStenosisSeverity(effRatio);
+        const sevLabel = sev !== 'none' ? ` (${vlabel('severity', sev) ?? sev})` : '';
+        parts.push(`${labels.field['velocityRatio'] ?? 'ratio'} ${effRatio.toFixed(1)}${sevLabel}`);
       }
       if (f.stenosisPct !== undefined) parts.push(`${f.stenosisPct}%`);
       const ph = vlabel('cfvPhasicity', f.phasicity);
@@ -227,6 +257,30 @@ export function IliacPelvicVenousFindingsTable({
           </Text>
         </View>,
       );
+    }
+  }
+
+  // Zone 6 — special considerations (SMAS / MALS)
+  const sc = findings.specialConsiderations;
+  const smas = sc?.smas;
+  const mals = sc?.mals;
+  const hasSmas = smas !== undefined && (smas.smaAortaAngleDeg !== undefined || !!smas.note);
+  const hasMals =
+    mals !== undefined &&
+    (mals.caInspiratoryPsvCmS !== undefined ||
+      mals.caExpiratoryPsvCmS !== undefined ||
+      mals.chaPsvCmS !== undefined ||
+      mals.splenicPsvCmS !== undefined ||
+      mals.hookSign === true);
+  if (hasSmas || hasMals) {
+    zoneTitle(labels.zone.special);
+    if (smas) fieldRow('smaAortaAngle', smas.smaAortaAngleDeg, '°');
+    if (mals) {
+      fieldRow('caInspiratoryPsv', mals.caInspiratoryPsvCmS, 'cm/s');
+      fieldRow('caExpiratoryPsv', mals.caExpiratoryPsvCmS, 'cm/s');
+      fieldRow('chaPsv', mals.chaPsvCmS, 'cm/s');
+      fieldRow('splenicPsv', mals.splenicPsvCmS, 'cm/s');
+      if (mals.hookSign) fieldRow('hookSign', labels.yes);
     }
   }
 

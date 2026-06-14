@@ -1,0 +1,135 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * EMRCircularGauge Component Styles
+ * Clean, modern circular gauge for visualizing progress/values
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gaugeContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.semicircleContainer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.gaugeSvg {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.backgroundCircle {
+  opacity: 0.3;
+}
+
+.progressCircle {
+  transition: stroke-dashoffset 0.5s ease-out, stroke 0.3s ease;
+}
+
+.centerContent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.semicircleCenterContent {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.scaleMarkers {
+  fill: var(--emr-text-secondary);
+}
+
+.scaleText {
+  font-size: var(--emr-font-xs);
+  fill: var(--emr-text-secondary);
+  font-weight: var(--emr-font-medium);
+}
+
+.gaugeValue {
+  font-weight: var(--emr-font-bold);
+  line-height: var(--emr-line-height-none);
+  transition: color 0.3s ease;
+}
+
+.gaugeLabel {
+  color: var(--emr-text-secondary);
+  font-weight: var(--emr-font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wider);
+}
+
+.statusBadge {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-uppercase);
+  padding: 4px 12px;
+  border-radius: 12px;
+  background-color: var(--emr-bg-hover);
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.statusBadge[data-status="excellent"] {
+  background-color: var(--emr-success-alpha-10);
+}
+
+.statusBadge[data-status="good"] {
+  background-color: var(--emr-info-alpha-10);
+}
+
+.statusBadge[data-status="warning"] {
+  background-color: var(--emr-warning-alpha-10);
+}
+
+.statusBadge[data-status="critical"] {
+  background-color: var(--emr-error-alpha-10);
+}
+
+.statusBadge[data-status="info"] {
+  background-color: var(--emr-info-alpha-10);
+}
+
+.targetText {
+  font-size: var(--emr-font-xs);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .statusBadge {
+    font-size: var(--emr-font-xs);
+    padding: 3px 8px;
+  }
+
+  .scaleText {
+    font-size: calc(var(--emr-font-xs) - 1px);
+  }
+}
+

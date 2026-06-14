@@ -10,6 +10,7 @@ import './emr-fields.css';
 
 /**
  * EMRNumberInput component
+ * A production-ready number input with consistent styling
  */
 export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputProps>(
   (
@@ -52,14 +53,17 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
       suffix,
       hideControls = false,
       allowNegative = true,
+      allowDecimal,
       clampBehavior = 'blur',
       warningMode = 'inline',
+      styles: stylesProp,
     },
     ref
   ): React.JSX.Element => {
     const generatedId = useId();
-    const inputId = id ?? generatedId;
+    const inputId = id || generatedId;
 
+    // Handle change event
     const handleChange = useCallback(
       (newValue: number | string) => {
         if (onChange) {
@@ -69,11 +73,12 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
       [onChange]
     );
 
-    const getValidationState = (): 'default' | 'error' | 'success' | 'warning' => {
-      if (validationState) { return validationState; }
-      if (error) { return 'error'; }
-      if (successMessage) { return 'success'; }
-      if (warningMessage) { return 'warning'; }
+    // Determine validation state
+    const getValidationState = () => {
+      if (validationState) {return validationState;}
+      if (error) {return 'error';}
+      if (successMessage) {return 'success';}
+      if (warningMessage) {return 'warning';}
       return 'default';
     };
 
@@ -99,14 +104,16 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
       </Tooltip>
     ) : rightSection;
 
+    // Build aria-describedby: link to the wrapper's error/message element
     const hasMessage = (state === 'error' && typeof error === 'string') ||
       (state === 'success' && !!successMessage) ||
       (state === 'warning' && !!warningForWrapper) ||
       (state === 'default' && !!helpText);
     const messageElementId = hasMessage ? `${inputId}-${state === 'default' ? 'help' : state}` : undefined;
-    const computedAriaDescribedBy = ariaDescribedBy ?? messageElementId;
+    const computedAriaDescribedBy = ariaDescribedBy || messageElementId;
 
-    const heights: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
+    // Calculate heights based on size
+    const heights = {
       xs: 30,
       sm: 36,
       md: 42,
@@ -114,6 +121,7 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
       xl: 54,
     };
 
+    // Build input classes
     const inputClasses = [
       'emr-input',
       `size-${size}`,
@@ -129,7 +137,7 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
         label={label}
         required={required}
         helpText={helpText}
-        error={error ?? undefined}
+        error={error}
         successMessage={successMessage}
         warningMessage={warningForWrapper}
         validationState={validationState}
@@ -161,6 +169,7 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
           suffix={suffix}
           hideControls={hideControls}
           allowNegative={allowNegative}
+          allowDecimal={allowDecimal}
           clampBehavior={clampBehavior}
           required={required}
           aria-label={computedAriaLabel}
@@ -186,13 +195,43 @@ export const EMRNumberInput = memo(forwardRef<HTMLInputElement, EMRNumberInputPr
                 : 'var(--emr-input-border)',
               borderRadius: 'var(--emr-input-border-radius)',
               transition: 'var(--emr-input-transition)',
+              '&:focus': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-focus)',
+                boxShadow: state === 'error'
+                  ? 'var(--emr-input-error-glow)'
+                  : state === 'success'
+                  ? 'var(--emr-input-success-glow)'
+                  : state === 'warning'
+                  ? 'var(--emr-input-warning-glow)'
+                  : 'var(--emr-input-focus-ring)',
+              },
+              '&:hover:not(:disabled):not(:focus)': {
+                borderColor: state === 'error'
+                  ? 'var(--emr-input-error-border)'
+                  : 'var(--emr-input-border-hover)',
+              },
+              // Caller per-slot input overrides applied last (text-align, weight…)
+              ...(stylesProp?.input as React.CSSProperties | undefined),
             },
             wrapper: {
               width: fullWidth ? '100%' : undefined,
+              ...(stylesProp?.wrapper as React.CSSProperties | undefined),
             },
             control: {
               borderColor: 'var(--emr-input-border)',
+              '&:hover': {
+                backgroundColor: 'var(--emr-hover-bg)',
+              },
+              ...(stylesProp?.control as React.CSSProperties | undefined),
             },
+            // Any additional caller slots not styled by the wrapper
+            ...Object.fromEntries(
+              Object.entries(stylesProp ?? {}).filter(
+                ([slot]) => slot !== 'input' && slot !== 'wrapper' && slot !== 'control'
+              )
+            ),
           }}
         />
       </EMRFieldWrapper>

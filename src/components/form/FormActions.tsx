@@ -3,19 +3,16 @@
  * FormActions — sticky bottom action bar.
  *
  * Left: last-saved indicator.
- * Right: Save draft · Preview PDF · Download PDF · Export FHIR JSON.
+ * Right: Save draft · Preview PDF · Download PDF.
  *
  * Download PDF uses the existing `@react-pdf/renderer` pipeline via the
- * lazy-import pattern. Export JSON uses `downloadFhirBundle` (single-study)
- * or `buildEncounterBundle` (unified, ≥ 2 studies).
+ * lazy-import pattern.
  *
  * Phase 4c — encounter-mode wiring
  * --------------------------------
  * When `useEncounter()` exposes ≥ 2 selected studies, the export buttons
  * pivot to the unified path:
  *   - PDF: `<UnifiedReportDocument>` (Phase 4b) over every study form
- *   - FHIR: `buildEncounterBundle` (Phase 4a) — one Patient + one Encounter
- *     + N DiagnosticReports
  *
  * If any selected study has no findings yet, the unified buttons disable
  * with a tooltip and the per-study escape hatch falls back to the legacy
@@ -27,21 +24,19 @@
  */
 
 import { memo, useCallback, useContext, useMemo, useState } from 'react';
-import { Group, Text, Tooltip } from '@mantine/core';
+import { Group, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
-  IconCode,
   IconDeviceFloppy,
   IconDownload,
   IconEye,
 } from '@tabler/icons-react';
-import { EMRButton } from '../common';
+import { EMRButton, EMRTooltip } from '../common';
 import { useTranslation } from '../../contexts/TranslationContext';
 import { EncounterCtx } from '../../contexts/EncounterContext';
 import type { FormState } from '../../types/form';
 import type { EncounterDraft } from '../../types/encounter';
 import type { StudyType } from '../../types/study';
-import { downloadFhirBundle } from '../../services/fhirBuilder';
 import { projectStudyToFormState } from '../../services/encounterProjection';
 import { buildReportLabels } from '../pdf/buildReportLabels';
 import { buildLocalizedNarrative, buildLocalizedNarrativeFromForm } from '../../services/narrativeService';
@@ -488,64 +483,6 @@ export const FormActions = memo(function FormActions({
     t,
   ]);
 
-  const handleExportJson = useCallback(async () => {
-    try {
-      if (isUnifiedMode) {
-        if (!encounter) throw new Error('Unified export requested without encounter context');
-        // Phase 4a: buildEncounterBundle — stubbed via dynamic import so
-        // missing module surfaces a runtime error rather than blocking
-        // compile of this file. The merge gate validates the wiring once
-        // 4a lands.
-        const fhirModule = (await import('../../services/fhirBuilder')) as unknown as {
-          buildEncounterBundle?: (input: {
-            encounter: EncounterDraft;
-            studyForms: ReadonlyArray<FormState>;
-          }) => unknown;
-        };
-        if (typeof fhirModule.buildEncounterBundle !== 'function') {
-          throw new Error(
-            'buildEncounterBundle not yet available (Phase 4a pending merge)',
-          );
-        }
-        const bundle = fhirModule.buildEncounterBundle({ encounter, studyForms });
-        const json = JSON.stringify(bundle, null, 2);
-        const blob = new Blob([json], { type: 'application/fhir+json' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        const patient = (encounter.header.patientName || 'patient').replace(/\s+/g, '-');
-        anchor.download = `encounter-${patient}-${encounter.header.encounterDate}.json`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        return;
-      }
-      downloadFhirBundle(form, `${baseFilename}.json`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      notifications.show({
-        color: 'red',
-        title: t('formActions.jsonExportFailed'),
-        message,
-      });
-       
-      console.error('[FormActions] JSON export failed', {
-        err,
-        patientId: form.header.patientId,
-        studyType: form.studyType,
-        unified: isUnifiedMode,
-      });
-    }
-  }, [
-    isUnifiedMode,
-    encounter,
-    studyForms,
-    form,
-    baseFilename,
-    t,
-  ]);
-
   const savedText = lastSavedAt
     ? `${t('venousLE.actions.lastSaved')} ${formatTime(lastSavedAt, lang)}`
     : t('venousLE.actions.neverSaved');
@@ -593,19 +530,6 @@ export const FormActions = memo(function FormActions({
     </EMRButton>
   );
 
-  const exportBtn = (
-    <EMRButton
-      variant="ghost"
-      size="sm"
-      icon={IconCode}
-      onClick={handleExportJson}
-      disabled={exportsDisabled}
-      data-testid="export-json"
-    >
-      {t('venousLE.actions.exportJSON')}
-    </EMRButton>
-  );
-
   return (
     <div className={`${classes.bar} no-print`} role="region" aria-label={t('common.actionsRegion', 'Actions')}>
       <div className={classes.inner}>
@@ -626,27 +550,19 @@ export const FormActions = memo(function FormActions({
           </EMRButton>
 
           {exportsDisabled ? (
-            <Tooltip label={disabledTooltip} data-testid="exports-disabled-tooltip">
+            <EMRTooltip label={disabledTooltip} data-testid="exports-disabled-tooltip">
               <span>{previewBtn}</span>
-            </Tooltip>
+            </EMRTooltip>
           ) : (
             previewBtn
           )}
 
           {exportsDisabled ? (
-            <Tooltip label={disabledTooltip}>
+            <EMRTooltip label={disabledTooltip}>
               <span>{downloadBtn}</span>
-            </Tooltip>
+            </EMRTooltip>
           ) : (
             downloadBtn
-          )}
-
-          {exportsDisabled ? (
-            <Tooltip label={disabledTooltip}>
-              <span>{exportBtn}</span>
-            </Tooltip>
-          ) : (
-            exportBtn
           )}
         </Group>
       </div>

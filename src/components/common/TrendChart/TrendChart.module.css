@@ -1,0 +1,389 @@
+/* SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * TrendChart Component Styles
+ *
+ * Modern, responsive line chart styling with theme support.
+ * Uses CSS variables from theme.css for consistent theming.
+ */
+
+/* ============================================================================
+   Container Styles
+   ============================================================================ */
+
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.chartContainer {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.title {
+  color: var(--emr-text-primary);
+  margin-bottom: var(--emr-spacing-xs, 8px);
+}
+
+/* ============================================================================
+   SVG Chart Styles
+   ============================================================================ */
+
+.chart {
+  display: block;
+  width: 100%;
+  min-width: 400px;
+}
+
+/* ============================================================================
+   Zone Styles
+   ============================================================================ */
+
+.zones rect {
+  transition: opacity 0.2s ease;
+}
+
+/* ============================================================================
+   Grid Styles
+   ============================================================================ */
+
+.grid line {
+  pointer-events: none;
+  shape-rendering: crispEdges;
+}
+
+/* ============================================================================
+   Target Line Styles
+   ============================================================================ */
+
+.targetLine line {
+  pointer-events: none;
+  transition: stroke 0.2s ease;
+}
+
+.targetLine text {
+  user-select: none;
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-medium, 500);
+}
+
+/* ============================================================================
+   Area Fill Styles
+   ============================================================================ */
+
+.area {
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* ============================================================================
+   Line Styles
+   ============================================================================ */
+
+.line {
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px var(--emr-black-alpha-10));
+  transition: stroke 0.2s ease;
+}
+
+/* Line animation on mount */
+.lineAnimated {
+  animation: drawLine 0.8s ease-out forwards;
+}
+
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: var(--line-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ============================================================================
+   Data Point Styles
+   ============================================================================ */
+
+.points {
+  /* Container for all points */
+}
+
+.point {
+  transition: transform 0.15s ease;
+  cursor: pointer;
+}
+
+.pointCircle {
+  transition:
+    r 0.15s ease,
+    fill 0.2s ease,
+    filter 0.15s ease;
+}
+
+.pointCircle:hover {
+  filter: drop-shadow(0 2px 4px var(--emr-black-alpha-20));
+}
+
+.pointCircle:focus {
+  outline: none;
+}
+
+.pointCircle:focus-visible {
+  filter: drop-shadow(0 0 0 3px var(--emr-secondary-alpha-30));
+}
+
+/* Hit area for better interaction */
+.pointHitArea {
+  fill: transparent;
+  cursor: pointer;
+}
+
+/* ============================================================================
+   Axis Styles
+   ============================================================================ */
+
+.yAxis text,
+.xAxis text {
+  user-select: none;
+  font-size: var(--emr-font-xs);
+  fill: var(--emr-text-secondary);
+  font-weight: var(--emr-font-normal, 400);
+}
+
+.yAxis line,
+.xAxis line {
+  stroke: var(--emr-border-color);
+  shape-rendering: crispEdges;
+}
+
+.axisLabel {
+  font-size: var(--emr-font-xs);
+  fill: var(--emr-text-secondary);
+  font-weight: var(--emr-font-normal, 400);
+}
+
+/* ============================================================================
+   Tooltip Styles
+   ============================================================================ */
+
+.tooltip {
+  position: absolute;
+  z-index: 100;
+  background: var(--emr-bg-card);
+  border-radius: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: tooltipFadeIn 0.15s ease;
+  box-shadow: var(--emr-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--emr-border-color);
+  min-width: 120px;
+}
+
+.tooltipHidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tooltipDate {
+  color: var(--emr-text-secondary);
+  font-size: var(--emr-font-xs, 11px);
+  margin-bottom: 4px;
+}
+
+.tooltipValue {
+  font-size: var(--emr-font-md, 14px);
+  font-weight: var(--emr-font-semibold, 600);
+}
+
+.tooltipBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--emr-font-xs, 11px);
+  font-weight: var(--emr-font-medium, 500);
+  text-transform: capitalize;
+}
+
+.tooltipBadgeGood {
+  background: var(--emr-success-alpha-15);
+  color: var(--emr-success);
+}
+
+.tooltipBadgeWarning {
+  background: var(--emr-warning-alpha-15);
+  color: var(--emr-warning);
+}
+
+.tooltipBadgeCritical {
+  background: var(--emr-error-alpha-15);
+  color: var(--emr-error);
+}
+
+/* ============================================================================
+   Legend Styles
+   ============================================================================ */
+
+.legend {
+  padding-top: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendText {
+  font-size: var(--emr-font-xs, 11px);
+  color: var(--emr-text-secondary);
+}
+
+/* ============================================================================
+   Empty State Styles
+   ============================================================================ */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background-color: var(--emr-bg-hover);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.emptyStateIcon {
+  color: var(--emr-text-secondary);
+  opacity: 0.5;
+  margin-bottom: 12px;
+}
+
+.emptyStateText {
+  color: var(--emr-text-secondary);
+  font-size: var(--emr-font-sm, 12px);
+}
+
+/* ============================================================================
+   Responsive Styles
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .chart {
+    min-width: 350px;
+  }
+
+  .axisLabel,
+  .yAxis text,
+  .xAxis text {
+    font-size: calc(var(--emr-font-xs) - 1px);
+  }
+
+  .targetLine text {
+    font-size: calc(var(--emr-font-xs) - 2px);
+  }
+}
+
+@media (max-width: 576px) {
+  .chart {
+    min-width: 320px;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .legendText {
+    font-size: calc(var(--emr-font-xs) - 1px);
+  }
+
+  .axisLabel,
+  .yAxis text,
+  .xAxis text {
+    font-size: calc(var(--emr-font-xs) - 2px);
+  }
+
+  .tooltip {
+    min-width: 100px;
+    font-size: var(--emr-font-xs);
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  .container {
+    page-break-inside: avoid;
+  }
+
+  .chartContainer {
+    overflow: visible;
+  }
+
+  .chart {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .tooltip {
+    display: none;
+  }
+
+  .line {
+    filter: none;
+  }
+
+  .pointCircle {
+    filter: none;
+    cursor: default;
+  }
+
+  .lineAnimated {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .zones rect {
+    opacity: 0.2;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .emptyState {
+    background-color: var(--emr-gray-100);
+  }
+
+  .legend {
+    page-break-inside: avoid;
+  }
+
+  .legendDot {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
