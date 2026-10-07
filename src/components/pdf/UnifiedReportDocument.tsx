@@ -399,8 +399,8 @@ export function UnifiedReportDocument(
       <NarrativeSection
         narrative={form.narrative}
         labels={assets.labels.narrative}
-        rightFindings={assets.localized?.rightFindings ?? ''}
-        leftFindings={assets.localized?.leftFindings ?? ''}
+        rightFindings={form.narrative.rightFindings ?? assets.localized?.rightFindings ?? ''}
+        leftFindings={form.narrative.leftFindings ?? assets.localized?.leftFindings ?? ''}
         conclusions={assets.localized?.conclusions ?? []}
       />
       {(isVenousForm(form) || form.studyType === 'iliacPelvicVenous') && form.ceap ? (

@@ -20,10 +20,10 @@ describe('colorForCompetency', () => {
     expect(colorForCompetency('incompetent')).toEqual(COMPETENCY_COLORS.incompetent);
   });
 
-  it('falls back to the inconclusive palette for an unknown value (does NOT throw)', () => {
+  it('falls back to the normal palette for an unknown value (does NOT throw)', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const result = colorForCompetency('garbage' as Competency);
-    expect(result).toEqual(COMPETENCY_COLORS.inconclusive);
+    expect(result).toEqual(COMPETENCY_COLORS.normal);
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('unknown competency'),
       'garbage',
@@ -35,7 +35,7 @@ describe('colorForCompetency', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // Cast simulates a stale draft loaded from localStorage with a missing field.
     const result = colorForCompetency(undefined as unknown as Competency);
-    expect(result).toEqual(COMPETENCY_COLORS.inconclusive);
+    expect(result).toEqual(COMPETENCY_COLORS.normal);
     warnSpy.mockRestore();
   });
 });

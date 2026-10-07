@@ -401,7 +401,7 @@ function buildSingleReportLabels(
       right: t('venousLE.tabs.right', 'Right'),
       left: t('venousLE.tabs.left', 'Left'),
       segment: t('venousLE.segmentTable.segment', 'Segment'),
-      refluxMs: t('venousLE.refluxTable.msShort', 'Dur. (cm/s)'),
+      refluxMs: t('venousLE.refluxTable.msShort', 'Dur. (s)'),
       apMm: t('venousLE.refluxTable.ap', 'Diameter (mm)'),
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),
       segmentName,
@@ -507,10 +507,6 @@ function buildSingleReportLabels(
     },
     ceap: {
       heading: t('venousLE.ceap.title', 'CEAP 2020 Classification'),
-      cAxis: t('venousLE.ceap.cSection', 'C — Clinical signs'),
-      eAxis: t('venousLE.ceap.eSection', 'E — Etiology'),
-      aAxis: t('venousLE.ceap.aSection', 'A — Anatomy'),
-      pAxis: t('venousLE.ceap.pSection', 'P — Pathophysiology'),
     },
     svp: {
       heading: t('svp.section.title', 'SVP Classification (Meissner 2021)'),

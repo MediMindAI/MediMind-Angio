@@ -193,7 +193,8 @@ async function resolveStudyAssets(
     // view, so the posterior diagram is redundant — omit it from the report.
     const anterior = await loadAnatomyForPdf('le-anterior', findings, { drawings });
     anatomy = { anterior, posterior: null };
-    localized = buildLocalizedNarrative(findings, t);
+    // No auto-generated narrative for venous — the doctor writes the per-limb
+    // findings and conclusion by hand (they ride on `form.narrative`).
   } else if (studyForm.studyType === 'arterialLE') {
     const rawFindings = studyForm.parameters['segmentFindings'];
     const arterialFindings = isArterialFindings(rawFindings) ? rawFindings : {};

@@ -11,7 +11,7 @@
  *   │  AnatomyView L/R │  SegmentTable (tabs: Right | Left | Bilateral) │
  *   │  (live recolor)  │  20 rows × 5 categorical columns               │
  *   ├──────────────────┴────────────────────────────────────────────────┤
- *   │  ImpressionBlock — auto-generated + editable                      │
+ *   │  ConclusionBlock — doctor-written R/L findings + conclusion       │
  *   ├───────────────────────────────────────────────────────────────────┤
  *   │  CommentsBlock                                                    │
  *   ├───────────────────────────────────────────────────────────────────┤
@@ -68,7 +68,6 @@ import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
 import { type SegmentTableView } from '../../form/SegmentTable';
-import { ImpressionBlock } from '../../form/ImpressionBlock';
 import { CEAPPicker } from '../../form/CEAPPicker';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
 import { FormActions } from '../../form/FormActions';
@@ -136,6 +135,9 @@ interface VenousFormStateV1 {
   readonly impression: string;
   /** Has the user modified the impression manually? */
   readonly impressionEdited: boolean;
+  /** Doctor-written per-limb findings (replaces the auto narrative in the PDF). */
+  readonly rightFindingsText?: string;
+  readonly leftFindingsText?: string;
   readonly ceap: CeapClassification | undefined;
   readonly recommendations: ReadonlyArray<Recommendation>;
   /** Sonographer comments (distinct from clinician impression). */
@@ -164,6 +166,8 @@ const INITIAL_STATE: VenousFormStateV1 = {
   view: 'right',
   impression: '',
   impressionEdited: false,
+  rightFindingsText: '',
+  leftFindingsText: '',
   ceap: undefined,
   recommendations: [],
   sonographerComments: '',
@@ -205,6 +209,7 @@ type Action =
   | { type: 'SET_RECOMMENDATIONS'; value: ReadonlyArray<Recommendation> }
   | { type: 'SET_SONOGRAPHER_COMMENTS'; value: string }
   | { type: 'SET_CLINICIAN_COMMENTS'; value: string }
+  | { type: 'SET_LIMB_FINDINGS_TEXT'; side: 'left' | 'right'; value: string }
   | { type: 'SET_ALL_NORMAL'; scope: 'left' | 'right' | 'bilateral' }
   | { type: 'CLEAR_ALL'; scope: 'left' | 'right' | 'bilateral' }
   | { type: 'COPY_SIDE'; from: 'left' | 'right' }
@@ -288,6 +293,10 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       return { ...state, sonographerComments: action.value };
     case 'SET_CLINICIAN_COMMENTS':
       return { ...state, clinicianComments: action.value };
+    case 'SET_LIMB_FINDINGS_TEXT':
+      return action.side === 'right'
+        ? { ...state, rightFindingsText: action.value }
+        : { ...state, leftFindingsText: action.value };
     case 'SET_ALL_NORMAL': {
       const sides: ReadonlyArray<'left' | 'right'> =
         action.scope === 'bilateral' ? ['left', 'right'] : [action.scope];
@@ -351,8 +360,7 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
         view: action.view,
         ceap: action.ceap,
         recommendations: action.recommendations.map((r) => ({ ...r })),
-        // Seed the canonical impression from the template and mark it as
-        // user-edited so the auto-regen in ImpressionBlock doesn't clobber it.
+        // Seed the conclusion from the template.
         impression: action.impression,
         impressionEdited: action.impression.length > 0,
         // Only overwrite sonographer comments if the template supplies one.
@@ -365,6 +373,9 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
         // into the next case when a clinician picks a template. Templates
         // never carry clinician prose, so a hard empty-string reset is safe.
         clinicianComments: '',
+        // Same leak guard for the doctor-written per-limb findings.
+        rightFindingsText: '',
+        leftFindingsText: '',
       };
     }
     case 'RESET':
@@ -458,6 +469,8 @@ export function stateToFormState(
       // `narrative.indication` slot the PDF + FHIR builders read.
       indication: eh.indicationNotes,
       impression: s.impression,
+      rightFindings: s.rightFindingsText || undefined,
+      leftFindings: s.leftFindingsText || undefined,
       sonographerComments: s.sonographerComments || undefined,
       clinicianComments: s.clinicianComments || undefined,
     },
@@ -515,6 +528,73 @@ function competencyMapFromFindings(
 // ============================================================================
 
 import { EMRTextarea } from '../../shared/EMRFormFields';
+
+interface ConclusionBlockProps {
+  readonly rightFindings: string;
+  readonly leftFindings: string;
+  readonly impression: string;
+  readonly onRightFindingsChange: (v: string) => void;
+  readonly onLeftFindingsChange: (v: string) => void;
+  readonly onImpressionChange: (v: string) => void;
+}
+
+/**
+ * Doctor-written report text: per-limb findings + one conclusion. Replaces
+ * the old auto-generated ImpressionBlock — clinicians found the generated
+ * prose inadequate and asked to write it themselves (2026-10-07 feedback).
+ */
+const ConclusionBlock = memo(function ConclusionBlock({
+  rightFindings,
+  leftFindings,
+  impression,
+  onRightFindingsChange,
+  onLeftFindingsChange,
+  onImpressionChange,
+}: ConclusionBlockProps): React.ReactElement {
+  const { t } = useTranslation();
+  return (
+    <Box className={classes.commentsCard}>
+      <Grid gutter={{ base: 'sm', md: 'md' }}>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <EMRTextarea
+            label={t('venousLE.narrativeSections.rightFindings', 'Right lower extremity — findings')}
+            value={rightFindings}
+            onChange={onRightFindingsChange}
+            minRows={3}
+            maxRows={10}
+            autosize
+            size="md"
+            data-testid="narrative-right-findings"
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <EMRTextarea
+            label={t('venousLE.narrativeSections.leftFindings', 'Left lower extremity — findings')}
+            value={leftFindings}
+            onChange={onLeftFindingsChange}
+            minRows={3}
+            maxRows={10}
+            autosize
+            size="md"
+            data-testid="narrative-left-findings"
+          />
+        </Grid.Col>
+        <Grid.Col span={12}>
+          <EMRTextarea
+            label={t('venousLE.impression.title', 'Impression')}
+            value={impression}
+            onChange={onImpressionChange}
+            minRows={3}
+            maxRows={10}
+            autosize
+            size="md"
+            data-testid="impression-textarea"
+          />
+        </Grid.Col>
+      </Grid>
+    </Box>
+  );
+});
 
 interface CommentsBlockProps {
   readonly sonographer: string;
@@ -787,12 +867,16 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
     [],
   );
 
-  const handleImpression = useCallback((v: string, edited: boolean) => {
-    dispatch({ type: 'SET_IMPRESSION', value: v, edited });
+  const handleImpression = useCallback((v: string) => {
+    dispatch({ type: 'SET_IMPRESSION', value: v, edited: true });
   }, []);
 
-  const handleImpressionRegenerate = useCallback((v: string) => {
-    dispatch({ type: 'SET_IMPRESSION', value: v, edited: false });
+  const handleRightFindingsText = useCallback((v: string) => {
+    dispatch({ type: 'SET_LIMB_FINDINGS_TEXT', side: 'right', value: v });
+  }, []);
+
+  const handleLeftFindingsText = useCallback((v: string) => {
+    dispatch({ type: 'SET_LIMB_FINDINGS_TEXT', side: 'left', value: v });
   }, []);
 
   const handleCeap = useCallback((v: CeapClassification | undefined) => {
@@ -1158,12 +1242,13 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
             </Stack>
           </EMRContentSection>
 
-          <ImpressionBlock
-            findings={state.findings}
-            value={state.impression}
-            edited={state.impressionEdited}
-            onChange={handleImpression}
-            onRegenerate={handleImpressionRegenerate}
+          <ConclusionBlock
+            rightFindings={state.rightFindingsText ?? ''}
+            leftFindings={state.leftFindingsText ?? ''}
+            impression={state.impression}
+            onRightFindingsChange={handleRightFindingsText}
+            onLeftFindingsChange={handleLeftFindingsText}
+            onImpressionChange={handleImpression}
           />
 
           <CommentsBlock

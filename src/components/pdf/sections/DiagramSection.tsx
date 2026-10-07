@@ -7,7 +7,7 @@
  * async data must be resolved into props before mounting the Document.
  */
 import type { ReactElement } from 'react';
-import { View, Text, Svg, Path, Image, Line, Rect, StyleSheet, Defs, ClipPath, G } from '@react-pdf/renderer';
+import { View, Text, Svg, Path, Image, StyleSheet, Defs, ClipPath, G } from '@react-pdf/renderer';
 import type { AnatomyToPdfResult } from '../anatomyToPdfSvg';
 import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 import { COMPETENCY_COLORS } from '../../../constants/theme-colors';
@@ -26,8 +26,6 @@ export interface DiagramLegendItem {
   readonly label: string;
   readonly fill: string;
   readonly stroke: string;
-  /** Render the diagonal-stripe swatch (used for the "inconclusive" band). */
-  readonly striped?: boolean;
 }
 
 export interface DiagramSectionProps {
@@ -46,7 +44,7 @@ export interface DiagramSectionProps {
 
 const styles = StyleSheet.create({
   wrapper: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     fontFamily: PDF_FONT_FAMILY,
   },
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    width: '100%',
+    flexGrow: 1,
   },
   viewColumn: {
     flexDirection: 'column',
@@ -67,17 +65,15 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 3,
   },
-  legendRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  legendColumn: {
+    flexDirection: 'column',
     justifyContent: 'center',
-    marginTop: 8,
-    gap: 8,
+    marginLeft: 8,
+    gap: 6,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 6,
   },
   legendSwatch: {
     width: 10,
@@ -248,12 +244,11 @@ export function DiagramSection({
         label: labels.legend[c],
         fill: COMPETENCY_COLORS[c].fill,
         stroke: COMPETENCY_COLORS[c].stroke,
-        striped: c === 'inconclusive',
       }),
     );
 
   return (
-    <View style={styles.wrapper}>
+    <View style={styles.wrapper} wrap={false}>
       <View style={styles.viewsRow}>
         <View style={styles.viewColumn}>
           <Text style={styles.viewLabel}>{labels.anterior}</Text>
@@ -270,52 +265,24 @@ export function DiagramSection({
           </View>
         ) : null}
       </View>
-      <View style={styles.legendRow}>
-        {items.map((item) => {
-          const { fill, stroke } = item;
-          // Inconclusive renders as diagonal grey/white stripes to match
-          // the anatomy fill pattern (web uses an SVG <pattern>; PDF lacks
-          // <Pattern> in @react-pdf v4, so emit a tiny <Svg> with three
-          // diagonal lines instead).
-          const isInconclusive = item.striped === true;
-          return (
-            <View key={item.key} style={styles.legendItem}>
-              {isInconclusive ? (
-                <Svg
-                  width={10}
-                  height={10}
-                  viewBox="0 0 10 10"
-                  style={{ ...styles.legendSwatch, marginRight: 4 }}
-                >
-                  <Rect x={0} y={0} width={10} height={10} fill="#ffffff" />
-                  <Line x1={-2} y1={4} x2={4} y2={-2} stroke="#9ca3af" strokeWidth={1.5} />
-                  <Line x1={-2} y1={9} x2={9} y2={-2} stroke="#9ca3af" strokeWidth={1.5} />
-                  <Line x1={3} y1={12} x2={12} y2={3} stroke="#9ca3af" strokeWidth={1.5} />
-                  <Rect
-                    x={0}
-                    y={0}
-                    width={10}
-                    height={10}
-                    fill="none"
-                    stroke={stroke}
-                    strokeWidth={0.75}
-                  />
-                </Svg>
-              ) : (
-                <View
-                  style={{
-                    ...styles.legendSwatch,
-                    backgroundColor: fill,
-                    borderWidth: 1,
-                    borderColor: stroke,
-                    borderStyle: 'solid',
-                  }}
-                />
-              )}
-              <Text style={styles.legendText}>{item.label}</Text>
-            </View>
-          );
-        })}
+      {/* Legend sits in a column BESIDE the drawing (not below it) so it can
+          never be pushed onto the next page on its own (clinician feedback
+          2026-10-07). */}
+      <View style={styles.legendColumn}>
+        {items.map((item) => (
+          <View key={item.key} style={styles.legendItem}>
+            <View
+              style={{
+                ...styles.legendSwatch,
+                backgroundColor: item.fill,
+                borderWidth: 1,
+                borderColor: item.stroke,
+                borderStyle: 'solid',
+              }}
+            />
+            <Text style={styles.legendText}>{item.label}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );

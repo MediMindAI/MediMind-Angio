@@ -460,8 +460,8 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
         <NarrativeSection
           narrative={form.narrative}
           labels={labels.narrative}
-          rightFindings={rightFindings ?? ''}
-          leftFindings={leftFindings ?? ''}
+          rightFindings={form.narrative.rightFindings ?? rightFindings ?? ''}
+          leftFindings={form.narrative.leftFindings ?? leftFindings ?? ''}
           conclusions={conclusions ?? []}
         />
 

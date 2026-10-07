@@ -60,8 +60,6 @@ export function AnatomyLegend({
       label: t(`competency.${competency}`, competency),
       fill: colors[competency].fill,
       stroke: colors[competency].stroke,
-      // Inconclusive renders as stripes to match the anatomy fill pattern.
-      pattern: competency === 'inconclusive',
     }));
 
   const items = entries.map((entry) => {

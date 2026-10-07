@@ -115,7 +115,9 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
   // These thresholds add a SECOND confirm-on-commit gate for values so
   // extreme they almost certainly indicate a typo (e.g. 30000 ms instead of
   // 3000 ms) — the user has to acknowledge before the value lands in state.
-  const HARD_REJECT_REFLUX_MS = 3000;
+  // Reflux is typed in SECONDS (e.g. 3.2) and stored in ms, so multi-second
+  // reflux is routine; only >10 s looks like a typo (32 instead of 3.2).
+  const HARD_REJECT_REFLUX_MS = 10000;
   const HARD_REJECT_DIAMETER_MM = 25;
 
   const makeHandler = useCallback(
@@ -125,7 +127,9 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
           onFindingChange(fullId, { [field]: undefined } as Partial<VenousSegmentFinding>);
           return;
         }
-        const num = typeof v === 'number' ? v : Number(v);
+        const raw = typeof v === 'number' ? v : Number(v);
+        // Reflux input is in seconds; persist milliseconds.
+        const num = field === 'refluxDurationMs' ? Math.round(raw * 1000) : raw;
         if (Number.isNaN(num)) {
           onFindingChange(fullId, { [field]: undefined } as Partial<VenousSegmentFinding>);
           return;
@@ -137,7 +141,7 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
               ? true
               : window.confirm(
                   t('venousLE.reflux.implausibleConfirm', {
-                    value: String(num),
+                    value: String(raw),
                   }),
                 );
           if (!ok) return;
@@ -188,9 +192,11 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
         const isAbnormalReflux = r.finding
           ? hasPathologicalReflux(r.base, r.finding)
           : false;
-        const threshold = isDeepSegment(r.base)
-          ? REFLUX_THRESHOLDS.deepMs
-          : REFLUX_THRESHOLDS.superficialMs;
+        // Shown in seconds to match the input unit.
+        const threshold =
+          (isDeepSegment(r.base)
+            ? REFLUX_THRESHOLDS.deepMs
+            : REFLUX_THRESHOLDS.superficialMs) / 1000;
         const rowClass = [classes.row, isAbnormalReflux ? classes.rowAbnormal : '']
           .filter(Boolean)
           .join(' ');
@@ -210,11 +216,16 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
             <div className={classes.cell} data-label={t('venousLE.refluxTable.ms')}>
               <EMRNumberInput
                 aria-label={`${t('venousLE.param.refluxDurationMs')} — ${r.fullId}`}
-                value={r.finding?.refluxDurationMs ?? ''}
+                value={
+                  r.finding?.refluxDurationMs !== undefined
+                    ? r.finding.refluxDurationMs / 1000
+                    : ''
+                }
                 onChange={makeHandler(r.fullId, 'refluxDurationMs')}
                 min={0}
-                max={10000}
-                step={100}
+                max={60}
+                step={0.1}
+                decimalScale={2}
                 size="sm"
                 data-testid={`num-${r.fullId}-refluxDurationMs`}
                 warningMode="icon"

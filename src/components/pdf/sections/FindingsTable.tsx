@@ -142,9 +142,10 @@ function buildRows(findings: VenousSegmentFindings, side: Side): ReadonlyArray<R
   return rows;
 }
 
+/** Reflux is stored in ms but reported in seconds (e.g. 3200 → "3.2"). */
 function formatMs(n: number | undefined, dash: string): string {
   if (n === undefined || Number.isNaN(n)) return dash;
-  return String(Math.round(n));
+  return String(Math.round(n / 10) / 100);
 }
 
 function formatMm(n: number | undefined, dash: string): string {

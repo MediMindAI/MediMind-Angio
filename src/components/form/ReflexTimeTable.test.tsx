@@ -3,7 +3,7 @@
  * Wave 4.9 — Part 10 MEDIUM (reflex-time / diameter implausibility gate).
  *
  * Covers:
- *   - Typing a reflux value > 3000 ms triggers a `window.confirm` and the
+ *   - Typing a reflux value > 10 s (input is in seconds) triggers a `window.confirm` and the
  *     value is REJECTED if the user cancels — the existing pathological
  *     warning (yellow icon) remains the soft signal; this is the hard one.
  *   - Typing an AP-diameter value > 25 mm triggers the same confirmation.
@@ -44,7 +44,7 @@ describe('ReflexTimeTable — implausibility hard-reject gate (Wave 4.9)', () =>
     vi.restoreAllMocks();
   });
 
-  it('rejects a reflux value > 3000 ms when the user cancels confirm()', () => {
+  it('rejects a reflux value > 10 s when the user cancels confirm()', () => {
     const onFindingChange = vi.fn();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     renderWith(SEED, onFindingChange);
@@ -52,14 +52,14 @@ describe('ReflexTimeTable — implausibility hard-reject gate (Wave 4.9)', () =>
     const input = screen.getByTestId(
       'num-cfv-left-refluxDurationMs',
     ) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: '5000' } });
+    fireEvent.change(input, { target: { value: '15' } });
     fireEvent.blur(input);
 
     expect(confirmSpy).toHaveBeenCalled();
     expect(onFindingChange).not.toHaveBeenCalled();
   });
 
-  it('accepts a reflux value > 3000 ms when the user confirms', () => {
+  it('accepts a reflux value > 10 s when the user confirms', () => {
     const onFindingChange = vi.fn();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderWith(SEED, onFindingChange);
@@ -67,14 +67,14 @@ describe('ReflexTimeTable — implausibility hard-reject gate (Wave 4.9)', () =>
     const input = screen.getByTestId(
       'num-cfv-left-refluxDurationMs',
     ) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: '5000' } });
+    fireEvent.change(input, { target: { value: '15' } });
     fireEvent.blur(input);
 
     expect(confirmSpy).toHaveBeenCalled();
-    expect(onFindingChange).toHaveBeenCalledWith('cfv-left', { refluxDurationMs: 5000 });
+    expect(onFindingChange).toHaveBeenCalledWith('cfv-left', { refluxDurationMs: 15000 });
   });
 
-  it('does not prompt for typical reflux values (1500 ms) — soft warning still applies', () => {
+  it('does not prompt for typical reflux values (3.2 s) — soft warning still applies', () => {
     const onFindingChange = vi.fn();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     renderWith(SEED, onFindingChange);
@@ -82,11 +82,11 @@ describe('ReflexTimeTable — implausibility hard-reject gate (Wave 4.9)', () =>
     const input = screen.getByTestId(
       'num-cfv-left-refluxDurationMs',
     ) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: '1500' } });
+    fireEvent.change(input, { target: { value: '3.2' } });
     fireEvent.blur(input);
 
     expect(confirmSpy).not.toHaveBeenCalled();
-    expect(onFindingChange).toHaveBeenCalledWith('cfv-left', { refluxDurationMs: 1500 });
+    expect(onFindingChange).toHaveBeenCalledWith('cfv-left', { refluxDurationMs: 3200 });
   });
 
   it('prompts confirm for AP diameter > 25 mm and rejects on cancel', () => {

@@ -291,13 +291,8 @@ export function deriveCompetency(
   // (deep ≥1000 ms, superficial ≥500 ms in current ACUG guidance; we
   // use 500 here so a single threshold catches both).
   if ((finding.refluxDurationMs ?? 0) > 500) return 'incompetent';
-  // Inconclusive markers — any clinical field explicitly flagged
-  // "inconclusive" / "indeterminate" means the segment couldn't be
-  // assessed cleanly.
-  if (
-    finding.compressibility === 'inconclusive' ||
-    finding.phasicity === 'inconclusive' ||
-    finding.thrombosis === 'indeterminate'
-  ) return 'inconclusive';
+  // The `inconclusive` competency slot is shown as "Perforator" (2026-10-07
+  // feedback) — only a clinician can set it (override / pen), so
+  // "inconclusive" exam fields no longer auto-paint it.
   return 'normal';
 }

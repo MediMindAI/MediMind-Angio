@@ -85,6 +85,10 @@ export interface StudyNarrative {
   readonly findings?: string;
   /** Clinician's impression / assessment. */
   readonly impression?: string;
+  /** Doctor-written right-limb findings (venous LE). Printed instead of the auto narrative. */
+  readonly rightFindings?: string;
+  /** Doctor-written left-limb findings (venous LE). */
+  readonly leftFindings?: string;
   /** Additional comments (deprecated — use `sonographerComments` / `clinicianComments`). */
   readonly comments?: string;
   /** Comments written by the sonographer/technologist performing the study. */

@@ -125,17 +125,6 @@ function normalizeSegments(
   return map;
 }
 
-// Inconclusive uses a diagonal grey-stripe pattern in fill mode, and a
-// dashed stroke in overlay mode. The same competency, two render modes.
-const INCONCLUSIVE_PATTERN_ID = 'competency-inconclusive-stripes';
-const INCONCLUSIVE_PATTERN_SVG =
-  `<pattern id="${INCONCLUSIVE_PATTERN_ID}" patternUnits="userSpaceOnUse" ` +
-  `width="10" height="10" patternTransform="rotate(45)">` +
-  `<rect width="10" height="10" fill="#ffffff"/>` +
-  `<line x1="0" y1="0" x2="0" y2="10" stroke="#9ca3af" stroke-width="5"/>` +
-  `</pattern>`;
-const INCONCLUSIVE_OVERLAY_DASH = '8 5';
-
 /**
  * Inject competency-driven `fill` + `stroke` + `stroke-width` attributes
  * on each `<path id="...">` under `#segments`. Mutates the raw SVG string
@@ -187,16 +176,6 @@ function colorizeSvg(
     },
   );
 
-  // 0b) Inject a <defs> block with the inconclusive diagonal-stripe pattern.
-  //     Used only when a segment is marked "inconclusive" — the path below
-  //     references `url(#${INCONCLUSIVE_PATTERN_ID})` in place of a solid fill.
-  //     Pattern uses `userSpaceOnUse` so stripe density is consistent across
-  //     segments of different sizes (tiny perforator dots vs long iliac vein).
-  out = out.replace(
-    /(<svg\b[^>]*>)/,
-    `$1<defs>${INCONCLUSIVE_PATTERN_SVG}</defs>`,
-  );
-
   // 1) Silhouette leg outline stroke -- theme-aware so it reads in dark mode.
   out = out.replace(
     /(<g id="silhouette"[^>]*stroke=")[^"]*(")/,
@@ -239,13 +218,7 @@ function colorizeSvg(
       const baseColors = colorFn
         ? colorFn(id)
         : colorForCompetency(competency);
-      // Inconclusive segments fill with the striped pattern, not a solid
-      // hex — only when a real competency lookup is in use (colorFn paths
-      // for arterial/carotid get their own palette and shouldn't pattern).
-      const useInconclusivePattern = !colorFn && competency === 'inconclusive';
-      const { fill, stroke } = useInconclusivePattern
-        ? { fill: `url(#${INCONCLUSIVE_PATTERN_ID})`, stroke: baseColors.stroke }
-        : baseColors;
+      const { fill, stroke } = baseColors;
       const isHighlighted = highlightId === id;
       const widthToApply = isHighlighted ? segmentStrokeWidth + 2 : segmentStrokeWidth;
       // Strip any existing fill/stroke/stroke-width on this <path>, then append ours.
@@ -299,14 +272,7 @@ function colorizeSvg(
         //    original inner content (<title>) for accessibility.
         const hitZone = `<path id="${id}"${cleanedNoD} d="${d}" fill="transparent" stroke="${hitZoneColor}" stroke-width="${hitZoneWidth}" data-segment-id="${id}"${competencyAttr} pointer-events="stroke">${innerContent}</path>`;
         // 2. Visible color path — sibling of the hit-zone, no events.
-        //    Inconclusive renders as a dashed stroke (pattern fills don't
-        //    read well on thin strokes — dashes carry the same "uncertain"
-        //    visual semantics in overlay mode).
-        const dashAttr =
-          isFilled && competency === 'inconclusive'
-            ? ` stroke-dasharray="${INCONCLUSIVE_OVERLAY_DASH}"`
-            : '';
-        const colored = `<path d="${d}" fill="transparent" stroke="${visibleColor}" stroke-width="${visibleWidth}"${filterAttr}${dashAttr} stroke-linecap="round" stroke-linejoin="round" pointer-events="none" />`;
+        const colored = `<path d="${d}" fill="transparent" stroke="${visibleColor}" stroke-width="${visibleWidth}"${filterAttr} stroke-linecap="round" stroke-linejoin="round" pointer-events="none" />`;
         return hitZone + colored;
       }
       return `<path id="${id}"${cleanRest} fill="${fill}" stroke="${stroke}" stroke-width="${widthToApply}"${filterAttr} data-segment-id="${id}"${competencyAttr}>${innerContent}</path>`;

@@ -4,7 +4,9 @@
  * Layout:
  *   CEAP Classification (2020)
  *   C2s, Ep, As,d, Pr
- *   (one-liner per-axis description)
+ *
+ * The per-axis C/E/A/P explanation lines were removed on clinician request
+ * (2026-10-07) — the code alone is what goes in the report.
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
@@ -13,10 +15,6 @@ import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 
 export interface CEAPSectionLabels {
   readonly heading: string;
-  readonly cAxis: string;
-  readonly eAxis: string;
-  readonly aAxis: string;
-  readonly pAxis: string;
 }
 
 export interface CEAPSectionProps {
@@ -48,21 +46,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: 1,
   },
-  axisLine: {
-    flexDirection: 'row',
-    marginBottom: 1,
-  },
-  axisLabel: {
-    fontSize: PDF_FONT_SIZES.footnote,
-    color: PDF_THEME.textMuted,
-    fontWeight: 'bold',
-    width: 16,
-  },
-  axisValue: {
-    fontSize: PDF_FONT_SIZES.footnote,
-    color: PDF_THEME.text,
-    flexGrow: 1,
-  },
 });
 
 export function formatCeapClassification(ceap: CeapClassification): string {
@@ -77,22 +60,6 @@ export function CEAPSection({ ceap, labels }: CEAPSectionProps): ReactElement {
     <View style={styles.block}>
       <Text style={styles.heading}>{labels.heading}</Text>
       <Text style={styles.classification}>{formatCeapClassification(ceap)}</Text>
-      <View style={styles.axisLine}>
-        <Text style={styles.axisLabel}>C</Text>
-        <Text style={styles.axisValue}>{labels.cAxis}</Text>
-      </View>
-      <View style={styles.axisLine}>
-        <Text style={styles.axisLabel}>E</Text>
-        <Text style={styles.axisValue}>{labels.eAxis}</Text>
-      </View>
-      <View style={styles.axisLine}>
-        <Text style={styles.axisLabel}>A</Text>
-        <Text style={styles.axisValue}>{labels.aAxis}</Text>
-      </View>
-      <View style={styles.axisLine}>
-        <Text style={styles.axisLabel}>P</Text>
-        <Text style={styles.axisValue}>{labels.pAxis}</Text>
-      </View>
     </View>
   );
 }

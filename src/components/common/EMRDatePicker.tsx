@@ -101,6 +101,24 @@ function toRange(value: EMRDatePickerProps['value']): EMRDateRangeValue {
   return [value ?? null, null];
 }
 
+/**
+ * Parse a hand-typed date: "dd.mm.yyyy" (also "/" or "-" separators, 1-digit
+ * day/month) or 8 bare digits "ddmmyyyy". Returns a LOCAL-midnight Date, or
+ * null when the text isn't a real calendar date (e.g. 31.02.2020).
+ */
+export function parseTypedDate(text: string): Date | null {
+  const t = text.trim();
+  const m =
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/.exec(t) ?? /^(\d{2})(\d{2})(\d{4})$/.exec(t);
+  if (!m) return null;
+  const day = Number(m[1]);
+  const month = Number(m[2]);
+  const year = Number(m[3]);
+  const d = new Date(year, month - 1, day);
+  if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return d;
+}
+
 /** Render the trigger text for either single or range selection. */
 function formatTrigger(isRange: boolean, single: Date | null, range: EMRDateRangeValue): string {
   if (isRange) {
@@ -194,6 +212,28 @@ export const EMRDatePicker = forwardRef<HTMLInputElement, EMRDatePickerProps>(
       // Close only once a full range is selected.
       if (start && end) {
         setOpened(false);
+      }
+    };
+
+    // ----- typed single-date entry (clinicians type DOB instead of scrolling) -----
+    const commitTyped = () => {
+      const text = inputValue.trim();
+      const current = isRange ? null : ((value as Date | null | undefined) ?? null);
+      if (text === '') {
+        if (current) (onChange as ((d: Date | null) => void) | undefined)?.(null);
+        return;
+      }
+      const parsed = parseTypedDate(text);
+      const inRange =
+        parsed !== null &&
+        parsed.getTime() >= new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()).getTime() &&
+        parsed.getTime() <= maxDate.getTime();
+      if (parsed && inRange) {
+        setInputValue(formatDate(parsed));
+        (onChange as ((d: Date | null) => void) | undefined)?.(parsed);
+      } else {
+        // Not a valid date — snap back to the last committed value.
+        setInputValue(formatDate(current));
       }
     };
 
@@ -347,7 +387,40 @@ export const EMRDatePicker = forwardRef<HTMLInputElement, EMRDatePickerProps>(
                 </Box>
               )}
 
-              {/* Value / Placeholder */}
+              {/* Value / Placeholder — single-date fields are typeable */}
+              {!isRange && !isFilter ? (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={inputValue}
+                  placeholder={placeholder}
+                  disabled={disabled}
+                  aria-label={label ?? placeholder}
+                  data-testid={dataTestId ? `${dataTestId}-input` : undefined}
+                  onChange={(e) => setInputValue(e.currentTarget.value)}
+                  onBlur={commitTyped}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      commitTyped();
+                      setOpened(false);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    font: 'inherit',
+                    fontSize: config.fontSize,
+                    fontWeight: hasValue ? 500 : 400,
+                    color: 'var(--emr-text-primary)',
+                    letterSpacing: hasValue ? '0.02em' : 'normal',
+                    padding: 0,
+                  }}
+                />
+              ) : (
               <Text
                 size={config.fontSize}
                 fw={hasValue ? 500 : 400}
@@ -363,6 +436,7 @@ export const EMRDatePicker = forwardRef<HTMLInputElement, EMRDatePickerProps>(
               >
                 {inputValue || placeholder}
               </Text>
+              )}
 
               {/* Clear Button */}
               {hasValue && !disabled && (

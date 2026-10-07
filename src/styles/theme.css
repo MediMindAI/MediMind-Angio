@@ -4108,7 +4108,7 @@ h4, h5, h6 {
   --emr-competency-normal: #0ea5e9;        /* sky-500 — patent */
   --emr-competency-occluded: #dc2626;      /* red-600 — thrombus */
   --emr-competency-incompetent: #f59e0b;   /* amber-500 — reflux */
-  --emr-competency-inconclusive: #9ca3af;  /* gray-400 — insufficient data */
+  --emr-competency-inconclusive: #2563eb;  /* blue-600 — shown as "Perforator" */
   --emr-competency-ablated: #16a34a;       /* green-600 — post-procedural */
   --emr-border-radius-md: 8px;
   --emr-border-radius-full: 9999px;

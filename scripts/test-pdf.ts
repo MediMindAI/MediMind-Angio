@@ -443,10 +443,6 @@ const labels: ReportLabels = {
   },
   ceap: {
     heading: 'CEAP Classification (2020)',
-    cAxis: 'Clinical: Varicose veins, symptomatic',
-    eAxis: 'Etiology: Primary',
-    aAxis: 'Anatomy: Superficial',
-    pAxis: 'Pathophysiology: Reflux',
   },
   iliacFindings: {
     heading: 'Findings by zone',
