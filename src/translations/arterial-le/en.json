@@ -10,20 +10,26 @@
       "right": "right"
     },
     "segment": {
-      "cia": "common iliac artery",
-      "eia": "external iliac artery",
-      "cfa": "common femoral artery",
-      "pfa": "profunda femoris artery",
-      "sfa-prox": "superficial femoral artery, proximal",
-      "sfa-mid": "superficial femoral artery, mid",
-      "sfa-dist": "superficial femoral artery, distal",
-      "pop-ak": "popliteal artery above knee",
-      "pop-bk": "popliteal artery below knee",
-      "tpt": "tibioperoneal trunk",
-      "ata": "anterior tibial artery",
-      "pta": "posterior tibial artery",
-      "per": "peroneal artery",
-      "dp": "dorsalis pedis artery"
+      "cfa": "common femoral artery (CFA)",
+      "pfa": "deep femoral artery (DFA)",
+      "sfa-prox": "superficial femoral artery (SFA) Prox",
+      "sfa-mid": "superficial femoral artery (SFA) Mid",
+      "sfa-dist": "superficial femoral artery (SFA) Dist",
+      "pop-ak": "popliteal artery (PopA) Prox",
+      "pop-bk": "popliteal artery (PopA) Dist",
+      "pta-prox": "posterior tibial artery (PTA) Prox",
+      "pta-mid": "posterior tibial artery (PTA) Mid",
+      "pta-dist": "posterior tibial artery (PTA) Dist",
+      "per-prox": "peroneal artery (Peroneal A) Prox",
+      "per-mid": "peroneal artery (Peroneal A) Mid",
+      "per-dist": "peroneal artery (Peroneal A) Dist",
+      "ata-prox": "anterior tibial artery (ATA) Prox",
+      "ata-mid": "anterior tibial artery (ATA) Mid",
+      "ata-dist": "anterior tibial artery (ATA) Dist",
+      "dp": "dorsalis pedis artery (DPA)",
+      "pta": "posterior tibial artery (PTA)",
+      "per": "peroneal artery (Peroneal A)",
+      "ata": "anterior tibial artery (ATA)"
     },
     "segmentTable": {
       "title": "Segmental assessment",
@@ -51,7 +57,7 @@
     "waveform": {
       "triphasic": "Triphasic",
       "biphasic": "Biphasic",
-      "monophasic-phasic": "Monophasic, phasic",
+      "monophasic-phasic": "Monophasic",
       "monophasic-damped": "Monophasic, damped",
       "absent": "Absent / no flow"
     },
@@ -236,11 +242,11 @@
       "subtitle": "Bilateral arterial waveform, pressure, and stenosis assessment"
     },
     "findingsTable": {
-      "waveShort": "Wave",
-      "psvShort": "PSV",
-      "stenShort": "Sten.",
-      "plaqueShort": "Plaque",
-      "occlShort": "Occl."
+      "waveShort": "Flow",
+      "psvShort": "PV cm/s",
+      "stenShort": "Stenosis %",
+      "occlShort": "Occlusion",
+      "pvrShort": "PVR"
     },
     "visualizationQuality": {
       "adequate": "Adequate",

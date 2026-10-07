@@ -19,6 +19,7 @@ import type {
   SegmentalPressures,
 } from './config';
 import {
+  ARTERIAL_LE_SEGMENTS,
   ARTERIAL_NORMAL_FINDING,
   ARTERIAL_OCCLUSION_FINDING,
 } from './config';
@@ -62,16 +63,25 @@ export interface ArterialLETemplate {
 
 const SIDES: ReadonlyArray<Side> = ['left', 'right'];
 
+/** Seed all three Prox / Mid / Dist rows of a tibial or peroneal vessel. */
+function wholeVessel(
+  vessel: 'ata' | 'pta' | 'per',
+  side: Side,
+  finding: ArterialSegmentFinding,
+): Record<string, ArterialSegmentFinding> {
+  return {
+    [`${vessel}-prox-${side}`]: { ...finding },
+    [`${vessel}-mid-${side}`]: { ...finding },
+    [`${vessel}-dist-${side}`]: { ...finding },
+  };
+}
+
 function fillAll(
   finding: ArterialSegmentFinding,
   sides: ReadonlyArray<Side> = SIDES,
 ): ArterialSegmentFindings {
   const out: Record<string, ArterialSegmentFinding> = {};
-  for (const base of [
-    'cia', 'eia', 'cfa', 'pfa',
-    'sfa-prox', 'sfa-mid', 'sfa-dist',
-    'pop-ak', 'pop-bk', 'tpt', 'ata', 'pta', 'per', 'dp',
-  ] as const) {
+  for (const base of ARTERIAL_LE_SEGMENTS) {
     for (const side of sides) {
       // Wave 3.7 (Part 03 HIGH) — clone per slot so each slot owns its own
       // finding object. Sharing the seed reference across 28+ slots was an
@@ -193,7 +203,7 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
         plaqueMorphology: 'mixed',
       },
       'pop-ak-right': {
-        waveform: 'monophasic-damped',
+        waveform: 'monophasic-phasic',
         psvCmS: 60,
         stenosisCategory: 'none',
       },
@@ -230,15 +240,15 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
     findings: patch(fillAll(ARTERIAL_NORMAL_FINDING), {
       'sfa-mid-left': ARTERIAL_OCCLUSION_FINDING,
       'sfa-dist-left': {
-        waveform: 'monophasic-damped',
+        waveform: 'monophasic-phasic',
         stenosisCategory: 'none',
         plaqueMorphology: 'mixed',
       },
-      'pop-ak-left': { waveform: 'monophasic-damped', stenosisCategory: 'none' },
-      'pop-bk-left': { waveform: 'monophasic-damped', stenosisCategory: 'none' },
-      'ata-left': { waveform: 'monophasic-damped', stenosisCategory: 'none' },
-      'pta-left': { waveform: 'monophasic-damped', stenosisCategory: 'none' },
-      'per-left': { waveform: 'monophasic-damped', stenosisCategory: 'none' },
+      'pop-ak-left': { waveform: 'monophasic-phasic', stenosisCategory: 'none' },
+      'pop-bk-left': { waveform: 'monophasic-phasic', stenosisCategory: 'none' },
+      ...wholeVessel('ata', 'left', { waveform: 'monophasic-phasic', stenosisCategory: 'none' }),
+      ...wholeVessel('pta', 'left', { waveform: 'monophasic-phasic', stenosisCategory: 'none' }),
+      ...wholeVessel('per', 'left', { waveform: 'monophasic-phasic', stenosisCategory: 'none' }),
     }),
     pressures: {
       ...NORMAL_PRESSURES_BILATERAL,
@@ -271,12 +281,12 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
     severity: 'critical',
     findings: patch(fillAll(ARTERIAL_NORMAL_FINDING), {
       'cfa-right': {
-        waveform: 'monophasic-damped',
+        waveform: 'monophasic-phasic',
         psvCmS: 50,
         stenosisCategory: 'none',
       },
       'sfa-mid-right': {
-        waveform: 'monophasic-damped',
+        waveform: 'monophasic-phasic',
         psvCmS: 380,
         stenosisCategory: 'severe',
         stenosisPct: 80,
@@ -286,9 +296,9 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
       'sfa-dist-right': ARTERIAL_OCCLUSION_FINDING,
       'pop-ak-right': ARTERIAL_OCCLUSION_FINDING,
       'pop-bk-right': { waveform: 'absent', stenosisCategory: 'occluded', occluded: true },
-      'ata-right': ARTERIAL_OCCLUSION_FINDING,
-      'pta-right': ARTERIAL_OCCLUSION_FINDING,
-      'per-right': { waveform: 'monophasic-damped', psvCmS: 25, stenosisCategory: 'none' },
+      ...wholeVessel('ata', 'right', ARTERIAL_OCCLUSION_FINDING),
+      ...wholeVessel('pta', 'right', ARTERIAL_OCCLUSION_FINDING),
+      ...wholeVessel('per', 'right', { waveform: 'monophasic-phasic', psvCmS: 25, stenosisCategory: 'none' }),
       'dp-right': { waveform: 'absent', occluded: true, stenosisCategory: 'occluded' },
     }),
     pressures: {
@@ -321,8 +331,8 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
     scope: 'bilateral',
     severity: 'urgent',
     findings: patch(fillAll(ARTERIAL_NORMAL_FINDING), {
-      'cfa-left':  { waveform: 'monophasic-damped', psvCmS: 45, stenosisCategory: 'none' },
-      'cfa-right': { waveform: 'monophasic-damped', psvCmS: 48, stenosisCategory: 'none' },
+      'cfa-left':  { waveform: 'monophasic-phasic', psvCmS: 45, stenosisCategory: 'none' },
+      'cfa-right': { waveform: 'monophasic-phasic', psvCmS: 48, stenosisCategory: 'none' },
     }),
     pressures: {
       ...NORMAL_PRESSURES_BILATERAL,
@@ -427,8 +437,8 @@ export const ARTERIAL_LE_TEMPLATES: ReadonlyArray<ArterialLETemplate> = [
     scope: 'right',
     severity: 'urgent',
     findings: patch(fillAll(ARTERIAL_NORMAL_FINDING), {
-      'ata-right': { waveform: 'monophasic-damped', psvCmS: 40, stenosisCategory: 'none' },
-      'pta-right': { waveform: 'monophasic-damped', psvCmS: 40, stenosisCategory: 'none' },
+      ...wholeVessel('ata', 'right', { waveform: 'monophasic-phasic', psvCmS: 40, stenosisCategory: 'none' }),
+      ...wholeVessel('pta', 'right', { waveform: 'monophasic-phasic', psvCmS: 40, stenosisCategory: 'none' }),
     }),
     pressures: {
       brachialL: 135,

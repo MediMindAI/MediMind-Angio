@@ -2,13 +2,14 @@
 /**
  * ArterialFindingsTable — per-segment arterial LE table for PDF page 1.
  *
- * Six columns (mirrors the on-form ArterialSegmentTable but flattened):
- *   Segment | Waveform | PSV | Stenosis | Plaque | Occluded
+ * One full-width table with the segment names listed ONCE in the middle
+ * and each side's values on either side of them (clinician request,
+ * 2026-10-07 — no more two duplicated R / L lists):
  *
- * When `singleSide` is set the component renders one side only — that's
- * the shape ReportDocument uses to place R + L side-by-side on page 1.
+ *   Right: Flow | PV | PVR | Stenosis % | Occlusion ‖ Segment ‖ Left: same
  *
- * Row tinting (red) triggers when any of:
+ * A row is printed when either side has a value. Red tint is applied per
+ * side when that side is pathological:
  *   - `occluded === true`
  *   - `stenosisCategory in {severe, occluded}`
  *   - `waveform === 'absent'`
@@ -20,7 +21,6 @@ import type {
   ArterialSegmentFindings,
   ArterialSegmentFinding,
   ArterialLESegmentBase,
-  PlaqueMorphology,
   StenosisCategory,
   VisualizationQuality,
   Waveform,
@@ -33,14 +33,13 @@ export interface ArterialFindingsTableLabels {
   readonly segment: string;
   readonly waveform: string;
   readonly psv: string;
+  readonly pvr: string;
   readonly stenosis: string;
-  readonly plaque: string;
   readonly occluded: string;
   readonly occludedMark: string;
   readonly segmentName: Record<ArterialLESegmentBase, string>;
   readonly waveformName: Record<Waveform, string>;
   readonly stenosisName: Record<StenosisCategory, string>;
-  readonly plaqueName: Record<PlaqueMorphology, string>;
   readonly qualityName: Record<VisualizationQuality, string>;
   readonly noteLabel: string;
   readonly emptyDash: string;
@@ -49,27 +48,31 @@ export interface ArterialFindingsTableLabels {
 export interface ArterialFindingsTableProps {
   readonly findings: ArterialSegmentFindings;
   readonly labels: ArterialFindingsTableLabels;
-  readonly singleSide?: 'left' | 'right';
 }
 
 type Side = 'left' | 'right';
 
+// Per-side value columns (same order on both sides) + the centre segment
+// column, which gets the most room so Georgian names wrap cleanly.
 const COL_FLEX = {
-  // Compound Georgian vessel names (e.g. "ტიბიო-პერონეალური ღერო") need more
-  // room than English equivalents — bump segment to 3.2 so they wrap inside
-  // the cell instead of overflowing into the next column.
-  segment: 3.2,
-  waveform: 1.2,
-  psv: 1.0,
-  stenosis: 1.1,
-  plaque: 1.4,
-  occluded: 0.7,
+  waveform: 1.9,
+  psv: 0.8,
+  pvr: 0.6,
+  stenosis: 1.25,
+  occluded: 1.35,
+  segment: 3.7,
 } as const;
+const SIDE_FLEX =
+  COL_FLEX.waveform + COL_FLEX.psv + COL_FLEX.pvr + COL_FLEX.stenosis + COL_FLEX.occluded;
 
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: 6,
     fontFamily: PDF_FONT_FAMILY,
+  },
+  sideHeaderRow: {
+    flexDirection: 'row',
+    marginTop: 4,
   },
   sideHeader: {
     backgroundColor: PDF_THEME.primary,
@@ -78,27 +81,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     fontSize: PDF_FONT_SIZES.label,
     fontWeight: 'bold',
-    marginTop: 4,
   },
   columnHeader: {
     flexDirection: 'row',
     backgroundColor: '#e2e8f0',
     paddingVertical: 3,
-    paddingHorizontal: 4,
     fontSize: 7.5,
     fontWeight: 'bold',
     color: PDF_THEME.text,
   },
   row: {
     flexDirection: 'row',
-    paddingVertical: 2,
-    paddingHorizontal: 4,
+    alignItems: 'center',
     borderBottomWidth: 0.5,
     borderBottomColor: PDF_THEME.border,
     borderBottomStyle: 'solid',
   },
-  rowRed: {
+  sideCells: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    paddingVertical: 3,
+  },
+  sideCellsRed: {
     backgroundColor: PDF_BAND_COLORS.error.bg,
+  },
+  segmentCell: {
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    alignSelf: 'stretch',
+    backgroundColor: '#f8fafc',
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.5,
+    borderLeftColor: PDF_THEME.border,
+    borderRightColor: PDF_THEME.border,
+    borderLeftStyle: 'solid',
+    borderRightStyle: 'solid',
   },
   emptyMessage: {
     fontSize: PDF_FONT_SIZES.footnote,
@@ -107,24 +125,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   cell: {
-    fontSize: PDF_FONT_SIZES.label,
+    fontSize: 7.5,
     lineHeight: 1.25,
+    textAlign: 'center',
+    paddingHorizontal: 2,
     // Clip text to the cell's flex-computed width. Without this, long
     // Georgian compound words (which Yoga can't break mid-word) paint past
     // the column boundary and visually overlap the next cell's text.
     overflow: 'hidden',
+  },
+  segmentText: {
+    fontSize: 7.5,
+    lineHeight: 1.25,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: PDF_THEME.text,
   },
   cellRed: {
     color: PDF_BAND_COLORS.error.fg,
     fontWeight: 'bold',
   },
   headCell: {
-    fontSize: 7.5,
+    fontSize: 7,
     lineHeight: 1.1,
+    textAlign: 'center',
+    paddingHorizontal: 2,
     overflow: 'hidden',
-  },
-  cellRight: {
-    textAlign: 'right',
   },
   detailRow: {
     paddingHorizontal: 6,
@@ -140,13 +166,8 @@ const styles = StyleSheet.create({
   },
 });
 
-interface RenderRow {
-  readonly segmentBase: ArterialLESegmentBase;
-  readonly finding: ArterialSegmentFinding;
-  readonly pathological: boolean;
-}
-
-function isPathological(f: ArterialSegmentFinding): boolean {
+function isPathological(f: ArterialSegmentFinding | undefined): boolean {
+  if (!f) return false;
   if (f.occluded === true) return true;
   if (f.waveform === 'absent') return true;
   const cat = f.stenosisCategory;
@@ -154,25 +175,26 @@ function isPathological(f: ArterialSegmentFinding): boolean {
   return false;
 }
 
-function hasAnyValue(f: ArterialSegmentFinding): boolean {
+function hasAnyValue(f: ArterialSegmentFinding | undefined): boolean {
+  if (!f) return false;
   return (
     f.waveform !== undefined ||
     f.psvCmS !== undefined ||
+    f.velocityRatio !== undefined ||
     f.stenosisPct !== undefined ||
     f.stenosisCategory !== undefined ||
-    f.plaqueMorphology !== undefined ||
-    f.plaqueLengthMm !== undefined ||
     f.occluded === true ||
     (f.visualizationQuality !== undefined && f.visualizationQuality !== 'adequate') ||
     (f.note !== undefined && f.note.trim() !== '')
   );
 }
 
-/** Optional secondary line below a row: image-quality caveat + free-text note. */
-function detailLine(
-  f: ArterialSegmentFinding,
+/** Optional secondary text for one side: image-quality caveat + free-text note. */
+function detailText(
+  f: ArterialSegmentFinding | undefined,
   labels: ArterialFindingsTableLabels,
 ): string | null {
+  if (!f) return null;
   const parts: string[] = [];
   if (f.visualizationQuality && f.visualizationQuality !== 'adequate') {
     parts.push(labels.qualityName[f.visualizationQuality]);
@@ -182,150 +204,121 @@ function detailLine(
   return parts.length ? parts.join(' · ') : null;
 }
 
-function buildRows(
-  findings: ArterialSegmentFindings,
-  side: Side,
-): ReadonlyArray<RenderRow> {
-  const rows: RenderRow[] = [];
-  for (const base of ARTERIAL_LE_SEGMENTS) {
-    const key = `${base}-${side}` as keyof typeof findings;
-    const f = findings[key];
-    if (!f) continue;
-    if (!hasAnyValue(f)) continue;
-    rows.push({
-      segmentBase: base,
-      finding: f,
-      pathological: isPathological(f),
-    });
-  }
-  return rows;
-}
-
-function formatPsv(n: number | undefined, dash: string): string {
+function formatNumber(n: number | undefined, dash: string, digits = 0): string {
   if (n === undefined || Number.isNaN(n)) return dash;
-  return `${Math.round(n)}`;
+  return digits === 0 ? `${Math.round(n)}` : n.toFixed(digits);
 }
 
 function formatStenosis(
   f: ArterialSegmentFinding,
   labels: ArterialFindingsTableLabels,
 ): string {
-  if (f.stenosisCategory) return labels.stenosisName[f.stenosisCategory];
   if (f.stenosisPct !== undefined && !Number.isNaN(f.stenosisPct)) {
     return `${Math.round(f.stenosisPct)}%`;
   }
+  if (f.stenosisCategory) return labels.stenosisName[f.stenosisCategory];
   return labels.emptyDash;
 }
 
-function formatPlaque(
-  f: ArterialSegmentFinding,
-  labels: ArterialFindingsTableLabels,
-): string {
-  const morph = f.plaqueMorphology;
-  if (!morph || morph === 'none') return labels.emptyDash;
-  const base = labels.plaqueName[morph];
-  if (f.plaqueLengthMm !== undefined && !Number.isNaN(f.plaqueLengthMm)) {
-    return `${base} · ${Math.round(f.plaqueLengthMm)}mm`;
-  }
-  return base;
+function SideHeaderCells({ labels }: { readonly labels: ArterialFindingsTableLabels }): ReactElement {
+  return (
+    <>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...styles.headCell }}>
+        {labels.waveform}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...styles.headCell }}>{labels.psv}</Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.pvr, ...styles.headCell }}>{labels.pvr}</Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.stenosis, ...styles.headCell }}>
+        {labels.stenosis}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...styles.headCell }}>
+        {labels.occluded}
+      </Text>
+    </>
+  );
 }
 
-function SideTable({
-  side,
+function SideValueCells({
+  finding,
   labels,
-  findings,
 }: {
-  readonly side: Side;
+  readonly finding: ArterialSegmentFinding | undefined;
   readonly labels: ArterialFindingsTableLabels;
-  readonly findings: ArterialSegmentFindings;
 }): ReactElement {
-  const rows = buildRows(findings, side);
-  const headerLabel = side === 'right' ? labels.right : labels.left;
+  const dash = labels.emptyDash;
+  const red = isPathological(finding);
+  const cellStyle = red ? { ...styles.cell, ...styles.cellRed } : styles.cell;
+  const wrapStyle = red ? { ...styles.sideCells, ...styles.sideCellsRed } : styles.sideCells;
+  const f = finding;
+  return (
+    <View style={{ flexBasis: 0, flexGrow: SIDE_FLEX, ...wrapStyle }}>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...cellStyle }}>
+        {f?.waveform !== undefined ? labels.waveformName[f.waveform] : dash}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellStyle }}>
+        {formatNumber(f?.psvCmS, dash)}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.pvr, ...cellStyle }}>
+        {formatNumber(f?.velocityRatio, dash, 1)}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.stenosis, ...cellStyle }}>
+        {f ? formatStenosis(f, labels) : dash}
+      </Text>
+      <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...cellStyle }}>
+        {f?.occluded === true ? labels.occludedMark : dash}
+      </Text>
+    </View>
+  );
+}
+
+export function ArterialFindingsTable({
+  findings,
+  labels,
+}: ArterialFindingsTableProps): ReactElement {
+  const findingFor = (base: ArterialLESegmentBase, side: Side): ArterialSegmentFinding | undefined =>
+    findings[`${base}-${side}` as keyof typeof findings];
+  const rows = ARTERIAL_LE_SEGMENTS.filter(
+    (base) => hasAnyValue(findingFor(base, 'right')) || hasAnyValue(findingFor(base, 'left')),
+  );
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.sideHeader}>{headerLabel}</Text>
+      <View style={styles.sideHeaderRow}>
+        <Text style={{ flexBasis: 0, flexGrow: SIDE_FLEX, ...styles.sideHeader }}>{labels.right}</Text>
+        <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.sideHeader }}> </Text>
+        <Text style={{ flexBasis: 0, flexGrow: SIDE_FLEX, ...styles.sideHeader, textAlign: 'right' }}>
+          {labels.left}
+        </Text>
+      </View>
       <View style={styles.columnHeader}>
+        <SideHeaderCells labels={labels} />
         <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.headCell }}>
           {labels.segment}
         </Text>
-        <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...styles.headCell }}>
-          {labels.waveform}
-        </Text>
-        <Text
-          style={{
-            flexBasis: 0,
-            flexGrow: COL_FLEX.psv,
-            ...styles.headCell,
-            ...styles.cellRight,
-          }}
-        >
-          {labels.psv}
-        </Text>
-        <Text
-          style={{
-            flexBasis: 0,
-            flexGrow: COL_FLEX.stenosis,
-            ...styles.headCell,
-            ...styles.cellRight,
-          }}
-        >
-          {labels.stenosis}
-        </Text>
-        <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...styles.headCell }}>
-          {labels.plaque}
-        </Text>
-        <Text
-          style={{
-            flexBasis: 0,
-            flexGrow: COL_FLEX.occluded,
-            ...styles.headCell,
-            ...styles.cellRight,
-          }}
-        >
-          {labels.occluded}
-        </Text>
+        <SideHeaderCells labels={labels} />
       </View>
       {rows.length === 0 ? (
         <Text style={styles.emptyMessage}>—</Text>
       ) : (
-        rows.map((r) => {
-          const segLabel = labels.segmentName[r.segmentBase] ?? r.segmentBase;
-          const rowStyle = r.pathological ? { ...styles.row, ...styles.rowRed } : styles.row;
-          const cellStyle = r.pathological
-            ? { ...styles.cell, ...styles.cellRed }
-            : styles.cell;
-          const cellRightStyle = r.pathological
-            ? { ...styles.cell, ...styles.cellRight, ...styles.cellRed }
-            : { ...styles.cell, ...styles.cellRight };
-          const waveformText =
-            r.finding.waveform !== undefined
-              ? labels.waveformName[r.finding.waveform]
-              : labels.emptyDash;
-          const detail = detailLine(r.finding, labels);
+        rows.map((base) => {
+          const right = findingFor(base, 'right');
+          const left = findingFor(base, 'left');
+          const detailR = detailText(right, labels);
+          const detailL = detailText(left, labels);
+          const detail = [
+            detailR ? `${labels.right}: ${detailR}` : null,
+            detailL ? `${labels.left}: ${detailL}` : null,
+          ].filter(Boolean).join('   ');
           return (
-            <View key={`${side}-${r.segmentBase}`} wrap={false}>
-              <View style={rowStyle}>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...cellStyle }}>
-                  {segLabel}
-                </Text>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.waveform, ...cellStyle }}>
-                  {waveformText}
-                </Text>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellRightStyle }}>
-                  {formatPsv(r.finding.psvCmS, labels.emptyDash)}
-                </Text>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.stenosis, ...cellRightStyle }}>
-                  {formatStenosis(r.finding, labels)}
-                </Text>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...cellStyle }}>
-                  {formatPlaque(r.finding, labels)}
-                </Text>
-                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...cellRightStyle }}>
-                  {r.finding.occluded === true ? labels.occludedMark : labels.emptyDash}
-                </Text>
+            <View key={base} wrap={false}>
+              <View style={styles.row}>
+                <SideValueCells finding={right} labels={labels} />
+                <View style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.segmentCell }}>
+                  <Text style={styles.segmentText}>{labels.segmentName[base] ?? base}</Text>
+                </View>
+                <SideValueCells finding={left} labels={labels} />
               </View>
-              {detail && (
+              {detail !== '' && (
                 <View style={styles.detailRow}>
                   <Text style={styles.detailText}>{detail}</Text>
                 </View>
@@ -334,22 +327,6 @@ function SideTable({
           );
         })
       )}
-    </View>
-  );
-}
-
-export function ArterialFindingsTable({
-  findings,
-  labels,
-  singleSide,
-}: ArterialFindingsTableProps): ReactElement {
-  if (singleSide) {
-    return <SideTable side={singleSide} findings={findings} labels={labels} />;
-  }
-  return (
-    <View>
-      <SideTable side="right" findings={findings} labels={labels} />
-      <SideTable side="left" findings={findings} labels={labels} />
     </View>
   );
 }

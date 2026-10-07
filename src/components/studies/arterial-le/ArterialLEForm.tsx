@@ -64,7 +64,7 @@ import type {
   RunoffAssessment,
   SegmentalPressures,
 } from './config';
-import { deriveArterialCompetency, RUNOFF_VALUES } from './config';
+import { arterialCompetencyForSvgId, arterialFindingIdsForSvgId, RUNOFF_VALUES } from './config';
 import { validateArterial } from './arterialValidation';
 import { SegmentalPressureTable } from './SegmentalPressureTable';
 import { ArterialSegmentTable, type ArterialTableView } from './ArterialSegmentTable';
@@ -618,8 +618,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
 
   const arterialColorFn = useCallback(
     (id: string): { fill: string; stroke: string } => {
-      const finding = state.findings[id as ArterialLEFullSegmentId];
-      const band = deriveArterialCompetency(finding);
+      const band = arterialCompetencyForSvgId(state.findings, id);
       return severityBandColor(band);
     },
     [state.findings],
@@ -631,11 +630,13 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   const handleAnatomySegmentClick = useCallback(
     (id: SegmentId) => {
       if (!id.endsWith('-left') && !id.endsWith('-right')) return;
-      const fullId = id as ArterialLEFullSegmentId;
-      const current = deriveArterialCompetency(state.findings[fullId]);
+      const current = arterialCompetencyForSvgId(state.findings, id);
       const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
       const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
-      dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
+      // One SVG path can stand for several table rows (PTA/Per/ATA Prox-Mid-Dist).
+      for (const fullId of arterialFindingIdsForSvgId(id)) {
+        dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
+      }
     },
     [state.findings],
   );
@@ -706,8 +707,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   // optional; falls back to the English band name if missing.
   const arterialTooltipText = useCallback(
     (id: string): string => {
-      const finding = state.findings[id as ArterialLEFullSegmentId];
-      const band = deriveArterialCompetency(finding);
+      const band = arterialCompetencyForSvgId(state.findings, id);
       return t(`arterialLE.severity.${band}`, band);
     },
     [state.findings, t],

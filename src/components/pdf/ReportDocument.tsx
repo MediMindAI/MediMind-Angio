@@ -356,28 +356,8 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
           </View>
         ) : isArterial ? (
           <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                width: pageWidth,
-                marginBottom: 4,
-              }}
-            >
-              <View style={{ width: '50%', paddingRight: 3 }}>
-                <ArterialFindingsTable
-                  findings={arterialFindings}
-                  labels={labels.arterialFindings}
-                  singleSide="right"
-                />
-              </View>
-              <View style={{ width: '50%', paddingLeft: 3 }}>
-                <ArterialFindingsTable
-                  findings={arterialFindings}
-                  labels={labels.arterialFindings}
-                  singleSide="left"
-                />
-              </View>
+            <View style={{ width: pageWidth, marginBottom: 4 }}>
+              <ArterialFindingsTable findings={arterialFindings} labels={labels.arterialFindings} />
             </View>
             <View style={{ width: pageWidth }}>
               <SegmentalPressureTable

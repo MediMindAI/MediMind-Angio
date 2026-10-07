@@ -25,20 +25,26 @@ export type { Side };
 // ============================================================================
 
 export const ARTERIAL_LE_SEGMENTS = [
-  'cia',        // Common iliac artery
-  'eia',        // External iliac artery
-  'cfa',        // Common femoral artery
-  'pfa',        // Profunda femoris artery
+  // Order + naming follow the clinic's LE arterial protocol. Iliac arteries
+  // belong to the separate aorto-iliac study; the tibioperoneal trunk is not
+  // reported. Tibial/peroneal vessels are split Prox / Mid / Dist.
+  'cfa',        // Common femoral artery (CFA)
+  'pfa',        // Deep femoral / profunda femoris artery (DFA)
   'sfa-prox',   // Superficial femoral, proximal
   'sfa-mid',    // Superficial femoral, mid
   'sfa-dist',   // Superficial femoral, distal (adductor canal)
-  'pop-ak',     // Popliteal above knee
-  'pop-bk',     // Popliteal below knee
-  'tpt',        // Tibioperoneal trunk
-  'ata',        // Anterior tibial artery
-  'pta',        // Posterior tibial artery
-  'per',        // Peroneal artery
-  'dp',         // Dorsalis pedis artery
+  'pop-ak',     // Popliteal, proximal (above knee)
+  'pop-bk',     // Popliteal, distal (below knee)
+  'pta-prox',   // Posterior tibial artery
+  'pta-mid',
+  'pta-dist',
+  'per-prox',   // Peroneal artery
+  'per-mid',
+  'per-dist',
+  'ata-prox',   // Anterior tibial artery
+  'ata-mid',
+  'ata-dist',
+  'dp',         // Dorsalis pedis artery (DPA)
 ] as const;
 
 export type ArterialLESegmentBase = (typeof ARTERIAL_LE_SEGMENTS)[number];
@@ -353,4 +359,42 @@ export function deriveArterialCompetency(
   if (finding.stenosisCategory === 'moderate' || (finding.stenosisPct ?? 0) >= 50) return 'moderate';
   if (finding.stenosisCategory === 'mild' || (finding.stenosisPct ?? 0) >= 30) return 'mild';
   return 'normal';
+}
+
+/**
+ * The anatomy SVG draws each tibial/peroneal vessel as ONE path
+ * (`pta-left`), while the table splits it Prox / Mid / Dist. Map an SVG
+ * path id to the finding ids it represents so the diagram can color by the
+ * worst sub-segment and click-to-cycle can paint all three at once.
+ */
+const SPLIT_SVG_VESSELS = ['pta', 'per', 'ata'] as const;
+
+export function arterialFindingIdsForSvgId(id: string): ReadonlyArray<ArterialLEFullSegmentId> {
+  for (const vessel of SPLIT_SVG_VESSELS) {
+    for (const side of ['left', 'right'] as const) {
+      if (id === `${vessel}-${side}`) {
+        return (['prox', 'mid', 'dist'] as const).map(
+          (part) => `${vessel}-${part}-${side}` as ArterialLEFullSegmentId,
+        );
+      }
+    }
+  }
+  return [id as ArterialLEFullSegmentId];
+}
+
+const COMPETENCY_ORDER: ReadonlyArray<ArterialCompetency> = [
+  'normal', 'mild', 'moderate', 'severe', 'occluded',
+];
+
+/** Worst severity band across every finding an SVG path id represents. */
+export function arterialCompetencyForSvgId(
+  findings: ArterialSegmentFindings,
+  id: string,
+): ArterialCompetency {
+  let worst: ArterialCompetency = 'normal';
+  for (const fid of arterialFindingIdsForSvgId(id)) {
+    const band = deriveArterialCompetency(findings[fid]);
+    if (COMPETENCY_ORDER.indexOf(band) > COMPETENCY_ORDER.indexOf(worst)) worst = band;
+  }
+  return worst;
 }

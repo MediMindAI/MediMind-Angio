@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * WaveformSelector — compact 5-option radio group with SVG glyph icons
- * showing the morphology of each arterial Doppler waveform (triphasic,
- * biphasic, monophasic-phasic, monophasic-damped, absent).
+ * WaveformSelector — compact radio group with SVG glyph icons showing the
+ * morphology of each arterial Doppler waveform (triphasic, biphasic,
+ * monophasic, absent). `monophasic-damped` was retired from the picker per
+ * clinician feedback; it only appears when an older draft already holds it.
  *
  * Rendered inline inside each arterial segment row. Designed to stay
  * the same height as a standard EMRSelect so table rows don't jump.
@@ -58,7 +59,7 @@ export const WaveformSelector = memo(function WaveformSelector({
       data-testid={testId}
       className={`${classes.group} ${size === 'md' ? classes.groupMd : ''}`}
     >
-      {WAVEFORM_VALUES.map((w) => {
+      {WAVEFORM_VALUES.filter((w) => w !== 'monophasic-damped' || value === w).map((w) => {
         const selected = value === w;
         const labelKey = `arterialLE.waveform.${w}`;
         const labelFallback = WAVEFORM_FALLBACK[w];

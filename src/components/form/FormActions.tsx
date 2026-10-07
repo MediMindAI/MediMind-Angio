@@ -118,7 +118,7 @@ function isStudyComplete(encounter: EncounterDraft, studyType: StudyType): boole
 type AssetDeps = {
   loadAnatomyForPdf: typeof import('../pdf/anatomyToPdfSvg').loadAnatomyForPdf;
   isVenousForm: typeof import('../../types/form').isVenousForm;
-  deriveArterialCompetency: typeof import('../studies/arterial-le/config').deriveArterialCompetency;
+  arterialCompetencyForSvgId: typeof import('../studies/arterial-le/config').arterialCompetencyForSvgId;
   resolveCarotidBand: typeof import('../studies/carotid/config').resolveCarotidBand;
   carotidDiagramColor: typeof import('../studies/carotid/config').carotidDiagramColor;
   effectiveNascet: typeof import('../studies/carotid/stenosisCalculator').effectiveNascet;
@@ -129,7 +129,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
   const [
     { loadAnatomyForPdf },
     { isVenousForm },
-    { deriveArterialCompetency },
+    { arterialCompetencyForSvgId },
     { resolveCarotidBand, carotidDiagramColor },
     { effectiveNascet },
     { SEVERITY_COLORS },
@@ -144,7 +144,7 @@ async function loadAssetDeps(): Promise<AssetDeps> {
   return {
     loadAnatomyForPdf,
     isVenousForm,
-    deriveArterialCompetency,
+    arterialCompetencyForSvgId,
     resolveCarotidBand,
     carotidDiagramColor,
     effectiveNascet,
@@ -169,7 +169,7 @@ async function resolveStudyAssets(
   const {
     loadAnatomyForPdf,
     isVenousForm,
-    deriveArterialCompetency,
+    arterialCompetencyForSvgId,
     resolveCarotidBand,
     carotidDiagramColor,
     effectiveNascet,
@@ -198,9 +198,7 @@ async function resolveStudyAssets(
     const rawFindings = studyForm.parameters['segmentFindings'];
     const arterialFindings = isArterialFindings(rawFindings) ? rawFindings : {};
     const competencyFn = (fullId: string): { fill: string; stroke: string } => {
-      const band = deriveArterialCompetency(
-        arterialFindings[fullId as keyof typeof arterialFindings],
-      );
+      const band = arterialCompetencyForSvgId(arterialFindings, fullId);
       return SEVERITY_COLORS[band];
     };
     const rawArterialDrawings = studyForm.parameters['drawings'];

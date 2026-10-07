@@ -114,9 +114,10 @@
   font-size: var(--emr-font-sm);
   color: var(--emr-text-primary);
   font-weight: var(--emr-font-medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Wrap instead of truncating — the Prox / Mid / Dist suffix sits at the
+     end of the name and must stay visible. */
+  line-height: 1.3;
+  overflow-wrap: anywhere;
   min-width: 0;
 }
 

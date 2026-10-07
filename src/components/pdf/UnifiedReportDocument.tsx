@@ -228,28 +228,8 @@ function renderStudyFindings(
     const arterialPressures = extractArterialPressures(form);
     return (
       <View>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            width: pageWidth,
-            marginBottom: 4,
-          }}
-        >
-          <View style={{ width: '50%', paddingRight: 3 }}>
-            <ArterialFindingsTable
-              findings={arterialFindings}
-              labels={assets.labels.arterialFindings}
-              singleSide="right"
-            />
-          </View>
-          <View style={{ width: '50%', paddingLeft: 3 }}>
-            <ArterialFindingsTable
-              findings={arterialFindings}
-              labels={assets.labels.arterialFindings}
-              singleSide="left"
-            />
-          </View>
+        <View style={{ width: pageWidth, marginBottom: 4 }}>
+          <ArterialFindingsTable findings={arterialFindings} labels={assets.labels.arterialFindings} />
         </View>
         <View style={{ width: pageWidth }}>
           <SegmentalPressureTable

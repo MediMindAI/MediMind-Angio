@@ -26,7 +26,7 @@ describe('validateArterial', () => {
 
   it('flags an occluded segment that still carries a flow velocity', () => {
     const findings: ArterialSegmentFindings = {
-      'pta-left': { occluded: true, psvCmS: 40 },
+      'pta-mid-left': { occluded: true, psvCmS: 40 },
     };
     const warnings = validateArterial(findings, {});
     expect(warnings.some((w) => w.key === 'arterialLE.validation.occludedWithFlow')).toBe(true);

@@ -17,14 +17,12 @@ import type {
   ArterialLESegmentBase,
   Waveform,
   StenosisCategory,
-  PlaqueMorphology as ArterialPlaqueMorphology,
   AbiBand,
 } from '../studies/arterial-le/config';
 import {
   ARTERIAL_LE_SEGMENTS,
   WAVEFORM_VALUES,
   STENOSIS_CATEGORY_VALUES,
-  PLAQUE_MORPHOLOGY_VALUES as ARTERIAL_PLAQUE_VALUES,
   VISUALIZATION_QUALITY_VALUES,
   type VisualizationQuality,
 } from '../studies/arterial-le/config';
@@ -126,9 +124,10 @@ function buildSingleReportLabels(
       : form?.studyType === 'iliacPelvicVenous'
       ? 'iliacPelvicVenous.form.title'
       : 'venousLE.form.title';
+  // Arterial LE prints the title only — clinicians asked to drop its subtitle.
   const subtitleKey =
     form?.studyType === 'arterialLE'
-      ? 'arterialLE.form.subtitle'
+      ? null
       : form?.studyType === 'carotid'
       ? 'carotid.form.subtitle'
       : form?.studyType === 'iliacPelvicVenous'
@@ -186,15 +185,6 @@ function buildSingleReportLabels(
     },
     {} as Record<StenosisCategory, string>,
   );
-
-  const arterialPlaqueName: Record<ArterialPlaqueMorphology, string> =
-    ARTERIAL_PLAQUE_VALUES.reduce(
-      (acc, v) => {
-        acc[v] = t(`arterialLE.plaque.${v}`, v);
-        return acc;
-      },
-      {} as Record<ArterialPlaqueMorphology, string>,
-    );
 
   const arterialQualityName: Record<VisualizationQuality, string> =
     VISUALIZATION_QUALITY_VALUES.reduce(
@@ -371,7 +361,7 @@ function buildSingleReportLabels(
 
   return {
     title: t(titleKey, 'Vascular Duplex Report'),
-    subtitle: t(subtitleKey, ''),
+    subtitle: subtitleKey ? t(subtitleKey, '') : '',
     issueDateLabel: t('pdf.issued', 'Issued'),
     preliminary: t('venousLE.status.preliminary', 'Preliminary'),
     patient: {
@@ -423,14 +413,13 @@ function buildSingleReportLabels(
       segment: t('arterialLE.segmentTable.segment', 'Segment'),
       waveform: t('arterialLE.findingsTable.waveShort', t('arterialLE.param.waveform', 'Waveform')),
       psv: t('arterialLE.findingsTable.psvShort', t('arterialLE.param.psvCmS', 'PSV')),
+      pvr: t('arterialLE.findingsTable.pvrShort', 'PVR'),
       stenosis: t('arterialLE.findingsTable.stenShort', t('arterialLE.param.stenosisCategory', 'Stenosis')),
-      plaque: t('arterialLE.findingsTable.plaqueShort', t('arterialLE.param.plaqueMorphology', 'Plaque')),
       occluded: t('arterialLE.findingsTable.occlShort', t('arterialLE.param.occluded', 'Occl.')),
       occludedMark: '✓',
       segmentName: arterialSegmentName,
       waveformName,
       stenosisName,
-      plaqueName: arterialPlaqueName,
       qualityName: arterialQualityName,
       noteLabel: t('arterialLE.param.note', 'Note'),
       emptyDash: '—',

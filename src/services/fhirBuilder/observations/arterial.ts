@@ -54,8 +54,12 @@ export function appendArterialFindingObservations(
     finding.stenosisCategory === 'severe' ||
     finding.stenosisCategory === 'occluded' ||
     (typeof finding.stenosisPct === 'number' && finding.stenosisPct >= 50);
+  // Any monophasic signal is abnormal in LE arteries ('monophasic-damped' is
+  // no longer offered in the picker but may exist in older drafts).
   const isAbnormalWaveform =
-    finding.waveform === 'monophasic-damped' || finding.waveform === 'absent';
+    finding.waveform === 'monophasic-phasic' ||
+    finding.waveform === 'monophasic-damped' ||
+    finding.waveform === 'absent';
 
   // Categorical: waveform
   pushCodedCategorical(ctx, out, {
@@ -219,11 +223,10 @@ export function extractArterialRunoff(form: FormState): RunoffAssessment | undef
 function arterialSnomedKey(base: ArterialLESegmentBase): string {
   if (base === 'sfa-prox' || base === 'sfa-mid' || base === 'sfa-dist') return 'sfa';
   if (base === 'pop-ak' || base === 'pop-bk') return 'popa';
-  if (base === 'cia' || base === 'eia') return base; // no SNOMED entry; falls through to text
-  if (base === 'tpt' || base === 'pfa') return base; // no SNOMED entry; falls through to text
-  if (base === 'ata') return 'ata';
-  if (base === 'pta') return 'pta';
-  if (base === 'per') return 'pera';
+  if (base === 'pfa') return base; // no SNOMED entry; falls through to text
+  if (base.startsWith('ata-')) return 'ata';
+  if (base.startsWith('pta-')) return 'pta';
+  if (base.startsWith('per-')) return 'pera';
   if (base === 'dp') return 'dpa';
   if (base === 'cfa') return 'cfa';
   return base;
