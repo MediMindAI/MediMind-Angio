@@ -11,7 +11,6 @@ import {
   type CarotidNascetClassification,
   type CarotidVesselFullId,
   type NascetCategory,
-  isVertebral,
 } from './config';
 import { nascetCategoryFallback } from './stenosisCalculator';
 
@@ -54,7 +53,6 @@ function buildSide(
   const conclusions: NarrativeKeyEntry[] = [];
 
   let anyPlaque = false;
-  let anyStealPhase3 = false;
   let anyAbsent = false;
 
   for (const base of CAROTID_VESSELS) {
@@ -76,17 +74,6 @@ function buildSide(
         },
       });
       continue;
-    }
-
-    if (isVertebral(base) && f.subclavianStealPhase && f.subclavianStealPhase >= 1) {
-      if (f.subclavianStealPhase === 3) anyStealPhase3 = true;
-      entries.push({
-        key: 'carotid.narrative.stealPhase',
-        params: {
-          vessel: `carotid.vessel.${base}`,
-          phase: f.subclavianStealPhase,
-        },
-      });
     }
 
     if (f.plaquePresent) {
@@ -120,13 +107,6 @@ function buildSide(
   if (!anyPlaque && !anyAbsent && entries.length === 0) {
     entries.push({
       key: 'carotid.narrative.normalSide',
-      params: { side: `carotid.side.${side}` },
-    });
-  }
-
-  if (anyStealPhase3) {
-    conclusions.push({
-      key: 'carotid.conclusion.subclavianSteal',
       params: { side: `carotid.side.${side}` },
     });
   }

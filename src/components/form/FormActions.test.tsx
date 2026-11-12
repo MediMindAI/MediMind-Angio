@@ -12,7 +12,13 @@
  *       1-study encounter → existing single-study `<ReportDocument>` path.
  *       2-study encounter (all complete) → `<UnifiedReportDocument>` PDF +
  *         `buildEncounterBundle` JSON, with both forms passed through.
- *       2-study encounter (one missing) → exports disabled with tooltip.
+ *       2-study encounter, active complete + other empty → the active
+ *         study's own <ReportDocument> exports, inline note names the other
+ *         (UX-ANGIO-008).
+ *       2-study encounter, active empty → exports disabled, inline reason.
+ *   - UX-ANGIO-001 L3 / 002 L2: stale-tab notice + reload, failed-save notice,
+ *     save time read from the context (survives reload), neutral dot.
+ *   - UX-ANGIO-014: print renders the same document the preview renders.
  *       null encounter (legacy mount) → single-study path, unchanged.
  */
 
@@ -24,6 +30,7 @@ import { EncounterCtx } from '../../contexts/EncounterContext';
 import { FormActions } from './FormActions';
 import type { FormState } from '../../types/form';
 import type { EncounterDraft } from '../../types/encounter';
+import type { EncounterContextValue } from '../../contexts/EncounterContext';
 import { notifications } from '@mantine/notifications';
 
 // ---------------------------------------------------------------------------
@@ -185,12 +192,15 @@ function Wrap({ children }: { children: React.ReactNode }): React.ReactElement {
  */
 function WrapWithEncounter({
   encounter,
+  ctx = {},
   children,
 }: {
   encounter: EncounterDraft | null;
+  ctx?: Partial<EncounterContextValue>;
   children: React.ReactNode;
 }): React.ReactElement {
-  const value = {
+  const value: EncounterContextValue = {
+    ...ctx,
     encounter,
     isLoading: false,
     updateHeader: () => {},
@@ -347,7 +357,7 @@ describe('FormActions — Phase 4c encounter-mode branching', () => {
     expect(renderedDoc.props.encounter.encounterId).toBe('enc-1');
   });
 
-  it('2-study encounter with one study missing findings disables exports + shows tooltip', async () => {
+  it('2-study encounter: active study complete + other empty → active study PDF downloads, combined stays locked', async () => {
     const encounter = buildEncounter({
       selectedStudyTypes: ['venousLEBilateral', 'arterialLE'],
       // Only venous has findings; arterial slot is missing entirely.
@@ -368,18 +378,217 @@ describe('FormActions — Phase 4c encounter-mode branching', () => {
       </WrapWithEncounter>,
     );
 
+    const downloadBtn = screen.getByTestId('download-pdf');
+    expect(downloadBtn).not.toBeDisabled();
+    expect(screen.getByTestId('preview-pdf')).not.toBeDisabled();
+    expect(screen.getByTestId('print-pdf')).not.toBeDisabled();
+    // The reason is visible inline (not hover-only) and names the empty study.
+    const note = screen.getByTestId('export-note');
+    expect(note.textContent).toMatch(/this study only/i);
+    expect(note.textContent).not.toContain('{studies}');
+    expect(downloadBtn.getAttribute('aria-describedby')).toBe(note.id);
+
+    fireEvent.click(downloadBtn);
+    await waitFor(() => {
+      expect(pdfRenderTarget).toHaveBeenCalled();
+    });
+    const renderedDoc = pdfRenderTarget.mock.calls[0]?.[0] as {
+      type: { displayName?: string; name?: string };
+      props: { form: FormState };
+    };
+    expect(renderedDoc?.type?.displayName ?? renderedDoc?.type?.name).toBe('ReportDocument');
+    expect(renderedDoc.props.form.studyType).toBe('venousLEBilateral');
+  });
+
+  it('2-study encounter: active study empty → exports disabled with an inline reason', () => {
+    const encounter = buildEncounter({
+      selectedStudyTypes: ['venousLEBilateral', 'arterialLE'],
+      studies: { venousLEBilateral: venousForm },
+    });
+    const emptyArterial: FormState = { ...arterialForm, parameters: {} };
+
+    render(
+      <WrapWithEncounter encounter={encounter}>
+        <FormActions
+          form={emptyArterial}
+          onSaveDraft={() => {}}
+          baseFilename="arterial-le-test"
+        />
+      </WrapWithEncounter>,
+    );
+
     expect(screen.getByTestId('download-pdf')).toBeDisabled();
     expect(screen.getByTestId('preview-pdf')).toBeDisabled();
+    expect(screen.getByTestId('print-pdf')).toBeDisabled();
+    expect(screen.getByTestId('export-note').textContent).toMatch(/Record at least one finding/i);
+  });
 
-    // Mantine Tooltip renders its label only when visible (hover/focus).
-    // Hover the disabled-button wrapper to trigger Mantine's positioning,
-    // then assert the localized "complete all studies" message appears.
-    const downloadBtn = screen.getByTestId('download-pdf');
-    fireEvent.mouseEnter(downloadBtn.parentElement!);
+  it('caller exportsDisabled reason renders inline', () => {
+    render(
+      <Wrap>
+        <FormActions
+          form={venousForm}
+          onSaveDraft={() => {}}
+          baseFilename="t"
+          exportsDisabled
+          exportsDisabledReason="Enter at least one finding before exporting."
+        />
+      </Wrap>,
+    );
+    expect(screen.getByTestId('download-pdf')).toBeDisabled();
+    expect(screen.getByTestId('export-note').textContent).toBe(
+      'Enter at least one finding before exporting.',
+    );
+  });
 
-    await waitFor(() => {
-      const tooltips = screen.queryAllByText(/Complete all studies/i);
-      expect(tooltips.length).toBeGreaterThan(0);
+  it('exactly one primary action: only Download PDF is not secondary-weight', () => {
+    render(
+      <Wrap>
+        <FormActions form={venousForm} onSaveDraft={() => {}} baseFilename="t" />
+      </Wrap>,
+    );
+    for (const id of ['save-draft', 'preview-pdf', 'print-pdf']) {
+      expect(screen.getByTestId(id).className).not.toMatch(/primaryButton/);
+    }
+    expect(screen.getByTestId('download-pdf').className).toMatch(/primaryButton/);
+  });
+});
+
+describe('FormActions — truthful save line + stale tab (UX-ANGIO-001 L3 / 002 L2)', () => {
+  it('reads the confirmed save time from the context, not the stale prop', () => {
+    const saved = new Date('2026-04-25T10:11:12');
+    render(
+      <WrapWithEncounter encounter={buildEncounter()} ctx={{ lastSavedAt: saved, saveError: null }}>
+        <FormActions
+          form={venousForm}
+          lastSavedAt={null}
+          hasUnsavedChanges
+          onSaveDraft={() => {}}
+          baseFilename="t"
+        />
+      </WrapWithEncounter>,
+    );
+    expect(screen.getByTestId('save-status').textContent).toContain('10:11:12');
+    expect(screen.queryByTestId('save-failed-notice')).toBeNull();
+    expect(screen.queryByTestId('stale-tab-notice')).toBeNull();
+  });
+
+  it('a failed save shows a persistent notice and keeps the last confirmed time', () => {
+    const saved = new Date('2026-04-25T09:08:07');
+    render(
+      <WrapWithEncounter
+        encounter={buildEncounter()}
+        ctx={{ lastSavedAt: saved, saveError: 'write-failed' }}
+      >
+        <FormActions form={venousForm} onSaveDraft={() => {}} baseFilename="t" />
+      </WrapWithEncounter>,
+    );
+    expect(screen.getByTestId('save-failed-notice').textContent).toMatch(/Saving failed/i);
+    expect(screen.getByTestId('save-status').textContent).toContain('09:08:07');
+    expect(
+      screen.getByTestId('save-status').closest('[data-save-state]')?.getAttribute('data-save-state'),
+    ).toBe('failed');
+  });
+
+  it('a full local cache shows the cache warning', () => {
+    render(
+      <WrapWithEncounter encounter={buildEncounter()} ctx={{ lastSavedAt: null, saveError: 'cache-failed' }}>
+        <FormActions form={venousForm} onSaveDraft={() => {}} baseFilename="t" />
+      </WrapWithEncounter>,
+    );
+    expect(screen.getByTestId('save-failed-notice').textContent).toMatch(/storage is full/i);
+  });
+
+  it('staleFromOtherTab shows the reload notice; the button reloads the page', () => {
+    const reload = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...original, reload },
     });
+    try {
+      render(
+        <WrapWithEncounter encounter={buildEncounter()} ctx={{ staleFromOtherTab: true }}>
+          <FormActions form={venousForm} onSaveDraft={() => {}} baseFilename="t" />
+        </WrapWithEncounter>,
+      );
+      expect(screen.getByTestId('stale-tab-notice').textContent).toMatch(/another window/i);
+      fireEvent.click(screen.getByTestId('reload-page'));
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: original });
+    }
+  });
+});
+
+describe('FormActions — one-click print (UX-ANGIO-014)', () => {
+  it('print renders the same document preview renders and loads it into a hidden frame', async () => {
+    const createUrl = vi.fn(() => 'blob:fake-pdf');
+    const revokeUrl = vi.fn();
+    const origCreate = URL.createObjectURL;
+    const origRevoke = URL.revokeObjectURL;
+    URL.createObjectURL = createUrl;
+    URL.revokeObjectURL = revokeUrl;
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    try {
+      render(
+        <Wrap>
+          <FormActions form={venousForm} onSaveDraft={() => {}} baseFilename="t" />
+        </Wrap>,
+      );
+
+      fireEvent.click(screen.getByTestId('preview-pdf'));
+      await waitFor(() => expect(pdfRenderTarget).toHaveBeenCalledTimes(1));
+      fireEvent.click(screen.getByTestId('print-pdf'));
+      await waitFor(() => expect(pdfRenderTarget).toHaveBeenCalledTimes(2));
+
+      const previewDoc = pdfRenderTarget.mock.calls[0]?.[0] as { type: unknown; props: { form: FormState } };
+      const printDoc = pdfRenderTarget.mock.calls[1]?.[0] as { type: unknown; props: { form: FormState } };
+      expect(printDoc.type).toBe(previewDoc.type);
+      expect(printDoc.props.form).toEqual(previewDoc.props.form);
+
+      await waitFor(() => {
+        const frame = document.querySelector('[data-testid="print-frame"]');
+        expect(frame).not.toBeNull();
+        expect(frame?.getAttribute('src')).toBe('blob:fake-pdf');
+      });
+    } finally {
+      URL.createObjectURL = origCreate;
+      URL.revokeObjectURL = origRevoke;
+      openSpy.mockRestore();
+      document.querySelectorAll('[data-testid="print-frame"]').forEach((f) => f.remove());
+    }
+  });
+});
+
+describe('FormActions — PDF filename (U-1001)', () => {
+  it('single-study PDF filename carries the patient name like venous does', async () => {
+    const encounter = buildEncounter({
+      selectedStudyTypes: ['arterialLE'],
+      studies: { arterialLE: arterialForm },
+    });
+    const origCreate = URL.createObjectURL;
+    const origRevoke = URL.revokeObjectURL;
+    URL.createObjectURL = vi.fn(() => 'blob:fake-pdf');
+    URL.revokeObjectURL = vi.fn();
+    const downloads: string[] = [];
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        downloads.push(this.download);
+      });
+    try {
+      render(
+        <WrapWithEncounter encounter={encounter}>
+          <FormActions form={arterialForm} onSaveDraft={() => {}} baseFilename="arterial-le-2026-04-25" />
+        </WrapWithEncounter>,
+      );
+      fireEvent.click(screen.getByTestId('download-pdf'));
+      await waitFor(() => expect(downloads).toEqual(['arterial-le-Test-Patient-2026-04-25.pdf']));
+    } finally {
+      clickSpy.mockRestore();
+      URL.createObjectURL = origCreate;
+      URL.revokeObjectURL = origRevoke;
+    }
   });
 });

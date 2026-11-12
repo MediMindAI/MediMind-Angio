@@ -35,7 +35,8 @@
       "title": "Посегментная оценка",
       "subtitle": "Форма волны, PSV, стеноз и бляшка по каждому сегменту",
       "segment": "Сегмент",
-      "toggleDetails": "Дополнительные поля"
+      "toggleDetails": "Дополнительные поля",
+      "sideSwitchLabel": "Конечность, показанная в таблице сегментов"
     },
     "param": {
       "waveform": "Форма волны",
@@ -107,6 +108,7 @@
       "normalSide": "Артериальное русло {side} нижней конечности в пределах нормы; трёхфазный кровоток прослеживается на всём протяжении.",
       "occluded": "Окклюзия — {vein}.",
       "stenosis": "{severity} стеноз — {vein} (PSV {psv} cm/s).",
+      "stenosisNoPsv": "{severity} стеноз — {vein}.",
       "dampedWaveform": "{waveform} кровоток — {vein}.",
       "notVisualized": "{vein} — недостаточно визуализирован."
     },
@@ -117,10 +119,10 @@
       "runoff": "{side}: {runoff} дистальный отток."
     },
     "actions": {
-      "newCase": "+ Новое исследование",
-      "newCaseConfirmTitle": "Начать новое исследование?",
+      "newCase": "Очистить форму",
+      "newCaseConfirmTitle": "Очистить эту форму?",
       "newCaseConfirmBody": "Все текущие находки, давления, заключение и рекомендации будут удалены. Действие необратимо.",
-      "newCaseConfirm": "Удалить и начать заново",
+      "newCaseConfirm": "Очистить форму",
       "newCaseToastTitle": "Новое исследование начато",
       "newCaseToastMessage": "Все данные очищены.",
       "applyTemplate": "Применить шаблон",
@@ -271,7 +273,17 @@
       "mild": "Лёгкий",
       "moderate": "Умеренный",
       "severe": "Тяжёлый",
+      "significant": "Гемодинамически значимый стеноз",
       "occluded": "Окклюзия"
+    },
+    "drawingColor": {
+      "normal": "Норма",
+      "incompetent": "Гемодинамически значимый стеноз",
+      "occluded": "Окклюзия"
+    },
+    "pressureTable": {
+      "sideRight": "R",
+      "sideLeft": "L"
     }
   }
 }

@@ -7,7 +7,21 @@
  * sets across all three locales. Exits non-zero (and prints the offending
  * keys) on any drift, so it can gate CI / pre-commit. Mirrors the assertions
  * in src/translations/i18n.test.ts; run via `npm run i18n:check`.
+ *
+ * Second pass (UX-ANGIO-020 / U-1004): every literal `t('some.key')` in
+ * src/** must exist in the merged ka locale. Parity alone let keys that were
+ * missing from ALL three locales ship, so the Georgian UI printed the English
+ * fallback. Static keys only — template keys (`t(`a.${x}`)`) are skipped, as
+ * is a call whose fallback is itself a `t(…)` (an optional override key that
+ * already resolves to a translated string). Comments and *.test.* files are
+ * ignored. `src/components/common/` and `src/components/shared/` hold the
+ * MediMind wrapper library ported as-is; most of it is never rendered in
+ * angio, so misses there are reported as a warning count, not a failure.
  */
+
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import enCore from '../src/translations/en.json';
 import kaCore from '../src/translations/ka.json';
@@ -101,3 +115,59 @@ if (failed) {
 }
 
 console.log('\nAll namespaces in en/ka/ru parity.');
+
+// ---------------------------------------------------------------------------
+// Pass 2: keys referenced in src/** but defined in no locale.
+// ---------------------------------------------------------------------------
+
+const SRC = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
+const WRAPPER_LIBRARY = ['components/common/', 'components/shared/'];
+// t( + quoted static key; the lookahead skips calls whose fallback is t(…).
+const T_CALL = /\bt\(\s*(['"`])([\w.-]+)\1(?!\s*,\s*t\()/g;
+
+const kaKeys = new Set(NAMESPACES.flatMap((ns) => flatten(ns.ka)));
+const isDefined = (key: string): boolean =>
+  kaKeys.has(key) || kaKeys.has(`${key}_one`) || kaKeys.has(`${key}_other`);
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) return sourceFiles(path);
+    return /\.tsx?$/.test(name) && !/\.test\./.test(name) ? [path] : [];
+  });
+}
+
+const missing = new Map<string, string[]>();
+const wrapperMissing = new Set<string>();
+for (const file of sourceFiles(SRC)) {
+  const rel = relative(SRC, file);
+  // Blank out comments (keeping line numbers) so JSDoc examples don't count.
+  const code = readFileSync(file, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '))
+    .replace(/^\s*\/\/.*$/gm, '');
+  for (const m of code.matchAll(T_CALL)) {
+    const key = m[2]!;
+    if (isDefined(key)) continue;
+    if (WRAPPER_LIBRARY.some((dir) => rel.startsWith(dir))) {
+      wrapperMissing.add(key);
+      continue;
+    }
+    const line = code.slice(0, m.index).split('\n').length;
+    missing.set(key, [...(missing.get(key) ?? []), `${rel}:${line}`]);
+  }
+}
+
+if (wrapperMissing.size) {
+  console.warn(
+    `\n⚠ ${wrapperMissing.size} keys used only by the ported wrapper library (${WRAPPER_LIBRARY.join(', ')}) are not in any locale — add them when a wrapper goes into use.`,
+  );
+}
+
+if (missing.size) {
+  console.error(`\n✗ ${missing.size} keys used in src/ are defined in no locale:`);
+  for (const [key, where] of missing) console.error(`  ${key}  (${where.join(', ')})`);
+  console.error('\ni18n usage check FAILED — add the keys above to ka/en/ru.');
+  process.exit(1);
+}
+
+console.log('All static t() keys used in src/ exist in the locales.');

@@ -51,6 +51,10 @@ export interface AnatomyDiagramSectionProps {
   readonly onCommitSegmentEdit?: (segmentId: SegmentId, d: string) => void;
   /** Fires when the user clears the path override for a segment. */
   readonly onClearSegmentEdit?: (segmentId: SegmentId) => void;
+  /** Pen colors for the drawing toolbar (default: full venous palette). */
+  readonly drawingColors?: ReadonlyArray<DrawingColor>;
+  /** i18n prefix for the pen-color tooltips. */
+  readonly drawingColorLabelPrefix?: string;
 }
 
 export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
@@ -71,10 +75,12 @@ export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
   onClear,
   onCommitSegmentEdit,
   onClearSegmentEdit,
+  drawingColors,
+  drawingColorLabelPrefix,
 }: AnatomyDiagramSectionProps): React.ReactElement {
   const [mode, setMode] = useState<DrawingMode>('click');
   const [tool, setTool] = useState<DrawingTool>('pen');
-  const [color, setColor] = useState<DrawingColor>(DEFAULT_DRAWING_COLOR);
+  const [color, setColor] = useState<DrawingColor>(drawingColors?.[0] ?? DEFAULT_DRAWING_COLOR);
   const [size, setSize] = useState<DrawingSize>(DEFAULT_DRAWING_SIZE);
   // In `edit-segment` mode the user first clicks an anatomy segment to
   // select it, then drags to redraw it. We track the selection locally.
@@ -123,6 +129,8 @@ export const AnatomyDiagramSection = memo(function AnatomyDiagramSection({
         editingSegmentId={editingSegmentId}
         onClearOverride={handleClearSegmentEdit}
         showEditSegment={enableSegmentEdit}
+        colors={drawingColors}
+        colorLabelPrefix={drawingColorLabelPrefix}
       />
       {/* Single combined anatomy view — anterior + posterior segments share one image. */}
       <AnatomyDiagram

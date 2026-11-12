@@ -207,7 +207,8 @@
       "copyRightToLeft": "მარჯვენა → მარცხენა",
       "copyRightToLeftTooltip": "მარჯვენა მხარის მონაცემების დუბლირება მარცხნივ (⌘D)",
       "copyLeftToRight": "მარცხენა → მარჯვენა",
-      "copyLeftToRightTooltip": "მარცხენა მხარის მონაცემების დუბლირება მარჯვნივ"
+      "copyLeftToRightTooltip": "მარცხენა მხარის მონაცემების დუბლირება მარჯვნივ",
+      "allNormalBothTooltip": "ორივე კიდურის ყველა სეგმენტის ნორმალური მაჩვენებლებით შევსება (⌘N)"
     },
     "narrative": {
       "sonographerComments": "ექიმის შენიშვნები",
@@ -226,6 +227,7 @@
       "refluxMeasured": "რეფლუქსი {vein} — {ms} მწმ.",
       "incompetent": "სარქვლოვანი უკმარისობა — {vein}.",
       "postAblation": "აბლაციის შემდგომი სტატუსი — {vein}.",
+      "perforator": "პერფორანტი — {vein}.",
       "nonCompressible": "არაკომპრესირებადი სეგმენტი — {vein}. მიუთითებს მწვავე ღრმა ვენების თრომბოზზე.",
       "partialCompressibility": "ნაწილობრივ კომპრესირებადი — {vein}. შეესაბამება ქრონიკულ პოსტთრომბოზულ ცვლილებებს.",
       "acuteThrombus": "მწვავე თრომბი სანათურში — {vein}.",
@@ -238,7 +240,8 @@
       "chronicPostThrombotic": "ქრონიკული პოსტთრომბოზული ცვლილებები — {side} {vein}.",
       "inconclusive": "ვიზუალიზაცია შეზღუდულია — {side} {vein}.",
       "incompetent": "სარქვლოვანი უკმარისობა — {side} {vein}.",
-      "postAblation": "აბლაციის შემდგომი — {side} {vein}."
+      "postAblation": "აბლაციის შემდგომი — {side} {vein}.",
+      "perforator": "პერფორანტი — {side} {vein}."
     },
     "segments": {
       "cfv": "ბარძაყის საერთო ვენა",
@@ -322,7 +325,8 @@
       "priorityUrgent": "ურგენტული",
       "priorityStat": "დაუყოვნებელი",
       "placeholder": "რეკომენდაცია...",
-      "empty": "რეკომენდაციები არ დამატებულა"
+      "empty": "რეკომენდაციები არ დამატებულა",
+      "remove": "რეკომენდაციის წაშლა"
     },
     "actions": {
       "lastSaved": "ბოლოს შენახული:",
@@ -332,16 +336,21 @@
       "downloadPDF": "PDF ჩამოტვირთვა",
       "exportJSON": "FHIR JSON ექსპორტი",
       "backToStudies": "კვლევებზე დაბრუნება",
-      "newCase": "+ ახალი კვლევა",
-      "newCaseConfirmTitle": "ახალი კვლევის დაწყება?",
+      "newCase": "ფორმის გასუფთავება",
+      "newCaseConfirmTitle": "გავასუფთაოთ ეს ფორმა?",
       "newCaseConfirmBody": "ეს წაშლის ყველა მიმდინარე მონაცემს. შეუნახავი ცვლილებები დაიკარგება.",
-      "newCaseConfirm": "წაშლა და ახლის დაწყება",
+      "newCaseConfirm": "ფორმის გასუფთავება",
       "newCaseToastTitle": "ახალი კვლევა დაიწყო",
       "newCaseToastMessage": "ფორმა გასუფთავდა.",
       "cancel": "გაუქმება",
       "applyTemplateConfirmTitle": "შაბლონის გამოყენება?",
       "applyTemplateConfirmBody": "მიმდინარე მონაცემები, CEAP, რეკომენდაციები, დასკვნა, სონოგრაფისტის კომენტარები და კლინიცისტის კომენტარები ჩანაცვლდება შაბლონის მონაცემებით.",
-      "applyTemplate": "გამოყენება"
+      "applyTemplate": "გამოყენება",
+      "printPDF": "ბეჭდვა",
+      "staleOtherTab": "ეს ვიზიტი სხვა ფანჯარაში შეიცვალა — განაახლეთ გვერდი",
+      "reloadPage": "გვერდის განახლება",
+      "saveFailed": "შენახვა ვერ მოხერხდა — პასუხები ჯერ მხოლოდ ეკრანზეა. არ დახუროთ გვერდი.",
+      "saveCacheFailed": "ბრაუზერის მეხსიერება სავსეა — გვერდის განახლებისას შეიძლება ძველი პასუხები გამოჩნდეს"
     },
     "anatomy": {
       "title": "დიაგრამა",
@@ -375,7 +384,7 @@
       "modeEditSegment": "სეგმენტის რედაქტირება",
       "editSegmentHint": "მონიშნეთ ვენა და ხელახლა დახაზეთ",
       "actions": {
-        "undo": "გაუქმება",
+        "undo": "ბოლო მოქმედების გაუქმება",
         "clear": "გასუფთავება",
         "clearConfirm": "წავშალოთ დიაგრამაზე დახატული ყველა ელემენტი?",
         "clearOverride": "ნახაზის გასუფთავება"
@@ -535,6 +544,10 @@
           "message": "შაბლონი წაშლილია."
         }
       }
-    }
+    },
+    "technique": "ტექნიკა",
+    "findings": "მონაცემები",
+    "comments": "კომენტარები",
+    "followUpPrefix": "შემდგომი კონტროლი:"
   }
 }

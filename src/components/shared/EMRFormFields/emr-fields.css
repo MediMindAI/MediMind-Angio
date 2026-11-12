@@ -759,6 +759,17 @@
   padding-left: 40px !important;
 }
 
+/* Same for the right section (chevron / clear ×): the padding shorthand above
+   would otherwise let a long value run under the × (level-up U-1039). */
+.emr-field-wrapper .mantine-Select-wrapper:has(.mantine-Select-section[data-position="right"]) .mantine-Select-input {
+  padding-right: 34px !important;
+}
+
+/* Value chosen → clear × sits beside the chevron (~51px together). */
+.emr-field-wrapper .mantine-Select-wrapper:has(.mantine-Select-section[data-position="right"] button) .mantine-Select-input {
+  padding-right: 52px !important;
+}
+
 /* Hover state - with shadow lift */
 .emr-field-wrapper .mantine-TextInput-input:hover:not(:disabled):not(:focus),
 .emr-field-wrapper .mantine-Select-input:hover:not(:disabled):not(:focus),

@@ -32,8 +32,9 @@
  * `EncounterDraft` directly.
  *
  * Persistence (Phase 3b):
- *   The reducer state is mirrored into `encounter.studies.venousLEBilateral`
- *   on every change via `useEncounter().setStudyState()`. The encounter
+ *   The reducer state is mirrored into `encounter.studies[studyType]`
+ *   (`venousLEBilateral`, or `venousLERight` / `venousLELeft` for a one-leg
+ *   study — the study type comes from the route) on every change via `useEncounter().setStudyState()`. The encounter
  *   store dual-writes to localStorage + IndexedDB, so reload survives. We
  *   keep a small "lastSavedAt / hasUnsavedChanges" pair locally so the
  *   sticky `<FormActions>` footer's saved-indicator UI keeps working —
@@ -43,10 +44,11 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Box, Grid, Group, Stack } from '@mantine/core';
+import { Box, Grid, Group, Stack, Text } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus } from '@tabler/icons-react';
+import { IconEraser } from '@tabler/icons-react';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useEncounter } from '../../../contexts/EncounterContext';
 import { AnatomyLegend } from '../../anatomy';
@@ -63,7 +65,7 @@ import type {
 import type { EncounterDraft } from '../../../types/encounter';
 import type { PatientPosition } from '../../../types/patient-position';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog, EMRContentSection } from '../../common';
+import { ConfirmDialog, EMRButton, EMRContentSection } from '../../common';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { SegmentAssessmentCard } from '../../form/SegmentAssessmentCard';
@@ -118,7 +120,11 @@ interface VenousFormStateV1 {
    * or render wrong data. `loadDraft` initializers must validate this.
    */
   readonly schemaVersion: 1;
-  readonly studyType: 'venousLEBilateral';
+  /**
+   * Which venous study this state belongs to (UX-ANGIO-012 L4). Taken from
+   * the route; a right- or left-leg study lives in its own encounter slot.
+   */
+  readonly studyType: VenousStudyType;
   // Per-study clinical fields (Phase 3b — were nested under `header`).
   readonly studyDate: string;
   readonly studyTime?: string;
@@ -148,9 +154,34 @@ interface VenousFormStateV1 {
   readonly drawings: ReadonlyArray<DrawingStroke>;
 }
 
+type VenousStudyType = 'venousLEBilateral' | 'venousLERight' | 'venousLELeft';
+
 const STUDY_ID = 'venousLEBilateral';
 // Local calendar date (not UTC) — avoids the Tbilisi UTC+4 date-rollback bug.
 const TODAY_ISO = localDateToIso(new Date()) ?? '';
+
+/** Route param → venous study type. Anything else is the bilateral study. */
+function venousStudyTypeFrom(param: string | undefined): VenousStudyType {
+  return param === 'venousLERight' || param === 'venousLELeft' ? param : 'venousLEBilateral';
+}
+
+/** The one leg a single-leg study may record; null for bilateral. */
+function lockedSideOf(studyType: VenousStudyType): 'left' | 'right' | null {
+  if (studyType === 'venousLERight') return 'right';
+  if (studyType === 'venousLELeft') return 'left';
+  return null;
+}
+
+function initialStateFor(studyType: VenousStudyType): VenousFormStateV1 {
+  // Default CPT matches the study type (93970 bilateral, 93971 one leg).
+  const cpt = defaultCptForStudy(studyType);
+  return {
+    ...INITIAL_STATE,
+    studyType,
+    cptCode: { code: cpt.code, display: cptDisplay(cpt, 'en') },
+    view: lockedSideOf(studyType) ?? 'right',
+  };
+}
 
 const DEFAULT_CPT = defaultCptForStudy('venousLEBilateral');
 
@@ -384,7 +415,8 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
       // study scalars (studyDate, protocol, default cptCode) reset to their
       // INITIAL_STATE values; quality / position / accession / cptCode
       // overrides clear; findings / impressions / comments / ceap clear.
-      return { ...INITIAL_STATE };
+      // The study type (and so the leg of a one-leg study) is kept.
+      return initialStateFor(state.studyType);
     case 'COMMIT_STROKE':
       return { ...state, drawings: [...state.drawings, action.stroke] };
     case 'ERASE_STROKE':
@@ -425,6 +457,26 @@ function reducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
   }
 }
 
+/**
+ * A one-leg study (venousLERight / venousLELeft) can only ever hold that
+ * leg: templates, copy-side, the both-legs view and diagram clicks on the
+ * other leg are all pruned here, in one place, so the other leg can never
+ * reach the encounter slot, the PDF or the FHIR export.
+ */
+function sideLockedReducer(state: VenousFormStateV1, action: Action): VenousFormStateV1 {
+  const next = reducer(state, action);
+  const side = lockedSideOf(next.studyType);
+  if (!side) return next;
+  const otherSuffix = side === 'right' ? '-left' : '-right';
+  const strays = Object.keys(next.findings).filter((k) => k.endsWith(otherSuffix));
+  if (strays.length === 0 && next.view === side) return next;
+  const findings: Record<string, VenousSegmentFinding> = {
+    ...(next.findings as Record<string, VenousSegmentFinding>),
+  };
+  for (const k of strays) delete findings[k];
+  return { ...next, view: side, findings: findings as VenousSegmentFindings };
+}
+
 // ============================================================================
 // FHIR FormState projection (for PDF + JSON export)
 // ============================================================================
@@ -462,7 +514,7 @@ export function stateToFormState(
     cptCode: s.cptCode,
   };
   return {
-    studyType: 'venousLEBilateral',
+    studyType: s.studyType,
     header: headerOut,
     narrative: {
       // Encounter-level indication notes flow through as the legacy
@@ -536,6 +588,8 @@ interface ConclusionBlockProps {
   readonly onRightFindingsChange: (v: string) => void;
   readonly onLeftFindingsChange: (v: string) => void;
   readonly onImpressionChange: (v: string) => void;
+  /** One-leg study: only that leg's findings box is shown. */
+  readonly lockedSide: 'left' | 'right' | null;
 }
 
 /**
@@ -550,35 +604,41 @@ const ConclusionBlock = memo(function ConclusionBlock({
   onRightFindingsChange,
   onLeftFindingsChange,
   onImpressionChange,
+  lockedSide,
 }: ConclusionBlockProps): React.ReactElement {
   const { t } = useTranslation();
+  const limbSpan = lockedSide ? 12 : { base: 12, md: 6 };
   return (
     <Box className={classes.commentsCard}>
       <Grid gutter={{ base: 'sm', md: 'md' }}>
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <EMRTextarea
-            label={t('venousLE.narrativeSections.rightFindings', 'Right lower extremity — findings')}
-            value={rightFindings}
-            onChange={onRightFindingsChange}
-            minRows={3}
-            maxRows={10}
-            autosize
-            size="md"
-            data-testid="narrative-right-findings"
-          />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <EMRTextarea
-            label={t('venousLE.narrativeSections.leftFindings', 'Left lower extremity — findings')}
-            value={leftFindings}
-            onChange={onLeftFindingsChange}
-            minRows={3}
-            maxRows={10}
-            autosize
-            size="md"
-            data-testid="narrative-left-findings"
-          />
-        </Grid.Col>
+        {lockedSide !== 'left' && (
+          <Grid.Col span={limbSpan}>
+            <EMRTextarea
+              label={t('venousLE.narrativeSections.rightFindings', 'Right lower extremity — findings')}
+              value={rightFindings}
+              onChange={onRightFindingsChange}
+              minRows={3}
+              maxRows={10}
+              autosize
+              size="md"
+              data-testid="narrative-right-findings"
+            />
+          </Grid.Col>
+        )}
+        {lockedSide !== 'right' && (
+          <Grid.Col span={limbSpan}>
+            <EMRTextarea
+              label={t('venousLE.narrativeSections.leftFindings', 'Left lower extremity — findings')}
+              value={leftFindings}
+              onChange={onLeftFindingsChange}
+              minRows={3}
+              maxRows={10}
+              autosize
+              size="md"
+              data-testid="narrative-left-findings"
+            />
+          </Grid.Col>
+        )}
         <Grid.Col span={12}>
           <EMRTextarea
             label={t('venousLE.impression.title', 'Impression')}
@@ -666,16 +726,20 @@ const CommentsBlock = memo(function CommentsBlock({
  * Centralised so the per-encounter `useReducer` re-mount path uses the
  * same precedence as the first mount.
  */
-function initFromEncounter(
-  encounter: EncounterDraft | null,
-): VenousFormStateV1 {
+function initFromEncounter({
+  encounter,
+  studyType,
+}: {
+  readonly encounter: EncounterDraft | null;
+  readonly studyType: VenousStudyType;
+}): VenousFormStateV1 {
   if (encounter) {
-    const persisted = encounter.studies?.venousLEBilateral;
+    const persisted = encounter.studies?.[studyType];
     if (
       persisted &&
       typeof persisted === 'object' &&
       (persisted as Partial<VenousFormStateV1>).schemaVersion === 1 &&
-      (persisted as Partial<VenousFormStateV1>).studyType === 'venousLEBilateral'
+      (persisted as Partial<VenousFormStateV1>).studyType === studyType
     ) {
       // Migrate older drafts that pre-date the `drawings` field, plus
       // remap legacy stroke colours (black/red/blue/green → clinical
@@ -688,6 +752,8 @@ function initFromEncounter(
       return { ...(persisted as VenousFormStateV1), drawings };
     }
   }
+  // One-leg studies post-date the legacy per-study draft slot.
+  if (studyType !== 'venousLEBilateral') return initialStateFor(studyType);
   // Legacy fallback — strip any pre-encounter `header` field if present.
   const legacy = loadDraft<VenousFormStateV1 & { header?: unknown }>(STUDY_ID);
   if (
@@ -716,17 +782,35 @@ function isBuiltInTemplate(tpl: AnyTemplate): tpl is VenousLETemplate {
   return 'nameFallback' in tpl;
 }
 
+/**
+ * UX-ANGIO-012 L4 — the route says which venous study this is. A right- or
+ * left-leg study reads/writes its own encounter slot and records only that
+ * leg. Keyed on the study type: the three venous routes share one route
+ * element, so without the key a bilateral → right-leg switch would carry the
+ * bilateral reducer state into the right-leg study.
+ */
 export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
+  const { studyType: studyTypeParam } = useParams<{ studyType?: string }>();
+  const studyType = venousStudyTypeFrom(studyTypeParam);
+  return <VenousLEStudyForm key={studyType} studyType={studyType} />;
+});
+
+const VenousLEStudyForm = memo(function VenousLEStudyForm({
+  studyType,
+}: {
+  readonly studyType: VenousStudyType;
+}): React.ReactElement {
   const { t } = useTranslation();
   const { encounter, setStudyState } = useEncounter();
+  const lockedSide = lockedSideOf(studyType);
 
   // Lazy reducer init — read encounter snapshot OR legacy draft on first
   // render. The encounter context's sync-hydration path (Phase 2a) gives us
   // a populated encounter on the very first render when one already exists
   // in localStorage / IDB cache.
   const [state, dispatch] = useReducer(
-    reducer,
-    encounter,
+    sideLockedReducer,
+    { encounter, studyType },
     initFromEncounter,
   );
   const [highlightId, setHighlightId] = useState<VenousLEFullSegmentId | null>(null);
@@ -780,7 +864,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       firstSyncRef.current = false;
       return;
     }
-    setStudyStateRef.current('venousLEBilateral', state as VenousFormStateV1);
+    setStudyStateRef.current(state.studyType, state as VenousFormStateV1);
     setLastSavedAt(new Date());
     setDirty(false);
     // We intentionally depend on `state` only. The setStudyState callback
@@ -795,12 +879,12 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   const hasHydratedFromAsyncRef = useRef<boolean>(false);
   useEffect(() => {
     if (!encounter || hasHydratedFromAsyncRef.current) return;
-    const persisted = encounter.studies?.venousLEBilateral;
+    const persisted = encounter.studies?.[studyType];
     if (
       persisted &&
       typeof persisted === 'object' &&
       (persisted as Partial<VenousFormStateV1>).schemaVersion === 1 &&
-      (persisted as Partial<VenousFormStateV1>).studyType === 'venousLEBilateral' &&
+      (persisted as Partial<VenousFormStateV1>).studyType === studyType &&
       persisted !== state
     ) {
       // Skip if the snapshot equals the current state by reference (the
@@ -820,7 +904,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
   // saved-indicator timestamp so the UI shows a fresh "saved just now".
   const saveNow = useCallback(() => {
     if (!encounterPresentRef.current) return;
-    setStudyStateRef.current('venousLEBilateral', state as VenousFormStateV1);
+    setStudyStateRef.current(state.studyType, state as VenousFormStateV1);
     setLastSavedAt(new Date());
     setDirty(false);
   }, [state]);
@@ -1184,63 +1268,80 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
           */}
           <EncounterContextBanner />
 
+          {/*
+            UX-ANGIO-005 — this RESETS the current study (after a confirm), so
+            it is a quiet secondary button that says so, not an add-looking
+            gradient one. Red appears only on hover/focus and in the confirm.
+          */}
           <Group justify="flex-end" gap="xs" wrap="wrap">
-            <button
-              type="button"
-              className={classes.newCaseButton}
+            <EMRButton
+              variant="secondary"
+              size="sm"
+              leftSection={<IconEraser size={15} stroke={1.9} aria-hidden />}
               onClick={handleNewCaseRequest}
-              aria-label={t('venousLE.actions.newCase', '+ New case')}
+              className={classes.clearFormButton}
               data-testid="new-case-button"
             >
-              <IconPlus size={16} stroke={2.25} />
-              <span>{t('venousLE.actions.newCase', '+ New case')}</span>
-            </button>
+              {t('venousLE.actions.newCase', 'Clear form')}
+            </EMRButton>
           </Group>
 
-          <SegmentAssessmentCard
-            view={state.view}
-            onViewChange={handleView}
-            findings={state.findings}
-            onFindingChange={handleFinding}
-            highlightId={highlightId}
-            onHighlight={handleRowHighlight}
-            onSetAllNormal={handleSetAllNormal}
-            onClearAll={handleClearAll}
-            onCopySide={handleCopySide}
-            onApplyTemplate={handleTemplatePick}
-            onSaveCurrentAsTemplate={handleOpenSaveDialog}
-            customTemplates={customTemplates}
-            recentTemplateIds={recentTemplateIds}
-            onDeleteCustomTemplate={handleRequestDeleteCustom}
-          />
-
-          <EMRContentSection
-            title={t('venousLE.anatomy.title')}
-            subtitle={t('venousLE.anatomy.subtitle')}
-            showAccent={false}
-            padding="md"
-          >
-            <Stack gap="sm">
-              <AnatomyDiagramSection
-                segments={competencyMap}
-                overlay={false}
-                enableSegmentEdit={false}
-                pathOverrides={pathOverridesMap}
-                drawings={state.drawings}
-                highlightId={anatomyHighlight}
-                onSegmentClick={handleAnatomySegmentClick}
-                onCommitStroke={handleCommitStroke}
-                onEraseStroke={handleEraseStroke}
-                onUndo={handleUndoStroke}
-                onClear={handleClearDrawings}
-                onCommitSegmentEdit={handleCommitSegmentEdit}
-                onClearSegmentEdit={handleClearSegmentEdit}
+          {/*
+            UX-ANGIO-025 L2 — at ≥1280px the diagram sits in a sticky column
+            beside the segment card (the header-comment layout); below that
+            the two stack, card first.
+          */}
+          <div className={classes.assessmentLayout}>
+            <div className={classes.assessmentMain}>
+              <SegmentAssessmentCard
+                view={state.view}
+                onViewChange={handleView}
+                findings={state.findings}
+                onFindingChange={handleFinding}
+                highlightId={highlightId}
+                onHighlight={handleRowHighlight}
+                onSetAllNormal={handleSetAllNormal}
+                onClearAll={handleClearAll}
+                onCopySide={handleCopySide}
+                onApplyTemplate={handleTemplatePick}
+                onSaveCurrentAsTemplate={handleOpenSaveDialog}
+                customTemplates={customTemplates}
+                recentTemplateIds={recentTemplateIds}
+                onDeleteCustomTemplate={handleRequestDeleteCustom}
+                lockedSide={lockedSide}
               />
-              <Box className={classes.anatomyLegend}>
-                <AnatomyLegend />
-              </Box>
-            </Stack>
-          </EMRContentSection>
+            </div>
+
+            <div className={classes.assessmentAside}>
+              <EMRContentSection
+                title={t('venousLE.anatomy.title')}
+                subtitle={t('venousLE.anatomy.subtitle')}
+                showAccent={false}
+                padding="md"
+              >
+                <Stack gap="sm">
+                  <AnatomyDiagramSection
+                    segments={competencyMap}
+                    overlay={false}
+                    enableSegmentEdit={false}
+                    pathOverrides={pathOverridesMap}
+                    drawings={state.drawings}
+                    highlightId={anatomyHighlight}
+                    onSegmentClick={handleAnatomySegmentClick}
+                    onCommitStroke={handleCommitStroke}
+                    onEraseStroke={handleEraseStroke}
+                    onUndo={handleUndoStroke}
+                    onClear={handleClearDrawings}
+                    onCommitSegmentEdit={handleCommitSegmentEdit}
+                    onClearSegmentEdit={handleClearSegmentEdit}
+                  />
+                  <Box className={classes.anatomyLegend}>
+                    <AnatomyLegend />
+                  </Box>
+                </Stack>
+              </EMRContentSection>
+            </div>
+          </div>
 
           <ConclusionBlock
             rightFindings={state.rightFindingsText ?? ''}
@@ -1249,6 +1350,7 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
             onRightFindingsChange={handleRightFindingsText}
             onLeftFindingsChange={handleLeftFindingsText}
             onImpressionChange={handleImpression}
+            lockedSide={lockedSide}
           />
 
           <CommentsBlock
@@ -1290,11 +1392,27 @@ export const VenousLEForm = memo(function VenousLEForm(): React.ReactElement {
       <ConfirmDialog
         opened={newCaseOpen}
         onClose={handleNewCaseCancel}
-        title={t('venousLE.actions.newCaseConfirmTitle', 'Start a new case?')}
-        message={t(
-          'venousLE.actions.newCaseConfirmBody',
-          'This will erase all current data. Unsaved changes will be lost.',
-        )}
+        title={t('venousLE.actions.newCaseConfirmTitle', 'Clear this form?')}
+        message={
+          // UX-ANGIO-005 L3 — bold first line names whose study is erased.
+          <>
+            <Text fw={700} component="span" display="block" data-testid="new-case-confirm-patient">
+              {[
+                encounter?.header.patientName,
+                t('studies.venousLE.short', 'Venous LE'),
+                lockedSide ? t(`venousLE.tabs.${lockedSide}`) : '',
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            <Text component="span" display="block">
+              {t(
+                'venousLE.actions.newCaseConfirmBody',
+                'This will erase all current data. Unsaved changes will be lost.',
+              )}
+            </Text>
+          </>
+        }
         confirmLabel={t('venousLE.actions.newCaseConfirm', 'Discard & start new')}
         cancelLabel={t('venousLE.actions.cancel', 'Cancel')}
         onConfirm={handleNewCaseConfirm}

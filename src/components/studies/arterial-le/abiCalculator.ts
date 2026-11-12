@@ -16,6 +16,7 @@
 
 import {
   ABI_THRESHOLDS,
+  TBI_THRESHOLDS,
   type AbiBand,
   type SegmentalPressures,
 } from './config';
@@ -27,7 +28,7 @@ export interface AbiResult {
 
 export interface TbiResult {
   readonly tbi: number | null;
-  readonly band: AbiBand;             // same bands apply
+  readonly band: AbiBand;             // same band names, TBI_THRESHOLDS cut-offs
 }
 
 /** Reference brachial = higher of L vs R (per standard protocol). */
@@ -70,6 +71,15 @@ export function bandForRatio(ratio: number | null): AbiBand {
   return 'severe';
 }
 
+/** TBI band — its own cut-offs (see TBI_THRESHOLDS); never 'non-compressible'. */
+export function bandForTbi(ratio: number | null): AbiBand {
+  if (ratio === null || !Number.isFinite(ratio)) return 'unknown';
+  if (ratio >= TBI_THRESHOLDS.normalLower) return 'normal';
+  if (ratio >= TBI_THRESHOLDS.mildLower) return 'mild';
+  if (ratio >= TBI_THRESHOLDS.moderateLower) return 'moderate';
+  return 'severe';
+}
+
 /** ABI for one side. */
 export function computeAbi(p: SegmentalPressures, side: 'L' | 'R'): AbiResult {
   const ankle = highestAnkle(p, side);
@@ -94,7 +104,7 @@ export function computeTbi(p: SegmentalPressures, side: 'L' | 'R'): TbiResult {
     return { tbi: null, band: 'unknown' };
   }
   const tbi = toe / brachial;
-  return { tbi, band: bandForRatio(tbi) };
+  return { tbi, band: bandForTbi(tbi) };
 }
 
 /** Human-facing band translation key for i18n lookup. */

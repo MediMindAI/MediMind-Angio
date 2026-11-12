@@ -193,6 +193,64 @@ describe('EncounterIntake — Phase 2.b', () => {
   });
 });
 
+describe('EncounterIntake — UX-ANGIO-009 / 022 (W1-D)', () => {
+  it('footer resume opens the newest in-progress encounter in one click', async () => {
+    const older = buildSavedEncounter('enc-older');
+    const newer: EncounterDraft = {
+      ...buildSavedEncounter('enc-newer'),
+      header: { patientName: 'Newest Patient', encounterDate: '2026-04-21' },
+      selectedStudyTypes: ['arterialLE', 'carotid'],
+    };
+    await saveEncounter(older);
+    // saveEncounter stamps updatedAt — wait a tick so `newer` sorts first.
+    await new Promise((r) => setTimeout(r, 5));
+    await saveEncounter(newer);
+
+    render(
+      <Wrap>
+        <EncounterIntake />
+      </Wrap>,
+    );
+
+    const resume = await screen.findByTestId('intake-resume-link');
+    // Names whose visit the button opens (wrong-patient guard).
+    expect(resume.textContent).toContain('Newest Patient');
+    fireEvent.click(resume);
+    expect(navigateMock).toHaveBeenCalledWith('/encounter/enc-newer/arterialLE');
+    expect(navigateMock).not.toHaveBeenCalledWith('/');
+  });
+
+  it('footer resume falls back to edit mode for a draft with no study', async () => {
+    await saveEncounter({ ...buildSavedEncounter('enc-nostudy'), selectedStudyTypes: [] });
+
+    render(
+      <Wrap>
+        <EncounterIntake />
+      </Wrap>,
+    );
+
+    fireEvent.click(await screen.findByTestId('intake-resume-link'));
+    expect(navigateMock).toHaveBeenCalledWith('/?edit=enc-nostudy');
+  });
+
+  it('renders the study-card tick only for chosen studies (U-1021)', async () => {
+    render(
+      <Wrap>
+        <EncounterIntake />
+      </Wrap>,
+    );
+
+    const card = await screen.findByTestId('intake-study-carotid');
+    const check = card.querySelector('[data-checked]') as HTMLElement;
+    expect(check.dataset.checked).toBe('false');
+    expect(check.querySelector('svg')).toBeNull();
+
+    fireEvent.click(card);
+    await waitFor(() => expect(check.dataset.checked).toBe('true'));
+    expect(check.querySelector('svg')).not.toBeNull();
+  });
+});
+
 describe('EncounterIntake — translation key parity smoke', () => {
   // The full en/ka/ru parity is enforced in src/translations/i18n.test.ts.
   // This is a fail-loud guard that the encounter.intake.* keys the component

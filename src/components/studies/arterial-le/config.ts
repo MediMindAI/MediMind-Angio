@@ -204,6 +204,21 @@ export const ABI_THRESHOLDS = {
   moderateLower: 0.40,
 } as const;
 
+/**
+ * TBI has its own scale — toe pressures sit lower than ankle pressures, so the
+ * ABI bands graded a healthy TBI (e.g. 0.85) as "mild PAD" (level-up U-1026).
+ * Normal cut-off TBI ≥ 0.70 per ACC/AHA PAD guideline (TBI ≤ 0.70 abnormal).
+ * Sub-bands below it are pragmatic (severe < 0.25 ≈ toe pressure < 30 mmHg,
+ * the CLTI marker); decided under founder delegation 2026-11-12, pending
+ * clinician review (sign-off S6). Toe vessels are rarely calcified, so TBI has
+ * no "non-compressible" band.
+ */
+export const TBI_THRESHOLDS = {
+  normalLower: 0.70,
+  mildLower: 0.50,
+  moderateLower: 0.25,
+} as const;
+
 // ============================================================================
 // Derivation helpers
 // ============================================================================

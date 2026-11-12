@@ -100,7 +100,7 @@ export const AnatomyDiagram = memo(function AnatomyDiagram({
           view={view}
           segments={segments}
           pathOverrides={pathOverrides}
-          size="lg"
+          size="xl"
           interactive={mode === 'click' || mode === 'edit-segment'}
           colorFn={colorFn}
           tooltipText={tooltipText}

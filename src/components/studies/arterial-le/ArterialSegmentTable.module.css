@@ -202,22 +202,15 @@
   letter-spacing: var(--emr-letter-spacing-wide);
 }
 
+/* ==================== BELOW DESKTOP (UX-ANGIO-026 L2) ====================
+   Each segment-side block (the row plus its details panel) becomes one card.
+   Bilateral at tablet width: the R and L blocks of a segment sit side by side
+   as one card with the name printed once. On a phone the form shows one leg
+   at a time (R/L switch in ArterialLEForm). Empty blocks stay compact. */
+
 @media (max-width: 992px) {
   .headRow {
     display: none;
-  }
-
-  .row {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 12px;
-    background: var(--emr-bg-card);
-    border: 1px solid var(--emr-border-color);
-    border-radius: var(--emr-border-radius-lg);
-    margin-bottom: 10px;
-    min-width: 0;
   }
 
   .tableWrap {
@@ -230,6 +223,32 @@
     min-width: 0;
   }
 
+  /* The card is the per-side wrapper, so the details panel sits inside it. */
+  .tableWrap > [role='presentation'] {
+    background: var(--emr-bg-card);
+    border: 1px solid var(--emr-border-color);
+    border-radius: var(--emr-border-radius-lg);
+    margin-bottom: 10px;
+    min-width: 0;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px;
+    min-height: 0;
+  }
+
+  .row:hover {
+    background: transparent;
+  }
+
+  .detailsPanel {
+    margin: 0 12px 12px;
+  }
+
   .cell[data-label]::before {
     content: attr(data-label);
     display: block;
@@ -239,5 +258,60 @@
     letter-spacing: var(--emr-letter-spacing-wide);
     font-weight: var(--emr-font-semibold);
     margin-bottom: 4px;
+  }
+
+  /* Empty-state collapse: until a block holds a value, has focus, or its
+     details are opened, it shows only its name row and the waveform picker.
+     PSV / stenosis / plaque / occlusion appear as soon as the clinician picks
+     a waveform, tabs into the block, or taps the chevron — nothing is removed. */
+  .tableWrap
+    > [role='presentation']:not(:focus-within):not(
+      :has(
+        input:not([type='checkbox']):not([type='hidden']):not([value='']),
+        input:checked,
+        [role='radio'][aria-checked='true'],
+        .expandBtn[aria-expanded='true'],
+        .expandBtn[data-has-details]
+      )
+    )
+    .row
+    > .cell:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+/* Tablet, bilateral only (both sides present): R | L side by side. The grid
+   places the R block (always first) in column 1 and its L block in column 2,
+   joined into one card; the L copy of the name is hidden but keeps its space
+   so both halves line up row for row. Inputs keep their full aria-labels. */
+@media (min-width: 640px) and (max-width: 992px) {
+  .tableWrap:has(.segmentSide[data-side='left']):has(.segmentSide[data-side='right']) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 10px;
+  }
+
+  .tableWrap:has(.segmentSide[data-side='left']):has(.segmentSide[data-side='right'])
+    > [role='presentation'] {
+    margin-bottom: 0;
+  }
+
+  .tableWrap:has(.segmentSide[data-side='left']):has(.segmentSide[data-side='right'])
+    > [role='presentation']:has(.segmentSide[data-side='right']) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .tableWrap:has(.segmentSide[data-side='left']):has(.segmentSide[data-side='right'])
+    > [role='presentation']:has(.segmentSide[data-side='left']) {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .tableWrap:has(.segmentSide[data-side='left']):has(.segmentSide[data-side='right'])
+    > [role='presentation']:has(.segmentSide[data-side='left'])
+    .segmentLabel {
+    visibility: hidden;
   }
 }

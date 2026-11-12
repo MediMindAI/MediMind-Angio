@@ -21,7 +21,7 @@
  * exact same string so the two stores stay in lockstep.
  */
 
-import { get, set, del, keys, createStore } from 'idb-keyval';
+import { get, set, update, del, keys, createStore } from 'idb-keyval';
 import type { EncounterDraft, EncounterId } from '../types/encounter';
 
 const DB_NAME = 'medimind-angio-encounters';
@@ -92,15 +92,20 @@ function readSyncRaw(id: EncounterId): EncounterDraft | null {
   }
 }
 
-function writeSyncRaw(draft: EncounterDraft): void {
+/** Returns false when the localStorage mirror could not be written. */
+function writeSyncRaw(draft: EncounterDraft): boolean {
   const storage = safeStorage();
-  if (!storage) return;
+  if (!storage) return true;
   try {
     storage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+    return true;
   } catch (err) {
     // Quota exceeded or mode-locked storage — surface to console; the IDB
-    // copy still goes through, so the encounter isn't lost.
+    // copy still goes through, so the encounter isn't lost. The caller gets
+    // `localCacheWritten: false` so the UI can warn (UX-ANGIO-002 L1): a
+    // stale sync cache would re-hydrate old answers on the next reload.
     console.warn('[encounterStore] localStorage write failed', draft.encounterId, err);
+    return false;
   }
 }
 
@@ -130,19 +135,40 @@ function isEncounterDraft(x: unknown): x is EncounterDraft {
 // Public API
 // ---------------------------------------------------------------------------
 
+export interface SaveEncounterOptions {
+  /**
+   * Keep the caller's `updatedAt` instead of re-stamping. `EncounterContext`
+   * stamps once and remembers that exact value, so its cross-tab freshness
+   * check (UX-ANGIO-001 L2) compares against what is really stored.
+   */
+  readonly keepUpdatedAt?: boolean;
+}
+
+export interface SaveEncounterResult {
+  /** The draft exactly as written (with its final `updatedAt`). */
+  readonly saved: EncounterDraft;
+  /** False when IDB succeeded but the localStorage mirror failed (quota). */
+  readonly localCacheWritten: boolean;
+}
+
 /**
  * Persist an encounter draft. Bumps `updatedAt` on every write so
- * `listEncounters` can sort newest-first. Writes hit IDB first; the
- * localStorage mirror follows synchronously so the next render's
- * `loadEncounterSync` sees the new state.
+ * `listEncounters` can sort newest-first. The localStorage mirror is written
+ * synchronously BEFORE the IDB await, so a route guard or render that runs
+ * while IDB is still writing already sees the new state via
+ * `loadEncounterSync` (level-up W1-E: adding a study from the banner bounced
+ * to `/` because the mirror lagged). Rejects when the IDB write fails.
  */
-export async function saveEncounter(draft: EncounterDraft): Promise<void> {
-  const stamped: EncounterDraft = {
-    ...draft,
-    updatedAt: new Date().toISOString(),
-  };
+export async function saveEncounter(
+  draft: EncounterDraft,
+  options: SaveEncounterOptions = {},
+): Promise<SaveEncounterResult> {
+  const stamped: EncounterDraft = options.keepUpdatedAt
+    ? draft
+    : { ...draft, updatedAt: new Date().toISOString() };
+  const localCacheWritten = writeSyncRaw(stamped);
   await set(keyEncounter(stamped.encounterId), stamped, store());
-  writeSyncRaw(stamped);
+  return { saved: stamped, localCacheWritten };
 }
 
 // ---------------------------------------------------------------------------
@@ -256,8 +282,10 @@ export async function loadEncounter(id: EncounterId): Promise<EncounterDraft | n
   if (fromLocal) {
     const migrated = migrateLegacyDraft(fromLocal);
     // Self-heal: re-populate IDB so subsequent loads stay on the fast path.
+    // Atomic fill-if-empty: a save that landed after our read must win over
+    // this older localStorage copy (UX-ANGIO-001 — no silent overwrite).
     try {
-      await set(keyEncounter(id), migrated, store());
+      await update<unknown>(keyEncounter(id), (current) => current ?? migrated, store());
     } catch {
       // ignore — fall through with the localStorage value.
     }

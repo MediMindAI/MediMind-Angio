@@ -19,8 +19,6 @@
   position: sticky;
   top: 0;
   z-index: calc(var(--emr-z-sticky) - 1);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   flex-wrap: wrap;
 }
 
@@ -71,41 +69,22 @@
   outline-offset: 2px;
 }
 
-.newCaseButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  font-size: var(--emr-font-sm);
-  font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-white);
-  background: var(--emr-gradient-primary);
-  border: 1px solid transparent;
-  border-radius: var(--emr-border-radius);
-  cursor: pointer;
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-  white-space: nowrap;
+.clearFormButton {
+  white-space: normal;
   flex-shrink: 0;
-  box-shadow: var(--emr-shadow-sm);
-  letter-spacing: 0.01em;
 }
 
-.newCaseButton:hover {
-  filter: brightness(1.08);
-  box-shadow: var(--emr-shadow-md);
-}
-
-.newCaseButton:active {
-  transform: translateY(1px);
-}
-
-.newCaseButton:focus-visible {
-  outline: 2px solid var(--emr-accent);
-  outline-offset: 2px;
+/* Destructive intent shows on hover/focus only — at rest the button is a
+   plain secondary deck, so red keeps meaning "abnormal finding" on this
+   screen (status-color reservation). The confirm dialog itself is red. */
+.clearFormButton.clearFormButton:hover:not(:disabled),
+.clearFormButton.clearFormButton:focus-visible {
+  border-color: var(--emr-error);
+  color: var(--emr-error);
 }
 
 @media print {
-  .newCaseButton {
+  .clearFormButton {
     display: none;
   }
 }
@@ -139,6 +118,42 @@
 @media (max-width: 576px) {
   .container {
     padding: 12px;
+  }
+}
+
+/* ==================== SEGMENTS + DIAGRAM (UX-ANGIO-025 L2) ==================== */
+
+/* Mobile-first: segment card, then the diagram below it. */
+.assessmentLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--emr-spacing-lg);
+}
+
+.assessmentMain,
+.assessmentAside {
+  min-width: 0;
+}
+
+/* ≥1280px: the diagram sits in a sticky right column beside the segment
+   table, so a row and its coloured segment are on screen together. The
+   column scrolls on its own when the diagram is taller than the viewport
+   (the bottom offset leaves room for the sticky report bar). */
+@media (min-width: 1280px) {
+  .assessmentLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(420px, 34vw, 620px);
+    align-items: start;
+  }
+
+  .assessmentAside {
+    position: sticky;
+    top: var(--emr-spacing-lg);
+    max-height: calc(100vh - var(--emr-spacing-lg) - 96px);
+    overflow-y: auto;
+    /* Room for the deck shadow inside the scroll box. */
+    padding: var(--emr-spacing-xs);
+    margin: calc(-1 * var(--emr-spacing-xs));
   }
 }
 

@@ -3,9 +3,9 @@
  * Carotid Duplex — Study Configuration
  *
  * Bilateral carotid-vertebral-subclavian duplex per SRU 2003 consensus +
- * ESVS 2023 + AHA/ASA 2021. Captures PSV, EDV, flow direction, plaque
- * characterization, NASCET stenosis category, and subclavian-steal phase
- * on vertebrals.
+ * ESVS 2023 + AHA/ASA 2021. Captures PSV, EDV, IMT, flow direction, plaque
+ * characterization, and the NASCET stenosis category (auto-graded from the
+ * SRU 2003 criteria in `stenosisCalculator.ts`, with a manual override).
  */
 
 import type { ParameterDef, Side, StudyConfig } from '../../../types/study';
@@ -25,6 +25,9 @@ export const CAROTID_VESSELS = [
   'cca-prox',
   'cca-mid',
   'cca-dist',
+  // Carotid bifurcation ("BIF"). The id matches the diagram's `bulb-*` path so
+  // the table row and the drawn bulb are the same segment.
+  'bulb',
   'ica-prox',
   'ica-mid',
   'ica-dist',
@@ -48,7 +51,7 @@ export function allCarotidFullIds(): ReadonlyArray<CarotidVesselFullId> {
   return out;
 }
 
-/** True when the vessel is a vertebral segment (steal evaluation relevant). */
+/** True when the vessel is a vertebral segment. */
 export function isVertebral(v: CarotidVesselBase): boolean {
   return v === 'vert-v1' || v === 'vert-v2' || v === 'vert-v3';
 }
@@ -65,6 +68,14 @@ export function isIca(v: CarotidVesselBase): boolean {
  */
 export function isCca(v: CarotidVesselBase): boolean {
   return v === 'cca-prox' || v === 'cca-mid' || v === 'cca-dist';
+}
+
+/**
+ * True when the row takes an IMT measurement: the common carotid plus the
+ * bifurcation (BIF) row — every other vessel shows a dash.
+ */
+export function hasImt(v: CarotidVesselBase): boolean {
+  return isCca(v) || v === 'bulb';
 }
 
 // ============================================================================
@@ -127,9 +138,22 @@ export interface CarotidVesselFinding {
   readonly plaquePresent?: boolean;
   readonly plaqueMorphology?: PlaqueMorphology;
   readonly plaqueLengthMm?: number;
+  /**
+   * Gray-scale / color-Doppler plaque estimate — % diameter reduction (ICA
+   * rows). A primary SRU 2003 criterion alongside ICA PSV.
+   */
+  readonly plaqueStenosisPct?: number;
   readonly plaqueSurface?: PlaqueSurface;
+  /**
+   * Retired per clinician request (ULC removed). Kept optional only so old
+   * drafts still hydrate — diagram, narrative, PDF and FHIR ignore it.
+   */
   readonly plaqueUlceration?: boolean;
-  /** 0 = normal, 1–3 = steal phases (vertebrals only). */
+  /**
+   * Retired per clinician request (subclavian steal removed). Kept optional
+   * only so old drafts still hydrate — diagram, narrative, PDF and FHIR
+   * ignore it.
+   */
   readonly subclavianStealPhase?: SubclavianStealPhase;
   readonly note?: string;
   /**
@@ -161,11 +185,24 @@ export interface CarotidNascetClassification {
 // SRU consensus velocity thresholds
 // ============================================================================
 
+/**
+ * SRU Consensus Panel (Grant 2003) gray-scale + Doppler criteria.
+ *   Degree   | ICA PSV  | Plaque est. | ICA/CCA  | ICA EDV
+ *   normal   | < 125    | none        | < 2.0    | < 40
+ *   < 50 %   | < 125    | < 50 %      | < 2.0    | < 40
+ *   50–69 %  | 125–230  | ≥ 50 %      | 2.0–4.0  | 40–100
+ *   ≥ 70 %   | > 230    | ≥ 50 %      | > 4.0    | > 100
+ * PSV + plaque estimate are primary; ratio + EDV are additional (tie-break).
+ * Range ends are inclusive in the 50–69 % band, so ≥ 70 % is strictly above.
+ */
 export const SRU_THRESHOLDS = {
-  psvGe50: 125,       // 125 ≤ PSV → ≥ 50 %
-  psvGe70: 230,       // PSV ≥ 230 → ≥ 70 % (one of the three criteria)
-  edvGe70: 100,       // EDV ≥ 100 → ≥ 70 %
-  ratioGe70: 4.0,     // ICA/CCA ≥ 4 → ≥ 70 %
+  psvGe50: 125,       // PSV ≥ 125 → ≥ 50 %
+  psvGt70: 230,       // PSV > 230 → ≥ 70 %
+  plaqueGe50: 50,     // plaque estimate ≥ 50 % → ≥ 50 %
+  ratioGe50: 2.0,     // ICA/CCA ≥ 2.0 → ≥ 50 %
+  ratioGt70: 4.0,     // ICA/CCA > 4.0 → ≥ 70 %
+  edvGe50: 40,        // EDV ≥ 40 → ≥ 50 %
+  edvGt70: 100,       // EDV > 100 → ≥ 70 %
 } as const;
 
 // ============================================================================
@@ -212,6 +249,7 @@ export const NUMERIC_PARAMETERS: ReadonlyArray<ParameterDef> = [
   { id: 'psvCmS', label: 'carotid.param.psvCmS', kind: 'velocity-cm-s', unit: 'cm/s', min: 0, max: 700, step: 10 },
   { id: 'edvCmS', label: 'carotid.param.edvCmS', kind: 'velocity-cm-s', unit: 'cm/s', min: 0, max: 300, step: 5 },
   { id: 'imtMm', label: 'carotid.param.imtMm', kind: 'diameter-mm', unit: 'mm', min: 0, max: 3, step: 0.1 },
+  { id: 'plaqueStenosisPct', label: 'carotid.param.plaqueStenosisPct', kind: 'number', unit: '%', min: 0, max: 100, step: 5 },
   { id: 'plaqueLengthMm', label: 'carotid.param.plaqueLengthMm', kind: 'diameter-mm', unit: 'mm', min: 0, max: 100, step: 1 },
 ];
 
@@ -252,20 +290,10 @@ export function deriveCarotidCompetency(
   // with venous `deriveCompetency`).
   if (finding.competencyOverride !== undefined) return finding.competencyOverride;
   if (finding.flowDirection === 'absent' || nascetCat === 'occluded') return 'occluded';
-  // Subclavian steal / retrograde flow (vertebrals). Phase 3 = permanent
-  // retrograde steal → severe; phases 1–2 (intermittent/partial) and a bare
-  // retrograde waveform → moderate. Keeps the diagram in step with the
-  // narrative steal grade instead of leaving the vessel green.
-  if (nascetCat === 'ge70' || nascetCat === 'near-occlusion' || finding.subclavianStealPhase === 3) {
-    return 'severe';
-  }
-  if (
-    nascetCat === '50to69' ||
-    finding.flowDirection === 'retrograde' ||
-    (finding.subclavianStealPhase !== undefined && finding.subclavianStealPhase >= 1)
-  ) {
-    return 'moderate';
-  }
+  if (nascetCat === 'ge70' || nascetCat === 'near-occlusion') return 'severe';
+  // A retrograde waveform (e.g. a reversed vertebral) colors moderate so the
+  // vessel doesn't stay green.
+  if (nascetCat === '50to69' || finding.flowDirection === 'retrograde') return 'moderate';
   // A chosen plaque morphology implies plaque is present even when the
   // explicit `plaquePresent` flag was never set (the segment-table Plaque
   // column writes morphology only). Either signal colors the vessel mild.
@@ -278,13 +306,12 @@ export function deriveCarotidCompetency(
 
 /**
  * Resolve the diagram severity band for ANY segment id, including the
- * `bulb-*` segments which exist only on the diagram (not in `CAROTID_VESSELS`,
- * so templates/table/NASCET never create a `bulb` finding). The carotid bulb
- * IS the bifurcation where the NASCET stenosis is graded, so when it has no
- * finding of its own it mirrors the **proximal ICA** of the same side — this
- * makes templates, NASCET, and ICA findings color the bulb instead of leaving
- * it stuck on "normal". A direct bulb finding (e.g. a click override) still
- * wins.
+ * `bulb-*` (bifurcation) segments. The carotid bulb IS the bifurcation where
+ * the NASCET stenosis is graded, so it always takes the side's NASCET grade
+ * (below), and when it has no finding of its own (BIF row never filled) it
+ * mirrors the **proximal ICA** finding of the same side instead of staying
+ * stuck on "normal". A bulb finding of its own (BIF table row or a click
+ * override) wins over the ICA mirror.
  */
 export function resolveCarotidBand(
   findings: CarotidFindings,

@@ -132,12 +132,15 @@ export const SVPPicker = memo(function SVPPicker({
 
   return (
     <EMRCollapsibleSection
+      variant="soft"
       title={t('svp.section.title', 'SVP Classification')}
-      subtitle={t('svp.section.subtitle', 'Symptoms · Varices · Pathophysiology (Meissner 2021)')}
+      // Nothing recorded → one quiet line: no subtitle, no "S0 V0 P_"
+      // placeholder chip (empty state must look quieter than CEAP's).
+      subtitle={value ? t('svp.section.subtitle', 'Symptoms · Varices · Pathophysiology (Meissner 2021)') : undefined}
       icon={IconSitemap}
       defaultOpen={false}
       testId="svp-section"
-      rightSection={preview}
+      rightSection={value ? preview : undefined}
     >
       <div className={classes.body}>
         <Stack gap="md">

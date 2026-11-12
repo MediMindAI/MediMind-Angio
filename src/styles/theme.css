@@ -146,7 +146,9 @@
 
   /* ==================== SURFACE COLORS ==================== */
   /* Light theme surface backgrounds */
-  --emr-bg-page: #ffffff;
+  /* Page field is a pale navy-grey so white decks separate from it
+     (elevation-contrast rule; reference deep-dive.html --paper). UX-ANGIO-023. */
+  --emr-bg-page: #e7ebf1;
   --emr-bg-card: #ffffff;
   --emr-bg-modal: #ffffff;
   --emr-bg-input: #ffffff;
@@ -1591,7 +1593,10 @@
   --emr-warning-light: #fda4af;
   --emr-error: #ef4444;
   --emr-error-light: #f87171;
-  --emr-info: #2b6cb0;
+  /* = --emr-accent, as in light mode. #2b6cb0 is the brand gradient's middle
+     stop, so info notices shared one blue with selected states (critic round 3,
+     status-color-collision on arterial + carotid dark). */
+  --emr-info: #3182ce;
   --emr-info-light: #3182ce;
 
   /* Purple accent for research badges */
@@ -1785,8 +1790,11 @@
   --emr-border-focus: #3182ce;
   --emr-border-error: #ef4444;
 
-  /* Gradients for dark mode - Slate family with subtle blue tint */
-  --emr-gradient-primary: linear-gradient(135deg, #334155 0%, #475569 50%, #64748b 100%);
+  /* Gradients for dark mode - Slate family with subtle blue tint.
+     --emr-gradient-primary stays the Command brand gradient in dark too (same
+     as --emr-gradient-add-button below), so section tick bars and gradient
+     chrome read navy, not grey (UI-X round 3). */
+  --emr-gradient-primary: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #3182ce 100%);
   --emr-gradient-success: linear-gradient(135deg, #276749 0%, #38a169 50%, #48bb78 100%);
   --emr-gradient-secondary: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
   --emr-gradient-submenu: linear-gradient(90deg, #1e293b 0%, #334155 50%, #475569 100%);
@@ -2578,20 +2586,23 @@ p, span, div {
   background-color: var(--emr-bg-hover) !important;
 }
 
-/* Section headers */
-h1, .mantine-Title-root[data-order="1"] {
+/* Section headers.
+   `:not(.mantine-Text-root)`: a Mantine <Text component="h2"> is a semantic
+   heading that keeps the size set by its own props/class — section titles
+   were promoted to real headings without changing their look (UX-ANGIO-018). */
+h1:not(.mantine-Text-root), .mantine-Title-root[data-order="1"] {
   font-size: var(--emr-font-2xl) !important;
 }
 
-h2, .mantine-Title-root[data-order="2"] {
+h2:not(.mantine-Text-root), .mantine-Title-root[data-order="2"] {
   font-size: var(--emr-font-xl) !important;
 }
 
-h3, .mantine-Title-root[data-order="3"] {
+h3:not(.mantine-Text-root), .mantine-Title-root[data-order="3"] {
   font-size: var(--emr-font-lg) !important;
 }
 
-h4, h5, h6 {
+h4:not(.mantine-Text-root), h5:not(.mantine-Text-root), h6:not(.mantine-Text-root) {
   font-size: var(--emr-font-md) !important;
 }
 

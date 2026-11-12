@@ -3,37 +3,23 @@ import { expect, test } from '@playwright/test';
 import { gotoVenousForm, seedVenousEncounter } from './helpers/seedEncounter';
 
 /**
- * Confirms the new image-backdrop diagram renders, the reference PNG
- * loads, and both anterior + posterior panels are present.
+ * Confirms the venous diagram renders: one combined vector view (anterior +
+ * posterior segments share one picture), its drawing canvas, and every
+ * segment hit-zone for both legs.
  */
 test.describe('Anatomy diagram rendering', () => {
-  test('renders both panels with backdrop image and segment hit-zones', async ({ page }) => {
+  test('renders the combined panel with segment hit-zones for both legs', async ({ page }) => {
     const { encounterId } = await seedVenousEncounter(page);
     await gotoVenousForm(page, encounterId);
 
-    // Both panel containers exist (visible — they have a card outline).
     await expect(page.getByTestId('anatomy-diagram-le-anterior')).toBeVisible();
-    await expect(page.getByTestId('anatomy-diagram-le-posterior')).toBeVisible();
-    // Drawing canvases are attached (transparent fills, so not "visible" by Playwright's heuristic).
+    // Drawing canvas is attached (transparent fill, so not "visible" by Playwright's heuristic).
     await expect(page.getByTestId('drawing-canvas-le-anterior')).toBeAttached();
-    await expect(page.getByTestId('drawing-canvas-le-posterior')).toBeAttached();
 
-    // Reference image is wired into the SVG markup (we don't assert
-    // network completion; just that the <image> element is in the DOM).
-    const anteriorImageHrefs = await page
-      .locator('[data-testid="anatomy-diagram-le-anterior"] image')
-      .evaluateAll((els) => els.map((e) => e.getAttribute('href')));
-    expect(anteriorImageHrefs.some((h) => h?.endsWith('/le-reference.png'))).toBe(true);
-
-    // 30 segment hit-zones in the anterior panel.
-    const anteriorSegments = page
-      .locator('[data-testid="anatomy-diagram-le-anterior"] [data-segment-id]');
-    await expect(anteriorSegments).toHaveCount(30);
-
-    // 18 segment hit-zones in the posterior panel.
-    const posteriorSegments = page
-      .locator('[data-testid="anatomy-diagram-le-posterior"] [data-segment-id]');
-    await expect(posteriorSegments).toHaveCount(18);
+    // 18 segments per leg (deep, GSV and the posterior SSV/gastrocnemius set) = 36.
+    const segments = page.locator('[data-testid="anatomy-diagram-le-anterior"] [data-segment-id]');
+    await expect(segments).toHaveCount(36);
+    await expect(segments.locator('xpath=self::*[@data-segment-id="ssv-left"]')).toHaveCount(1);
   });
 
   test('CFV-right hit-zone is clickable and the segment table responds', async ({ page }) => {

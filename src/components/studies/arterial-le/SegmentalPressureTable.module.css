@@ -184,3 +184,11 @@
     padding: 12px;
   }
 }
+
+/* Narrow phones: one ABI / TBI tile per row, so the band chip
+   (e.g. "საშუალო პად") always has room and is never clipped. */
+@media (max-width: 480px) {
+  .badgeRow {
+    flex-basis: 100%;
+  }
+}

@@ -16,9 +16,13 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Paper, Box, Text, Collapse, Group } from '@mantine/core';
+import { Paper, Box, Text, Collapse, Group, useMantineColorScheme } from '@mantine/core';
 import { IconChevronRight } from '@tabler/icons-react';
 import classes from './EMRCollapsibleSection.module.css';
+
+/** Controls that own their click inside a header `rightSection`. */
+const INTERACTIVE_SELECTOR =
+  'button, a[href], input, select, textarea, label, [role="button"], [role="checkbox"], [role="switch"], [role="menuitem"], [role="tab"], [tabindex]:not([tabindex="-1"])';
 
 export interface EMRCollapsibleSectionProps {
   /** Section title displayed in the header */
@@ -93,6 +97,12 @@ export function EMRCollapsibleSection({
   variant = 'primary',
 }: EMRCollapsibleSectionProps): React.ReactElement {
   const [opened, setOpened] = useState(defaultOpen);
+  const { colorScheme } = useMantineColorScheme();
+  // Command decks float on a shadow, not an outer border. In dark mode the
+  // slate hairline (re-forced by theme.css's global Paper rule) reads as a
+  // box, so it is swapped for the deck shadow. Light mode is unchanged.
+  const darkDeckStyle: React.CSSProperties | undefined =
+    colorScheme === 'dark' ? { borderStyle: 'none', boxShadow: 'var(--emr-shadow-card)' } : undefined;
   const userToggledRef = useRef(false);
   const hasBeenOpenedRef = useRef(defaultOpen);
 
@@ -149,14 +159,34 @@ export function EMRCollapsibleSection({
     [handleToggle]
   );
 
+  // UX-ANGIO-016: only interactive controls inside `rightSection` keep the
+  // click to themselves. A passive preview (e.g. the CEAP summary chip) lets
+  // the click reach the header, so a click anywhere on the header toggles.
+  const handleRightSectionClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    const target = event.target as Element;
+    const interactive = target.closest(INTERACTIVE_SELECTOR);
+    if (interactive && event.currentTarget.contains(interactive)) {
+      event.stopPropagation();
+    }
+  }, []);
+
   return (
     <Paper
       className={classes.section}
       withBorder
       radius="sm"
       data-testid={testId}
+      style={darkDeckStyle}
     >
-      {/* Header - 'primary' (blue gradient) by default; 'soft' for nested use */}
+      {/* Header - 'primary' (blue gradient) by default; 'soft' for nested use.
+          UX-ANGIO-018: wrapped in a real heading (h2 top-level, h3 nested) so
+          the page has an outline. `inherit` keeps the wrapper visually inert;
+          heading-wraps-button is the WAI accordion pattern (a heading inside
+          role="button" would be flattened to plain text). */}
+      <Text
+        component={variant === 'soft' ? 'h3' : 'h2'}
+        inherit
+      >
       <Box
         className={`${classes.sectionHeader} ${variant === 'soft' ? classes.sectionHeaderSoft : ''}`}
         onClick={handleToggle}
@@ -186,12 +216,13 @@ export function EMRCollapsibleSection({
 
           {/* Optional right section (e.g. save status indicator) */}
           {rightSection && (
-            <Box style={{ marginLeft: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <Box style={{ marginLeft: 'auto' }} onClick={handleRightSectionClick}>
               {rightSection}
             </Box>
           )}
         </Group>
       </Box>
+      </Text>
 
       {/* Collapsible content */}
       <Collapse in={opened} transitionDuration={200} transitionTimingFunction="ease">

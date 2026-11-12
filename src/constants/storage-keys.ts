@@ -15,6 +15,8 @@ export const STORAGE_KEYS = {
   STUDY_DRAFT_PREFIX: 'angio-study-draft-',
   /** Currently selected study type */
   SELECTED_STUDY: 'angio-selected-study',
+  /** Start-page "in-progress visits" list: 'true' (open) | 'false' (folded, default) */
+  ONGOING_VISITS_EXPANDED: 'angio-ongoing-visits-expanded',
 } as const;
 
 export function keyStudyDraft(studyId: string): string {

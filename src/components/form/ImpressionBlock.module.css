@@ -8,17 +8,18 @@
  */
 
 .card {
+  /* Command deck (EMRContentSection .lightDefault) — UX-ANGIO-023. */
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
+  border: 1px solid transparent;
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-sm);
+  box-shadow: var(--emr-shadow-card);
   overflow: hidden;
   position: relative;
   transition: box-shadow 160ms ease;
 }
 
 .card:hover {
-  box-shadow: var(--emr-shadow-md, 0 4px 12px rgba(15, 23, 42, 0.06));
+  box-shadow: var(--emr-shadow-card-hover);
 }
 
 /* Gradient accent strip — replaces the full gradient header. */

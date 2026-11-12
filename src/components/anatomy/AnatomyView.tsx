@@ -185,6 +185,15 @@ function colorizeSvg(
     /(<g id="pelvis-hint"[^>]*stroke=")[^"]*(")/,
     `$1${silhouetteStroke}$2`,
   );
+  // 1b) Silhouette body fill -- the SVGs ship `fill="#f7fafc"`, which stays
+  //     near-white in dark mode and swallows the (theme-aware) R/L labels.
+  //     `--emr-bg-hover` is exactly #f7fafc in light (no visual change) and a
+  //     slate surface in dark. Screen only: the PDF reads the raw SVG
+  //     (anatomyToPdfSvg.ts), which keeps its light fill. UX-ANGIO-022.
+  out = out.replace(
+    /(<g id="silhouette"[^>]*fill=")[^"]*(")/,
+    `$1var(--emr-bg-hover)$2`,
+  );
 
   // 2) Side labels (R/L letters) -- the SVGs ship with `fill="#4a5568"`
   //    (slate-600), which is nearly invisible against the dark page

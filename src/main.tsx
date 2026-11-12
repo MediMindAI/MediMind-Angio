@@ -1,13 +1,18 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import { migrateLocalStorageDrafts } from './services/draftStore';
-import { migrateLegacyDrafts } from './services/encounterMigration';
-// Mantine first so theme.css overrides on equal specificity (Wave 4.4).
+// Mantine CSS MUST load before `import App`: importing App evaluates every
+// component CSS module (EMRButton.module.css etc.). If Mantine loads after,
+// its equal-specificity rules (e.g. `.m_77c9d27d` filled background) beat the
+// wrapper classes and every secondary/ghost/danger button renders solid navy
+// (UX-ANGIO-021, source trace C1). theme.css + print.css stay after App so
+// theme overrides keep winning.
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
+import App from './App';
+import { migrateLocalStorageDrafts } from './services/draftStore';
+import { migrateLegacyDrafts } from './services/encounterMigration';
 import './styles/theme.css';
 import './styles/print.css';
 

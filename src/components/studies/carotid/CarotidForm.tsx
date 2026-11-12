@@ -3,9 +3,12 @@
  * CarotidForm — bilateral carotid-vertebral-subclavian duplex container.
  *
  * Layout (Phase 3b — encounter pivot):
- *   EncounterContextBanner · SegmentedControl (view) · CarotidSegmentTable ·
- *   NASCETPicker · Impression/Sonographer/Clinician textareas ·
- *   RecommendationsBlock · FormActions.
+ *   EncounterContextBanner · SegmentedControl (view) ·
+ *   [CarotidSegmentTable + NASCETPicker │ anatomy diagram] ·
+ *   Impression/Sonographer/Clinician textareas · RecommendationsBlock ·
+ *   FormActions.
+ *   UX-ANGIO-025 L3: at ≥1280px the diagram and the NASCET grade sit in a
+ *   sticky column beside the table; below that they stack under it.
  *
  * Phase 3b refactor:
  *   - Drops the legacy `<StudyHeader>` card. Encounter-level fields
@@ -23,14 +26,14 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Stack, Group } from '@mantine/core';
+import { Stack, Group, Text } from '@mantine/core';
 import { EMRTextarea } from '../../shared/EMRFormFields';
 import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
-import type { DrawingStroke } from '../../../types/drawing';
+import { STENOSIS_DRAWING_COLORS, type DrawingStroke } from '../../../types/drawing';
 import type { SegmentId } from '../../../types/anatomy';
 import { useHotkeys } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconStack2 } from '@tabler/icons-react';
+import { IconEraser, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useEncounter } from '../../../contexts/EncounterContext';
 import type {
@@ -42,7 +45,7 @@ import type {
 import type { PatientPosition } from '../../../types/patient-position';
 import type { EncounterDraft } from '../../../types/encounter';
 import { loadDraft } from '../../../hooks/useAutoSave';
-import { ConfirmDialog, EMRButton, EMRContentSection, EMRViewToggle } from '../../common';
+import { ConfirmDialog, EMRAlert, EMRButton, EMRContentSection, EMRViewToggle } from '../../common';
 import { EncounterContextBanner } from '../../layout/EncounterContextBanner';
 import { BackToStudiesButton } from '../../layout/BackToStudiesButton';
 import { RecommendationsBlock } from '../../form/RecommendationsBlock';
@@ -64,7 +67,8 @@ import type {
   CarotidVesselFinding,
   CarotidVesselFullId,
 } from './config';
-import { carotidBandColor, carotidDiagramColor, resolveCarotidBand } from './config';
+import { carotidDiagramColor, resolveCarotidBand } from './config';
+import { nextSeverityBand, severityLegendItems } from '../../anatomy/severityColor';
 import { effectiveNascet } from './stenosisCalculator';
 import { AnatomyLegend } from '../../anatomy';
 import { CarotidSegmentTable, type CarotidTableView } from './CarotidSegmentTable';
@@ -116,6 +120,13 @@ interface CarotidFormStateV2 extends CarotidStudyFields {
   readonly view: CarotidTableView;
   readonly impression: string;
   readonly impressionEdited: boolean;
+  /**
+   * True when findings changed after the conclusion text was written (e.g. a
+   * "normal" template conclusion, then an abnormal finding). The text is never
+   * rewritten — the form only asks the clinician to review it. Optional so
+   * older drafts hydrate unchanged.
+   */
+  readonly impressionStale?: boolean;
   readonly sonographerComments: string;
   readonly clinicianComments: string;
   readonly recommendations: ReadonlyArray<Recommendation>;
@@ -183,12 +194,13 @@ function reducer(state: CarotidFormStateV2, action: Action): CarotidFormStateV2 
       return {
         ...state,
         findings: { ...state.findings, [action.id]: { ...prev, ...action.patch } },
+        impressionStale: state.impression.trim() !== '',
       };
     }
     case 'SET_NASCET':
-      return { ...state, nascet: action.nascet };
+      return { ...state, nascet: action.nascet, impressionStale: state.impression.trim() !== '' };
     case 'SET_IMPRESSION':
-      return { ...state, impression: action.impression, impressionEdited: true };
+      return { ...state, impression: action.impression, impressionEdited: true, impressionStale: false };
     case 'SET_SONOGRAPHER':
       return { ...state, sonographerComments: action.comments };
     case 'SET_CLINICIAN':
@@ -203,6 +215,7 @@ function reducer(state: CarotidFormStateV2, action: Action): CarotidFormStateV2 
         view: action.view,
         impression: action.impression,
         impressionEdited: true,
+        impressionStale: false,
         recommendations: [...action.recommendations],
         // Wave 3.1 (Part 10 HIGH) — always reset clinicianComments so an
         // interpretation typed for a previous patient cannot silently leak
@@ -379,9 +392,8 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
   //   2. `isFirstMirrorRun` skips the very first effect run, so the
   //      freshly-hydrated state isn't immediately re-mirrored back into
   //      the encounter (it was just read from there).
-  // `lastSavedAt` mirrors the timestamp so FormActions' "saved at HH:MM"
-  // affordance keeps working without re-introducing useAutoSave.
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  // UX-ANGIO-002 L3b: no local save clock — FormActions reads the confirmed
+  // save time (and any save failure) from EncounterContext.
   const lastPersistedRef = useRef<CarotidFormStateV2 | null>(null);
   // Anti-loop guards:
   //   * Wait for a non-null encounter before mirroring.
@@ -401,7 +413,6 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     if (lastPersistedRef.current === state) return;
     lastPersistedRef.current = state;
     setStudyState<CarotidFormStateV2>('carotid', state);
-    setLastSavedAt(new Date());
   }, [encounter, setStudyState, state]);
 
   type PendingTemplate = CarotidTemplate | CustomTemplate;
@@ -626,8 +637,7 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
       const fullId = id as CarotidVesselFullId;
       // Start cycling from the band currently SHOWN (bulb mirrors ICA-prox).
       const current = resolveCarotidBand(state.findings, eff, id);
-      const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
-      const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
+      const next = nextSeverityBand(current);
       dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
     },
     [state.findings, eff],
@@ -660,15 +670,10 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
     [state.findings, eff],
   );
 
-  // Under-diagram color key — the 5 stenosis-severity bands, colored by the
-  // same `carotidBandColor` the vessels use so the legend ↔ diagram agree.
+  // Under-diagram color key — grey / red / black, from the same shared helper
+  // the vessel colors use so the legend ↔ diagram agree.
   const carotidLegendItems = useMemo(
-    () =>
-      (['normal', 'mild', 'moderate', 'severe', 'occluded'] as const).map((band) => ({
-        key: band,
-        label: t(`carotid.severity.${band}`, band),
-        ...carotidBandColor(band),
-      })),
+    () => severityLegendItems(t, 'carotid.severity'),
     [t],
   );
 
@@ -711,63 +716,81 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
             >
               {t('carotid.templates.menuLabel', 'Templates')}
             </EMRButton>
-            <button
-              type="button"
-              className={classes.newCaseButton}
+            {/* UX-ANGIO-005 L2: this RESETS the current study, so it is a
+                quiet secondary button that says so (no '+'). */}
+            <EMRButton
+              variant="secondary"
+              size="sm"
+              leftSection={<IconEraser size={15} stroke={1.9} aria-hidden />}
               onClick={handleNewCaseRequest}
-              aria-label={t('carotid.actions.newCase', '+ New case')}
+              className={classes.clearFormButton}
+              data-testid="new-case-button"
             >
-              <IconPlus size={16} />
-              <span>{t('carotid.actions.newCase', '+ New case')}</span>
-            </button>
+              {t('carotid.actions.newCase', 'Clear form')}
+            </EMRButton>
           </Group>
         </Group>
 
-        <CarotidSegmentTable
-          findings={state.findings}
-          view={state.view}
-          onFindingChange={handleFindingChange}
-        />
+        <div className={classes.assessmentLayout}>
+          <div className={classes.assessmentMain}>
+            <Stack gap="lg">
+              <CarotidSegmentTable
+                findings={state.findings}
+                view={state.view}
+                onFindingChange={handleFindingChange}
+              />
+              {/* The grade lives in the page flow under the table that drives
+                  it. Inside the sticky diagram column it sat below an inner
+                  scroll and both walkers and the critic missed it (level-up). */}
+              <NASCETPicker
+                findings={state.findings}
+                value={state.nascet}
+                onChange={handleNascetChange}
+              />
+            </Stack>
+          </div>
 
-        <NASCETPicker
-          findings={state.findings}
-          value={state.nascet}
-          onChange={handleNascetChange}
-        />
+          <div className={classes.assessmentAside} data-testid="carotid-assessment-aside">
+            <Stack gap="md">
+              <EMRContentSection
+                title={t('carotid.anatomy.title', 'Carotid anatomy')}
+                subtitle={t(
+                  'carotid.anatomy.subtitle',
+                  'Vessel colors reflect severity (normal → occluded).',
+                )}
+                showAccent={false}
+                padding="md"
+              >
+                <Stack gap="sm">
+                  <AnatomyDiagramSection
+                    view="neck-carotid"
+                    drawingColors={STENOSIS_DRAWING_COLORS}
+                    drawingColorLabelPrefix="carotid.drawingColor"
+                    segments={{}}
+                    colorFn={carotidColorFn}
+                    tooltipText={carotidTooltipText}
+                    overlay={false}
+                    enableSegmentEdit={false}
+                    pathOverrides={pathOverridesMap}
+                    drawings={state.drawings}
+                    onSegmentClick={handleAnatomySegmentClick}
+                    onCommitStroke={handleCommitStroke}
+                    onEraseStroke={handleEraseStroke}
+                    onUndo={handleUndoStroke}
+                    onClear={handleClearDrawings}
+                    onCommitSegmentEdit={handleCommitSegmentEdit}
+                    onClearSegmentEdit={handleClearSegmentEdit}
+                  />
+                  <AnatomyLegend
+                    items={carotidLegendItems}
+                    ariaLabel={t('carotid.anatomy.legendLabel', 'Stenosis severity legend')}
+                  />
+                </Stack>
+              </EMRContentSection>
 
-        <EMRContentSection
-          title={t('carotid.anatomy.title', 'Carotid anatomy')}
-          subtitle={t(
-            'carotid.anatomy.subtitle',
-            'Vessel colors reflect severity (normal → occluded).',
-          )}
-          showAccent={false}
-          padding="md"
-        >
-          <Stack gap="sm">
-            <AnatomyDiagramSection
-              view="neck-carotid"
-              segments={{}}
-              colorFn={carotidColorFn}
-              tooltipText={carotidTooltipText}
-              overlay={false}
-              enableSegmentEdit={false}
-              pathOverrides={pathOverridesMap}
-              drawings={state.drawings}
-              onSegmentClick={handleAnatomySegmentClick}
-              onCommitStroke={handleCommitStroke}
-              onEraseStroke={handleEraseStroke}
-              onUndo={handleUndoStroke}
-              onClear={handleClearDrawings}
-              onCommitSegmentEdit={handleCommitSegmentEdit}
-              onClearSegmentEdit={handleClearSegmentEdit}
-            />
-            <AnatomyLegend
-              items={carotidLegendItems}
-              ariaLabel={t('carotid.anatomy.legendLabel', 'Stenosis severity legend')}
-            />
-          </Stack>
-        </EMRContentSection>
+            </Stack>
+          </div>
+        </div>
 
         <Stack gap="sm" className={classes.textSection}>
           <EMRTextarea
@@ -778,6 +801,17 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
             minRows={4}
             data-testid="carotid-impression"
           />
+          {state.impressionStale && (
+            <EMRAlert
+              variant="info"
+              title={t('common.impressionStale.title', 'Findings changed after this conclusion was written')}
+              withCloseButton
+              onClose={() => handleImpressionChange(state.impression)}
+              data-testid="carotid-impression-stale"
+            >
+              {t('common.impressionStale.body', 'Please review the conclusion. Close this note to keep it as it is.')}
+            </EMRAlert>
+          )}
           <EMRTextarea
             label={t('carotid.narrative.clinicianComments', 'Clinician comments')}
             value={state.clinicianComments}
@@ -795,17 +829,13 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
 
         <FormActions
           form={formState}
-          lastSavedAt={lastSavedAt}
-          hasUnsavedChanges={false}
           onSaveDraft={() => {
             // Encounter writes already flush on every reducer change.
-            // `Save now` is a manual re-flush so the user gets a fresh
-            // "saved at" timestamp on demand without relying on the
-            // change-detection guard in the persist effect.
+            // `Save now` is a manual re-flush; the bar's "saved at" time
+            // comes from the encounter's confirmed write.
             if (encounter) {
               lastPersistedRef.current = state;
               setStudyState<CarotidFormStateV2>('carotid', state);
-              setLastSavedAt(new Date());
             }
           }}
           baseFilename={`carotid-${state.studyDate || encounter?.header.encounterDate || 'report'}`}
@@ -828,12 +858,24 @@ export const CarotidForm = memo(function CarotidForm(): React.ReactElement {
       <ConfirmDialog
         opened={newCaseOpen}
         onClose={() => setNewCaseOpen(false)}
-        title={t('carotid.actions.newCaseConfirmTitle', 'Start a new case?')}
-        message={t(
-          'carotid.actions.newCaseConfirmBody',
-          'This will erase all current data. Unsaved changes will be lost.',
-        )}
-        confirmLabel={t('carotid.actions.newCaseConfirm', 'Discard & start new')}
+        title={t('carotid.actions.newCaseConfirmTitle', 'Clear this form?')}
+        message={
+          // UX-ANGIO-005 L3 — bold first line names whose study is erased.
+          <>
+            <Text fw={700} component="span" display="block" data-testid="new-case-confirm-patient">
+              {[encounter?.header.patientName, t('studies.carotid.short', 'Carotid')]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            <Text component="span" display="block">
+              {t(
+                'carotid.actions.newCaseConfirmBody',
+                'This will erase all current data. Unsaved changes will be lost.',
+              )}
+            </Text>
+          </>
+        }
+        confirmLabel={t('carotid.actions.newCaseConfirm', 'Clear form')}
         cancelLabel={t('carotid.actions.cancel', 'Cancel')}
         onConfirm={handleNewCaseConfirm}
         destructive

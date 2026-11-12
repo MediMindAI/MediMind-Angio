@@ -104,3 +104,41 @@ describe('ReflexTimeTable — implausibility hard-reject gate (Wave 4.9)', () =>
     expect(onFindingChange).not.toHaveBeenCalled();
   });
 });
+
+describe('ReflexTimeTable — headless rows keep their segment name (UX-ANGIO-004 L1)', () => {
+  it('renders the segment name + side badge on every headless row', () => {
+    const { container } = render(
+      <MantineProvider>
+        <TranslationProvider>
+          <ReflexTimeTable
+            findings={{}}
+            onFindingChange={vi.fn() as never}
+            showAllRows
+            headless
+            view="bilateral"
+          />
+        </TranslationProvider>
+      </MantineProvider>,
+    );
+    const rows = Array.from(container.querySelectorAll('[role="row"]')).filter((r) =>
+      r.querySelector('[data-testid^="num-"]'),
+    );
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const badge = row.querySelector('[data-side]');
+      expect(badge?.textContent).toMatch(/^[LR]$/);
+      // The name cell (hidden at lg+ by CSS, visible when the tables stack).
+      expect(badge?.previousElementSibling?.textContent?.trim()).not.toBe('');
+    }
+    const gsv = screen.getByTestId('num-gsv-prox-thigh-right-refluxDurationMs').closest('[role="row"]');
+    expect(gsv?.querySelector('[data-side="right"]')?.textContent).toBe('R');
+  });
+});
+
+describe('ReflexTimeTable — section title is a real heading (UX-ANGIO-018)', () => {
+  it('renders the card title as an h2', () => {
+    renderWith(SEED, vi.fn());
+    const heading = screen.getByRole('heading', { level: 2 });
+    expect(heading).toHaveAttribute('id', 'reflex-table-title');
+  });
+});

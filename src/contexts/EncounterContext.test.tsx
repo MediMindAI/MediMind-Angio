@@ -17,7 +17,7 @@
  * works under jsdom without a real browser.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { EncounterProvider, useEncounter } from './EncounterContext';
@@ -335,5 +335,163 @@ describe('EncounterContext — Phase 2a', () => {
 
     // Final state must reflect 'enc-b' — the previous-id load was cancelled.
     expect(result.current.encounter?.encounterId).toBe('enc-b');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// UX-ANGIO-001 L2 (cross-tab freshness) + UX-ANGIO-002 L1 (save status)
+// ---------------------------------------------------------------------------
+describe('EncounterContext — save status + cross-tab freshness', () => {
+  async function mountSeeded(id: string, draft: EncounterDraft) {
+    await saveEncounter(draft, { keepUpdatedAt: true });
+    const hook = renderHook(() => useEncounter(), { wrapper: wrapperFor(id) });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    return hook;
+  }
+
+  async function flush(ms = 10): Promise<void> {
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, ms));
+    });
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('lastSavedAt is the stored updatedAt after a reload (not "never saved")', async () => {
+    const draft = buildDraft({ encounterId: 'enc-ts', updatedAt: '2026-11-12T10:15:00.000Z' });
+    const { result } = await mountSeeded('enc-ts', draft);
+    expect(result.current.lastSavedAt?.toISOString()).toBe('2026-11-12T10:15:00.000Z');
+    expect(result.current.saveError).toBeNull();
+    expect(result.current.staleFromOtherTab).toBe(false);
+  });
+
+  it('lastSavedAt moves to the written updatedAt once the save lands', async () => {
+    const draft = buildDraft({ encounterId: 'enc-ts2', updatedAt: '2026-11-12T10:15:00.000Z' });
+    const { result } = await mountSeeded('enc-ts2', draft);
+    act(() => {
+      result.current.setStudyState('arterialLE', { note: 'x' });
+    });
+    await flush();
+    expect(result.current.lastSavedAt?.toISOString()).toBe(result.current.encounter?.updatedAt);
+    const stored = await loadEncounter('enc-ts2');
+    expect(stored?.updatedAt).toBe(result.current.encounter?.updatedAt);
+  });
+
+  it('a failed IndexedDB write sets saveError and keeps the answer in memory', async () => {
+    const { result } = await mountSeeded('enc-fail', buildDraft({ encounterId: 'enc-fail' }));
+    const putSpy = vi.spyOn(IDBObjectStore.prototype, 'put').mockImplementation(() => {
+      throw new Error('forced IDB failure');
+    });
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    act(() => {
+      result.current.setStudyState('carotid', { note: 'keep me' });
+    });
+    await flush();
+    expect(result.current.saveError).toBe('write-failed');
+    expect(result.current.encounter?.studies.carotid).toEqual({ note: 'keep me' });
+    expect(warnSpy).toHaveBeenCalled();
+
+    // Next successful save clears the error.
+    putSpy.mockRestore();
+    act(() => {
+      result.current.setStudyState('carotid', { note: 'keep me 2' });
+    });
+    await flush();
+    expect(result.current.saveError).toBeNull();
+  });
+
+  it('a localStorage quota failure sets saveError cache-failed', async () => {
+    const { result } = await mountSeeded('enc-quota', buildDraft({ encounterId: 'enc-quota' }));
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    });
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    act(() => {
+      result.current.setStudyState('carotid', { note: 'n' });
+    });
+    await flush();
+    expect(result.current.saveError).toBe('cache-failed');
+    // IDB (source of truth) still has it.
+    expect((await loadEncounter('enc-quota'))?.studies.carotid).toEqual({ note: 'n' });
+  });
+
+  it("does not flag its own writes as another tab's", async () => {
+    const { result } = await mountSeeded('enc-self', buildDraft({ encounterId: 'enc-self' }));
+    act(() => {
+      result.current.setStudyState('arterialLE', { a: 1 });
+    });
+    act(() => {
+      result.current.setStudyState('arterialLE', { a: 2 });
+    });
+    await flush();
+    act(() => {
+      result.current.updateHeader({ ...result.current.encounter!.header, patientName: 'B' });
+    });
+    await flush();
+    expect(result.current.staleFromOtherTab).toBe(false);
+  });
+
+  it("a stale tab's edit no longer wipes another tab's saved answer", async () => {
+    const seed = buildDraft({
+      encounterId: 'enc-2tab',
+      selectedStudyTypes: ['arterialLE', 'carotid'],
+      updatedAt: '2026-11-12T10:00:00.000Z',
+    });
+    // Tab A opens the visit.
+    const { result } = await mountSeeded('enc-2tab', seed);
+
+    // Tab B (another tab) saves a carotid note to the same visit.
+    await saveEncounter({ ...seed, studies: { carotid: { note: 'tab B note' } } });
+
+    // Tab A, still holding the old copy, edits arterial.
+    act(() => {
+      result.current.setStudyState('arterialLE', { psv: 120 });
+    });
+    await flush();
+
+    const stored = await loadEncounter('enc-2tab');
+    expect(stored?.studies.carotid).toEqual({ note: 'tab B note' });
+    expect(stored?.studies.arterialLE).toEqual({ psv: 120 });
+    expect(result.current.staleFromOtherTab).toBe(true);
+    expect(result.current.encounter?.studies.carotid).toEqual({ note: 'tab B note' });
+  });
+
+  it("a storage event from another tab raises the flag and catches the copy up", async () => {
+    const seed = buildDraft({ encounterId: 'enc-evt', updatedAt: '2026-11-12T10:00:00.000Z' });
+    const { result } = await mountSeeded('enc-evt', seed);
+
+    await saveEncounter({ ...seed, studies: { carotid: { note: 'from B' } } });
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: keyEncounter('enc-evt') }));
+    });
+
+    expect(result.current.staleFromOtherTab).toBe(true);
+    expect(result.current.encounter?.studies.carotid).toEqual({ note: 'from B' });
+  });
+
+  it('a tab that only re-saves the same answers raises no flag', async () => {
+    const seed = buildDraft({ encounterId: 'enc-same', updatedAt: '2026-11-12T10:00:00.000Z' });
+    const { result } = await mountSeeded('enc-same', seed);
+
+    // Tab B just opened the visit and re-stamped it — no answer changed.
+    await saveEncounter(seed);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: keyEncounter('enc-same') }));
+    });
+
+    expect(result.current.staleFromOtherTab).toBe(false);
+  });
+
+  it('ignores storage events for other keys', async () => {
+    const { result } = await mountSeeded('enc-other', buildDraft({ encounterId: 'enc-other' }));
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'emr-language' }));
+      window.dispatchEvent(new StorageEvent('storage', { key: keyEncounter('enc-unrelated') }));
+    });
+    expect(result.current.staleFromOtherTab).toBe(false);
   });
 });

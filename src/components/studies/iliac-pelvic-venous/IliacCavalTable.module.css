@@ -1,17 +1,38 @@
 /* IliacCavalTable — iliac & caval vessel findings grid (Command).
- * A fixed-column CSS grid with a tinted header row and horizontal scroll on
- * desktop, collapsing to stacked cards (data-label pseudo-elements) under
- * 992px. The velocity column carries a per-level sub-grid: a small uppercase
- * level tag + side-by-side velocity/diameter inputs, with the derived ratio
- * shown as a chip below. Replaces the previous flat layout whose stacked
- * full-sentence labels made the cell awkwardly tall (Part: audit H1). */
+ * Three sections (IVC · RIGHT · LEFT), each a fixed-column CSS grid with a
+ * tinted header row and horizontal scroll on desktop, collapsing to stacked
+ * cards (data-label pseudo-elements) under 992px. Every row has the same
+ * columns (clinician feedback 2026-11). Below 992px an empty row is a one-line
+ * toggle (label + side + status chip) and the side header stays pinned
+ * (UX-ANGIO-026 L4). */
 
+/* "All normal" action row above the sections (UX-ANGIO-011). */
 .toolbar {
-  display: flex;
+  margin-bottom: var(--emr-spacing-md);
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Section header (IVC / RIGHT / LEFT) — a navy chip, rendered as an h3. */
+.sectionTitle {
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  padding: 3px 10px;
+  margin: 0 0 8px;
+  line-height: inherit;
+  border-radius: var(--emr-border-radius);
+  background: color-mix(in srgb, var(--emr-primary) 8%, transparent);
+  color: var(--emr-primary);
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
 }
 
 .tableWrap {
@@ -24,14 +45,19 @@
 .headRow,
 .row {
   display: grid;
-  /* Select columns (patency/compressibility/thrombus/phasicity/valsalva) are
-   * sized to fit the long Georgian option labels — e.g. "ნაწილობრივ
-   * კომპრესირებადი", "მწვავე ქრონიკულზე" — rather than clipping them to a few
-   * glyphs. The grid scrolls within .tableWrap, so the extra width is fine. */
-  grid-template-columns: 132px 140px 172px 156px 232px 88px 136px 136px 64px 64px 88px;
+  /* Select columns are sized to fit the long Georgian option labels (e.g.
+   * "ნაწილობრივი", "კომპეტენტური" next to the clear ×). The maxima add up to
+   * the old 990px; competency took 20px from the two numeric columns so a filled
+   * "კომპეტენტური" is no longer clipped. Tracks may give up to ~20px each when
+   * the diagram rail sits beside the table (≥1280px, see
+   * IliacPelvicVenousForm.module.css); below the sum of the minimums the grid
+   * scrolls within .tableWrap. */
+  grid-template-columns:
+    minmax(96px, 110px) minmax(130px, 150px) minmax(130px, 150px) minmax(140px, 160px)
+    minmax(150px, 180px) minmax(80px, 90px) minmax(80px, 90px);
   gap: 10px;
   align-items: center;
-  min-width: 1508px;
+  min-width: 866px;
 }
 
 .headRow {
@@ -70,13 +96,6 @@
   min-width: 0;
 }
 
-.checkCell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 36px;
-}
-
 .segmentCell {
   display: inline-flex;
   align-items: center;
@@ -97,90 +116,6 @@
   width: 100%;
   color: var(--emr-text-tertiary);
   font-size: var(--emr-font-xs);
-}
-
-/* Per-level velocity/diameter cluster inside the velocity column (protocol
- * captures distal/mid/proximal velocities; the ratio chip below is derived). */
-.levelCluster {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.levelRow {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-/* Small uppercase level tag (Distal / Mid / Proximal / SFJ). */
-.levelTag {
-  font-size: var(--emr-font-2xs);
-  font-weight: var(--emr-font-bold);
-  color: var(--emr-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: var(--emr-letter-spacing-wide);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Velocity + diameter sit side by side, evenly split. */
-.levelInputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  align-items: end;
-}
-
-/* Keeps the single-input rows aligned to the same 2-column rhythm. */
-.diameterSpacer {
-  display: block;
-}
-
-/* Derived velocity-ratio chip below the level inputs. */
-.derivedRatio {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  align-self: flex-start;
-  padding: 3px 8px;
-  border-radius: var(--emr-border-radius);
-  background: color-mix(in srgb, var(--emr-primary) 6%, transparent);
-  font-variant-numeric: tabular-nums;
-}
-
-.derivedRatioLabel {
-  font-size: var(--emr-font-2xs);
-  font-weight: var(--emr-font-bold);
-  color: var(--emr-primary);
-  text-transform: uppercase;
-  letter-spacing: var(--emr-letter-spacing-wide);
-}
-
-.derivedRatioValue {
-  font-size: var(--emr-font-sm);
-  font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-primary);
-}
-
-/* Threshold breach — clinical danger coloring (carve-out, do not change). */
-.derivedRatioHigh {
-  background: color-mix(in srgb, var(--emr-text-danger) 8%, transparent);
-}
-
-.derivedRatioHigh .derivedRatioLabel,
-.derivedRatioHigh .derivedRatioValue {
-  color: var(--emr-text-danger, #c92a2a);
-}
-
-.bladderFlags {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 2px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--emr-border-color);
 }
 
 @media (max-width: 992px) {
@@ -206,6 +141,11 @@
     background: var(--emr-bg-card);
   }
 
+  /* Cards keep all four edges (the desktop rule drops the last row's divider). */
+  .row:last-of-type {
+    border-bottom: 1px solid var(--emr-border-color);
+  }
+
   .tableWrap {
     overflow-x: visible;
   }
@@ -215,10 +155,6 @@
     min-width: 0;
   }
 
-  .checkCell {
-    justify-content: flex-start;
-  }
-
   .segmentCell {
     font-size: var(--emr-font-md);
     font-weight: var(--emr-font-bold);
@@ -226,11 +162,6 @@
     padding-bottom: 4px;
     border-bottom: 1px solid var(--emr-border-color);
     width: 100%;
-  }
-
-  .levelInputs {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
   }
 
   .cell[data-label]::before {
@@ -247,5 +178,81 @@
   /* On mobile the CFV-only "—" placeholder cells add nothing — hide them. */
   .muted[data-label] {
     display: none;
+  }
+
+  /* Pinned side header: stays at the top of the viewport while its own rows
+   * scroll, then leaves with its section. */
+  .sectionTitle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    /* Opaque version of the chip tint so rows don't show through it. */
+    background: color-mix(in srgb, var(--emr-primary) 8%, var(--emr-bg-card));
+  }
+
+  /* An open card lays its fields out in a grid on tablets (one column on phones). */
+  .row:not(.rowCollapsed) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    align-items: start;
+  }
+
+  /* An empty, unopened row: one line, no card chrome beyond a hairline. */
+  .rowCollapsed {
+    gap: 0;
+    padding: 0;
+    margin-bottom: var(--emr-spacing-sm);
+    box-shadow: none;
+  }
+
+  .rowToggle {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--emr-spacing-sm);
+    min-height: 44px;
+    border-radius: var(--emr-border-radius-lg);
+    text-align: start;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .rowCollapsed .rowToggle {
+    padding: 0 var(--emr-spacing-md);
+    border-bottom: none;
+    font-size: var(--emr-font-base);
+  }
+
+  .rowToggle:hover {
+    background: var(--emr-bg-hover);
+  }
+
+  .rowToggle:focus-visible {
+    outline: 2px solid var(--emr-primary);
+    outline-offset: 2px;
+  }
+
+  .rowTitle {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rowStatus {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    color: var(--emr-text-secondary);
+    transition: transform 0.15s ease;
+  }
+
+  .chevron[data-open] {
+    transform: rotate(180deg);
   }
 }

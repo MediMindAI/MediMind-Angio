@@ -15,7 +15,7 @@
  * re-points one of the bare routes back at a form, this catches it.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
 
@@ -106,5 +106,33 @@ describe('App routing — Phase 3a redirects', () => {
   it('renders the landing page for /', () => {
     render(<MiniApp initial="/" />);
     expect(screen.getByTestId('landing')).toBeInTheDocument();
+  });
+});
+
+describe('ScrollToTop — UX-ANGIO-017 L1', () => {
+  it('scrolls to the top when the pathname changes, not on a query-only change', async () => {
+    const { act } = await import('@testing-library/react');
+    const { useNavigate } = await import('react-router-dom');
+    const { ScrollToTop } = await import('./App');
+    const scrollSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    let go: (to: string) => void = () => undefined;
+    function Driver(): null {
+      go = useNavigate();
+      return null;
+    }
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <ScrollToTop />
+        <Driver />
+      </MemoryRouter>,
+    );
+    expect(scrollSpy).toHaveBeenCalledTimes(1); // initial mount
+    act(() => go('/encounter/abc/carotid'));
+    expect(scrollSpy).toHaveBeenCalledTimes(2);
+    expect(scrollSpy).toHaveBeenLastCalledWith(0, 0);
+    // `?edit=` keeps the pathname — EncounterIntake owns that scroll.
+    act(() => go('/encounter/abc/carotid?x=1'));
+    expect(scrollSpy).toHaveBeenCalledTimes(2);
+    scrollSpy.mockRestore();
   });
 });

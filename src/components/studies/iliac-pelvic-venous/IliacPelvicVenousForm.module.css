@@ -2,6 +2,14 @@
  * Field-group labels (uppercase letterspaced), per-side sub-deck headers, and
  * checkbox-group framing. Layout/typography only — no data flow. */
 
+/* Page width + side margins match the other study forms (1600px / 24px) —
+   without it the cards sat flush against the window edges. */
+.wrap {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 16px 24px 120px 24px;
+}
+
 /* A small uppercase letterspaced label that introduces a group of fields. */
 .groupLabel {
   display: flex;
@@ -40,20 +48,37 @@
   border-top: 1px solid var(--emr-border-color);
 }
 
-/* Escape-point row: aligned, gives the remove button room on the right. */
-.escapeRow {
+/* Vein table + diagram (UX-ANGIO-025 L4). Stacked (same order and 16px rhythm
+ * as the page Stack) below 1440px. From 1440px the diagram moves into a sticky
+ * rail beside the table. (It was 1280px; with the bigger diagram + page margins
+ * the 7-column table no longer fit beside the rail at 1280-1439 and scrolled
+ * sideways by ~118px, so that range now stacks.) Screen-only: the PDF layout is
+ * separate. */
+.tableDiagramLayout,
+.tableColumn {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 12px;
-  border-radius: var(--emr-border-radius-lg);
-  background: var(--emr-bg-hover);
+  flex-direction: column;
+  gap: var(--emr-spacing-lg);
+  min-width: 0;
 }
 
-/* Helper caption above a tightly-grouped row of inputs. */
-.fieldHint {
-  font-size: var(--emr-font-xs);
-  color: var(--emr-text-secondary);
-  margin: 0 0 6px 0;
+@media (min-width: 1440px) {
+  .tableDiagramLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(420px, 30vw, 600px);
+    align-items: start;
+  }
+
+  /* The rail never runs under the sticky FormActions bar (~93px tall, no token):
+   * when the diagram is taller than the space left, the rail scrolls itself. */
+  .diagramRail {
+    --iliac-rail-bottom-clearance: 96px;
+    position: sticky;
+    top: var(--emr-spacing-lg);
+    max-height: calc(100vh - 2 * var(--emr-spacing-lg) - var(--iliac-rail-bottom-clearance));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--emr-border-radius-xl);
+  }
 }
+

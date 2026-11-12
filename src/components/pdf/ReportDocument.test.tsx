@@ -29,6 +29,7 @@ const EMPTY_LABELS: ReportLabels = {
   pressures: {} as ReportLabels['pressures'],
   carotidFindings: {} as ReportLabels['carotidFindings'],
   carotidLegend: [],
+  arterialLegend: [],
   nascet: {} as ReportLabels['nascet'],
   narrative: {} as ReportLabels['narrative'],
   ceap: {} as ReportLabels['ceap'],

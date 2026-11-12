@@ -97,3 +97,31 @@ export function formatIsoForDisplay(
     day: '2-digit',
   }).format(d);
 }
+
+/**
+ * Format a date or instant as 'DD.MM.YYYY' (or 'DD.MM.YYYY HH:mm' with
+ * `includeTime`), in LOCAL wall-clock time and the same in every UI language.
+ *
+ * Why (U-1007): `formatIsoForDisplay` defaults to the 'en' locale, so the PDF
+ * printed '11/12/2026, 03:37 PM' — a Georgian reader takes that as
+ * 11 December. Day.month.year with a 24-hour clock is how Georgian (and
+ * Russian) clinical documents write dates, and it can't be misread.
+ *
+ * - A date-only value ('YYYY-MM-DD') is read as a calendar date through
+ *   `isoToLocalDate` (no UTC midnight shift in Tbilisi or anywhere else) and
+ *   never gets a time, even with `includeTime`.
+ * - An instant ('…T…Z' / with offset) is shown in the reader's local time.
+ */
+export function formatDottedDate(
+  iso: string | undefined,
+  opts: { readonly includeTime?: boolean } = {},
+): string {
+  if (!iso) return '—';
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  const d = dateOnly ? isoToLocalDate(iso) : new Date(iso);
+  if (!d || Number.isNaN(d.getTime())) return '—';
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  const date = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+  if (!opts.includeTime || dateOnly) return date;
+  return `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}

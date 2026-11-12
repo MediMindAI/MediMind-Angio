@@ -15,14 +15,15 @@
  *   └──────────────────────────────────────────────────────────────────┘
  *
  * Action hierarchy (one primary CTA per bar, the rest are icon-only):
- *   - "+ Add study"         → primary gradient (only when studies remain)
+ *   - "+ Add study"         → secondary deck (only when studies remain; the
+ *                              screen's one gradient primary is PDF download)
  *   - "Edit details"        → ghost icon-button with aria-label tooltip
  *   - "All encounters"      → ghost icon-button with aria-label tooltip
  *
  * Renders nothing when `encounter === null`.
  */
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   IconEdit,
@@ -31,34 +32,54 @@ import {
   IconCalendarEvent,
   IconUser,
 } from '@tabler/icons-react';
+import { Menu } from '@mantine/core';
 import { EMRButton } from '../common/EMRButton';
 import { useEncounter } from '../../contexts/EncounterContext';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { loadEncounterSync } from '../../services/encounterStore';
 import type { StudyType } from '../../types/study';
 import classes from './EncounterContextBanner.module.css';
+import { formatDottedDate } from '../../services/dateHelpers';
 
 /** Per-StudyType metadata for chip labels and routes. */
 interface StudyTypeMeta {
   readonly route: string;
   readonly translationKey: string;
   readonly fallbackLabel: string;
+  /**
+   * Venous laterality (UX-ANGIO-012 L2). Right / left / both-legs studies get
+   * distinct keys; until a locale carries them, the label is composed from the
+   * already-translated `studies.venousLE.short` + `anatomy.side.<side>` so the
+   * three entries never read identically.
+   */
+  readonly side?: 'bilateral' | 'right' | 'left';
+  /**
+   * `false` = no study form exists yet, so the add menu must not offer it:
+   * EncounterStudyWrapper bounces the route to `/`, leaving a study in the
+   * visit that can never be opened or completed. Chips still render it for
+   * visits that already contain one.
+   */
+  readonly addable?: false;
 }
 
 const STUDY_TYPE_META: Readonly<Record<StudyType, StudyTypeMeta>> = {
   venousLEBilateral: {
     route: '/venous-le',
-    translationKey: 'studies.venousLE.short',
+    translationKey: 'studies.venousLE.shortBilateral',
     fallbackLabel: 'Venous LE',
+    side: 'bilateral',
   },
   venousLERight: {
     route: '/venous-le',
-    translationKey: 'studies.venousLE.short',
+    translationKey: 'studies.venousLE.shortRight',
     fallbackLabel: 'Venous LE (R)',
+    side: 'right',
   },
   venousLELeft: {
     route: '/venous-le',
-    translationKey: 'studies.venousLE.short',
+    translationKey: 'studies.venousLE.shortLeft',
     fallbackLabel: 'Venous LE (L)',
+    side: 'left',
   },
   arterialLE: {
     route: '/arterial-le',
@@ -74,6 +95,7 @@ const STUDY_TYPE_META: Readonly<Record<StudyType, StudyTypeMeta>> = {
     route: '/ivc-duplex',
     translationKey: 'studies.ivcDuplex.short',
     fallbackLabel: 'IVC',
+    addable: false,
   },
   iliacPelvicVenous: {
     route: '/iliac-pelvic-venous',
@@ -107,30 +129,26 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
   const navigate = useNavigate();
   const params = useParams<{ encounterId?: string; studyType?: string }>();
   const { encounter, addStudy } = useEncounter();
-  const [addMenuOpened, setAddMenuOpened] = useState(false);
-  const addMenuRef = useRef<HTMLDivElement | null>(null);
-
-  // Click-outside dismissal.
-  useEffect(() => {
-    if (!addMenuOpened) return;
-    const handleDocClick = (event: MouseEvent): void => {
-      if (!addMenuRef.current) return;
-      if (!(event.target instanceof Node)) return;
-      if (addMenuRef.current.contains(event.target)) return;
-      setAddMenuOpened(false);
-    };
-    document.addEventListener('mousedown', handleDocClick);
-    return () => document.removeEventListener('mousedown', handleDocClick);
-  }, [addMenuOpened]);
 
   const activeStudyType = params.studyType as StudyType | undefined;
 
   const addableStudyTypes = useMemo<ReadonlyArray<StudyType>>(() => {
     const selected = new Set<StudyType>(encounter?.selectedStudyTypes ?? []);
     return (Object.keys(STUDY_TYPE_META) as ReadonlyArray<StudyType>).filter(
-      (s) => !selected.has(s),
+      (s) => !selected.has(s) && STUDY_TYPE_META[s].addable !== false,
     );
   }, [encounter?.selectedStudyTypes]);
+
+  const studyLabel = useCallback(
+    (studyType: StudyType): string => {
+      const meta = STUDY_TYPE_META[studyType];
+      const fallback = meta.side
+        ? `${t('studies.venousLE.short', 'Venous LE')} (${t(`anatomy.side.${meta.side}`, meta.side)})`
+        : meta.fallbackLabel;
+      return t(meta.translationKey, fallback);
+    },
+    [t],
+  );
 
   const handleChipClick = useCallback(
     (studyType: StudyType) => {
@@ -144,9 +162,23 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
   const handleAddStudy = useCallback(
     (studyType: StudyType) => {
       if (!encounter) return;
+      const { encounterId } = encounter;
       addStudy(studyType);
-      setAddMenuOpened(false);
-      navigate(`/encounter/${encounter.encounterId}/${studyType}`);
+      // The study route guard (EncounterStudyWrapper) checks the sync
+      // localStorage cache, which saveEncounter writes only after IndexedDB
+      // resolves. Navigating at once bounced the user to `/` even though the
+      // study was saved. Wait until the cache shows the new study (the same
+      // check the guard runs), capped so a failed cache write still moves on.
+      const startedAt = Date.now();
+      const goWhenStored = (): void => {
+        const stored = loadEncounterSync(encounterId);
+        if (stored?.selectedStudyTypes.includes(studyType) || Date.now() - startedAt > 2000) {
+          navigate(`/encounter/${encounterId}/${studyType}`);
+          return;
+        }
+        window.setTimeout(goWhenStored, 25);
+      };
+      goWhenStored();
     },
     [addStudy, encounter, navigate],
   );
@@ -169,7 +201,7 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
   const patientName = encounter.header.patientName || t('encounter.banner.unnamedPatient', 'Unnamed');
   const initials = initialsFromName(patientName) || '?';
   const metaParts = [
-    encounter.header.encounterDate,
+    encounter.header.encounterDate ? formatDottedDate(encounter.header.encounterDate) : null,
     age !== null
       ? t('encounter.banner.ageYears', '{age} y').replace('{age}', String(age))
       : null,
@@ -216,9 +248,8 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
           </span>
           <div className={classes.chipTrack} role="tablist" aria-label="Studies">
             {encounter.selectedStudyTypes.map((studyType) => {
-              const meta = STUDY_TYPE_META[studyType];
               const isActive = studyType === activeStudyType;
-              const label = t(meta.translationKey, meta.fallbackLabel);
+              const label = studyLabel(studyType);
               return (
                 <button
                   key={studyType}
@@ -253,46 +284,45 @@ export const EncounterContextBanner = memo(function EncounterContextBanner(): Re
       {/* ============== ACTIONS (right) ============== */}
       <div className={classes.actions}>
         {addableStudyTypes.length > 0 && (
-          <div className={classes.menuWrap} ref={addMenuRef}>
-            <EMRButton
-              variant="primary"
-              size="sm"
-              icon={IconPlus}
-              onClick={() => setAddMenuOpened((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={addMenuOpened}
-              data-testid="banner-add-study"
-            >
-              {t('encounter.banner.addStudy', '+ Add study')}
-            </EMRButton>
-            {addMenuOpened && (
-              <div
-                role="menu"
-                className={classes.menuDropdown}
-                data-testid="banner-add-study-menu"
+          // Mantine Menu portals its dropdown to <body>, so the banner's
+          // `overflow: hidden` (which keeps the accent rail clipped to the
+          // rounded corner) can no longer cut the options off (UX-ANGIO-012 L1,
+          // sibling: IliacPelvicVenousForm templates menu).
+          <Menu
+            position="bottom-end"
+            offset={8}
+            zIndex="var(--emr-z-dropdown)"
+            classNames={{
+              dropdown: classes.menuDropdown,
+              label: classes.menuHeader,
+              item: classes.menuItem,
+              itemSection: classes.menuItemIcon,
+            }}
+          >
+            <Menu.Target>
+              <EMRButton
+                variant="secondary"
+                size="sm"
+                icon={IconPlus}
+                data-testid="banner-add-study"
               >
-                <span className={classes.menuHeader}>
-                  {t('encounter.banner.addStudy', '+ Add study')}
-                </span>
-                {addableStudyTypes.map((studyType) => {
-                  const meta = STUDY_TYPE_META[studyType];
-                  return (
-                    <button
-                      key={studyType}
-                      type="button"
-                      role="menuitem"
-                      className={classes.menuItem}
-                      onClick={() => handleAddStudy(studyType)}
-                      data-testid={`banner-add-option-${studyType}`}
-                    >
-                      <IconUser size={14} stroke={1.75} className={classes.menuItemIcon} aria-hidden />
-                      <span>{t(meta.translationKey, meta.fallbackLabel)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                {t('encounter.banner.addStudy', '+ Add study')}
+              </EMRButton>
+            </Menu.Target>
+            <Menu.Dropdown data-testid="banner-add-study-menu">
+              <Menu.Label>{t('encounter.banner.addStudy', '+ Add study')}</Menu.Label>
+              {addableStudyTypes.map((studyType) => (
+                <Menu.Item
+                  key={studyType}
+                  leftSection={<IconUser size={14} stroke={1.75} aria-hidden />}
+                  onClick={() => handleAddStudy(studyType)}
+                  data-testid={`banner-add-option-${studyType}`}
+                >
+                  {studyLabel(studyType)}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
         )}
 
         <button

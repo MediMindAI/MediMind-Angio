@@ -6,7 +6,7 @@
  * `test/setup.ts` so IDB calls work in jsdom.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   saveEncounter,
   loadEncounter,
@@ -141,5 +141,30 @@ describe('encounterStore — IDB-backed persistence', () => {
     const round = await loadEncounter('enc-fallback');
     expect(round?.encounterId).toBe('enc-fallback');
     expect(round?.header.patientName).toBe('John Doe');
+  });
+
+  it('saveEncounter keeps the caller stamp with keepUpdatedAt and reports cache status', async () => {
+    const draft = buildDraft({ encounterId: 'enc-keep', updatedAt: '2026-11-12T09:00:00.000Z' });
+    const res = await saveEncounter(draft, { keepUpdatedAt: true });
+    expect(res.saved.updatedAt).toBe('2026-11-12T09:00:00.000Z');
+    expect(res.localCacheWritten).toBe(true);
+    expect((await loadEncounter('enc-keep'))?.updatedAt).toBe('2026-11-12T09:00:00.000Z');
+    expect(loadEncounterSync('enc-keep')?.updatedAt).toBe('2026-11-12T09:00:00.000Z');
+
+    // Default still re-stamps (intake / migration callers rely on it).
+    const restamped = await saveEncounter(draft);
+    expect(restamped.saved.updatedAt).not.toBe('2026-11-12T09:00:00.000Z');
+  });
+
+  it('saveEncounter reports localCacheWritten=false on a quota error but IDB keeps the draft', async () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const res = await saveEncounter(buildDraft({ encounterId: 'enc-quota' }));
+    spy.mockRestore();
+    warn.mockRestore();
+    expect(res.localCacheWritten).toBe(false);
+    expect((await loadEncounter('enc-quota'))?.encounterId).toBe('enc-quota');
   });
 });

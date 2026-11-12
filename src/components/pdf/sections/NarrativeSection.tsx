@@ -38,6 +38,12 @@ export interface NarrativeSectionProps {
   readonly leftFindings?: string;
   /** Optional bullet list of conclusions. */
   readonly conclusions?: ReadonlyArray<string>;
+  /**
+   * Pelvic study layout: auto findings → the clinician's conclusion → the ONE
+   * comments box LAST. The auto conclusion bullets print only when the
+   * clinician's conclusion is empty (otherwise they duplicate it).
+   */
+  readonly conclusionThenComments?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -89,7 +95,10 @@ function ParagraphBlock({
   if (trimmed.length === 0) return null;
   return (
     <View style={styles.block}>
-      <Text style={styles.heading}>{title}</Text>
+      {/* Don't leave the heading alone at a page bottom (U-1013). */}
+      <Text style={styles.heading} minPresenceAhead={24}>
+        {title}
+      </Text>
       <Text style={styles.body}>{trimmed}</Text>
     </View>
   );
@@ -106,13 +115,23 @@ function BulletList({
   if (nonEmpty.length === 0) return null;
   return (
     <View style={styles.block}>
-      <Text style={styles.heading}>{title}</Text>
-      {nonEmpty.map((line, idx) => (
-        <View key={`bullet-${idx}`} style={styles.bulletRow}>
-          <Text style={styles.bulletMarker}>•</Text>
-          <Text style={styles.bulletText}>{line}</Text>
-        </View>
-      ))}
+      {nonEmpty.map((line, idx) => {
+        const row = (
+          <View key={`bullet-${idx}`} style={styles.bulletRow}>
+            <Text style={styles.bulletMarker}>•</Text>
+            <Text style={styles.bulletText}>{line}</Text>
+          </View>
+        );
+        // Heading + first bullet never split across pages (U-1013).
+        return idx === 0 ? (
+          <View key="bullet-head" wrap={false}>
+            <Text style={styles.heading}>{title}</Text>
+            {row}
+          </View>
+        ) : (
+          row
+        );
+      })}
     </View>
   );
 }
@@ -123,7 +142,29 @@ export function NarrativeSection({
   rightFindings,
   leftFindings,
   conclusions,
+  conclusionThenComments = false,
 }: NarrativeSectionProps): ReactElement {
+  const clinicianBlock = labels.clinicianComments ? (
+    <ParagraphBlock title={labels.clinicianComments} text={narrative.clinicianComments} />
+  ) : null;
+  if (conclusionThenComments) {
+    const hasConclusion = (narrative.impression ?? '').trim().length > 0;
+    return (
+      <View>
+        <ParagraphBlock title={labels.indication} text={narrative.indication} />
+        <ParagraphBlock title={labels.technique} text={narrative.technique} />
+        <ParagraphBlock title={labels.rightFindings} text={rightFindings} />
+        <ParagraphBlock title={labels.leftFindings} text={leftFindings} />
+        <ParagraphBlock title={labels.findings} text={narrative.findings} />
+        <ParagraphBlock title={labels.impression} text={narrative.impression} />
+        {!hasConclusion && conclusions && conclusions.length > 0 ? (
+          <BulletList title={labels.conclusions} items={conclusions} />
+        ) : null}
+        <ParagraphBlock title={labels.comments} text={narrative.comments} />
+        {clinicianBlock}
+      </View>
+    );
+  }
   return (
     <View>
       <ParagraphBlock title={labels.indication} text={narrative.indication} />
@@ -138,12 +179,7 @@ export function NarrativeSection({
         />
       ) : null}
       <ParagraphBlock title={labels.impression} text={narrative.impression} />
-      {labels.clinicianComments ? (
-        <ParagraphBlock
-          title={labels.clinicianComments}
-          text={narrative.clinicianComments}
-        />
-      ) : null}
+      {clinicianBlock}
       {conclusions && conclusions.length > 0 ? (
         <BulletList title={labels.conclusions} items={conclusions} />
       ) : null}

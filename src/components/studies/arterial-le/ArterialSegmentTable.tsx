@@ -134,7 +134,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
             <IconHeartbeat size={20} stroke={1.75} />
           </Box>
           <Box style={{ minWidth: 0 }}>
-            <Text className={classes.title} id="arterial-segment-title">
+            <Text component="h2" className={classes.title} id="arterial-segment-title">
               {t('arterialLE.segmentTable.title', 'Segmental assessment')}
             </Text>
             <Text className={classes.subtitle}>
@@ -206,7 +206,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                     onChange={(v) => setField(r.fullId, 'waveform', v)}
                     size="sm"
                     data-testid={`arterial-${r.fullId}-waveform`}
-                    aria-label={`${segLabel} ${sideChip} waveform`}
+                    aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.waveform', 'Waveform')}`}
                   />
                 </div>
 
@@ -229,7 +229,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
 
                 <div className={classes.cell} data-label={t('arterialLE.param.stenosisCategory', 'Stenosis')}>
                   <EMRSelect
-                    aria-label={`${segLabel} ${sideChip} stenosis`}
+                    aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.stenosisCategory', 'Stenosis')}`}
                     value={r.finding?.stenosisCategory ?? ''}
                     onChange={(v) =>
                       setField(
@@ -246,7 +246,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
 
                 <div className={classes.cell} data-label={t('arterialLE.param.plaqueMorphology', 'Plaque')}>
                   <EMRSelect
-                    aria-label={`${segLabel} ${sideChip} plaque`}
+                    aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.plaqueMorphology', 'Plaque')}`}
                     value={r.finding?.plaqueMorphology ?? ''}
                     onChange={(v) =>
                       setField(
@@ -263,7 +263,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
 
                 <div className={classes.cell} data-label={t('arterialLE.param.occluded', 'Occl.')}>
                   <EMRCheckbox
-                    aria-label={`${segLabel} ${sideChip} occluded`}
+                    aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.occluded', 'Occl.')}`}
                     checked={r.finding?.occluded ?? false}
                     onChange={(c) => setField(r.fullId, 'occluded', c)}
                     size="sm"
@@ -279,7 +279,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                       {t('arterialLE.param.stenosisPct', 'Stenosis %')}
                     </span>
                     <EMRNumberInput
-                      aria-label={`${segLabel} ${sideChip} stenosis percent`}
+                      aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.stenosisPct', 'Stenosis %')}`}
                       value={f?.stenosisPct ?? ''}
                       onChange={(v) => setField(
                         r.fullId,
@@ -298,7 +298,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                       {t('arterialLE.param.velocityRatio', 'Velocity ratio')}
                     </span>
                     <EMRNumberInput
-                      aria-label={`${segLabel} ${sideChip} velocity ratio`}
+                      aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.velocityRatio', 'Velocity ratio')}`}
                       value={f?.velocityRatio ?? ''}
                       onChange={(v) => setField(
                         r.fullId,
@@ -317,7 +317,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                       {t('arterialLE.param.plaqueLengthMm', 'Plaque length (mm)')}
                     </span>
                     <EMRNumberInput
-                      aria-label={`${segLabel} ${sideChip} plaque length`}
+                      aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.plaqueLengthMm', 'Plaque length (mm)')}`}
                       value={f?.plaqueLengthMm ?? ''}
                       onChange={(v) => setField(
                         r.fullId,
@@ -336,7 +336,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                       {t('arterialLE.param.visualizationQuality', 'Image quality')}
                     </span>
                     <EMRSelect
-                      aria-label={`${segLabel} ${sideChip} image quality`}
+                      aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.visualizationQuality', 'Image quality')}`}
                       value={f?.visualizationQuality ?? ''}
                       onChange={(v) =>
                         setField(
@@ -355,7 +355,7 @@ export const ArterialSegmentTable = memo(function ArterialSegmentTable({
                       {t('arterialLE.param.note', 'Note')}
                     </span>
                     <EMRTextarea
-                      aria-label={`${segLabel} ${sideChip} note`}
+                      aria-label={`${segLabel} ${sideChip} ${t('arterialLE.param.note', 'Note')}`}
                       value={f?.note ?? ''}
                       onChange={(v) => setField(r.fullId, 'note', v === '' ? undefined : v)}
                       autosize

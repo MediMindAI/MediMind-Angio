@@ -343,3 +343,11 @@
 .tab--active::before {
   display: none;
 }
+
+/* Dark: the selected pill is solid secondary navy with white text. The dark
+   --emr-primary (#3182ce) + white is ~3.97:1, below WCAG AA; --emr-secondary
+   (#2b6cb0) + white is ~5.6:1. --emr-text-inverse is near-black in dark. */
+:global([data-mantine-color-scheme='dark']) .tab--pills.tab--active {
+  background: var(--emr-secondary) !important;
+  color: var(--emr-text-white) !important;
+}

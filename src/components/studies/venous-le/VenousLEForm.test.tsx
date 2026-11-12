@@ -26,7 +26,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 
@@ -35,6 +35,7 @@ import { EncounterProvider } from '../../../contexts/EncounterContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
+  loadEncounterSync,
   saveEncounter,
 } from '../../../services/encounterStore';
 import type { EncounterDraft } from '../../../types/encounter';
@@ -66,12 +67,13 @@ function buildDraft(overrides: Partial<EncounterDraft> = {}): EncounterDraft {
 
 interface HarnessProps {
   readonly encounterId: string;
+  readonly studyType?: string;
 }
 
-function Harness({ encounterId }: HarnessProps): React.ReactElement {
+function Harness({ encounterId, studyType = 'venousLEBilateral' }: HarnessProps): React.ReactElement {
   return (
     <MemoryRouter
-      initialEntries={[`/encounter/${encounterId}/venousLEBilateral`]}
+      initialEntries={[`/encounter/${encounterId}/${studyType}`]}
     >
       <MantineProvider>
         <Notifications />
@@ -143,6 +145,42 @@ describe('VenousLEForm — Phase 3b (encounter pivot)', () => {
       expect(screen.getByTestId('new-case-button')).toBeInTheDocument();
       expect(screen.getByTestId('narrative-sonographer')).toBeInTheDocument();
       expect(screen.getByTestId('narrative-clinician')).toBeInTheDocument();
+    },
+    RENDER_TIMEOUT_MS,
+  );
+});
+
+describe('VenousLEForm — one-leg route honours its study type (UX-ANGIO-012 L4)', () => {
+  it(
+    'a right-leg study writes only right-leg findings into its own slot',
+    async () => {
+      const draft = buildDraft({
+        encounterId: 'enc-venous-right',
+        selectedStudyTypes: ['venousLERight'],
+      });
+      await saveEncounter(draft);
+
+      render(<Harness encounterId={draft.encounterId} studyType="venousLERight" />);
+
+      // Only the right leg is offered: 19 records, no side tabs.
+      expect(screen.getAllByTestId(/^segment-row-/)).toHaveLength(19);
+      expect(screen.queryByTestId('segment-row-cfv-left')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('narrative-left-findings')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('bulk-all-normal'));
+
+      await waitFor(() => {
+        const saved = loadEncounterSync(draft.encounterId);
+        const slot = saved?.studies.venousLERight as
+          | { studyType: string; findings: Record<string, unknown>; cptCode?: { code: string } }
+          | undefined;
+        expect(slot?.studyType).toBe('venousLERight');
+        const keys = Object.keys(slot?.findings ?? {});
+        expect(keys).toHaveLength(19);
+        expect(keys.every((k) => k.endsWith('-right'))).toBe(true);
+        expect(slot?.cptCode?.code).toBe('93971');
+        expect(saved?.studies.venousLEBilateral).toBeUndefined();
+      });
     },
     RENDER_TIMEOUT_MS,
   );
@@ -228,5 +266,25 @@ describe('VenousLEForm — stateToFormState projection', () => {
     const projected = stateToFormState(state, encounter);
 
     expect(projected.header.studyDate).toBe('2026-04-30');
+  });
+
+  it('carries a one-leg study type through to the FHIR/PDF projection', () => {
+    const encounter = buildDraft();
+    const state = {
+      schemaVersion: 1 as const,
+      studyType: 'venousLELeft' as const,
+      studyDate: '2026-04-30',
+      protocol: 'standard' as const,
+      findings: {},
+      view: 'left' as const,
+      impression: '',
+      impressionEdited: false,
+      ceap: undefined,
+      recommendations: [],
+      sonographerComments: '',
+      clinicianComments: '',
+      drawings: [],
+    };
+    expect(stateToFormState(state, encounter).studyType).toBe('venousLELeft');
   });
 });

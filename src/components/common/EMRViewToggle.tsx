@@ -124,7 +124,8 @@ export function EMRViewToggle({
               ...(isActive
                 ? {
                     background: 'var(--emr-gradient-primary)',
-                    color: 'var(--emr-text-inverse)',
+                    // White in both themes: --emr-text-inverse is near-black in dark.
+                    color: 'var(--emr-text-white)',
                     boxShadow: '0 2px 6px rgba(43, 108, 176, 0.35)',
                   }
                 : {

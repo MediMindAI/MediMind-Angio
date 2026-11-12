@@ -2,9 +2,13 @@
 /**
  * Carotid Duplex — Pre-seeded clinical templates.
  *
- * 8 medically-reviewed templates spanning the common clinical scenarios:
+ * 7 medically-reviewed templates spanning the common clinical scenarios:
  * normal, mild bilateral atherosclerosis, moderate/severe left ICA,
- * ICA occlusion, post-CEA, post-stent, subclavian steal.
+ * ICA occlusion, post-CEA, post-stent.
+ *
+ * Templates carry no manual NASCET grade (`nascet: {}`): the SRU 2003
+ * calculator grades each side from the template's own findings, so the grade
+ * keeps following any velocity the clinician types afterwards.
  */
 
 import type { Recommendation } from '../../../types/form';
@@ -42,7 +46,7 @@ export interface CarotidTemplate {
 // --- Helpers ---------------------------------------------------------------
 
 const VESSELS = [
-  'cca-prox', 'cca-mid', 'cca-dist',
+  'cca-prox', 'cca-mid', 'cca-dist', 'bulb',
   'ica-prox', 'ica-mid', 'ica-dist', 'eca',
   'vert-v1', 'vert-v2', 'vert-v3',
   'subclav-prox', 'subclav-dist',
@@ -67,7 +71,7 @@ function patch(
   return { ...base, ...overrides } as CarotidFindings;
 }
 
-// --- 8 templates -----------------------------------------------------------
+// --- 7 templates -----------------------------------------------------------
 
 export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
   // 1. Normal bilateral
@@ -86,7 +90,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 90, edvCmS: 30 },
       'ica-prox-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 90, edvCmS: 30 },
     }),
-    nascet: { right: 'normal', left: 'normal' },
+    nascet: {},
     impressionKey: 'carotid.templates.normalBilateral.impression',
     impressionFallback:
       'Normal bilateral carotid, vertebral, and subclavian duplex examination. Common and internal carotid arteries demonstrate normal peak systolic and end-diastolic velocities with triphasic antegrade flow and no atherosclerotic plaque. Vertebral arteries show normal antegrade flow bilaterally. No hemodynamic evidence of stenosis or occlusion.',
@@ -108,10 +112,10 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 80, imtMm: 0.9, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 10, plaqueSurface: 'smooth' },
       'cca-dist-left':  { ...CAROTID_NORMAL_FINDING, psvCmS: 82, imtMm: 0.9, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 12, plaqueSurface: 'smooth' },
     }),
-    nascet: { right: 'lt50', left: 'lt50' },
+    nascet: {},
     impressionKey: 'carotid.templates.mildBilateralAtherosclerosis.impression',
     impressionFallback:
-      'Bilateral mild atherosclerotic disease of the carotid bifurcations involving the bulbs and proximal internal carotid arteries. Plaques are of mixed echogenicity with smooth surfaces and no ulceration. Peak systolic velocities remain within normal limits; no hemodynamically significant stenosis. NASCET < 50% bilaterally.',
+      'Bilateral mild atherosclerotic disease of the carotid bifurcations involving the bulbs and proximal internal carotid arteries. Plaques are of mixed echogenicity with smooth surfaces. Peak systolic velocities remain within normal limits; no hemodynamically significant stenosis. NASCET < 50% bilaterally.',
   },
 
   // 3. Moderate left ICA
@@ -130,10 +134,10 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
     }),
-    nascet: { right: 'lt50', left: '50to69' },
+    nascet: {},
     impressionKey: 'carotid.templates.moderateLeftIca.impression',
     impressionFallback:
-      'Moderate atherosclerotic stenosis of the left internal carotid artery, proximal segment, with NASCET 50–69% stenosis by SRU velocity criteria (PSV 180 cm/s, ICA/CCA ratio 2.5). Soft plaque, smooth surface, without ulceration. Right carotid system unremarkable — no significant stenosis. Vertebral and subclavian arteries are patent bilaterally with normal antegrade flow.',
+      'Moderate atherosclerotic stenosis of the left internal carotid artery, proximal segment, with NASCET 50–69% stenosis by SRU velocity criteria (PSV 180 cm/s, ICA/CCA ratio 2.5). Soft plaque, smooth surface. Right carotid system unremarkable — no significant stenosis. Vertebral and subclavian arteries are patent bilaterally with normal antegrade flow.',
     recommendations: [
       {
         id: 'moderate-ica-omt',
@@ -150,20 +154,20 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     nameKey: 'carotid.templates.severeLeftIca.name',
     nameFallback: 'Severe left ICA stenosis',
     descriptionKey: 'carotid.templates.severeLeftIca.description',
-    descriptionFallback: 'Left ICA ≥70%, irregular plaque with ulceration.',
+    descriptionFallback: 'Left ICA ≥70%, irregular plaque.',
     kind: 'severe',
     scope: 'left',
     severity: 'critical',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 310, edvCmS: 120, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 22, plaqueSurface: 'irregular', plaqueUlceration: true },
+      'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 310, edvCmS: 120, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 22, plaqueSurface: 'irregular' },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 65 },
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
     }),
-    nascet: { right: 'lt50', left: 'ge70' },
+    nascet: {},
     impressionKey: 'carotid.templates.severeLeftIca.impression',
     impressionFallback:
-      'Severe atherosclerotic stenosis of the left internal carotid artery, proximal segment — NASCET ≥ 70% by SRU velocity criteria (PSV 310 cm/s, EDV 120 cm/s, ICA/CCA ratio 4.8). Mixed-echogenicity plaque with irregular surface and focal ulceration — high-risk morphology. Right carotid system unremarkable. Vertebrals patent with antegrade flow.',
+      'Severe atherosclerotic stenosis of the left internal carotid artery, proximal segment — NASCET ≥ 70% by SRU velocity criteria (PSV 310 cm/s, EDV 120 cm/s, ICA/CCA ratio 4.8). Mixed-echogenicity plaque with irregular surface — high-risk morphology. Right carotid system unremarkable. Vertebrals patent with antegrade flow.',
     recommendations: [
       {
         id: 'severe-ica-revasc',
@@ -189,10 +193,12 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-mid-left':  { flowDirection: 'absent' },
       'ica-dist-left': { flowDirection: 'absent' },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 80 },
-      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 145, edvCmS: 40 },
+      // Compensatory PSV 145 alone reads 50–69 % by SRU; the 0 % gray-scale
+      // estimate + EDV < 40 + ratio < 2.0 grade it < 50 % (no primary stenosis).
+      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 145, edvCmS: 35, plaqueStenosisPct: 0 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
     }),
-    nascet: { right: 'lt50', left: 'occluded' },
+    nascet: {},
     impressionKey: 'carotid.templates.leftIcaOcclusion.impression',
     impressionFallback:
       'Complete occlusion of the left internal carotid artery. The left common carotid artery distal segment demonstrates a high-resistance waveform with reversed end-diastolic flow, consistent with distal occlusion (externalization pattern). Right internal carotid artery shows compensatory elevated peak systolic velocity (145 cm/s) without evidence of primary stenosis — hemodynamic contralateral compensation. Vertebrals patent bilaterally.',
@@ -222,7 +228,7 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
       'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 105, edvCmS: 32, plaquePresent: true, plaqueMorphology: 'type3', plaqueLengthMm: 8, plaqueSurface: 'smooth' },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 85, imtMm: 0.9 },
     }),
-    nascet: { right: 'lt50', left: 'normal' },
+    nascet: {},
     impressionKey: 'carotid.templates.postCeaLeft.impression',
     impressionFallback:
       'Status post left carotid endarterectomy. The left internal carotid artery demonstrates normal peak systolic and end-diastolic velocities with a smooth post-surgical lumen and minimal intimal thickening — no evidence of restenosis. Right carotid system shows mild atherosclerotic plaque without significant stenosis. Vertebrals patent bilaterally.',
@@ -247,12 +253,14 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
     scope: 'right',
     severity: 'informational',
     findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 160, edvCmS: 45 },
+      // In-stent PSV 160 alone reads 50–69 % by native SRU; the 0 % gray-scale
+      // lumen estimate + EDV < 40 + ratio < 2.0 grade it < 50 % (no restenosis).
+      'ica-prox-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 160, edvCmS: 35, plaqueStenosisPct: 0 },
       'cca-dist-right': { ...CAROTID_NORMAL_FINDING, psvCmS: 88 },
       'ica-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
       'cca-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 85 },
     }),
-    nascet: { right: 'lt50', left: 'normal' },
+    nascet: {},
     impressionKey: 'carotid.templates.postStentRightIca.impression',
     impressionFallback:
       'Status post right internal carotid artery stenting with patent in-stent flow. In-stent peak systolic velocity (160 cm/s) and ICA/CCA ratio (1.8) are within accepted post-stent thresholds — no evidence of in-stent restenosis. Edge velocities are normal. Left carotid system unremarkable.',
@@ -262,46 +270,6 @@ export const CAROTID_TEMPLATES: ReadonlyArray<CarotidTemplate> = [
         textKey: 'carotid.rec.postStentSurveillance',
         text: 'Carotid-stent surveillance per SVS: duplex at 1 month, 6 months, 12 months, then annually. Higher in-stent PSV thresholds apply (≥ 220 cm/s concerning for restenosis). Dual antiplatelet per interventionalist regimen; then lifelong single antiplatelet + statin.',
         priority: 'routine',
-      },
-    ],
-  },
-
-  // 8. Subclavian steal left
-  {
-    id: 'carotid-subclavian-steal-left',
-    nameKey: 'carotid.templates.subclavianStealLeft.name',
-    nameFallback: 'Subclavian steal (left)',
-    descriptionKey: 'carotid.templates.subclavianStealLeft.description',
-    descriptionFallback: 'Left subclavian stenosis with retrograde vertebral.',
-    kind: 'moderate',
-    scope: 'left',
-    severity: 'urgent',
-    findings: patch(allVessels(CAROTID_NORMAL_FINDING), {
-      'subclav-prox-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 280 },
-      'subclav-dist-left': { ...CAROTID_NORMAL_FINDING, psvCmS: 110 },
-      // Wave 3.8 (Part 03 HIGH) — subclavian-steal physiology produces
-      // retrograde flow throughout the entire ipsilateral vertebral
-      // (V1, V2, V3). Painting only V2 left the diagram half-coloured and
-      // the narrative under-reported the steal.
-      'vert-v1-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
-      'vert-v2-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
-      'vert-v3-left':      { flowDirection: 'retrograde', subclavianStealPhase: 3 },
-      'vert-v1-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
-      'vert-v2-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
-      'vert-v3-right':     { ...CAROTID_NORMAL_FINDING, subclavianStealPhase: 0 },
-      'ica-prox-right':    { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
-      'ica-prox-left':     { ...CAROTID_NORMAL_FINDING, psvCmS: 95, edvCmS: 30 },
-    }),
-    nascet: { right: 'normal', left: 'normal' },
-    impressionKey: 'carotid.templates.subclavianStealLeft.impression',
-    impressionFallback:
-      'Left subclavian steal syndrome. Left subclavian artery, proximal segment, demonstrates dampened monophasic flow with focal velocity elevation (PSV 280 cm/s) consistent with proximal subclavian stenosis. The left vertebral artery shows complete retrograde flow (Phase III steal). Right carotid, vertebral, and subclavian systems are unremarkable. Bilateral carotid arteries are without hemodynamically significant stenosis.',
-    recommendations: [
-      {
-        id: 'subclavian-steal-cta',
-        textKey: 'carotid.rec.subclavianStealCTA',
-        text: 'Confirm subclavian stenosis with CT angiography of the aortic arch and great vessels. Check bilateral arm blood pressures — expected systolic differential >15–20 mmHg. If symptomatic (arm claudication, posterior circulation symptoms, coronary-subclavian steal in prior LIMA-CABG): endovascular subclavian revascularization first-line per ESVS 2018. If asymptomatic: best medical therapy and surveillance. Screen for diffuse atherosclerosis.',
-        priority: 'urgent',
       },
     ],
   },

@@ -144,6 +144,7 @@ export const PDF_FONT_SIZES = {
 
 /**
  * Default font family for all PDF text. Registered by
- * `services/fontService.ts` before any PDF renders.
+ * `services/fontService.ts` before any PDF renders. Roboto is the per-glyph
+ * fallback for Cyrillic and symbols (≥ ≤ ± µ) that Noto Sans Georgian lacks.
  */
-export const PDF_FONT_FAMILY = 'NotoSansGeorgian' as const;
+export const PDF_FONT_FAMILY: string[] = ['NotoSansGeorgian', 'Roboto'];

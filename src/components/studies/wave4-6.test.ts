@@ -4,9 +4,9 @@
  *
  *   1. `deriveArterialCompetency()` honors `competencyOverride`
  *      (parity with venous + carotid manual-override field).
- *   2. `subclavianStealPhase: 0` produces NO Observation in the FHIR
- *      bundle (phase 0 is the explicit negative — emitting it pollutes
- *      downstream queries that count any present phase as positive).
+ *   2. `subclavianStealPhase` produces NO Observation in the FHIR bundle
+ *      (originally phase 0 only; the whole field is now retired per
+ *      clinician request, so no phase is exported).
  *   3. ArterialLE `APPLY_TEMPLATE` with empty impression no longer
  *      forces `impressionEdited: true` — only template text marks the
  *      textarea as edited (matches venous reducer semantics).
@@ -61,7 +61,7 @@ describe('Wave 4.6 — deriveArterialCompetency honors competencyOverride', () =
 });
 
 // ---------------------------------------------------------------------------
-// 2. subclavianStealPhase 0 is NOT emitted as an Observation
+// 2. subclavianStealPhase (retired) is NOT emitted as an Observation
 // ---------------------------------------------------------------------------
 
 function minimalCarotidForm(
@@ -81,7 +81,7 @@ function minimalCarotidForm(
   } as FormState;
 }
 
-describe('Wave 4.6 — subclavianStealPhase 0 produces no Observation (Part 03 MEDIUM)', () => {
+describe('Wave 4.6 — subclavianStealPhase produces no Observation (field retired)', () => {
   it('phase 0 on a vertebral segment is silently dropped', () => {
     const bundle = buildFhirBundle(
       minimalCarotidForm({
@@ -98,7 +98,7 @@ describe('Wave 4.6 — subclavianStealPhase 0 produces no Observation (Part 03 M
     expect(stealObs).toBeUndefined();
   });
 
-  it('phase 1 on a vertebral segment still emits an Observation', () => {
+  it('phase 1 on a vertebral segment is dropped too (field retired)', () => {
     const bundle = buildFhirBundle(
       minimalCarotidForm({
         'vert-v1-left': { subclavianStealPhase: 1 },
@@ -111,10 +111,10 @@ describe('Wave 4.6 — subclavianStealPhase 0 produces no Observation (Part 03 M
       const obs = e.resource as Observation;
       return obs.note?.some((n) => n.text?.includes('parameter=subclavianStealPhase'));
     });
-    expect(stealObs).toBeDefined();
+    expect(stealObs).toBeUndefined();
   });
 
-  it('phase 2 + 3 still emit (sanity)', () => {
+  it('phase 2 + 3 are dropped too (field retired)', () => {
     const bundle = buildFhirBundle(
       minimalCarotidForm({
         'vert-v2-right': { subclavianStealPhase: 2 },
@@ -128,7 +128,7 @@ describe('Wave 4.6 — subclavianStealPhase 0 produces no Observation (Part 03 M
       const obs = e.resource as Observation;
       return obs.note?.some((n) => n.text?.includes('parameter=subclavianStealPhase'));
     });
-    expect(stealObs.length).toBe(2);
+    expect(stealObs.length).toBe(0);
   });
 });
 

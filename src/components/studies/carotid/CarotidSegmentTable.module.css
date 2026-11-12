@@ -56,18 +56,26 @@
   overflow-x: auto;
 }
 
+/* Fluid columns (UX-ANGIO-025 L3): the table shares its row with the sticky
+   diagram column at ≥1280px, so columns flex down to their minimums instead
+   of a fixed 940px track that would scroll sideways beside the diagram. */
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 200px 84px 84px 84px 150px 130px 56px 84px;
+  grid-template-columns:
+    minmax(128px, 1.3fr) repeat(3, minmax(68px, 0.7fr)) minmax(120px, 1.2fr)
+    minmax(132px, 1.4fr) minmax(52px, 0.5fr) minmax(84px, 1fr);
   gap: 8px;
   align-items: center;
-  min-width: 940px;
+  min-width: 780px;
 }
 
+/* Command table header: tinted row, navy uppercase labels. */
 .headRow {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--emr-border-color);
+  padding: 8px 0;
+  background: var(--emr-table-header-bg);
+  border-bottom: 1px solid var(--emr-table-header-border);
+  border-radius: var(--emr-border-radius) var(--emr-border-radius) 0 0;
   margin-bottom: 4px;
 }
 
@@ -83,15 +91,17 @@
 }
 
 .headCell {
-  font-size: var(--emr-font-xs);
-  font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-secondary);
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-table-header-text);
   text-transform: uppercase;
   letter-spacing: var(--emr-letter-spacing-wide);
   padding: 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Long Georgian labels wrap to a second line instead of truncating
+     ('ინტიმა-მე…'). */
+  white-space: normal;
+  line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
 .cell {
@@ -125,14 +135,14 @@
   flex-shrink: 0;
 }
 
-.vesselSide[data-side='left'] {
-  background: var(--emr-secondary-alpha-10);
-  color: var(--emr-secondary);
-}
-
+/* Laterality is low-emphasis metadata, not severity or info: one neutral
+   soft chip for both sides, via semantic surface tokens (safe in light and
+   dark). Blue stays reserved for selection / the info role. */
+.vesselSide[data-side='left'],
 .vesselSide[data-side='right'] {
-  background: var(--emr-accent-alpha-15);
-  color: var(--emr-accent);
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-secondary);
+  box-shadow: inset 0 0 0 1px var(--emr-border-color);
 }
 
 .ratioChip {
@@ -146,46 +156,74 @@
   font-variant-numeric: tabular-nums;
 }
 
+.plaqueStack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .muted {
   color: var(--emr-text-tertiary);
   font-size: var(--emr-font-xs);
 }
 
+/* UX-ANGIO-026 L3 — below desktop the table stays a table: one compact row
+   per segment (an empty row is one input-high line), column labels pinned at
+   the top and the vessel name pinned at the left while the box scrolls. This
+   replaces the 24 stacked full-size cards (~13,000px at 768). Every field
+   stays in its row; the box scrolls sideways for the wider columns. */
 @media (max-width: 992px) {
-  .headRow {
-    display: none;
-  }
-
-  .row {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 12px;
-    background: var(--emr-bg-card);
-    border: 1px solid var(--emr-border-color);
-    border-radius: var(--emr-border-radius-lg);
-    margin-bottom: 10px;
-    min-width: 0;
+  .body {
+    padding: 8px 10px 10px;
   }
 
   .tableWrap {
-    overflow-x: visible;
+    max-height: min(70vh, 640px);
+    overflow: auto;
   }
 
   .headRow,
   .row {
-    min-width: 0;
+    grid-template-columns:
+      112px repeat(3, 72px) 128px 140px 60px 120px;
+    gap: 6px;
+    min-width: max-content;
   }
 
-  .cell[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    font-size: var(--emr-font-xs);
-    color: var(--emr-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: var(--emr-letter-spacing-wide);
-    font-weight: var(--emr-font-semibold);
-    margin-bottom: 4px;
+  /* Stacking: input steppers/sections sit at z-index 1 inside their cells,
+     so the pinned cells stack above them. */
+  .headRow {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    margin-bottom: 0;
+  }
+
+  .row {
+    min-height: 0;
+    padding: 4px 0;
+    border-radius: 0;
+    border-bottom: 1px solid var(--emr-border-light);
+  }
+
+  /* Vessel name + side chip stay visible while scrolling sideways. */
+  .vesselCell {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    align-self: stretch;
+    padding-left: 4px;
+    background: var(--emr-bg-card);
+    box-shadow: 1px 0 0 var(--emr-border-light);
+  }
+
+  .row:hover .vesselCell {
+    background: var(--emr-bg-hover);
+  }
+
+  .headRow .vesselCell {
+    z-index: 5;
+    background: var(--emr-table-header-bg);
   }
 }

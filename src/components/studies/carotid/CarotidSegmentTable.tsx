@@ -2,9 +2,10 @@
 /**
  * CarotidSegmentTable — bilateral vessel findings grid.
  *
- * Columns: Vessel · PSV · EDV · IMT (CCA only) · Flow · Plaque (morphology +
- * length + surface) · Steal (vertebral only) · Ulc · ICA/CCA (ICA-prox only) ·
- * Note. One row per (vessel × active side).
+ * Columns: Vessel · PSV · EDV · IMT (CCA + BIF only) · Flow · Plaque
+ * (morphology + length + surface) · ICA/CCA (ICA-prox only) · Note. One row per
+ * (vessel × active side). Steal + ulceration columns were removed per clinician
+ * feedback (2026-11); the finding fields stay for older drafts.
  */
 
 import { memo, useCallback, useMemo } from 'react';
@@ -14,7 +15,6 @@ import {
   EMRNumberInput,
   EMRSelect,
   EMRTextInput,
-  EMRCheckbox,
 } from '../../shared/EMRFormFields';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import {
@@ -22,9 +22,8 @@ import {
   FLOW_DIRECTION_VALUES,
   PLAQUE_MORPHOLOGY_VALUES,
   PLAQUE_SURFACE_VALUES,
-  SUBCLAVIAN_STEAL_PHASES,
-  isCca,
-  isVertebral,
+  hasImt,
+  isIca,
   type CarotidFindings,
   type CarotidVesselFinding,
   type CarotidVesselFullId,
@@ -32,7 +31,6 @@ import {
   type FlowDirection,
   type PlaqueMorphology,
   type PlaqueSurface,
-  type SubclavianStealPhase,
 } from './config';
 import { icaCcaRatio } from './stenosisCalculator';
 import classes from './CarotidSegmentTable.module.css';
@@ -116,17 +114,10 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
     [t],
   );
 
-  const stealOptions = useMemo(
-    () =>
-      SUBCLAVIAN_STEAL_PHASES.map((v) => ({
-        value: String(v),
-        label: t(`carotid.steal.${v}`, defaultStealLabel(v)),
-      })),
-    [t],
-  );
-
   const imtLabel = t('carotid.param.imtMm', 'IMT (mm)');
   const noteLabel = t('carotid.param.note', 'Note');
+  const flowLabel = t('carotid.param.flowDirection', 'Flow');
+  const plaqueLabel = t('carotid.param.plaqueMorphology', 'Plaque');
 
   // Compute ICA/CCA ratio once per side so we can show it on ICA-prox rows.
   const ratioRight = icaCcaRatio(findings, 'right');
@@ -140,7 +131,7 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
             <IconActivityHeartbeat size={20} stroke={1.75} />
           </Box>
           <Box style={{ minWidth: 0 }}>
-            <Text className={classes.title} id="carotid-segment-title">
+            <Text component="h2" className={classes.title} id="carotid-segment-title">
               {t('carotid.segmentTable.title', 'Vessel assessment')}
             </Text>
           </Box>
@@ -167,12 +158,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
             </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
               {t('carotid.param.plaqueMorphology', 'Plaque')}
-            </div>
-            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-              {t('carotid.param.subclavianStealPhase', 'Steal')}
-            </div>
-            <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-              {t('carotid.param.ulceration', 'Ulc.')}
             </div>
             <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
               {t('carotid.param.ratio', 'ICA/CCA')}
@@ -236,9 +221,9 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                   />
                 </div>
 
-                {/* IMT is clinically measured on the common carotid only. */}
+                {/* IMT is measured on the common carotid + bifurcation only. */}
                 <div className={classes.cell} data-label={imtLabel}>
-                  {isCca(r.base) ? (
+                  {hasImt(r.base) ? (
                     <EMRNumberInput
                       aria-label={`${vesselLabel} ${sideChip} IMT`}
                       value={r.finding?.imtMm ?? ''}
@@ -258,7 +243,7 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
 
                 <div className={classes.cell} data-label={t('carotid.param.flowDirection', 'Flow')}>
                   <EMRSelect
-                    aria-label={`${vesselLabel} ${sideChip} flow`}
+                    aria-label={`${vesselLabel} ${sideChip} ${flowLabel}`}
                     value={r.finding?.flowDirection ?? ''}
                     onChange={(v) =>
                       setField(r.fullId, 'flowDirection', v === '' ? undefined : (v as FlowDirection))
@@ -272,7 +257,7 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                 <div className={classes.cell} data-label={t('carotid.param.plaqueMorphology', 'Plaque')}>
                   <div className={classes.plaqueStack}>
                     <EMRSelect
-                      aria-label={`${vesselLabel} ${sideChip} plaque`}
+                      aria-label={`${vesselLabel} ${sideChip} ${plaqueLabel}`}
                       value={r.finding?.plaqueMorphology ?? ''}
                       onChange={(v) =>
                         setField(r.fullId, 'plaqueMorphology', v === '' ? undefined : (v as PlaqueMorphology))
@@ -281,6 +266,23 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                       size="sm"
                       data-testid={`carotid-${r.fullId}-plaque`}
                     />
+                    {/* Plaque estimate (% diameter reduction) — SRU primary
+                        criterion, ICA rows only; feeds the NASCET auto-fill. */}
+                    {isIca(r.base) ? (
+                      <EMRNumberInput
+                        aria-label={`${vesselLabel} ${sideChip} ${t('carotid.param.plaqueStenosisPct', 'Plaque estimate (%)')}`}
+                        placeholder={t('carotid.param.plaqueStenosisPct', 'Plaque estimate (%)')}
+                        value={r.finding?.plaqueStenosisPct ?? ''}
+                        onChange={(v) =>
+                          setField(r.fullId, 'plaqueStenosisPct', typeof v === 'number' ? v : v === '' ? undefined : Number(v))
+                        }
+                        min={0}
+                        max={100}
+                        step={5}
+                        size="sm"
+                        data-testid={`carotid-${r.fullId}-plaque-pct`}
+                      />
+                    ) : null}
                     {plaqueSet ? (
                       <>
                         <EMRNumberInput
@@ -310,42 +312,6 @@ export const CarotidSegmentTable = memo(function CarotidSegmentTable({
                       </>
                     ) : null}
                   </div>
-                </div>
-
-                {/* Subclavian steal phase is graded on the vertebral arteries only. */}
-                <div className={classes.cell} data-label={t('carotid.param.subclavianStealPhase', 'Steal')}>
-                  {isVertebral(r.base) ? (
-                    <EMRSelect
-                      aria-label={`${vesselLabel} ${sideChip} ${t('carotid.param.subclavianStealPhase', 'Steal')}`}
-                      value={
-                        r.finding?.subclavianStealPhase !== undefined
-                          ? String(r.finding.subclavianStealPhase)
-                          : ''
-                      }
-                      onChange={(v) =>
-                        setField(
-                          r.fullId,
-                          'subclavianStealPhase',
-                          v === '' ? undefined : (Number(v) as SubclavianStealPhase),
-                        )
-                      }
-                      data={stealOptions}
-                      size="sm"
-                      data-testid={`carotid-${r.fullId}-steal`}
-                    />
-                  ) : (
-                    <span className={classes.muted}>—</span>
-                  )}
-                </div>
-
-                <div className={classes.cell} data-label={t('carotid.param.ulceration', 'Ulc.')}>
-                  <EMRCheckbox
-                    aria-label={`${vesselLabel} ${sideChip} ulceration`}
-                    checked={r.finding?.plaqueUlceration ?? false}
-                    onChange={(c) => setField(r.fullId, 'plaqueUlceration', c)}
-                    size="sm"
-                    data-testid={`carotid-${r.fullId}-ulceration`}
-                  />
                 </div>
 
                 <div className={classes.cell} data-label={t('carotid.param.ratio', 'ICA/CCA')}>
@@ -402,15 +368,6 @@ function defaultSurfaceLabel(v: PlaqueSurface): string {
   switch (v) {
     case 'smooth':    return 'Smooth';
     case 'irregular': return 'Irregular';
-  }
-}
-
-function defaultStealLabel(v: SubclavianStealPhase): string {
-  switch (v) {
-    case 0: return 'None';
-    case 1: return 'Phase I — transient';
-    case 2: return 'Phase II — partial';
-    case 3: return 'Phase III — permanent';
   }
 }
 

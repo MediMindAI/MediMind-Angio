@@ -207,7 +207,8 @@
       "copyRightToLeft": "Прав → Лев",
       "copyRightToLeftTooltip": "Скопировать данные правой стороны в левую (⌘D)",
       "copyLeftToRight": "Лев → Прав",
-      "copyLeftToRightTooltip": "Скопировать данные левой стороны в правую"
+      "copyLeftToRightTooltip": "Скопировать данные левой стороны в правую",
+      "allNormalBothTooltip": "Заполнить все сегменты обеих конечностей как «норма» (⌘N)"
     },
     "narrative": {
       "sonographerComments": "Комментарии сонолога",
@@ -226,6 +227,7 @@
       "refluxMeasured": "Рефлюкс {vein} — {ms} мс.",
       "incompetent": "Несостоятельные клапаны — {vein}.",
       "postAblation": "Состояние после абляции — {vein}.",
+      "perforator": "Перфорант — {vein}.",
       "nonCompressible": "Несжимаемый сегмент — {vein}. Признак указывает на острый ТГВ.",
       "partialCompressibility": "Частичная сжимаемость — {vein}. Соответствует хроническим пост-тромботическим изменениям.",
       "acuteThrombus": "Острый тромб в просвете — {vein}.",
@@ -238,7 +240,8 @@
       "chronicPostThrombotic": "Хронические пост-тромботические изменения — {side} {vein}.",
       "inconclusive": "Ограничение исследования — оценка {side} {vein} не определена.",
       "incompetent": "Клапанная несостоятельность — {side} {vein}.",
-      "postAblation": "После абляции — {side} {vein}."
+      "postAblation": "После абляции — {side} {vein}.",
+      "perforator": "Перфорант — {side} {vein}."
     },
     "segments": {
       "cfv": "общая бедренная вена",
@@ -322,7 +325,8 @@
       "priorityUrgent": "Срочная",
       "priorityStat": "Неотложная",
       "placeholder": "Рекомендация...",
-      "empty": "Пока нет рекомендаций"
+      "empty": "Пока нет рекомендаций",
+      "remove": "Удалить рекомендацию"
     },
     "actions": {
       "lastSaved": "Сохранено:",
@@ -332,16 +336,21 @@
       "downloadPDF": "Скачать PDF",
       "exportJSON": "Экспорт FHIR JSON",
       "backToStudies": "К списку исследований",
-      "newCase": "+ Новый случай",
-      "newCaseConfirmTitle": "Начать новый случай?",
+      "newCase": "Очистить форму",
+      "newCaseConfirmTitle": "Очистить эту форму?",
       "newCaseConfirmBody": "Это сотрёт все текущие данные — сегментарные находки, CEAP, рекомендации и текстовые поля. Несохранённые изменения будут потеряны.",
-      "newCaseConfirm": "Удалить и начать заново",
+      "newCaseConfirm": "Очистить форму",
       "newCaseToastTitle": "Новый случай начат",
       "newCaseToastMessage": "Форма очищена.",
       "cancel": "Отмена",
       "applyTemplateConfirmTitle": "Применить шаблон?",
       "applyTemplateConfirmBody": "Это заменит текущие находки, CEAP, рекомендации, заключение, комментарии сонографиста и комментарии клинициста.",
-      "applyTemplate": "Применить шаблон"
+      "applyTemplate": "Применить шаблон",
+      "printPDF": "Печать",
+      "staleOtherTab": "Этот визит изменён в другом окне. Обновите страницу.",
+      "reloadPage": "Обновить страницу",
+      "saveFailed": "Не удалось сохранить: ответы пока только на экране. Не закрывайте страницу.",
+      "saveCacheFailed": "Память браузера заполнена: после обновления могут показаться старые ответы."
     },
     "anatomy": {
       "title": "Диаграмма",
@@ -535,6 +544,10 @@
           "message": "Шаблон удалён из вашей библиотеки."
         }
       }
-    }
+    },
+    "technique": "Методика",
+    "findings": "Находки",
+    "comments": "Комментарии",
+    "followUpPrefix": "Контроль:"
   }
 }

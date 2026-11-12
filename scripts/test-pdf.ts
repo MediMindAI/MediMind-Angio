@@ -41,6 +41,13 @@ async function registerFonts(): Promise<void> {
       { src: resolve(fontsDir, 'NotoSansGeorgian-Bold.ttf'), fontWeight: 'bold' },
     ],
   });
+  Font.register({
+    family: 'Roboto',
+    fonts: [
+      { src: resolve(fontsDir, 'Roboto-Regular.ttf'), fontWeight: 'normal' },
+      { src: resolve(fontsDir, 'Roboto-Medium.ttf'), fontWeight: 'bold' },
+    ],
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -305,7 +312,7 @@ const labels: ReportLabels = {
     pvr: 'PVR',
     stenosis: 'Stenosis %',
     occluded: 'Occlusion',
-    occludedMark: '✓',
+    occludedMark: 'Yes',
     segmentName: {
       cfa: 'CFA',
       pfa: 'DFA',
@@ -380,11 +387,12 @@ const labels: ReportLabels = {
     flow: 'Flow',
     plaque: 'Plaque',
     ratio: 'ICA/CCA',
-    ulcerationMark: '⚠',
+    noteLabel: 'Note',
     vesselName: {
       'cca-prox': 'CCA Prox',
       'cca-mid': 'CCA Mid',
       'cca-dist': 'CCA Dist',
+      bulb: 'BIF',
       'ica-prox': 'ICA Prox',
       'ica-mid': 'ICA Mid',
       'ica-dist': 'ICA Dist',
@@ -415,6 +423,7 @@ const labels: ReportLabels = {
     emptyDash: '—',
   },
   carotidLegend: [],
+  arterialLegend: [],
   nascet: {
     title: 'NASCET classification',
     rightIca: 'Right ICA',
@@ -445,23 +454,28 @@ const labels: ReportLabels = {
     heading: 'CEAP Classification (2020)',
   },
   iliacFindings: {
-    heading: 'Findings by zone',
+    heading: 'Findings',
     none: 'No findings recorded.',
     zone: {
       technique: 'Technique & context',
-      renal: 'Left renal vein',
       caval: 'Iliac & caval',
-      gonadal: 'Gonadal veins',
-      plexus: 'Pelvic plexus',
-      escape: 'Escape points',
-      extrapelvic: 'Extrapelvic varices',
-      special: 'Special considerations (SMAS/MALS)',
+      gonadal: 'Left gonadal vein',
     },
-    segment: {},
-    side: { left: 'Left', right: 'Right' },
+    section: { ivc: 'IVC', right: 'Right', left: 'Left' },
+    column: {
+      segment: 'Vein',
+      patency: 'Patency / thrombosis',
+      filling: 'Filling',
+      phasicity: 'Phasicity',
+      competency: 'Competency',
+      apDiameterMm: 'AP diam. (mm)',
+      peakVelocityCmS: 'PV (cm/s)',
+    },
+    row: {},
     field: {},
     value: {},
     yes: 'Present',
+    no: 'Absent',
   },
   svp: {
     heading: 'SVP Classification',

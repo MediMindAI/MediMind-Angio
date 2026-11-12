@@ -45,6 +45,11 @@ export interface DrawingToolbarProps {
   /** Show the "Edit segment" mode (geometry redraw). Default true; false for
    *  filled-vector views (e.g. carotid) where a centerline redraw is moot. */
   readonly showEditSegment?: boolean;
+  /** Pen colors to offer. Default: the full venous palette. Arterial/carotid
+   *  pass grey / red / black only (no reflux, perforator or ablated). */
+  readonly colors?: ReadonlyArray<DrawingColor>;
+  /** i18n prefix for the color tooltips (default `venousLE.drawing.color`). */
+  readonly colorLabelPrefix?: string;
 }
 
 export const DrawingToolbar = memo(function DrawingToolbar({
@@ -63,6 +68,8 @@ export const DrawingToolbar = memo(function DrawingToolbar({
   editingSegmentId,
   onClearOverride,
   showEditSegment = true,
+  colors = DRAWING_COLORS,
+  colorLabelPrefix = 'venousLE.drawing.color',
 }: DrawingToolbarProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -108,13 +115,13 @@ export const DrawingToolbar = memo(function DrawingToolbar({
           <Text size="xs" c="dimmed" component="span">
             {t('venousLE.drawing.color.label', 'Color')}
           </Text>
-          {DRAWING_COLORS.map((c) => (
-            <EMRTooltip key={c} label={t(`venousLE.drawing.color.${c}`, c)} withArrow openDelay={300}>
+          {colors.map((c) => (
+            <EMRTooltip key={c} label={t(`${colorLabelPrefix}.${c}`, c)} withArrow openDelay={300}>
               <UnstyledButton
                 type="button"
                 onClick={() => setColor(c)}
                 aria-pressed={color === c}
-                aria-label={t(`venousLE.drawing.color.${c}`, c)}
+                aria-label={t(`${colorLabelPrefix}.${c}`, c)}
                 className={classes.swatch}
                 data-active={color === c ? 'true' : undefined}
                 data-testid={`drawing-color-${c}`}
@@ -134,32 +141,31 @@ export const DrawingToolbar = memo(function DrawingToolbar({
           <Text size="xs" c="dimmed" component="span">
             {t('venousLE.drawing.size.label', 'Size')}
           </Text>
-          {DRAWING_SIZES.map((s) => (
-            <EMRTooltip
-              key={s}
-              label={t(
-                `venousLE.drawing.size.${s === 2 ? 'thin' : s === 4 ? 'medium' : 'thick'}`,
-                s === 2 ? 'Thin' : s === 4 ? 'Medium' : 'Thick',
-              )}
-              withArrow
-              openDelay={300}
-            >
-              <UnstyledButton
-                type="button"
-                onClick={() => setSize(s)}
-                aria-pressed={size === s}
-                className={classes.sizePill}
-                data-active={size === s ? 'true' : undefined}
-                data-testid={`drawing-size-${s}`}
-                disabled={mode !== 'draw'}
-              >
-                <span
-                  className={classes.sizeDot}
-                  style={{ width: `${s * 2}px`, height: `${s * 2}px` }}
-                />
-              </UnstyledButton>
-            </EMRTooltip>
-          ))}
+          {DRAWING_SIZES.map((s) => {
+            const sizeLabel = t(
+              `venousLE.drawing.size.${s === 2 ? 'thin' : s === 4 ? 'medium' : 'thick'}`,
+              s === 2 ? 'Thin' : s === 4 ? 'Medium' : 'Thick',
+            );
+            return (
+              <EMRTooltip key={s} label={sizeLabel} withArrow openDelay={300}>
+                <UnstyledButton
+                  type="button"
+                  onClick={() => setSize(s)}
+                  aria-pressed={size === s}
+                  aria-label={sizeLabel}
+                  className={classes.sizePill}
+                  data-active={size === s ? 'true' : undefined}
+                  data-testid={`drawing-size-${s}`}
+                  disabled={mode !== 'draw'}
+                >
+                  <span
+                    className={classes.sizeDot}
+                    style={{ width: `${s * 2}px`, height: `${s * 2}px` }}
+                  />
+                </UnstyledButton>
+              </EMRTooltip>
+            );
+          })}
         </Group>
 
         <Group
@@ -173,6 +179,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
               type="button"
               onClick={() => setTool('pen')}
               aria-pressed={tool === 'pen'}
+              aria-label={t('venousLE.drawing.tools.pen', 'Pen')}
               className={classes.toolBtn}
               data-active={tool === 'pen' ? 'true' : undefined}
               data-testid="drawing-tool-pen"
@@ -186,6 +193,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
               type="button"
               onClick={() => setTool('eraser')}
               aria-pressed={tool === 'eraser'}
+              aria-label={t('venousLE.drawing.tools.eraser', 'Eraser')}
               className={classes.toolBtn}
               data-active={tool === 'eraser' ? 'true' : undefined}
               data-testid="drawing-tool-eraser"
@@ -199,6 +207,7 @@ export const DrawingToolbar = memo(function DrawingToolbar({
               type="button"
               onClick={() => setTool('text')}
               aria-pressed={tool === 'text'}
+              aria-label={t('venousLE.drawing.tools.text', 'Text')}
               className={classes.toolBtn}
               data-active={tool === 'text' ? 'true' : undefined}
               data-testid="drawing-tool-text"

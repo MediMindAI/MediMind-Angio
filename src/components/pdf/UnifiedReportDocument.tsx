@@ -54,7 +54,7 @@ import { RecommendationsSection } from './sections/RecommendationsSection';
 import { FooterSection } from './sections/FooterSection';
 import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
 import type { ReportLabels } from './ReportDocument';
-import { formatIsoForDisplay, nowIsoTimestamp } from '../../services/dateHelpers';
+import { formatDottedDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import type { FormState, Recommendation } from '../../types/form';
 import { isVenousForm } from '../../types/form';
 import {
@@ -242,6 +242,7 @@ function renderStudyFindings(
             anterior={assets.anatomy.anterior}
             posterior={null}
             labels={assets.labels.diagram}
+            legendItems={assets.labels.arterialLegend}
             viewWidthPt={260}
           />
         </View>
@@ -376,10 +377,10 @@ export function UnifiedReportDocument(
   const pagePreset = PDF_PAGE_PRESETS[pageSize];
   const pageWidth = `${pagePreset?.contentWidthPt ?? PDF_LAYOUT.contentWidthPt}pt`;
 
-  const issueDate = formatIsoForDisplay(
+  const issueDate = formatDottedDate(
     generatedAt ?? encounter.header.encounterDate,
   );
-  const footerTimestamp = formatIsoForDisplay(generatedAt ?? nowIsoTimestamp(), {
+  const footerTimestamp = formatDottedDate(generatedAt ?? nowIsoTimestamp(), {
     includeTime: true,
   });
 
@@ -402,6 +403,7 @@ export function UnifiedReportDocument(
         rightFindings={form.narrative.rightFindings ?? assets.localized?.rightFindings ?? ''}
         leftFindings={form.narrative.leftFindings ?? assets.localized?.leftFindings ?? ''}
         conclusions={assets.localized?.conclusions ?? []}
+        conclusionThenComments={form.studyType === 'iliacPelvicVenous'}
       />
       {(isVenousForm(form) || form.studyType === 'iliacPelvicVenous') && form.ceap ? (
         <CEAPSection ceap={form.ceap} labels={assets.labels.ceap} />

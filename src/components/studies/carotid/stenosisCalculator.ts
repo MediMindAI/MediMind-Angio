@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * stenosisCalculator — pure-fn SRU 2003 NASCET category auto-suggest.
+ * stenosisCalculator — pure-fn SRU 2003 (Grant) NASCET category auto-fill.
  *
- * Looks at ICA PSV, EDV, and the ICA/CCA ratio (when CCA-distal PSV is
- * known) to suggest a category. Returns `undefined` when inputs are
- * insufficient — caller shows no suggestion rather than guessing.
+ * Primary criteria: ICA PSV + gray-scale plaque estimate (% diameter
+ * reduction). Additional criteria: ICA/CCA PSV ratio + ICA EDV — used only to
+ * break the tie when the two primaries disagree. Thresholds live in
+ * `SRU_THRESHOLDS` (config.ts). Returns `undefined` when there is no ICA PSV —
+ * caller shows no category rather than guessing.
  */
 
 import {
@@ -42,6 +44,18 @@ function maxIcaEdv(findings: CarotidFindings, side: 'left' | 'right'): number | 
   return max;
 }
 
+/** Max gray-scale plaque estimate (% diameter reduction) across ICA segments. */
+function maxIcaPlaquePct(findings: CarotidFindings, side: 'left' | 'right'): number | undefined {
+  let max: number | undefined;
+  for (const base of ['ica-prox', 'ica-mid', 'ica-dist'] as const) {
+    const f = findings[`${base}-${side}` as CarotidVesselFullId];
+    if (f?.plaqueStenosisPct !== undefined) {
+      max = max === undefined ? f.plaqueStenosisPct : Math.max(max, f.plaqueStenosisPct);
+    }
+  }
+  return max;
+}
+
 /** PSV at the distal CCA on one side — used as ICA/CCA ratio denominator. */
 function ccaDistalPsv(findings: CarotidFindings, side: 'left' | 'right'): number | undefined {
   const f = findings[`cca-dist-${side}` as CarotidVesselFullId];
@@ -66,8 +80,9 @@ function anyIcaDiseaseOnSide(findings: CarotidFindings, side: 'left' | 'right'):
 }
 
 /**
- * Auto-suggest a NASCET category for one side. `undefined` when inputs
- * are too sparse to classify.
+ * Auto-fill a NASCET category for one side per the SRU 2003 table.
+ * `undefined` when there is no ICA PSV. Near-occlusion is never auto-filled
+ * (its PSV/ratio/EDV are "variable" in the table) — manual pick only.
  */
 export function suggestNascetCategory(
   findings: CarotidFindings,
@@ -86,24 +101,35 @@ export function suggestNascetCategory(
   const edv = maxIcaEdv(findings, side);
   const ccaPsv = ccaDistalPsv(findings, side);
   const ratio = ccaPsv && ccaPsv > 0 ? psv / ccaPsv : undefined;
+  const plaquePct = maxIcaPlaquePct(findings, side);
+  const T = SRU_THRESHOLDS;
 
-  // ≥ 70 % triggers on any of three criteria per SRU 2003.
-  if (
-    psv >= SRU_THRESHOLDS.psvGe70 ||
-    (edv !== undefined && edv >= SRU_THRESHOLDS.edvGe70) ||
-    (ratio !== undefined && ratio >= SRU_THRESHOLDS.ratioGe70)
-  ) {
-    return 'ge70';
-  }
+  // Primary 1 — PSV band: 125–230 → 50–69 %, > 230 → ≥ 70 %.
+  const byPsv: 'low' | '50to69' | 'ge70' =
+    psv > T.psvGt70 ? 'ge70' : psv >= T.psvGe50 ? '50to69' : 'low';
+  // Below 50 %: "normal" needs no plaque at all, otherwise "< 50 %".
+  const lowGrade = (): NascetCategory =>
+    (plaquePct !== undefined && plaquePct > 0) || anyIcaDiseaseOnSide(findings, side)
+      ? 'lt50'
+      : 'normal';
 
-  if (psv >= SRU_THRESHOLDS.psvGe50) {
-    return '50to69';
-  }
+  // Primary 2 — plaque estimate. Missing → PSV alone decides.
+  if (plaquePct === undefined) return byPsv === 'low' ? lowGrade() : byPsv;
+  const plaqueGe50 = plaquePct >= T.plaqueGe50;
 
-  // Sub-threshold velocity. Distinguish a truly normal ICA from mild
-  // (< 50 %) atherosclerosis: only call it < 50 % when ICA plaque or a
-  // non-antegrade ICA waveform is present, otherwise report it as normal.
-  return anyIcaDiseaseOnSide(findings, side) ? 'lt50' : 'normal';
+  // Primaries agree (plaque ≥ 50 % fits both 50–69 % and ≥ 70 %).
+  if (byPsv === 'low' && !plaqueGe50) return lowGrade();
+  if (byPsv !== 'low' && plaqueGe50) return byPsv;
+
+  // Primaries disagree → additional criteria (ratio, EDV) break the tie.
+  // With neither entered, keep the velocity call.
+  if (ratio === undefined && edv === undefined) return byPsv === 'low' ? lowGrade() : byPsv;
+  const addGe70 =
+    (ratio !== undefined && ratio > T.ratioGt70) || (edv !== undefined && edv > T.edvGt70);
+  const addGe50 =
+    addGe70 || (ratio !== undefined && ratio >= T.ratioGe50) || (edv !== undefined && edv >= T.edvGe50);
+  if (byPsv === 'ge70' && addGe70) return 'ge70';
+  return addGe50 ? '50to69' : 'lt50';
 }
 
 /**

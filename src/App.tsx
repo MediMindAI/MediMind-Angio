@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { TranslationProvider } from './contexts/TranslationContext';
 import { mantineTheme, cssVariablesResolver, createAppColorSchemeManager } from './styles/mantineTheme';
@@ -41,6 +42,22 @@ const routableStudies = STUDY_PLUGINS.filter(
     Boolean(p.route) && Boolean(p.FormComponent),
 );
 
+/**
+ * UX-ANGIO-017 L1: open every page at its top. BrowserRouter keeps the
+ * window's scroll position across navigations (and `<ScrollRestoration>`
+ * needs a data router), so starting a study from the bottom of the long
+ * intake used to land ~1,200px down the form. Pathname-only on purpose:
+ * `?edit=` on `/` is handled inside EncounterIntake. Rendered OUTSIDE
+ * `<Routes>` so the bare-route redirects below stay untouched (Part-03 HIGH).
+ */
+export function ScrollToTop(): null {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <MantineProvider
@@ -52,6 +69,7 @@ export default function App() {
       <ThemeProvider>
         <TranslationProvider>
           <Notifications position="top-right" zIndex={2000} />
+          <ScrollToTop />
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<EncounterIntake />} />

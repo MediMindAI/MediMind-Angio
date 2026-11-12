@@ -25,7 +25,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, act, fireEvent, within } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 
@@ -35,8 +35,13 @@ import { Notifications } from '@mantine/notifications';
 vi.mock('../../anatomy/AnatomyView', () => ({
   AnatomyView: () => <div data-testid="mock-anatomy-view" />,
 }));
+// Records the props the form passes so the save-line contract can be pinned.
+const formActionsProps = vi.hoisted(() => ({ last: null as Record<string, unknown> | null }));
 vi.mock('../../form/FormActions', () => ({
-  FormActions: () => <div data-testid="mock-form-actions" />,
+  FormActions: (props: Record<string, unknown>) => {
+    formActionsProps.last = props;
+    return <div data-testid="mock-form-actions" />;
+  },
 }));
 vi.mock('./ArterialTemplateGallery', () => ({
   ArterialTemplateGallery: () => null,
@@ -159,7 +164,7 @@ describe('ArterialLEForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, (
     expect(screen.getByTestId('encounter-context-banner')).toBeInTheDocument();
     // Patient identity comes from EncounterContext, not from local form state.
     expect(screen.getByTestId('banner-patient-name')).toHaveTextContent('Alex Patient');
-    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('2026-04-25');
+    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('25.04.2026');
   });
 
   it('renders the per-study findings UI (impression + segment table)', () => {
@@ -199,6 +204,30 @@ describe('ArterialLEForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, (
     expect(study?.schemaVersion).toBe(2);
     expect(study?.studyType).toBe('arterialLE');
     expect(study?.impression).toBe('Patent femoral arteries.');
+  });
+
+  it('an idle form makes no writes (UX-ANGIO-001 L1: no self-re-arming save loop)', async () => {
+    const draft = buildDraft({ encounterId: 'enc-idle' });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+    renderForm(draft.encounterId);
+
+    // One real edit persists immediately (IDB is the source of truth; an
+    // IDB read queues behind any pending write)...
+    const impressionField = screen.getByTestId('arterial-impression') as HTMLTextAreaElement;
+    fireEvent.change(impressionField, { target: { value: 'One edit.' } });
+    const afterEdit = await act(async () => loadEncounter('enc-idle'));
+    expect((afterEdit?.studies.arterialLE as { impression?: string } | undefined)?.impression).toBe('One edit.');
+
+    // ...then nothing: the stored draft is not rewritten while idle (the
+    // old 500 ms timer rewrote it ~2x per second).
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 1500));
+    });
+    const afterIdle = await act(async () => loadEncounter('enc-idle'));
+    expect(afterIdle?.updatedAt).toBe(afterEdit?.updatedAt);
+    const lsIdle = JSON.parse(localStorage.getItem(keyEncounter('enc-idle')) ?? '{}') as EncounterDraft;
+    expect(lsIdle.updatedAt).toBe(afterEdit?.updatedAt);
   });
 
   it('hydrates from encounter.studies.arterialLE when present (overrides legacy draft)', () => {
@@ -246,5 +275,74 @@ describe('ArterialLEForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, (
     const impressionField = screen.getByTestId('arterial-impression') as HTMLTextAreaElement;
     expect(impressionField.value).toBe('FROM-ENCOUNTER');
     expect(impressionField.value).not.toBe('LEGACY-FALLBACK');
+  });
+
+  it('wave-2 layout contract: quiet clear-form button, named confirm, diagram before table, no local save clock', async () => {
+    const draft = buildDraft({ encounterId: 'enc-w2a' });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+    renderForm(draft.encounterId);
+
+    // UX-ANGIO-002 L3a — the form passes no save clock / dirty flag; the bar
+    // reads both from EncounterContext.
+    expect(formActionsProps.last).not.toBeNull();
+    expect(formActionsProps.last).not.toHaveProperty('lastSavedAt');
+    expect(formActionsProps.last).not.toHaveProperty('hasUnsavedChanges');
+
+    // UX-ANGIO-025 L1 — the diagram column comes before the segment table in
+    // document order (left column / stacked above it).
+    const diagram = screen.getByTestId('arterial-diagram-area');
+    const firstSegmentInput = screen.getByTestId('arterial-cfa-right-psv');
+    expect(
+      diagram.compareDocumentPosition(firstSegmentInput) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // UX-ANGIO-005 L2 — a secondary EMRButton with no '+' in its label.
+    const clearBtn = screen.getByTestId('arterial-new-case-button');
+    expect(clearBtn.textContent ?? '').not.toContain('+');
+    expect(clearBtn.className).not.toMatch(/primaryButton/);
+
+    // L3 — the confirm's bold first line names the patient and the study.
+    fireEvent.click(clearBtn);
+    const who = await screen.findByTestId('arterial-new-case-confirm-patient', {}, { timeout: 20_000 });
+    expect(who).toHaveTextContent('Jane Doe');
+  });
+
+  describe('phone width (UX-ANGIO-026 L2)', () => {
+    beforeEach(() => {
+      vi.spyOn(window, 'matchMedia').mockImplementation(
+        (query: string) =>
+          ({
+            matches: query === '(max-width: 639px)',
+            media: query,
+            onchange: null,
+            addListener: () => {},
+            removeListener: () => {},
+            addEventListener: () => {},
+            removeEventListener: () => {},
+            dispatchEvent: () => false,
+          }) as MediaQueryList,
+      );
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('a bilateral study shows one leg at a time behind an R/L switch', () => {
+      const draft = buildDraft({ encounterId: 'enc-phone' });
+      localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+      renderForm(draft.encounterId);
+
+      const toggle = screen.getByTestId('arterial-phone-side-toggle');
+      // Right leg first; the left leg's inputs are not mounted.
+      expect(screen.getByTestId('arterial-cfa-right-psv')).toBeInTheDocument();
+      expect(screen.queryByTestId('arterial-cfa-left-psv')).not.toBeInTheDocument();
+
+      fireEvent.click(within(toggle).getByTestId('arterial-phone-side-toggle-left'));
+      expect(screen.getByTestId('arterial-cfa-left-psv')).toBeInTheDocument();
+      expect(screen.queryByTestId('arterial-cfa-right-psv')).not.toBeInTheDocument();
+    });
   });
 });

@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  formatDottedDate,
   formatIsoForDisplay,
   isoToLocalDate,
   localDateToIso,
@@ -150,5 +151,32 @@ describe('Tbilisi UTC+4 regression guard (Area 02 CRITICAL)', () => {
     expect(rehydrated!.getFullYear()).toBe(2026);
     expect(rehydrated!.getMonth()).toBe(3);
     expect(rehydrated!.getDate()).toBe(25);
+  });
+});
+
+describe('formatDottedDate (U-1007: no US m/d dates in the Georgian PDF)', () => {
+  it('returns em-dash for empty / invalid input', () => {
+    expect(formatDottedDate(undefined)).toBe('—');
+    expect(formatDottedDate('')).toBe('—');
+    expect(formatDottedDate('garbage')).toBe('—');
+    expect(formatDottedDate('2026-13-40')).toBe('—');
+  });
+
+  it('prints a calendar date as DD.MM.YYYY with no UTC shift', () => {
+    expect(formatDottedDate('2026-11-12')).toBe('12.11.2026');
+    expect(formatDottedDate('2026-04-05')).toBe('05.04.2026');
+  });
+
+  it('never adds a time to a date-only value', () => {
+    expect(formatDottedDate('2026-11-12', { includeTime: true })).toBe('12.11.2026');
+  });
+
+  it('prints an instant in local wall-clock time, 24-hour', () => {
+    // Built from LOCAL components, so the assertion holds in any TZ.
+    const afternoon = new Date(2026, 10, 12, 15, 37).toISOString();
+    expect(formatDottedDate(afternoon, { includeTime: true })).toBe('12.11.2026 15:37');
+    expect(formatDottedDate(afternoon)).toBe('12.11.2026');
+    const justAfterMidnight = new Date(2026, 10, 13, 0, 5).toISOString();
+    expect(formatDottedDate(justAfterMidnight, { includeTime: true })).toBe('13.11.2026 00:05');
   });
 });

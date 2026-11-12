@@ -58,6 +58,20 @@ export async function registerFontsAsync(): Promise<void> {
     ],
   });
 
+  // Fallback family for glyphs Noto Sans Georgian lacks: Cyrillic (ru PDFs)
+  // and clinical symbols like ≥ ≤ ± µ (NASCET "≥ 70 %"). PDF_FONT_FAMILY lists
+  // it second, so @react-pdf substitutes per glyph. Roboto is Apache-2.0;
+  // Medium stands in for bold.
+  Font.register({
+    family: 'Roboto',
+    fonts: [
+      { src: '/fonts/Roboto-Regular.ttf', fontWeight: 'normal' },
+      { src: '/fonts/Roboto-Medium.ttf', fontWeight: 'bold' },
+      { src: '/fonts/Roboto-Regular.ttf', fontWeight: 'normal', fontStyle: 'italic' },
+      { src: '/fonts/Roboto-Medium.ttf', fontWeight: 'bold', fontStyle: 'italic' },
+    ],
+  });
+
   // ----- Hyphenation callback ----------------------------------------
   //
   // @react-pdf/renderer breaks lines only at break-points returned by

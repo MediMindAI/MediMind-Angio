@@ -8,29 +8,60 @@
   padding: 16px 24px 120px 24px;
 }
 
-.newCaseButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--emr-bg-card);
-  color: var(--emr-text-primary);
-  border: 1px solid var(--emr-border-color);
-  border-radius: var(--emr-border-radius-md);
-  font-size: var(--emr-font-sm);
-  font-weight: var(--emr-font-semibold);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+/* UX-ANGIO-005 L2 — "Clear form" resets this study. At rest it is a plain
+   secondary deck (EMRButton variant="secondary"); destructive intent shows on
+   hover/focus only, so red keeps meaning "abnormal finding" on this screen
+   (status-color reservation). The confirm dialog itself is the red step. */
+.clearFormButton {
+  white-space: normal;
+  flex-shrink: 0;
 }
 
-.newCaseButton:hover {
-  background: var(--emr-bg-hover);
-  border-color: var(--emr-border-focus);
+.clearFormButton.clearFormButton:hover:not(:disabled),
+.clearFormButton.clearFormButton:focus-visible {
+  border-color: var(--emr-error);
+  color: var(--emr-error);
 }
 
-.newCaseButton:focus-visible {
-  outline: 2px solid var(--emr-accent);
-  outline-offset: 2px;
+@media print {
+  .clearFormButton {
+    display: none;
+  }
+}
+
+/* UX-ANGIO-025 L3 — table │ (diagram + NASCET grade).
+   Below 1280px the two stack: table first, then the diagram with its grade. */
+.assessmentLayout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--emr-spacing-lg);
+}
+
+.assessmentMain,
+.assessmentAside {
+  min-width: 0;
+}
+
+/* ≥1280px: the diagram + NASCET grade sit in a sticky right column beside the
+   segment table, in the width the table never used. The column scrolls on its
+   own when it is taller than the viewport (the bottom offset leaves room for
+   the sticky report bar). */
+@media (min-width: 1280px) {
+  .assessmentLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(460px, 38vw, 680px);
+    align-items: start;
+  }
+
+  .assessmentAside {
+    position: sticky;
+    top: var(--emr-spacing-lg);
+    max-height: calc(100vh - var(--emr-spacing-lg) - 96px);
+    overflow-y: auto;
+    /* Room for the deck shadow inside the scroll box. */
+    padding: var(--emr-spacing-xs);
+    margin: calc(-1 * var(--emr-spacing-xs));
+  }
 }
 
 .templateSelect {
@@ -55,9 +86,9 @@
 }
 
 .textSection {
+  /* Command deck: no outer border, navy-tinted card shadow. */
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-sm);
+  box-shadow: var(--emr-shadow-card);
   padding: 16px 20px;
 }

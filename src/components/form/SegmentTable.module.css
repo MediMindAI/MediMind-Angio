@@ -105,7 +105,10 @@
 .headRow,
 .row {
   display: grid;
-  grid-template-columns: 88px repeat(6, minmax(0, 1fr));
+  /* 148px fits the widest label button (GSV Prox/Dist Thigh + side badge,
+     ~140px) so the R/L badge is never painted over by the next cell
+     (UX-ANGIO-004 L2 / U-1037). */
+  grid-template-columns: 148px repeat(6, minmax(0, 1fr));
   gap: 6px;
   align-items: center;
 }
@@ -179,6 +182,10 @@
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
+  /* Stay inside the label column: a too-long label ellipsizes its text, the
+     side badge (flex-shrink: 0) always stays whole. */
+  max-width: 100%;
+  min-width: 0;
 }
 
 .segmentButton:hover {
@@ -196,6 +203,9 @@
   font-family: var(--emr-font-mono);
   font-size: var(--emr-font-xs);
   letter-spacing: 0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .segmentSide {
@@ -204,6 +214,7 @@
   padding: 2px 5px;
   border-radius: var(--emr-border-radius-sm);
   letter-spacing: 0.04em;
+  flex-shrink: 0;
 }
 
 .segmentSide[data-side='left'] {

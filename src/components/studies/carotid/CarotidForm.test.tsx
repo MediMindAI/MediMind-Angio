@@ -158,7 +158,7 @@ describe('CarotidForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, () =
     expect(screen.getByTestId('encounter-context-banner')).toBeInTheDocument();
     // Patient identity comes from EncounterContext, not from local form state.
     expect(screen.getByTestId('banner-patient-name')).toHaveTextContent('Alex Patient');
-    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('2026-04-25');
+    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('25.04.2026');
   });
 
   it('renders the per-study findings UI (impression + sonographer + clinician)', () => {
@@ -175,6 +175,73 @@ describe('CarotidForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, () =
     expect(screen.getByTestId('carotid-clinician')).toBeInTheDocument();
     // Templates trigger button is part of the per-study toolbar.
     expect(screen.getByTestId('carotid-template-gallery-trigger')).toBeInTheDocument();
+  });
+
+  it('UX-ANGIO-025 L3: the diagram sits beside the table; the NASCET grade stays in the page flow under the table', () => {
+    const draft = buildDraft({ encounterId: 'enc-layout' });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+    renderForm(draft.encounterId);
+
+    const aside = screen.getByTestId('carotid-assessment-aside');
+    const anatomy = screen.getByTestId('mock-anatomy-view');
+    const nascet = screen.getByTestId('nascet-section');
+    const table = screen.getByRole('table');
+    expect(aside).toContainElement(anatomy);
+    // NASCET is not inside the sticky, separately scrolling column (walkers
+    // and the critic could not find it there) — it follows the table.
+    expect(aside).not.toContainElement(nascet);
+    expect(aside).not.toContainElement(table);
+    expect(table.compareDocumentPosition(nascet) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('UX-ANGIO-018 + 020: the segment-table title is an h2 and row controls have Georgian names', () => {
+    const draft = buildDraft({ encounterId: 'enc-a11y' });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+    renderForm(draft.encounterId);
+
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: /^(Vessel assessment|სისხლძარღვების შეფასება)$/,
+      }),
+    ).toBeInTheDocument();
+    // Flow / plaque controls end with the translated column label (the same
+    // text as the column header), not a hard-coded English suffix.
+    const headers = screen.getAllByRole('columnheader').map((h) => h.textContent ?? '');
+    const flowHeader = headers[4] ?? '';
+    const plaqueHeader = headers[5] ?? '';
+    const flow = screen.getByTestId('carotid-ica-prox-right-flow');
+    const plaque = screen.getByTestId('carotid-ica-prox-right-plaque');
+    expect(flowHeader).not.toBe('');
+    expect((flow.getAttribute('aria-label') ?? '').endsWith(` R ${flowHeader}`)).toBe(true);
+    expect((plaque.getAttribute('aria-label') ?? '').endsWith(` R ${plaqueHeader}`)).toBe(true);
+    expect(flow.getAttribute('aria-label')).not.toMatch(/ flow$/);
+    expect(plaque.getAttribute('aria-label')).not.toMatch(/ plaque$/);
+  });
+
+  it('UX-ANGIO-005: "clear form" is a quiet button whose confirm names the patient', async () => {
+    const draft = buildDraft({
+      encounterId: 'enc-clear',
+      header: { patientName: 'Nino Test', encounterDate: '2026-04-25' },
+    });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+
+    renderForm(draft.encounterId);
+
+    const button = screen.getByTestId('new-case-button');
+    expect(button).toHaveTextContent(/^(Clear form|ფორმის გასუფთავება)$/);
+    expect(button.textContent ?? '').not.toContain('+');
+
+    await act(async () => {
+      fireEvent.click(button);
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    const patientLine = await screen.findByTestId('new-case-confirm-patient');
+    expect(patientLine).toHaveTextContent('Nino Test');
+    expect(patientLine).toHaveTextContent(/·/);
   });
 
   it('mirrors per-study state into encounter.studies.carotid on dispatch', async () => {
@@ -206,6 +273,47 @@ describe('CarotidForm — Phase 3b (encounter pivot)', { timeout: 60_000 }, () =
     expect(study?.schemaVersion).toBe(2);
     expect(study?.studyType).toBe('carotid');
     expect(study?.impression).toBe('Bilateral patent ICAs.');
+  });
+
+  it('asks for a review (never rewrites) when findings change after the conclusion was written', async () => {
+    const draft = buildDraft({
+      encounterId: 'enc-stale',
+      studies: {
+        carotid: {
+          schemaVersion: 2,
+          studyType: 'carotid',
+          studyDate: '2026-04-25',
+          findings: {},
+          nascet: {},
+          view: 'bilateral',
+          impression: 'Normal bilateral carotid study.',
+          impressionEdited: true,
+          sonographerComments: '',
+          clinicianComments: '',
+          recommendations: [],
+        },
+      },
+    });
+    localStorage.setItem(keyEncounter(draft.encounterId), JSON.stringify(draft));
+    renderForm(draft.encounterId);
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    expect(screen.queryByTestId('carotid-impression-stale')).toBeNull();
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('nascet-right-50to69'));
+    });
+    const note = screen.getByTestId('carotid-impression-stale');
+    const impressionField = screen.getByTestId('carotid-impression') as HTMLTextAreaElement;
+    expect(impressionField.value).toBe('Normal bilateral carotid study.');
+
+    // Closing the note = "reviewed, keep it": the note goes, the text stays.
+    await act(async () => {
+      fireEvent.click(note.querySelector('button') as HTMLButtonElement);
+    });
+    expect(screen.queryByTestId('carotid-impression-stale')).toBeNull();
+    expect(impressionField.value).toBe('Normal bilateral carotid study.');
   });
 
   it('hydrates from encounter.studies.carotid when present (overrides legacy draft)', () => {

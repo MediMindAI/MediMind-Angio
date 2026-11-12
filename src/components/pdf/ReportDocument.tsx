@@ -43,7 +43,7 @@ import { RecommendationsSection } from './sections/RecommendationsSection';
 import type { RecommendationsSectionLabels } from './sections/RecommendationsSection';
 import { FooterSection } from './sections/FooterSection';
 import type { AnatomyToPdfResult } from './anatomyToPdfSvg';
-import { formatIsoForDisplay, nowIsoTimestamp } from '../../services/dateHelpers';
+import { formatDottedDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import type { FormState } from '../../types/form';
 import { isVenousForm } from '../../types/form';
 import type { VenousSegmentFindings, VenousLESegmentBase } from '../studies/venous-le/config';
@@ -77,8 +77,10 @@ export interface ReportLabels {
   readonly arterialFindings: ArterialFindingsTableLabels;
   readonly pressures: SegmentalPressureTableLabels;
   readonly carotidFindings: CarotidFindingsTableLabels;
-  /** 5-band severity legend for the carotid neck diagram. */
+  /** 3-entry severity legend (normal / significant / occlusion) for the carotid diagram. */
   readonly carotidLegend: ReadonlyArray<DiagramLegendItem>;
+  /** Same 3-entry legend for the arterial LE diagram (U-1008). */
+  readonly arterialLegend: ReadonlyArray<DiagramLegendItem>;
   readonly nascet: NASCETSummaryLabels;
   readonly iliacFindings: IliacPelvicVenousFindingsTableLabels;
   readonly narrative: NarrativeSectionLabels;
@@ -264,10 +266,10 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
   } = props;
   const pagePreset = PDF_PAGE_PRESETS[pageSize];
 
-  const issueDate = formatIsoForDisplay(generatedAt ?? form.header.studyDate);
-  // Footer timestamp: include time + TZ abbreviation so a Tbilisi sonographer
-  // and a NY reviewer can reconcile the moment shown on the page.
-  const footerTimestamp = formatIsoForDisplay(generatedAt ?? nowIsoTimestamp(), {
+  const issueDate = formatDottedDate(generatedAt ?? form.header.studyDate);
+  // Footer timestamp: DD.MM.YYYY HH:mm in local time. US order (11/12/2026)
+  // read as 11 December to Georgian clinicians (level-up U-1007).
+  const footerTimestamp = formatDottedDate(generatedAt ?? nowIsoTimestamp(), {
     includeTime: true,
   });
 
@@ -370,6 +372,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
                 anterior={anatomy?.anterior ?? null}
                 posterior={null}
                 labels={labels.diagram}
+                legendItems={labels.arterialLegend}
                 viewWidthPt={260}
               />
             </View>
@@ -463,6 +466,7 @@ export function ReportDocument(props: ReportDocumentProps): ReactElement {
           rightFindings={form.narrative.rightFindings ?? rightFindings ?? ''}
           leftFindings={form.narrative.leftFindings ?? leftFindings ?? ''}
           conclusions={conclusions ?? []}
+          conclusionThenComments={isIliac}
         />
 
         {form.ceap ? <CEAPSection ceap={form.ceap} labels={labels.ceap} /> : null}

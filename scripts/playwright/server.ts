@@ -23,8 +23,11 @@ const PORT = parseInt(process.env.PORT || '2400', 10);
 const HEADLESS = process.env.HEADLESS === 'true';
 // Bind 0.0.0.0 inside Docker so host port-forwarding works; keep localhost-only on dev machines.
 const BIND_HOST = process.env.BIND_HOST || (HEADLESS ? '0.0.0.0' : '127.0.0.1');
-const PID_FILE = path.join(os.tmpdir(), 'playwright-server.pid');
-const USER_DATA_DIR = path.join(os.tmpdir(), 'playwright-user-data');
+// A non-default PORT gets its own temp files, so this server can run beside
+// another project's server on :2400 without sharing its PID file or profile.
+const PORT_SUFFIX = PORT === 2400 ? '' : `-${PORT}`;
+const PID_FILE = path.join(os.tmpdir(), `playwright-server${PORT_SUFFIX}.pid`);
+const USER_DATA_DIR = path.join(os.tmpdir(), `playwright-user-data${PORT_SUFFIX}`);
 const SCREENSHOTS_DIR = path.join(process.cwd(), 'screenshots');
 
 // Multiple browser contexts for parallel agents

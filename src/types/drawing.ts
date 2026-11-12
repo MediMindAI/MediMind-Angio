@@ -54,6 +54,10 @@ export type DrawingTool = 'pen' | 'eraser' | 'text';
 export const DRAWING_COLORS = ['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'] as const;
 export type DrawingColor = (typeof DRAWING_COLORS)[number];
 
+/** Arterial + carotid pen colors: grey (normal), red (hemodynamically
+ *  significant stenosis), black (occlusion) — no venous-only concepts. */
+export const STENOSIS_DRAWING_COLORS: ReadonlyArray<DrawingColor> = ['normal', 'incompetent', 'occluded'];
+
 /** Resolves a `DrawingColor` token to a concrete CSS color string. */
 export const DRAWING_COLOR_HEX: Readonly<Record<DrawingColor, string>> = {
   normal:       COMPETENCY_COLORS.normal.fill,

@@ -207,7 +207,8 @@
       "copyRightToLeft": "Copy R → L",
       "copyRightToLeftTooltip": "Duplicate right-side findings to left (⌘D)",
       "copyLeftToRight": "Copy L → R",
-      "copyLeftToRightTooltip": "Duplicate left-side findings to right"
+      "copyLeftToRightTooltip": "Duplicate left-side findings to right",
+      "allNormalBothTooltip": "Fill every segment of both legs with normal findings (⌘N)"
     },
     "narrative": {
       "sonographerComments": "Sonographer comments",
@@ -226,6 +227,7 @@
       "refluxMeasured": "Reflux at {vein} — {ms} ms.",
       "incompetent": "Incompetent valves noted — {vein}.",
       "postAblation": "Post-ablation status — {vein}.",
+      "perforator": "Perforator — {vein}.",
       "nonCompressible": "Non-compressible segment — {vein}. Finding suggestive of acute DVT.",
       "partialCompressibility": "Partial compressibility — {vein}. Consistent with chronic post-thrombotic changes.",
       "acuteThrombus": "Acute intraluminal thrombus — {vein}.",
@@ -238,7 +240,8 @@
       "chronicPostThrombotic": "Chronic post-thrombotic changes — {side} {vein}.",
       "inconclusive": "Study limitation — inconclusive assessment of {side} {vein}.",
       "incompetent": "Valvular incompetence — {side} {vein}.",
-      "postAblation": "Post-ablation — {side} {vein}."
+      "postAblation": "Post-ablation — {side} {vein}.",
+      "perforator": "Perforator — {side} {vein}."
     },
     "segments": {
       "cfv": "common femoral vein",
@@ -322,7 +325,8 @@
       "priorityUrgent": "Urgent",
       "priorityStat": "Stat",
       "placeholder": "Recommendation...",
-      "empty": "No recommendations added yet"
+      "empty": "No recommendations added yet",
+      "remove": "Delete recommendation"
     },
     "actions": {
       "lastSaved": "Last saved:",
@@ -332,16 +336,21 @@
       "downloadPDF": "Download PDF",
       "exportJSON": "Export FHIR JSON",
       "backToStudies": "Back to studies",
-      "newCase": "+ New case",
-      "newCaseConfirmTitle": "Start a new case?",
+      "newCase": "Clear form",
+      "newCaseConfirmTitle": "Clear this form?",
       "newCaseConfirmBody": "This will erase all current findings, CEAP, recommendations, and narrative. Unsaved changes will be lost.",
-      "newCaseConfirm": "Discard & start new",
+      "newCaseConfirm": "Clear form",
       "newCaseToastTitle": "New case started",
       "newCaseToastMessage": "The form has been cleared.",
       "cancel": "Cancel",
       "applyTemplateConfirmTitle": "Apply template?",
       "applyTemplateConfirmBody": "This will replace current findings, CEAP, recommendations, impression, sonographer comments, and clinician comments.",
-      "applyTemplate": "Apply template"
+      "applyTemplate": "Apply template",
+      "printPDF": "Print",
+      "staleOtherTab": "This visit was changed in another window. Reload the page.",
+      "reloadPage": "Reload page",
+      "saveFailed": "Saving failed. Your answers are only on screen for now. Do not close the page.",
+      "saveCacheFailed": "Browser storage is full. A reload may show older answers."
     },
     "anatomy": {
       "title": "Diagram",
@@ -535,6 +544,10 @@
           "message": "The template has been removed from your library."
         }
       }
-    }
+    },
+    "technique": "Technique",
+    "findings": "Findings",
+    "comments": "Comments",
+    "followUpPrefix": "Follow-up:"
   }
 }

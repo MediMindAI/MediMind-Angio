@@ -3,9 +3,9 @@
  * narrativeService tests — Wave 3.8 regression guards.
  *
  * Two findings closed by Wave 3.8 (Part 03 HIGH):
- *   1. `subclavianStealLeft` template painted only V2 retrograde — should
- *      paint V1 + V2 + V3 because the steal physiology reverses flow
- *      throughout the entire ipsilateral vertebral.
+ *   1. `subclavianStealLeft` template painted only V2 retrograde. The
+ *      template has since been removed (clinician dropped subclavian steal);
+ *      the guard now pins that it stays gone.
  *   2. `resolveEntry` only special-cased venous-LE keys (`vein`, bare
  *      `side`). Carotid + arterial generators emit `vessel`, `severity`,
  *      `morphology`, `waveform`, etc. — those used to fall through
@@ -51,39 +51,14 @@ const markedT: TranslateFn = (key, paramsOrDefault) => {
 };
 
 // ---------------------------------------------------------------------------
-// 1. subclavianStealLeft template — retrograde flow on V1 + V2 + V3 left
+// 1. subclavianStealLeft template — removed (subclavian steal retired)
 // ---------------------------------------------------------------------------
 
-describe('Wave 3.8 — subclavianStealLeft template', () => {
-  const tpl = CAROTID_TEMPLATES.find(
-    (t) => t.id === 'carotid-subclavian-steal-left',
-  );
-
-  it('exists', () => {
-    expect(tpl).toBeDefined();
-  });
-
-  it('sets retrograde flow on V1 + V2 + V3 left (Wave 3.8)', () => {
-    expect(tpl?.findings['vert-v1-left']?.flowDirection).toBe('retrograde');
-    expect(tpl?.findings['vert-v2-left']?.flowDirection).toBe('retrograde');
-    expect(tpl?.findings['vert-v3-left']?.flowDirection).toBe('retrograde');
-  });
-
-  it('sets steal phase 3 on V1 + V2 + V3 left (Wave 3.8)', () => {
-    expect(tpl?.findings['vert-v1-left']?.subclavianStealPhase).toBe(3);
-    expect(tpl?.findings['vert-v2-left']?.subclavianStealPhase).toBe(3);
-    expect(tpl?.findings['vert-v3-left']?.subclavianStealPhase).toBe(3);
-  });
-
-  it('keeps right vertebrals at phase 0 with antegrade flow', () => {
-    expect(tpl?.findings['vert-v1-right']?.subclavianStealPhase).toBe(0);
-    expect(tpl?.findings['vert-v2-right']?.subclavianStealPhase).toBe(0);
-    expect(tpl?.findings['vert-v3-right']?.subclavianStealPhase).toBe(0);
-    expect(tpl?.findings['vert-v2-right']?.flowDirection).toBe('antegrade');
-  });
-
-  it('keeps the proximal subclavian stenosis on the left', () => {
-    expect(tpl?.findings['subclav-prox-left']?.psvCmS).toBe(280);
+describe('subclavianStealLeft template (retired)', () => {
+  it('no longer exists', () => {
+    expect(
+      CAROTID_TEMPLATES.find((t) => t.id === 'carotid-subclavian-steal-left'),
+    ).toBeUndefined();
   });
 });
 

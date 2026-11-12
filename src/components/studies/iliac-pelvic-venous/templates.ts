@@ -9,12 +9,35 @@
  * a shared reference can't be mutated across cases.
  */
 
-import type { IliacContext, IliacPelvicVenousFindings } from './config';
+import { ILIAC_CAVAL_ROW_ORDER } from './config';
+import type { IliacCavalFindings, IliacContext, IliacPelvicVenousFindings } from './config';
 
-export interface IliacTemplateRecommendation {
-  readonly textKey: string;
-  readonly textFallback: string;
-}
+/**
+ * Every row patent / fully filling / competent — the facts the normal
+ * impression states. A normal template must never write a "no reflux, no
+ * obstruction" conclusion over an empty table (level-up U-1025).
+ *
+ * Phasicity: iliac + common femoral veins (CIV, EIV, IIV, CFV) are normally
+ * respirophasic, so they get it. IVC (cardiac pulsatility near the heart) and
+ * the left renal vein (LRV) stay blank for the sonographer. Decided under founder
+ * delegation 2026-11-12, pending clinician review (sign-off S5).
+ *
+ * Also the source of the table's one-click "all normal" action (UX-ANGIO-011),
+ * so the button and the normal template can never drift apart.
+ */
+const RESPIROPHASIC_NORMAL = /^(civ|eiv|iiv|cfv)/;
+
+export const NORMAL_CAVAL: IliacCavalFindings = Object.fromEntries(
+  ILIAC_CAVAL_ROW_ORDER.map((id) => [
+    id,
+    {
+      patency: 'patent',
+      filling: 'full',
+      competency: 'competent',
+      ...(RESPIROPHASIC_NORMAL.test(id) ? { phasicity: 'respirophasic' as const } : {}),
+    },
+  ])
+);
 
 export interface IliacTemplate {
   readonly id: string;
@@ -26,7 +49,6 @@ export interface IliacTemplate {
   readonly impressionFallback: string;
   readonly context?: IliacContext;
   readonly findings: IliacPelvicVenousFindings;
-  readonly recommendations?: ReadonlyArray<IliacTemplateRecommendation>;
 }
 
 export const ILIAC_PELVIC_VENOUS_TEMPLATES: ReadonlyArray<IliacTemplate> = [
@@ -35,112 +57,49 @@ export const ILIAC_PELVIC_VENOUS_TEMPLATES: ReadonlyArray<IliacTemplate> = [
     nameKey: 'iliacPelvicVenous.templates.normal.name',
     nameFallback: 'Normal pelvic venous study',
     descriptionKey: 'iliacPelvicVenous.templates.normal.description',
-    descriptionFallback: 'No reflux or obstruction in any zone.',
+    descriptionFallback: 'No reflux or obstruction.',
     impressionKey: 'iliacPelvicVenous.templates.normal.impression',
     impressionFallback:
-      'No pelvic venous reflux or obstruction identified. Gonadal veins of normal calibre without reflux; no iliac vein compression or thrombosis; left renal vein without nutcracker features.',
+      'No pelvic venous reflux or obstruction identified. Left gonadal vein of normal calibre without reflux; no iliac vein compression or thrombosis.',
     context: { sex: 'female' },
-    findings: Object.freeze({}),
+    findings: Object.freeze({
+      caval: NORMAL_CAVAL,
+      gonadal: { left: { refluxPresent: false } },
+    }) as IliacPelvicVenousFindings,
   },
   {
     id: 'iliac-pcs-left-ovarian',
     nameKey: 'iliacPelvicVenous.templates.pcs.name',
     nameFallback: 'Pelvic congestion — left ovarian reflux',
     descriptionKey: 'iliacPelvicVenous.templates.pcs.description',
-    descriptionFallback: 'Dilated, refluxing left ovarian vein with parametrial congestion.',
+    descriptionFallback: 'Dilated, refluxing left ovarian vein.',
     impressionKey: 'iliacPelvicVenous.templates.pcs.impression',
     impressionFallback:
-      'Dilated, incompetent left ovarian vein with sustained reflux and congested left parametrial plexus — findings consistent with pelvic venous reflux (pelvic congestion).',
+      'Dilated, incompetent left ovarian vein with reflux — findings consistent with pelvic venous reflux (pelvic congestion).',
     context: {
       sex: 'female',
       symptoms: ['chronic-pelvic-pain', 'dyspareunia'],
       approaches: ['transabdominal', 'transvaginal'],
     },
     findings: Object.freeze({
-      gonadal: {
-        left: {
-          diameterMm: 8,
-          refluxPresent: true,
-          refluxTrigger: 'spontaneous',
-          refluxDurationS: 4,
-          refluxType: 'II',
-          flowDirection: 'retrograde',
-        },
-      },
-      plexus: {
-        left: {
-          largestDiameterMm: 7,
-          refluxDurationS: 3,
-          refluxType: 'II',
-          flowVelocityCmS: 2,
-          tortuosity: 'severe',
-        },
-      },
+      gonadal: { left: { diameterMm: 8, refluxPresent: true } },
     }) as IliacPelvicVenousFindings,
-    recommendations: [
-      {
-        textKey: 'iliacPelvicVenous.templates.pcs.rec',
-        textFallback:
-          'Refer to interventional radiology for consideration of ovarian vein embolization.',
-      },
-    ],
   },
   {
     id: 'iliac-may-thurner',
     nameKey: 'iliacPelvicVenous.templates.mayThurner.name',
     nameFallback: 'May-Thurner pattern (left CIV)',
     descriptionKey: 'iliacPelvicVenous.templates.mayThurner.description',
-    descriptionFallback: 'Left common iliac vein compression with collaterals — screening positive.',
+    descriptionFallback: 'Left common iliac vein compression — screening positive.',
     impressionKey: 'iliacPelvicVenous.templates.mayThurner.impression',
     impressionFallback:
-      'Narrowing of the left common iliac vein with elevated cross-stenosis velocity ratio and pelvic collaterals, suggestive of May-Thurner (non-thrombotic iliac vein) compression. Ultrasound is screening only — cross-sectional/IVUS confirmation advised.',
+      'Narrowing of the proximal left common iliac vein with partial filling and elevated peak velocity, suggestive of May-Thurner (non-thrombotic iliac vein) compression. Ultrasound is screening only — cross-sectional/IVUS confirmation advised.',
     context: { sex: 'female', symptoms: ['leg-varices'], approaches: ['transabdominal'] },
     findings: Object.freeze({
       caval: {
-        'civ-left': {
-          patency: 'partial',
-          velocityRatio: 3.0,
-          stenosisPct: 60,
-          collateralsPresent: true,
-          confirmatoryImagingRecommended: true,
-        },
+        'civ-prox-left': { patency: 'patent', filling: 'partial', peakVelocityCmS: 120 },
+        'cfv-left': { phasicity: 'monophasic' },
       },
     }) as IliacPelvicVenousFindings,
-    recommendations: [
-      {
-        textKey: 'iliacPelvicVenous.templates.mayThurner.rec',
-        textFallback: 'Confirm with IVUS or CT/MR venography prior to any intervention.',
-      },
-    ],
-  },
-  {
-    id: 'iliac-nutcracker',
-    nameKey: 'iliacPelvicVenous.templates.nutcracker.name',
-    nameFallback: 'Nutcracker pattern (left renal vein)',
-    descriptionKey: 'iliacPelvicVenous.templates.nutcracker.description',
-    descriptionFallback: 'Left renal vein compression — screening positive.',
-    impressionKey: 'iliacPelvicVenous.templates.nutcracker.impression',
-    impressionFallback:
-      'Aortomesenteric compression of the left renal vein with elevated peak-velocity and diameter ratios and a beak sign, suggestive of nutcracker phenomenon. Ultrasound is screening only — CT/MR venography confirmation advised.',
-    context: { sex: 'female', symptoms: ['flank-pain', 'hematuria'], approaches: ['transabdominal'] },
-    findings: Object.freeze({
-      renal: {
-        peakVelocityRatio: 7.5,
-        apDiameterRatio: 5,
-        beakSign: true,
-        hilarVarices: true,
-        confirmatoryImagingRecommended: true,
-      },
-      // SMA–aorta angle is classed under SMAS (< 25° positive), per protocol.
-      specialConsiderations: {
-        smas: { smaAortaAngleDeg: 22 },
-      },
-    }) as IliacPelvicVenousFindings,
-    recommendations: [
-      {
-        textKey: 'iliacPelvicVenous.templates.nutcracker.rec',
-        textFallback: 'Confirm with CT/MR venography and correlate with renocaval pressure gradient.',
-      },
-    ],
   },
 ];

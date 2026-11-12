@@ -27,15 +27,25 @@
   padding-bottom: 120px;
 }
 
+/* The sticky footer wraps to three rows on a phone (resume / hint / start),
+   so reserve more room or it covers the end of the page. */
+@media (max-width: 576px) {
+  .backdrop {
+    padding-bottom: 180px;
+  }
+}
+
 /* ============================================================
    HERO BANNER
    ============================================================ */
 .hero {
   position: relative;
   overflow: hidden;
-  background: var(--emr-gradient-section-header);
+  /* Brand gradient owns the chrome in BOTH themes. --emr-gradient-add-button
+     resolves to --emr-gradient-primary in light and keeps the navy brand
+     gradient in dark (where --emr-gradient-primary itself turns slate). */
+  background: var(--emr-gradient-add-button);
   color: var(--emr-text-inverse);
-  border-bottom: 1px solid var(--emr-secondary-alpha-30);
   padding: 18px 24px 22px;
   isolation: isolate;
 }
@@ -142,8 +152,6 @@
   letter-spacing: var(--emr-letter-spacing-uppercase);
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .heroEyebrowDot {
@@ -257,9 +265,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--emr-secondary);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  color: rgba(255, 255, 255, 0.78);
+  /* Pending = outlined (same in both themes). Solid navy fill, not
+     transparent, so the track line passes BEHIND the dot instead of
+     striking through its number. */
+  background: var(--emr-primary);
+  border: 1.5px solid var(--emr-white-alpha-50);
+  color: var(--emr-white-alpha-85);
   font-size: var(--emr-font-2xs);
   font-weight: var(--emr-font-bold);
   font-variant-numeric: tabular-nums;
@@ -272,21 +283,29 @@
   line-height: 1;
 }
 
-/* Done — solid white pill, primary-blue check icon, no shadow blob */
+/* Completed — solid --emr-primary with a white tick and a white edge so it
+   reads on the gradient. White icon on navy survives the global dark-mode
+   "all tabler icons white" rule, so light and dark look the same. */
 .heroProgressDotDone {
-  background: var(--emr-text-white);
+  background: var(--emr-primary);
   border-color: var(--emr-text-white);
-  color: var(--emr-secondary);
+  color: var(--emr-text-white);
 }
 
-/* Current (next-to-be-completed) — solid white with primary-blue
-   number, plus a subtle 4px ring to draw the eye without the
-   old shadow blob. */
+/* Current (next to complete) — still outlined, but a solid white edge,
+   white number and a soft ring mark it as the active step. */
 .heroProgressDotCurrent {
-  background: var(--emr-text-white);
   border-color: var(--emr-text-white);
-  color: var(--emr-primary);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  color: var(--emr-text-white);
+  box-shadow: 0 0 0 3px var(--emr-white-alpha-20);
+}
+
+/* ThemeToggle's active segment is a white pill; the global dark-mode rule
+   forces every tabler icon white (!important), which made the active glyph
+   vanish. Pin it to the navy it already uses in light mode — both themes. */
+.heroControls [data-testid='theme-toggle'] button[aria-selected='true'] svg:global(.tabler-icon) {
+  color: var(--emr-primary) !important;
+  stroke: var(--emr-primary) !important;
 }
 
 @media (max-width: 768px) {
@@ -372,86 +391,54 @@
 /* ============================================================
    CARDS
    ============================================================ */
+/* Command deck: borderless, 12px, soft navy shadow — at every width. */
 .card {
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
+  border: 0;
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-sm);
+  box-shadow: var(--emr-shadow-card);
   overflow: hidden;
-  transition: box-shadow var(--emr-transition-base);
 }
 
-.card:hover {
-  box-shadow: var(--emr-shadow-md);
-}
-
+/* Slim section header: 4×15 gradient tick + md/600 title + hairline.
+   Shared by the four section decks and the summary deck. */
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
-  background: var(--emr-bg-section-header);
-  border-bottom: 1px solid var(--emr-border-color);
-  position: relative;
+  gap: 10px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--emr-border-light);
 }
 
-.cardHeader::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--emr-gradient-section-header);
-}
-
-.cardHeaderIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--emr-border-radius-md);
-  background: var(--emr-secondary-alpha-10);
-  color: var(--emr-secondary);
+.cardHeaderTick {
+  width: 4px;
+  height: 15px;
+  border-radius: 2px;
+  /* = --emr-gradient-primary in light; stays brand (not slate) in dark. */
+  background: var(--emr-gradient-add-button);
   flex-shrink: 0;
 }
 
-.cardHeaderText {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+.cardHeaderTitle {
   flex: 1;
   min-width: 0;
-}
-
-.cardHeaderEyebrow {
-  font-size: var(--emr-font-2xs);
-  font-weight: var(--emr-font-bold);
-  text-transform: uppercase;
-  letter-spacing: var(--emr-letter-spacing-uppercase);
-  color: var(--emr-text-tertiary);
-}
-
-.cardHeaderTitle {
-  font-size: var(--emr-font-lg);
+  font-size: var(--emr-font-md);
   font-weight: var(--emr-font-semibold);
   margin: 0;
   color: var(--emr-text-primary);
-  letter-spacing: var(--emr-letter-spacing-tight);
 }
 
+/* Step-complete tick — same "completed" language as the hero stepper. */
 .cardHeaderBadge {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--emr-success);
+  background: var(--emr-primary);
   color: var(--emr-text-white);
   flex-shrink: 0;
-  box-shadow: var(--emr-shadow-success);
 }
 
 .cardBody {
@@ -489,6 +476,32 @@
 
 .fieldFull {
   grid-column: 1 / -1;
+}
+
+/* Required is not severity: mark it in muted text, not red. */
+.card :global(.emr-field-label-required),
+.card :global(.mantine-InputWrapper-required) {
+  color: var(--emr-text-secondary);
+}
+
+/* Date clear × is a muted ghost icon (navy on hover), identical in both
+   themes. The wrapper paints it red with inline styles, hence !important. */
+.card .field [data-testid$='-clear'] {
+  background: transparent !important;
+}
+
+.card .field [data-testid$='-clear'] svg:global(.tabler-icon) {
+  color: var(--emr-text-secondary) !important;
+  stroke: var(--emr-text-secondary) !important;
+}
+
+.card .field [data-testid$='-clear']:hover {
+  background: var(--emr-bg-hover) !important;
+}
+
+.card .field [data-testid$='-clear']:hover svg:global(.tabler-icon) {
+  color: var(--emr-primary) !important;
+  stroke: var(--emr-primary) !important;
 }
 
 .consentRow {
@@ -604,15 +617,26 @@
   width: 44px;
   height: 44px;
   border-radius: var(--emr-border-radius-md);
-  background: var(--emr-secondary-alpha-10);
-  color: var(--emr-secondary);
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-secondary);
   flex-shrink: 0;
   transition: var(--emr-transition-base);
 }
 
+/* Muted glyph in both themes (beats the global dark "icons white" rule). */
+.studyGrid .studyCard .studyCardIcon svg:global(.tabler-icon) {
+  color: var(--emr-text-secondary) !important;
+  stroke: var(--emr-text-secondary) !important;
+}
+
 .studyCardSelected .studyCardIcon {
-  background: var(--emr-gradient-section-header);
+  background: var(--emr-primary);
   color: var(--emr-text-white);
+}
+
+.studyGrid .studyCardSelected .studyCardIcon svg:global(.tabler-icon) {
+  color: var(--emr-text-white) !important;
+  stroke: var(--emr-text-white) !important;
 }
 
 .studyCardBody {
@@ -654,11 +678,11 @@
   transition: var(--emr-transition-base);
 }
 
+/* Checked = solid --emr-primary (Forms rule), not success green. */
 .studyCardCheck[data-checked='true'] {
-  background: var(--emr-success);
-  border-color: var(--emr-success);
+  background: var(--emr-primary);
+  border-color: var(--emr-primary);
   color: var(--emr-text-white);
-  box-shadow: var(--emr-shadow-success);
 }
 
 .studyHelper {
@@ -667,15 +691,6 @@
   color: var(--emr-text-secondary);
 }
 
-.studyHelperWarn {
-  margin: 14px 0 0 0;
-  padding: 10px 12px;
-  font-size: var(--emr-font-sm);
-  color: var(--emr-warning-text);
-  background: var(--emr-warning-bg);
-  border: 1px solid var(--emr-warning-border);
-  border-radius: var(--emr-border-radius-md);
-}
 
 /* ============================================================
    LIVE SUMMARY COLUMN
@@ -695,48 +710,10 @@
 
 .summaryCard {
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
+  border: 0;
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-md);
+  box-shadow: var(--emr-shadow-card);
   overflow: hidden;
-}
-
-.summaryHeader {
-  padding: 18px 20px 14px;
-  background: var(--emr-gradient-section-header);
-  color: var(--emr-text-inverse);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  position: relative;
-  overflow: hidden;
-}
-
-.summaryHeader::after {
-  content: '';
-  position: absolute;
-  inset: -40% -10% auto auto;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 70%);
-  pointer-events: none;
-}
-
-.summaryHeaderEyebrow {
-  font-size: var(--emr-font-2xs);
-  font-weight: var(--emr-font-bold);
-  letter-spacing: var(--emr-letter-spacing-uppercase);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.summaryHeaderTitle {
-  font-size: var(--emr-font-lg);
-  font-weight: var(--emr-font-semibold);
-  margin: 0;
-  color: var(--emr-text-white);
-  letter-spacing: var(--emr-letter-spacing-tight);
 }
 
 .summaryBody {
@@ -753,7 +730,8 @@
   align-items: center;
   padding: 14px;
   border-radius: var(--emr-border-radius-md);
-  background: var(--emr-gradient-subtle-primary);
+  /* Neutral tile — blue is reserved for interaction/checked states. */
+  background: var(--emr-bg-hover);
   border: 1px solid var(--emr-border-light);
 }
 
@@ -930,11 +908,9 @@
   gap: 10px;
   padding: 12px 14px;
   border-radius: var(--emr-border-radius-md);
-  background: var(--emr-warning-bg);
-  border: 1px solid var(--emr-warning-border);
-  color: var(--emr-warning-text);
 }
 
+/* Only the ready state renders — blockers live once in the action bar. */
 .summaryStatusReady {
   background: var(--emr-success-bg);
   border-color: var(--emr-success-border);
@@ -945,7 +921,6 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--emr-warning);
   flex-shrink: 0;
   position: relative;
 }
@@ -989,15 +964,11 @@
   left: 0;
   right: 0;
   z-index: var(--emr-z-sticky);
-  background: rgba(255, 255, 255, 0.85);
+  /* Solid deck surface: Command bans backdrop-filter (hospital PCs), and the
+     semantic token already flips for dark mode, so no dark override needed. */
+  background: var(--emr-bg-card);
   border-top: 1px solid var(--emr-border-color);
   box-shadow: 0 -8px 28px -16px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-}
-
-:root[data-mantine-color-scheme='dark'] .actionRow {
-  background: rgba(15, 23, 42, 0.85);
 }
 
 .actionRowInner {
@@ -1009,6 +980,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  /* UX-ANGIO-009/024 (C12): wrap instead of pushing the start button
+     off-screen at 375px. */
+  flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
@@ -1036,9 +1010,15 @@
   padding: 8px 14px;
   cursor: pointer;
   transition: var(--emr-transition-base);
-  white-space: nowrap;
-  flex-shrink: 0;
-  height: 38px;
+  /* Long Georgian label + patient name wrap inside the button (§4.5). */
+  min-height: 38px;
+  min-width: 0;
+  flex-shrink: 1;
+  text-align: start;
+}
+
+.actionRowResumeName {
+  color: var(--emr-text-primary);
 }
 
 .actionRowResume:hover {
@@ -1069,9 +1049,13 @@
 }
 
 @media (max-width: 576px) {
+  .actionRowRight {
+    flex: 1 1 100%;
+  }
   .actionRowHint {
     flex-basis: 100%;
     text-align: right;
+    white-space: normal;
   }
   .actionRowButton {
     min-width: 0;

@@ -78,6 +78,37 @@ describe('projectStudyToFormState — unified-mode crash regression guard', () =
     expect(result?.narrative.impression).toBe('Acute left popliteal DVT.');
   });
 
+  it('carries the doctor-written findings and drawings into the combined report (level-up)', () => {
+    const enc = baseEncounter();
+    const stroke = { id: 's1', points: [[1, 2]], color: 'black', size: 2 };
+    const venous = projectStudyToFormState(
+      'venousLEBilateral',
+      {
+        studyType: 'venousLEBilateral',
+        findings: {},
+        rightFindingsText: 'Right GSV reflux 1.8 s.',
+        leftFindingsText: 'Left normal.',
+        drawings: [stroke],
+      },
+      enc,
+    );
+    expect(venous?.narrative.rightFindings).toBe('Right GSV reflux 1.8 s.');
+    expect(venous?.narrative.leftFindings).toBe('Left normal.');
+    expect(venous?.parameters['drawings']).toEqual([stroke]);
+
+    const runoff = { right: { pta: 'patent' } };
+    const arterial = projectStudyToFormState(
+      'arterialLE',
+      { studyType: 'arterialLE', findings: {}, drawings: [stroke], runoff },
+      enc,
+    );
+    expect(arterial?.parameters['drawings']).toEqual([stroke]);
+    expect(arterial?.parameters['runoff']).toEqual(runoff);
+
+    const carotid = projectStudyToFormState('carotid', { studyType: 'carotid', findings: {}, drawings: [stroke] }, enc);
+    expect(carotid?.parameters['drawings']).toEqual([stroke]);
+  });
+
   it('projects arterial V2 reducer state into FormState with parameters.segmentFindings + pressures', () => {
     const enc = baseEncounter();
     const arterialSlot = {
@@ -132,6 +163,30 @@ describe('projectStudyToFormState — unified-mode crash regression guard', () =
     expect(result).not.toBeNull();
     expect(result?.header.studyDate).toBe('2026-04-26');
     expect(result?.parameters['segmentFindings']).toEqual({});
+  });
+
+  it('pelvic slot: folds old comment fields into the one box + strips removed findings', () => {
+    const enc = baseEncounter();
+    const slot = {
+      studyType: 'iliacPelvicVenous',
+      impression: 'Conclusion',
+      clinicianComments: 'Doctor note',
+      sonographerComments: 'Old sono note',
+      recommendations: [{ id: 'r1', text: 'Old recommendation' }],
+      findings: {
+        renal: { peakVelocityRatio: 8 },
+        caval: { 'ov-right': { competency: 'incompetent' }, lrv: { patency: 'thrombosis' } },
+        gonadal: { left: { diameterMm: 7 }, right: { diameterMm: 9 } },
+      },
+    };
+    const result = projectStudyToFormState('iliacPelvicVenous', slot, enc);
+    expect(result?.narrative.sonographerComments).toBeUndefined();
+    expect(result?.narrative.clinicianComments).toBe('Doctor note\nOld sono note\nOld recommendation');
+    expect(result?.recommendations).toEqual([]);
+    expect(result?.parameters['segmentFindings']).toEqual({
+      caval: { lrv: { patency: 'thrombosis' } },
+      gonadal: { left: { diameterMm: 7 } },
+    });
   });
 
   it('always emits a parameters object — the crash this helper exists to prevent', () => {

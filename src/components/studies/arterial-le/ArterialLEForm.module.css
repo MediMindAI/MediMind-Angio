@@ -8,29 +8,155 @@
   padding: 16px 24px 120px 24px;
 }
 
-.newCaseButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+.clearFormButton {
+  white-space: normal;
+  flex-shrink: 0;
+}
+
+/* Destructive intent shows on hover/focus only — at rest the button is a
+   plain secondary deck, so red keeps meaning "abnormal finding" on this
+   screen (status-color reservation). The confirm dialog itself is red. */
+.clearFormButton.clearFormButton:hover:not(:disabled),
+.clearFormButton.clearFormButton:focus-visible {
+  border-color: var(--emr-error);
+  color: var(--emr-error);
+}
+
+@media print {
+  .clearFormButton {
+    display: none;
+  }
+}
+
+/* ==================== PRESSURES · DIAGRAM · TABLE (UX-ANGIO-015 + 025 L1) ==================== */
+
+/* Mobile-first: one column — pressures, then the diagram, then the table. */
+.assessmentLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'pressures'
+    'diagram'
+    'table';
+  gap: var(--emr-spacing-lg);
+}
+
+.pressuresArea {
+  grid-area: pressures;
+  min-width: 0;
+}
+
+.diagramArea {
+  grid-area: diagram;
+  min-width: 0;
+}
+
+.tableArea {
+  grid-area: table;
+  min-width: 0;
+}
+
+/* Phone R/L switch (bilateral only): stays pinned while the clinician scrolls
+   the segment cards, so the active leg is always visible. */
+.sideSwitch {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: var(--emr-spacing-xs) 0;
+  margin-bottom: var(--emr-spacing-xs);
+  background: var(--emr-bg-page);
+}
+
+.sideSegments {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--emr-border-radius-xl);
   background: var(--emr-bg-card);
-  color: var(--emr-text-primary);
-  border: 1px solid var(--emr-border-color);
-  border-radius: var(--emr-border-radius-md);
-  font-size: var(--emr-font-sm);
-  font-weight: var(--emr-font-semibold);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--emr-shadow-card);
 }
 
-.newCaseButton:hover {
+.sideSegment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: var(--emr-border-radius-lg);
+  transition: background-color 150ms ease;
+}
+
+.sideSegment:hover:not([data-active]) {
   background: var(--emr-bg-hover);
-  border-color: var(--emr-border-focus);
 }
 
-.newCaseButton:focus-visible {
-  outline: 2px solid var(--emr-accent);
-  outline-offset: 2px;
+.sideSegment[data-active] {
+  background: var(--emr-primary);
+}
+
+/* Same R / L chip as ArterialSegmentTable's .segmentSide, sized up because it
+   is the option's only label. */
+.sideSegmentChip {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-bold);
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--emr-border-radius-sm);
+}
+
+.sideSegmentChip[data-side='left'] {
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+}
+
+.sideSegmentChip[data-side='right'] {
+  background: var(--emr-accent-alpha-15);
+  color: var(--emr-accent);
+}
+
+.sideSegment[data-active] .sideSegmentChip {
+  background: var(--emr-white-alpha-20);
+  color: var(--emr-text-white);
+}
+
+/* ≥1440px: pressures on their own row; below them the diagram sits in a
+   sticky column beside the table. (Was 1280px: at 1280-1439 the 918px table
+   floor left the diagram only ~290px wide; that range now stacks, so the
+   diagram gets the full width up to its 640px cap.) The table column never drops under the
+   918px its 890px grid + card padding needs, so nothing scrolls inside it.
+   The diagram column scrolls on its own when it is taller than the viewport
+   (bottom offset leaves room for the sticky report bar) — venous parity. */
+@media (min-width: 1440px) {
+  .assessmentLayout {
+    /* Table keeps its 918px floor; any width beyond that now goes mostly to
+       the diagram (was 1 : 2.4) — clinicians asked for bigger diagrams. */
+    grid-template-columns: minmax(0, 1fr) minmax(918px, 1.5fr);
+    grid-template-areas:
+      'pressures pressures'
+      'diagram table';
+    align-items: start;
+  }
+
+  .diagramArea {
+    position: sticky;
+    top: var(--emr-spacing-lg);
+    max-height: calc(100vh - var(--emr-spacing-lg) - 96px);
+    overflow-y: auto;
+    /* Room for the deck shadow inside the scroll box. */
+    padding: var(--emr-spacing-xs);
+    margin: calc(-1 * var(--emr-spacing-xs));
+  }
+}
+
+/* ≥1440px: the pressures deck joins the left column, above the diagram
+   (the dead column beside the 34-row table is gone). */
+@media (min-width: 1440px) {
+  .assessmentLayout {
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'pressures table'
+      'diagram table';
+  }
 }
 
 .templateSelect {

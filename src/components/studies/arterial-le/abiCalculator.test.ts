@@ -110,7 +110,7 @@ describe('computeAbi integration (Wave 3.7)', () => {
 
 describe('computeTbi (Wave 3.7)', () => {
   it('classifies a non-compressible patient using TBI fallback', () => {
-    // ABI is non-diagnostic; TBI 0.50 → moderate.
+    // ABI is non-diagnostic; TBI 0.50 → mild on the TBI scale (≥0.70 normal).
     const p: SegmentalPressures = {
       brachialL: 130,
       brachialR: 130,
@@ -119,7 +119,13 @@ describe('computeTbi (Wave 3.7)', () => {
     };
     const r = computeTbi(p, 'R');
     expect(r.tbi).toBeCloseTo(0.50, 2);
-    expect(r.band).toBe('moderate');
+    expect(r.band).toBe('mild');
+  });
+
+  it('grades TBI on its own scale: 0.85 is normal, not mild PAD (level-up U-1026)', () => {
+    const p: SegmentalPressures = { brachialL: 120, brachialR: 120, toeR: 102, toeL: 24 };
+    expect(computeTbi(p, 'R').band).toBe('normal'); // 0.85
+    expect(computeTbi(p, 'L').band).toBe('severe'); // 0.20 (toe < 30 mmHg)
   });
 
   it('returns unknown when no toe pressure is captured', () => {

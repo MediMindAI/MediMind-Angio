@@ -40,7 +40,11 @@ export async function seedVenousEncounter(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      window.localStorage.setItem(`encounter-${id}`, JSON.stringify(draft));
+      // Init scripts re-run on every load (incl. page.reload()), so seed only
+      // once — otherwise a reload would overwrite what the test just saved.
+      if (window.localStorage.getItem(`encounter-${id}`) === null) {
+        window.localStorage.setItem(`encounter-${id}`, JSON.stringify(draft));
+      }
     },
     { id: encounterId, name: patientName, date: encounterDate },
   );

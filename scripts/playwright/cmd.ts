@@ -19,8 +19,9 @@ import * as path from 'path';
 import * as os from 'os';
 import * as http from 'http';
 
-const PORT = 2400;
-const PID_FILE = path.join(os.tmpdir(), 'playwright-server.pid');
+const PORT = parseInt(process.env.PORT || '2400', 10);
+const PORT_SUFFIX = PORT === 2400 ? '' : `-${PORT}`;
+const PID_FILE = path.join(os.tmpdir(), `playwright-server${PORT_SUFFIX}.pid`);
 
 // Commands that get one automatic retry on failure
 const RETRYABLE_ACTIONS = new Set(['click', 'fill', 'waitfor']);

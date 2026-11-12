@@ -4,13 +4,15 @@
  *   1. `stateToFormState` projects encounter identity + the zone findings under
  *      the conventional `parameters.segmentFindings` key the FHIR/PDF readers use.
  *   2. The form mounts inside the full provider stack.
+ *   3. An old (pre-simplification) draft still loads, and its removed free-text
+ *      fields are folded into the single comments box.
  */
 
 /// <reference types="@testing-library/jest-dom" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 
@@ -19,12 +21,14 @@ import { EncounterProvider } from '../../../contexts/EncounterContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
+  loadEncounter,
   saveEncounter,
 } from '../../../services/encounterStore';
 import type { EncounterDraft } from '../../../types/encounter';
-import type { IliacPelvicVenousFindings, RenalVeinFinding } from './config';
-import { migrateIliacFindingsV1toV2 } from './config';
+import type { IliacPelvicVenousFindings } from './config';
 import {
+  allNormalOverwritesFindings,
+  reducer,
   stateToFormState,
   IliacPelvicVenousForm,
   type IliacPelvicVenousFormStateV2,
@@ -60,12 +64,9 @@ function baseState(
     studyDate: '2026-06-05',
     context: { sex: 'female' },
     findings,
-    cavalView: 'bilateral',
     impression: '',
     impressionEdited: false,
-    sonographerComments: '',
     clinicianComments: '',
-    recommendations: [],
     drawings: [],
   };
 }
@@ -124,29 +125,112 @@ describe('IliacPelvicVenousForm', () => {
     expect(await screen.findByTestId('iliac-pelvic-venous-form')).toBeInTheDocument();
   });
 
-  it('migrates a V1 findings blob to V2 (caval levels default + renal SMA angle → SMAS)', () => {
-    // V1 stored the SMA–aorta angle on the renal finding and a flat caval
-    // velocityRatio with no per-level `levels`.
-    const renalV1: RenalVeinFinding & { aortoSmaAngleDeg?: number } = {
-      peakVelocityRatio: 8,
-      aortoSmaAngleDeg: 22,
+  it('takes sex from the intake patient details, never a guessed "female" (sign-off S8)', async () => {
+    const draft = buildDraft({
+      header: { ...buildDraft().header, patientGender: 'male' },
+    });
+    await saveEncounter(draft);
+    render(<Harness encounterId={draft.encounterId} />);
+    await screen.findByTestId('iliac-pelvic-venous-form');
+    const sex = screen.getByLabelText(/სქესი|Sex/) as HTMLInputElement;
+    expect(sex.value).toMatch(/მამრობითი|Male/);
+  });
+
+  it('loads an old draft with removed fields and folds its text into comments', async () => {
+    const oldState = {
+      ...baseState(),
+      findings: {
+        renal: { peakVelocityRatio: 8 },
+        plexus: { left: { largestDiameterMm: 9 } },
+        caval: {
+          ivc: { patency: 'occluded' },
+          'civ-left': { stenosisPct: 60 },
+          'ov-right': { competency: 'incompetent' },
+          'cfv-left': { patency: 'patent' },
+        },
+      },
+      cavalView: 'bilateral',
+      sonographerComments: 'old sono note',
+      recommendations: [{ id: 'r1', text: 'old recommendation' }],
     };
-    const v1: IliacPelvicVenousFindings = {
-      renal: renalV1,
-      caval: { 'civ-left': { patency: 'partial', velocityRatio: 3, stenosisPct: 60 } },
-    };
+    const draft = buildDraft({
+      studies: { iliacPelvicVenous: oldState } as unknown as EncounterDraft['studies'],
+    });
+    await saveEncounter(draft);
+    render(<Harness encounterId={draft.encounterId} />);
+    const comments = await screen.findByTestId('iliac-comments');
+    expect((comments as HTMLTextAreaElement).value).toBe('old sono note\nold recommendation');
+    // Removed zones / old keys / ovarian rows are stripped before they reach
+    // the PDF or the FHIR snapshot; current rows survive.
+    await waitFor(async () => {
+      const saved = (await loadEncounter(draft.encounterId))?.studies?.iliacPelvicVenous as
+        | IliacPelvicVenousFormStateV2
+        | undefined;
+      expect(saved?.findings).toEqual({ caval: { 'cfv-left': { patency: 'patent' } } });
+    });
+  });
 
-    const migrated = migrateIliacFindingsV1toV2(v1);
+  it('stateToFormState never emits recommendations or sonographer comments', () => {
+    const fs = stateToFormState({ ...baseState(), clinicianComments: 'note' }, buildDraft());
+    expect(fs.recommendations).toEqual([]);
+    expect(fs.narrative.sonographerComments).toBeUndefined();
+    expect(fs.narrative.clinicianComments).toBe('note');
+  });
 
-    // Caval gains an empty `levels` record; the legacy ratio is preserved.
-    expect(migrated.caval?.['civ-left']?.levels).toEqual({});
-    expect(migrated.caval?.['civ-left']?.velocityRatio).toBe(3);
-    // The SMA angle is relocated to SMAS and stripped from the renal finding.
-    expect(migrated.specialConsiderations?.smas?.smaAortaAngleDeg).toBe(22);
-    expect((migrated.renal as Record<string, unknown>).aortoSmaAngleDeg).toBeUndefined();
-    expect(migrated.renal?.peakVelocityRatio).toBe(8);
+  describe('all normal (UX-ANGIO-011)', () => {
+    it('asks first only when a set value would change', () => {
+      expect(allNormalOverwritesFindings({})).toBe(false);
+      expect(
+        allNormalOverwritesFindings({
+          'cfv-left': { patency: 'patent', competency: 'competent', phasicity: 'pulsatile' },
+        }),
+      ).toBe(false);
+      expect(allNormalOverwritesFindings({ 'cfv-left': { peakVelocityCmS: 40 } })).toBe(false);
+      expect(allNormalOverwritesFindings({ 'cfv-left': { patency: 'occluded' } })).toBe(true);
+      expect(allNormalOverwritesFindings({ lrv: { competency: 'incompetent' } })).toBe(true);
+      expect(allNormalOverwritesFindings({ 'civ-mid-left': { patency: 'thrombosis' } })).toBe(true);
+      // Removed ovarian rows from an old draft are ignored.
+      expect(
+        allNormalOverwritesFindings({
+          'ov-left': { competency: 'incompetent' },
+        } as unknown as Parameters<typeof allNormalOverwritesFindings>[0]),
+      ).toBe(false);
+    });
 
-    // Idempotent: re-migrating a V2 blob is a no-op.
-    expect(migrateIliacFindingsV1toV2(migrated)).toBe(migrated);
+    it('fills every row in one click on a clean table', async () => {
+      const draft = buildDraft();
+      await saveEncounter(draft);
+      render(<Harness encounterId={draft.encounterId} />);
+      fireEvent.click(await screen.findByTestId('iliac-bulk-set-all-normal'));
+      await waitFor(() =>
+        expect((screen.getByTestId('iliac-ivc-mid-patency') as HTMLInputElement).value).not.toBe(''),
+      );
+      expect((screen.getByTestId('iliac-lrv-competency') as HTMLInputElement).value).not.toBe('');
+      expect((screen.getByTestId('iliac-lrv-phasicity') as HTMLInputElement).value).toBe('');
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it('SET_ALL_NORMAL fills all 20 rows and keeps phasicity / velocity / diameter', () => {
+      const next = reducer(
+        baseState({
+          caval: { 'cfv-left': { patency: 'occluded', apDiameterMm: 11, phasicity: 'pulsatile' } },
+          gonadal: { left: { diameterMm: 4 } },
+        }),
+        { type: 'SET_ALL_NORMAL' },
+      );
+      const caval = next.findings.caval ?? {};
+      expect(Object.keys(caval)).toHaveLength(20);
+      expect(caval['ivc-mid']).toEqual({ patency: 'patent', filling: 'full', competency: 'competent' });
+      expect(caval.lrv).toEqual({ patency: 'patent', filling: 'full', competency: 'competent' });
+      expect(caval['cfv-left']).toEqual({
+        patency: 'patent',
+        filling: 'full',
+        competency: 'competent',
+        apDiameterMm: 11,
+        phasicity: 'pulsatile',
+      });
+      // The gonadal section is outside the table and untouched.
+      expect(next.findings.gonadal?.left?.diameterMm).toBe(4);
+    });
   });
 });

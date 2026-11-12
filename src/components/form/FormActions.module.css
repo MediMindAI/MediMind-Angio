@@ -7,10 +7,23 @@
   right: 0;
   z-index: var(--emr-z-sticky);
   background: var(--emr-bg-card);
-  backdrop-filter: saturate(180%) blur(12px);
-  -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-top: 1px solid var(--emr-border-color);
   box-shadow: 0 -4px 16px -8px var(--emr-shadow-color);
+}
+
+/* Persistent stale-tab / failed-save notices sit above the buttons so they
+   stay on screen while the clinician scrolls (UX-ANGIO-001 L3, 002 L2). */
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 24px 0;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.noticeAction {
+  margin-top: 8px;
 }
 
 .inner {
@@ -28,31 +41,27 @@
   .inner {
     padding: 10px 12px;
   }
+
+  .notices {
+    padding: 10px 12px 0;
+  }
 }
 
 .status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
+/* Neutral, never a severity colour (status-colour reservation rule). */
 .dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
   flex-shrink: 0;
-}
-
-.dotClean {
-  background: var(--emr-success);
-  box-shadow: 0 0 0 3px var(--emr-success-alpha-20);
-}
-
-.dotDirty {
-  background: var(--emr-warning);
-  box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.25);
-  animation: pulse 1.6s ease-in-out infinite;
+  background: var(--emr-text-secondary);
 }
 
 .statusText {
@@ -66,18 +75,85 @@
   min-width: 0;
 }
 
+/* Shrinkable so its own wrap takes effect at 375px (UX-ANGIO-024 L1). */
 .buttons {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
+/* Phone (≤576px): one compact button row. Save draft / preview / print become
+   44px icon-only secondaries (name via aria-label + tooltip); Download PDF
+   keeps its full label as the single gradient primary. The root's inline
+   `padding: 0 20px` comes from EMRButton's Mantine `styles`, hence !important. */
+@media (max-width: 576px) {
+  .inner {
+    row-gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .buttons {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .primaryOnPhone {
+    padding: 0 12px !important;
+    font-size: var(--emr-font-sm) !important;
+    flex-shrink: 0;
+  }
+
+  .primaryOnPhone :global(.mantine-Button-section) {
+    margin-inline-end: 6px;
+  }
+
+  .iconOnlyOnPhone {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .iconOnlyOnPhone :global(.mantine-Button-section) {
+    margin: 0;
+  }
+
+  .phoneHiddenLabel {
+    display: none;
+  }
+}
+
+/* Why exports are limited/disabled — shown inline, not only on hover. */
+.exportNote {
+  flex-basis: 100%;
+  font-size: var(--emr-font-sm);
+  color: var(--emr-text-secondary);
+  line-height: var(--emr-line-height-base);
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .exportNote {
+    text-align: left;
+  }
+}
+
+/* Off-screen frame that hosts the PDF for the print dialog. */
+.printFrame {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border: 0;
+  visibility: hidden;
 }
 
 @media print {

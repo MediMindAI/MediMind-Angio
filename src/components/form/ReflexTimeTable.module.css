@@ -96,8 +96,10 @@
   align-items: center;
 }
 
-/* Headless: no segment column — the left (categorical) table already shows
-   the segment label for each row. Rows are pure 4-column numeric. */
+/* Headless: 4 equal columns. Below 1200px (Mantine lg) the tables stack and
+   the first column carries the segment name + side badge; at 1200px+ the
+   categorical table beside it shows the name, so that cell is hidden
+   (`.segmentCellStacked`, after the segment-cell rules below). */
 .tableWrapHeadless .headRow,
 .tableWrapHeadless .row {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -182,6 +184,13 @@
   color: var(--emr-accent);
 }
 
+/* Must come after `.segmentCell` so it wins at equal specificity. */
+@media (min-width: 1200px) {
+  .segmentCellStacked {
+    display: none;
+  }
+}
+
 /* ==================== MOBILE ==================== */
 
 @media (max-width: 768px) {
@@ -205,6 +214,12 @@
     border-color: var(--emr-error);
     box-shadow: 0 0 0 2px var(--emr-error-alpha-10);
     background: var(--emr-bg-card);
+  }
+
+  /* Stacked card: the segment name may wrap (Georgian names are long);
+     the side badge never shrinks. */
+  .segmentLabel {
+    white-space: normal;
   }
 
   .cell[data-label]::before {

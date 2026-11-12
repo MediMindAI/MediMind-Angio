@@ -8,7 +8,7 @@
 
 import { memo, useCallback, useMemo } from 'react';
 import { Box, Group, Stack, Text } from '@mantine/core';
-import { IconClipboardList, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { EMRButton } from '../common';
 import { EMRSelect, EMRTextarea } from '../shared/EMRFormFields';
 import type { EMRSelectOption } from '../shared/EMRFormFields';
@@ -64,23 +64,34 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
     [items, onChange],
   );
 
+  // UX-ANGIO-027: an empty list collapses to the header row alone — the
+  // muted "none added" line replaces the subtitle and there is no body, so an
+  // untouched study's deck is quieter than a populated one.
+  const isEmpty = items.length === 0;
+
   return (
-    <section className={classes.card} aria-labelledby="recs-title">
+    <section
+      className={classes.card}
+      aria-labelledby="recs-title"
+      data-empty={isEmpty || undefined}
+    >
       <header className={classes.head}>
-        <Group gap="sm" align="center" wrap="nowrap">
-          <Box className={classes.iconWrap} aria-hidden>
-            <IconClipboardList size={20} stroke={1.75} />
-          </Box>
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Text className={classes.title} id="recs-title">
+        {/* wrap: on a phone the add button drops under the title instead of
+            squeezing it to an ellipsis. */}
+        <Group gap="sm" align="center" wrap="wrap">
+          <span className={classes.tick} aria-hidden />
+          <Box style={{ flex: '1 1 160px', minWidth: 0 }}>
+            <Text component="h2" className={classes.title} id="recs-title">
               {t('venousLE.recommendations.title')}
             </Text>
-            <Text className={classes.subtitle}>
-              {t('venousLE.recommendations.subtitle')}
+            <Text className={classes.subtitle} data-testid={isEmpty ? 'recommendations-empty' : undefined}>
+              {isEmpty
+                ? t('venousLE.recommendations.empty')
+                : t('venousLE.recommendations.subtitle')}
             </Text>
           </Box>
           <EMRButton
-            variant="primary"
+            variant="secondary"
             size="xs"
             icon={IconPlus}
             onClick={add}
@@ -91,18 +102,8 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
         </Group>
       </header>
 
-      <div className={classes.body}>
-        {items.length === 0 ? (
-          <div className={classes.empty}>
-            <IconClipboardList
-              size={24}
-              stroke={1.5}
-              aria-hidden
-              style={{ opacity: 0.55 }}
-            />
-            <span>{t('venousLE.recommendations.empty')}</span>
-          </div>
-        ) : (
+      {isEmpty ? null : (
+        <div className={classes.body}>
           <Stack gap="md">
             {items.map((r, idx) => (
               <div
@@ -117,7 +118,7 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
                     size="xs"
                     icon={IconTrash}
                     onClick={() => remove(r.id)}
-                    aria-label={t('common.close', 'Remove')}
+                    aria-label={t('venousLE.recommendations.remove', 'Delete recommendation')}
                     data-testid={`remove-recommendation-${r.id}`}
                   >
                     {''}
@@ -152,8 +153,8 @@ export const RecommendationsBlock = memo(function RecommendationsBlock({
               </div>
             ))}
           </Stack>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 });

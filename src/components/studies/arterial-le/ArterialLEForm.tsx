@@ -3,12 +3,14 @@
  * ArterialLEForm — Phase 2 orchestrator for bilateral lower-extremity
  * arterial duplex reporting.
  *
- * Layout (desktop):
+ * Layout (≥1400px; UX-ANGIO-015 + 025 L1):
  *   ┌─ EncounterContextBanner ──────────────────────────┐
  *   ├─ SegmentalPressureTable ──┬─ ArterialSegmentTable ┤
- *   ├─ ImpressionBlock ─────────────────────────────────┤
- *   ├─ RecommendationsBlock ────────────────────────────┤
+ *   ├─ Anatomy diagram (sticky) ┤   (full 890px grid)   │
+ *   ├─ Run-off · narrative · RecommendationsBlock ──────┤
  *   └─ FormActions (sticky) ────────────────────────────┘
+ * 1280–1399px: pressures take their own row, diagram | table below it.
+ * Below 1280px everything stacks: pressures → diagram → table.
  *
  * Phase 3b (encounter pivot) — patient + visit identity now lives on the
  * `EncounterContext`; this reducer carries only the per-study clinical
@@ -19,16 +21,16 @@
  */
 
 import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Grid, Stack, Group, Text } from '@mantine/core';
+import { Stack, Group, Text, UnstyledButton } from '@mantine/core';
 import { EMRSelect, EMRTextarea } from '../../shared/EMRFormFields';
 import { AnatomyDiagramSection } from '../../anatomy/AnatomyDiagramSection';
 import { AnatomyLegend } from '../../anatomy';
-import { severityBandColor, severityLegendItems } from '../../anatomy/severityColor';
+import { nextSeverityBand, severityBandColor, severityLegendItems } from '../../anatomy/severityColor';
 import type { SegmentId } from '../../../types/anatomy';
-import type { DrawingStroke } from '../../../types/drawing';
-import { useHotkeys } from '@mantine/hooks';
+import { STENOSIS_DRAWING_COLORS, type DrawingStroke } from '../../../types/drawing';
+import { useHotkeys, useMediaQuery } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconAlertTriangle, IconPlus, IconStack2 } from '@tabler/icons-react';
+import { IconAlertTriangle, IconEraser, IconStack2 } from '@tabler/icons-react';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useEncounter } from '../../../contexts/EncounterContext';
 import type {
@@ -113,6 +115,13 @@ interface ArterialFormStateV2 {
   readonly view: ArterialTableView;
   readonly impression: string;
   readonly impressionEdited: boolean;
+  /**
+   * True when findings changed after the conclusion text was written (e.g. a
+   * "normal" template conclusion, then an abnormal finding). The text is never
+   * rewritten — the form only asks the clinician to review it. Optional so
+   * older drafts hydrate unchanged.
+   */
+  readonly impressionStale?: boolean;
   readonly sonographerComments: string;
   readonly clinicianComments: string;
   readonly recommendations: ReadonlyArray<Recommendation>;
@@ -193,14 +202,22 @@ function reducer(state: ArterialFormStateV2, action: Action): ArterialFormStateV
     case 'SET_FINDING': {
       const prev = state.findings[action.id] ?? {};
       const merged: ArterialSegmentFinding = { ...prev, ...action.patch };
-      return { ...state, findings: { ...state.findings, [action.id]: merged } };
+      return {
+        ...state,
+        findings: { ...state.findings, [action.id]: merged },
+        impressionStale: state.impression.trim() !== '',
+      };
     }
     case 'SET_PRESSURES':
-      return { ...state, pressures: action.pressures };
+      return { ...state, pressures: action.pressures, impressionStale: state.impression.trim() !== '' };
     case 'SET_RUNOFF':
-      return { ...state, runoff: { ...state.runoff, [action.side]: action.value } };
+      return {
+        ...state,
+        runoff: { ...state.runoff, [action.side]: action.value },
+        impressionStale: state.impression.trim() !== '',
+      };
     case 'SET_IMPRESSION':
-      return { ...state, impression: action.impression, impressionEdited: true };
+      return { ...state, impression: action.impression, impressionEdited: true, impressionStale: false };
     case 'SET_SONOGRAPHER':
       return { ...state, sonographerComments: action.comments };
     case 'SET_CLINICIAN':
@@ -230,6 +247,7 @@ function reducer(state: ArterialFormStateV2, action: Action): ArterialFormStateV
         // Empty templates leave the textarea pristine so a regenerate-on-
         // findings-change button (planned) can still rebuild it.
         impressionEdited: action.impression.length > 0,
+        impressionStale: false,
         sonographerComments: action.sonographerComments ?? state.sonographerComments,
         // Wave 3.1 (Part 10 HIGH) — always reset clinicianComments so an
         // interpretation typed for a previous patient cannot silently leak
@@ -360,41 +378,39 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   // --- Persistence: mirror per-study state into the encounter draft -----------
   //
   // Phase 3b chose option (a) from the brief — single source of truth in
-  // `encounter.studies.arterialLE`. We debounce to 500ms so a burst of
-  // findings/pressures keystrokes isn't 1:1 with `saveEncounter` calls.
-  // The `setStudyState` callback is stable across renders (memoised inside
-  // the context), so the effect's dependency list is keystroke + state.
-  const lastSavedAtRef = useRef<Date | null>(null);
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  // Skip the very first effect run so we don't re-mirror the freshly-hydrated
-  // state back into the encounter (it was just read from there).
-  const isFirstMirrorRun = useRef(true);
+  // `encounter.studies.arterialLE`. Every change persists immediately (no
+  // debounce, CLAUDE.md). UX-ANGIO-001 L1: the old 500 ms timer re-armed
+  // itself on every `encounter` change that `setStudyState` causes, so an
+  // idle tab rewrote the whole visit ~2×/s and wiped other tabs' edits.
+  // Same anti-loop guard as CarotidForm:
+  //   * Wait for a non-null encounter before mirroring.
+  //   * On the FIRST run with a non-null encounter, just seed
+  //     `lastPersistedRef` so we don't echo the freshly-hydrated state
+  //     back into the encounter (it was just read from there).
+  //   * Subsequent runs: persist only if `state` actually changed by
+  //     reference. The encounter-ref churn that `setStudyState` itself
+  //     produces re-fires the effect with the same `state`, so the ref
+  //     guard short-circuits the loop.
+  //
+  // UX-ANGIO-002 L3a: the form no longer keeps its own "last saved" clock or
+  // dirty flag. FormActions reads the confirmed save time and any save error
+  // from EncounterContext, so the line survives a reload and shows failures.
+  const lastPersistedRef = useRef<ArterialFormStateV2 | null>(null);
 
   useEffect(() => {
     if (!encounter) return;
-    if (isFirstMirrorRun.current) {
-      isFirstMirrorRun.current = false;
+    if (lastPersistedRef.current === null) {
+      lastPersistedRef.current = state;
       return;
     }
-    setHasUnsavedChanges(true);
-    const handle = setTimeout(() => {
-      setStudyState<ArterialFormStateV2>('arterialLE', state);
-      const now = new Date();
-      lastSavedAtRef.current = now;
-      setLastSavedAt(now);
-      setHasUnsavedChanges(false);
-    }, 500);
-    return () => clearTimeout(handle);
+    if (lastPersistedRef.current === state) return;
+    lastPersistedRef.current = state;
+    setStudyState<ArterialFormStateV2>('arterialLE', state);
   }, [encounter, setStudyState, state]);
 
   const saveNow = useCallback(() => {
     if (!encounter) return;
     setStudyState<ArterialFormStateV2>('arterialLE', state);
-    const now = new Date();
-    lastSavedAtRef.current = now;
-    setLastSavedAt(now);
-    setHasUnsavedChanges(false);
   }, [encounter, setStudyState, state]);
 
   type PendingTemplate = ArterialLETemplate | CustomTemplate;
@@ -410,11 +426,24 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     () => loadRecentTemplateIds('arterialLE'),
   );
 
+  // UX-ANGIO-026 L2 — on a phone a bilateral study shows one leg at a time
+  // behind an R/L switch, so each segment is one card with its name printed
+  // once. Display-only: `state.view` (saved, used by templates) is untouched,
+  // and the other leg's answers stay one tap away.
+  const isPhone = useMediaQuery('(max-width: 639px)', false, { getInitialValueInEffect: false });
+  const [phoneSide, setPhoneSide] = useState<'right' | 'left'>('right');
+
   // --- Handlers --------------------------------------------------------------
 
   const handleViewChange = useCallback((v: string) => {
     dispatch({ type: 'SET_VIEW', view: v as ArterialTableView });
   }, []);
+
+  const handlePhoneSideChange = useCallback((v: string) => {
+    setPhoneSide(v === 'left' ? 'left' : 'right');
+  }, []);
+  const showSideSwitch = isPhone && state.view === 'bilateral';
+  const tableView: ArterialTableView = showSideSwitch ? phoneSide : state.view;
 
   const handleFindingChange = useCallback(
     (id: ArterialLEFullSegmentId, patch: Partial<ArterialSegmentFinding>) => {
@@ -625,14 +654,13 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
   );
 
   // Click-to-cycle severity (parity with carotid). Advances a manual
-  // `competencyOverride` through the 5 stenosis bands so a clinician can paint
+  // `competencyOverride` through grey → red → black so a clinician can paint
   // the diagram directly when they haven't filled the segment table yet.
   const handleAnatomySegmentClick = useCallback(
     (id: SegmentId) => {
       if (!id.endsWith('-left') && !id.endsWith('-right')) return;
       const current = arterialCompetencyForSvgId(state.findings, id);
-      const cycle = ['normal', 'mild', 'moderate', 'severe', 'occluded'] as const;
-      const next = cycle[(cycle.indexOf(current) + 1) % cycle.length] ?? 'normal';
+      const next = nextSeverityBand(current);
       // One SVG path can stand for several table rows (PTA/Per/ATA Prox-Mid-Dist).
       for (const fullId of arterialFindingIdsForSvgId(id)) {
         dispatch({ type: 'SET_FINDING', id: fullId, patch: { competencyOverride: next } });
@@ -655,7 +683,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
     dispatch({ type: 'CLEAR_DRAWINGS' });
   }, []);
 
-  // Under-diagram color key — the 5 stenosis-severity bands, colored by the
+  // Under-diagram color key — grey / red / black, colored by the
   // same helper the vessels use so legend ↔ diagram agree.
   const arterialLegendItems = useMemo(
     () => severityLegendItems(t, 'arterialLE.severity'),
@@ -746,7 +774,7 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
               { value: 'left', label: t('arterialLE.tabs.left', 'Left') },
             ]}
           />
-          <Group gap="xs">
+          <Group gap="xs" wrap="wrap">
             <EMRButton
               variant="secondary"
               size="sm"
@@ -756,33 +784,118 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
             >
               {t('arterialLE.templates.menuLabel', 'Templates')}
             </EMRButton>
-            <button
-              type="button"
-              className={classes.newCaseButton}
+            {/*
+              UX-ANGIO-005 — this RESETS the current study (after a confirm),
+              so it is a quiet secondary button that says so, not an
+              add-looking one. Red appears only on hover/focus and in the
+              confirm (same treatment as the venous form).
+            */}
+            <EMRButton
+              variant="secondary"
+              size="sm"
+              leftSection={<IconEraser size={15} stroke={1.9} aria-hidden />}
               onClick={handleNewCaseRequest}
-              aria-label={t('arterialLE.actions.newCase', '+ New case')}
+              className={classes.clearFormButton}
+              data-testid="arterial-new-case-button"
             >
-              <IconPlus size={16} />
-              <span>{t('arterialLE.actions.newCase', '+ New case')}</span>
-            </button>
+              {t('arterialLE.actions.newCase', 'Clear form')}
+            </EMRButton>
           </Group>
         </Group>
 
-        <Grid gutter="md" align="stretch">
-          <Grid.Col span={{ base: 12, lg: 5 }}>
+        {/*
+          UX-ANGIO-015 + 025 L1 — the segment table gets the room its 890px
+          grid needs (no inner scroll, plaque/occlusion visible) and the
+          diagram it colours sits beside it in a sticky column from 1280px.
+          Below 1280px the three stack: pressures → diagram → table.
+        */}
+        <div className={classes.assessmentLayout}>
+          <div className={classes.pressuresArea}>
             <SegmentalPressureTable
               pressures={state.pressures}
               onChange={handlePressuresChange}
             />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, lg: 7 }}>
+          </div>
+
+          <div className={classes.diagramArea} data-testid="arterial-diagram-area">
+            <EMRContentSection
+              title={t('arterialLE.anatomy.title', 'Arterial anatomy')}
+              subtitle={t(
+                'arterialLE.anatomy.subtitle',
+                'Segment colors reflect severity (normal → occluded).',
+              )}
+              showAccent={false}
+              padding="md"
+            >
+              <Stack gap="sm">
+                <AnatomyDiagramSection
+                  view="le-arterial-anterior"
+                  drawingColors={STENOSIS_DRAWING_COLORS}
+                  drawingColorLabelPrefix="arterialLE.drawingColor"
+                  segments={{}}
+                  colorFn={arterialColorFn}
+                  tooltipText={arterialTooltipText}
+                  labelFor={arterialLabelFor}
+                  overlay={false}
+                  enableSegmentEdit={false}
+                  drawings={state.drawings}
+                  onSegmentClick={handleAnatomySegmentClick}
+                  onCommitStroke={handleCommitStroke}
+                  onEraseStroke={handleEraseStroke}
+                  onUndo={handleUndoStroke}
+                  onClear={handleClearDrawings}
+                />
+                <AnatomyLegend
+                  items={arterialLegendItems}
+                  ariaLabel={t('arterialLE.anatomy.legendLabel', 'Stenosis severity legend')}
+                />
+              </Stack>
+            </EMRContentSection>
+          </div>
+
+          <div className={classes.tableArea}>
+            {showSideSwitch && (
+              <div
+                className={classes.sideSwitch}
+                role="group"
+                aria-label={t('arterialLE.segmentTable.sideSwitchLabel', 'Leg shown in the segment table')}
+              >
+                {/* Options carry the same R / L side chips as the segment
+                    cards (the full side name stays the accessible name);
+                    the chosen leg is solid --emr-primary, not the gradient. */}
+                <div className={classes.sideSegments} data-testid="arterial-phone-side-toggle">
+                  {(['right', 'left'] as const).map((side) => {
+                    const active = phoneSide === side;
+                    return (
+                      <UnstyledButton
+                        key={side}
+                        className={classes.sideSegment}
+                        data-active={active || undefined}
+                        aria-pressed={active}
+                        aria-label={
+                          side === 'right'
+                            ? t('arterialLE.tabs.right', 'Right')
+                            : t('arterialLE.tabs.left', 'Left')
+                        }
+                        onClick={() => handlePhoneSideChange(side)}
+                        data-testid={`arterial-phone-side-toggle-${side}`}
+                      >
+                        <span className={classes.sideSegmentChip} data-side={side} aria-hidden>
+                          {side === 'right' ? 'R' : 'L'}
+                        </span>
+                      </UnstyledButton>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <ArterialSegmentTable
               findings={state.findings}
-              view={state.view}
+              view={tableView}
               onFindingChange={handleFindingChange}
             />
-          </Grid.Col>
-        </Grid>
+          </div>
+        </div>
 
         {warningMessages.length > 0 && (
           <EMRAlert
@@ -829,38 +942,6 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
           </Group>
         </EMRContentSection>
 
-        <EMRContentSection
-          title={t('arterialLE.anatomy.title', 'Arterial anatomy')}
-          subtitle={t(
-            'arterialLE.anatomy.subtitle',
-            'Segment colors reflect severity (normal → occluded).',
-          )}
-          showAccent={false}
-          padding="md"
-        >
-          <Stack gap="sm">
-            <AnatomyDiagramSection
-              view="le-arterial-anterior"
-              segments={{}}
-              colorFn={arterialColorFn}
-              tooltipText={arterialTooltipText}
-              labelFor={arterialLabelFor}
-              overlay={false}
-              enableSegmentEdit={false}
-              drawings={state.drawings}
-              onSegmentClick={handleAnatomySegmentClick}
-              onCommitStroke={handleCommitStroke}
-              onEraseStroke={handleEraseStroke}
-              onUndo={handleUndoStroke}
-              onClear={handleClearDrawings}
-            />
-            <AnatomyLegend
-              items={arterialLegendItems}
-              ariaLabel={t('arterialLE.anatomy.legendLabel', 'Stenosis severity legend')}
-            />
-          </Stack>
-        </EMRContentSection>
-
         <Stack gap="sm" className={classes.textSection}>
           <EMRTextarea
             label={t('arterialLE.narrative.impression', 'Impression')}
@@ -870,6 +951,17 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
             minRows={4}
             data-testid="arterial-impression"
           />
+          {state.impressionStale && (
+            <EMRAlert
+              variant="info"
+              title={t('common.impressionStale.title', 'Findings changed after this conclusion was written')}
+              withCloseButton
+              onClose={() => handleImpressionChange(state.impression)}
+              data-testid="arterial-impression-stale"
+            >
+              {t('common.impressionStale.body', 'Please review the conclusion. Close this note to keep it as it is.')}
+            </EMRAlert>
+          )}
           <EMRTextarea
             label={t('arterialLE.narrative.sonographerComments', 'Sonographer comments')}
             value={state.sonographerComments}
@@ -895,8 +987,6 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
 
         <FormActions
           form={formState}
-          lastSavedAt={lastSavedAt}
-          hasUnsavedChanges={hasUnsavedChanges}
           onSaveDraft={saveNow}
           baseFilename={`arterial-le-${state.studyDate || encounter?.header.encounterDate || 'report'}`}
         />
@@ -918,12 +1008,24 @@ export const ArterialLEForm = memo(function ArterialLEForm(): React.ReactElement
       <ConfirmDialog
         opened={newCaseOpen}
         onClose={() => setNewCaseOpen(false)}
-        title={t('arterialLE.actions.newCaseConfirmTitle', 'Start a new case?')}
-        message={t(
-          'arterialLE.actions.newCaseConfirmBody',
-          'This will erase all current data. Unsaved changes will be lost.',
-        )}
-        confirmLabel={t('arterialLE.actions.newCaseConfirm', 'Discard & start new')}
+        title={t('arterialLE.actions.newCaseConfirmTitle', 'Clear this form?')}
+        message={
+          // UX-ANGIO-005 L3 — bold first line names whose study is erased.
+          <>
+            <Text fw={700} component="span" display="block" data-testid="arterial-new-case-confirm-patient">
+              {[encounter?.header.patientName, t('studies.arterialLE.short', 'Arterial LE')]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            <Text component="span" display="block">
+              {t(
+                'arterialLE.actions.newCaseConfirmBody',
+                'This will erase all current data. Unsaved changes will be lost.',
+              )}
+            </Text>
+          </>
+        }
+        confirmLabel={t('arterialLE.actions.newCaseConfirm', 'Clear form')}
         cancelLabel={t('arterialLE.actions.cancel', 'Cancel')}
         onConfirm={handleNewCaseConfirm}
         destructive

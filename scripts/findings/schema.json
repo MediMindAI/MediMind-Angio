@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "One finding of a level-up program",
+  "description": "One line of qa-reports/findings/<program>.jsonl. A later line with the same id updates that finding; nothing is ever edited in place.",
+  "type": "object",
+  "required": ["id", "case", "step", "kind", "severity", "status", "owner", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Z]+-[0-9]+$", "description": "U-1001. add.mjs hands out the next free one." },
+    "case": { "type": "string", "description": "Which demo, page or feature. Table column 'Demo · step', left part." },
+    "step": { "type": "string", "description": "Which step. Table column 'Demo · step', right part." },
+    "kind": { "type": "string", "enum": ["BUG", "UX", "UI", "GAP", "SAFETY", "DATA", "PERF", "DOC", "WORDS", "CHECK", "DECISION", "HARNESS"] },
+    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+    "status": { "type": "string", "enum": ["open", "in_progress", "fixed", "verified", "decided", "accepted"] },
+    "owner": { "type": "string", "description": "The session or person who holds it: R2, founder, Lasha." },
+    "evidence": { "type": "string", "description": "What we saw, with the proof: screenshot, file:line, command." },
+    "decision": { "type": "string", "description": "Better would be / what was decided. Table column 'Better would be'." },
+    "at": { "type": "string", "description": "Time of this line. add.mjs fills it." }
+  }
+}

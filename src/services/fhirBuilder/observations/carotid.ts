@@ -15,7 +15,7 @@ import type {
   CarotidVesselBase,
   CarotidVesselFinding,
 } from '../../../components/studies/carotid/config';
-import { isCca, isIca, isVertebral } from '../../../components/studies/carotid/config';
+import { hasImt, isIca } from '../../../components/studies/carotid/config';
 import { icaCcaRatio, suggestNascetCategory } from '../../../components/studies/carotid/stenosisCalculator';
 import type { BundleEntry, Observation } from '../../../types/fhir';
 import { MEDIMIND_CODESYSTEMS } from '../../../constants/fhir-systems';
@@ -83,9 +83,9 @@ export function appendCarotidFindingObservations(
     // EDV ≥100 is likewise an ICA ≥70%-stenosis criterion — ICA-only.
     isAbnormal: isIca(vesselBase) && typeof finding.edvCmS === 'number' && finding.edvCmS >= 100,
   });
-  // Numeric: intima-media thickness (common carotid only; > 1.0 mm abnormal,
+  // Numeric: intima-media thickness (CCA + bifurcation only; > 1.0 mm abnormal,
   // ≥ 1.5 mm is the plaque threshold per Mannheim consensus).
-  if (isCca(vesselBase)) {
+  if (hasImt(vesselBase)) {
     pushCustomNumeric(ctx, out, {
       bodySite,
       sideText,
@@ -145,18 +145,19 @@ export function appendCarotidFindingObservations(
     tag,
     isAbnormal: finding.plaqueSurface === 'irregular',
   });
-  // Boolean: plaque ulceration (only emit when true — negative implicit)
-  if (finding.plaqueUlceration === true) {
-    pushBooleanObservation(ctx, out, {
-      bodySite,
-      sideText,
-      paramId: 'plaqueUlceration',
-      paramLabel: 'Plaque ulceration',
-      value: true,
-      tag,
-      isAbnormal: true,
-    });
-  }
+  // Numeric: gray-scale plaque estimate (% diameter reduction, ICA rows) —
+  // SRU 2003 primary criterion; ≥ 50 % is hemodynamically significant.
+  pushCustomNumeric(ctx, out, {
+    bodySite,
+    sideText,
+    paramId: 'plaqueStenosisPct',
+    paramLabel: 'Plaque estimate (diameter reduction)',
+    value: finding.plaqueStenosisPct,
+    system: medimindParamSystem(ctx, 'plaqueStenosisPct'),
+    unit: '%',
+    tag,
+    isAbnormal: typeof finding.plaqueStenosisPct === 'number' && finding.plaqueStenosisPct >= 50,
+  });
   // Numeric: plaque length
   pushCustomNumeric(ctx, out, {
     bodySite,
@@ -169,33 +170,14 @@ export function appendCarotidFindingObservations(
     tag,
     isAbnormal: false,
   });
-  // Categorical: subclavian steal phase (vertebrals only; numeric 0..3 → string)
-  // Wave 4.6 (Part 03 MEDIUM) — phase 0 means "no steal" (the explicit
-  // negative). Emitting it as a coded Observation pollutes the bundle and
-  // misleads downstream queries that count any present subclavianStealPhase
-  // as positive. Skip 0; only emit phases 1..3.
-  if (
-    isVertebral(vesselBase) &&
-    finding.subclavianStealPhase !== undefined &&
-    finding.subclavianStealPhase !== 0
-  ) {
-    const phase = String(finding.subclavianStealPhase);
-    pushCodedCategorical(ctx, out, {
-      bodySite,
-      sideText,
-      paramId: 'subclavianStealPhase',
-      paramLabel: 'Subclavian steal phase',
-      value: phase,
-      system: MEDIMIND_CODESYSTEMS.SUBCLAVIAN_STEAL_PHASE,
-      tag,
-      isAbnormal: finding.subclavianStealPhase >= 1,
-    });
-  }
+  // Plaque ulceration + subclavian steal phase are retired fields (clinician
+  // request) — old drafts may still carry them, but they are not exported.
 }
 
 function carotidSnomedKey(base: CarotidVesselBase): string {
   if (base === 'cca-prox' || base === 'cca-mid' || base === 'cca-dist') return 'cca';
   if (base === 'ica-prox' || base === 'ica-mid' || base === 'ica-dist') return 'ica';
+  if (base === 'bulb') return 'carotid-bulb';
   if (base === 'eca') return 'eca';
   if (base === 'vert-v1' || base === 'vert-v2' || base === 'vert-v3') return 'va';
   // subclav-prox / subclav-dist — no SNOMED entry in VASCULAR_SEGMENTS_SNOMED;

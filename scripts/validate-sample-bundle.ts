@@ -537,22 +537,16 @@ const icaEdv = carotidObs.find((o) =>
 assert(icaEdv !== undefined, 'carotid: expected right ICA EDV observation (LOINC 20352-4)');
 assert(icaEdv.valueQuantity?.value === 110, 'carotid: right ICA EDV value mismatch');
 
-// Plaque ulceration (boolean)
+// Retired fields (clinician request): the sample still carries plaqueUlceration
+// + subclavianStealPhase like an old draft would — neither may be exported.
 const ulcerObs = carotidObs.find((o) =>
   (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=plaqueUlceration'))
 );
-assert(ulcerObs !== undefined, 'carotid: expected plaqueUlceration observation');
-assert(ulcerObs.valueBoolean === true, 'carotid: plaqueUlceration should be true');
-
-// Subclavian steal phase on left vertebral
+assert(ulcerObs === undefined, 'carotid: retired plaqueUlceration must not be exported');
 const stealObs = carotidObs.find((o) =>
-  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('segment=vert-v2') && n.text.includes('side=left') && n.text.includes('parameter=subclavianStealPhase'))
+  (o.note ?? []).some((n) => typeof n.text === 'string' && n.text.includes('parameter=subclavianStealPhase'))
 );
-assert(stealObs !== undefined, 'carotid: expected left vertebral subclavian-steal observation');
-assert(
-  (stealObs.valueCodeableConcept?.coding ?? []).some((c) => c.code === '2'),
-  'carotid: subclavian steal phase should be 2'
-);
+assert(stealObs === undefined, 'carotid: retired subclavianStealPhase must not be exported');
 
 // NASCET category right side
 const nascetR = carotidObs.find((o) =>

@@ -74,6 +74,10 @@ export function AnatomyLegend({
           }
         : {}),
       border: `1.5px solid ${entry.stroke}`,
+      // Theme hairline ring so near-black swatches (occlusion) stay visible
+      // on a dark card; ring sits outside the box, so size is unchanged.
+      // UX-ANGIO-022.
+      boxShadow: '0 0 0 1px var(--emr-border-secondary)',
       borderRadius: '2px',
       flexShrink: 0,
       display: 'inline-block',

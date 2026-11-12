@@ -3,19 +3,11 @@ import { expect, test, type Page } from '@playwright/test';
 import { gotoVenousForm, seedVenousEncounter } from './helpers/seedEncounter';
 
 /**
- * Mantine's SegmentedControl renders each option as a hidden `<input>`
- * paired with a clickable `<label>`. The label is what receives clicks,
- * but its accessible name maps to the input's value, so `getByLabel`
- * works reliably regardless of i18n.
+ * The mode toggle is an EMRViewToggle: each option is a button with its own
+ * `<toggle-testid>-<value>` test id, so clicking it works regardless of i18n.
  */
 async function switchToDrawMode(page: Page): Promise<void> {
-  // Mantine SegmentedControl writes the active value to the underlying
-  // <input> element. Find the input whose value="draw" and click its label.
-  const drawInput = page.getByTestId('drawing-mode-toggle').locator('input[value="draw"]');
-  await drawInput.evaluate((el: HTMLInputElement) => {
-    el.click();
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  });
+  await page.getByTestId('drawing-mode-toggle-draw').click();
   // Verify the canvas reflects the new mode.
   await expect(page.getByTestId('drawing-canvas-le-anterior')).toHaveAttribute(
     'data-mode',

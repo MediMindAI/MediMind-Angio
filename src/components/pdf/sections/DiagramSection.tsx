@@ -36,8 +36,8 @@ export interface DiagramSectionProps {
   readonly viewWidthPt?: number;
   /**
    * Explicit legend entries. When omitted, the default venous competency
-   * legend is rendered. Carotid passes its 5-band severity scale here so the
-   * diagram doesn't show venous terms (Part: clinician feedback).
+   * legend is rendered. Carotid + arterial pass their 3-entry severity scale
+   * here so the diagram doesn't show venous terms (Part: clinician feedback).
    */
   readonly legendItems?: ReadonlyArray<DiagramLegendItem>;
 }
@@ -235,7 +235,7 @@ export function DiagramSection({
   legendItems,
 }: DiagramSectionProps): ReactElement {
   // Default to the venous competency legend; a study may override it via
-  // `legendItems` (carotid supplies its 5-band severity scale).
+  // `legendItems` (carotid + arterial supply their 3-entry severity scale).
   const items: ReadonlyArray<DiagramLegendItem> =
     legendItems ??
     (['normal', 'occluded', 'incompetent', 'inconclusive', 'ablated'] as Array<Competency>).map(

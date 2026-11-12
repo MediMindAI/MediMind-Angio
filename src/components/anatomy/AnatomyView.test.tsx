@@ -99,4 +99,18 @@ describe('AnatomyView — dark-mode label colorize', () => {
       expect(html).toMatch(/<g id="pelvis-hint"[^>]*stroke="var\(--emr-text-primary\)"/);
     });
   });
+
+  it('rewrites the silhouette body fill to var(--emr-bg-hover) so R/L read in dark (UX-ANGIO-022)', async () => {
+    vi.spyOn(svgLoader, 'loadAnatomySvg').mockResolvedValue(SVG_WITH_LABELS_AND_DOTS);
+
+    const { container } = renderInProviders('le-anterior');
+
+    await waitFor(() => {
+      const silhouette = container.innerHTML.match(/<g id="silhouette"[^>]*>/)?.[0];
+      expect(silhouette).toMatch(/fill="var\(--emr-bg-hover\)"/);
+      expect(silhouette).not.toMatch(/fill="#f7fafc"/);
+      // pelvis-hint keeps fill="none" (outline only).
+      expect(container.innerHTML).toMatch(/<g id="pelvis-hint"[^>]*fill="none"/);
+    });
+  });
 });

@@ -124,16 +124,19 @@ export const COMPETENCY_COLORS = {
 // =============================================================================
 
 /**
- * Five-band severity palette used by arterial LE and carotid duplex
- * anatomy diagrams. Green → amber → orange → red → dark red as stenosis
- * worsens, with occluded rendered as a near-black dark red.
+ * Severity palette used by arterial LE and carotid duplex anatomy diagrams
+ * (clinician feedback 2026-11): grey = normal / not hemodynamically
+ * significant (< 50 %), red = hemodynamically significant stenosis (≥ 50 %),
+ * black = occlusion. Reuses the venous grey / red / black swatches so the
+ * whole app speaks one color language; the 5 band keys stay so findings,
+ * FHIR and narrative keep their finer grading.
  */
 export const SEVERITY_COLORS = {
-  normal: { fill: '#22c55e', stroke: '#16a34a' },
-  mild: { fill: '#fbbf24', stroke: '#d97706' },
-  moderate: { fill: '#f97316', stroke: '#ea580c' },
-  severe: { fill: '#ef4444', stroke: '#b91c1c' },
-  occluded: { fill: '#991b1b', stroke: '#7f1d1d' },
+  normal: { fill: COMPETENCY_COLORS.normal.fill, stroke: COMPETENCY_COLORS.normal.stroke },
+  mild: { fill: COMPETENCY_COLORS.normal.fill, stroke: COMPETENCY_COLORS.normal.stroke },
+  moderate: { fill: COMPETENCY_COLORS.incompetent.fill, stroke: COMPETENCY_COLORS.incompetent.stroke },
+  severe: { fill: COMPETENCY_COLORS.incompetent.fill, stroke: COMPETENCY_COLORS.incompetent.stroke },
+  occluded: { fill: COMPETENCY_COLORS.occluded.fill, stroke: COMPETENCY_COLORS.occluded.stroke },
 } as const;
 
 export type Severity = keyof typeof SEVERITY_COLORS;

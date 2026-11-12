@@ -10,7 +10,10 @@
  * no clinical benefit.
  *
  * Behaviour mirrors `<EncountersPage>`:
- *   - List newest-first via `listEncounters()` (store guarantees ordering).
+ *   - List newest-CREATED first (local sort on `createdAt`). The store
+ *     returns newest-UPDATED first, which made a row jump to the top every
+ *     time a visit was resumed (U-1035); sorting here keeps the order stable
+ *     without touching `encounterStore.ts`.
  *   - Per-row Resume + Discard with confirm dialog.
  *   - "Clear all visits" with confirm dialog in the panel footer.
  *   - Hides itself entirely when there are zero stored encounters — a
@@ -37,8 +40,10 @@ import {
 } from '@tabler/icons-react';
 import { EMRBadge } from '../common/EMRBadge';
 import { EMRButton } from '../common/EMRButton';
+import { EMRTooltip } from '../common/EMRTooltip';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { STORAGE_KEYS, migratedGetItem } from '../../constants/storage-keys';
 import { STUDY_PLUGINS } from '../studies';
 import { clearAllDrafts } from '../../services/draftStore';
 import {
@@ -49,6 +54,7 @@ import {
 import type { EncounterDraft } from '../../types/encounter';
 import type { StudyType } from '../../types/study';
 import classes from './OngoingVisitsPanel.module.css';
+import { formatDottedDate } from '../../services/dateHelpers';
 
 function ageFromBirthDate(birthIso: string | undefined): number | null {
   if (!birthIso) return null;
@@ -97,16 +103,26 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
   // intake form below the fold every time they open the page. The count
   // badge in the header conveys "you have N open visits"; expanding is
   // a deliberate "I want to manage them" action.
-  const [expanded, setExpanded] = useState(false);
+  // UX-ANGIO-009 L2: the clinician's last choice is remembered per device,
+  // so someone who works from the list doesn't re-open it on every visit.
+  // A fresh device (no stored value) still starts folded.
+  const [expanded, setExpanded] = useState(
+    () => migratedGetItem(STORAGE_KEYS.ONGOING_VISITS_EXPANDED) === 'true',
+  );
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [pendingDiscardId, setPendingDiscardId] = useState<string | null>(null);
+  // The visit named in the discard confirm. Kept after the dialog closes so
+  // the name doesn't blank out to '—' during the close transition.
+  const [discardTarget, setDiscardTarget] = useState<EncounterDraft | null>(null);
   const [discarding, setDiscarding] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
       const list = await listEncounters();
-      setEncounters(list);
+      setEncounters(
+        [...list].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+      );
     } catch {
       setEncounters([]);
     } finally {
@@ -117,6 +133,16 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const toggleExpanded = useCallback(() => {
+    const next = !expanded;
+    setExpanded(next);
+    try {
+      localStorage.setItem(STORAGE_KEYS.ONGOING_VISITS_EXPANDED, String(next));
+    } catch {
+      // quota / private mode — the in-memory state still toggles
+    }
+  }, [expanded]);
 
   const handleResume = useCallback(
     (enc: EncounterDraft) => {
@@ -171,6 +197,15 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
   // state for first-time / clean-slate users.
   if (!hydrated || encounters.length === 0) return null;
 
+  // UX-ANGIO-010: the trash button and the confirm both say whose visit is
+  // about to be deleted. `discardVisit` is a new key (handed to the i18n
+  // fence); until it lands, fall back to the existing 'delete' action word —
+  // never to `encounter.list.discard`, which reads as 'cancel' in Georgian.
+  const discardLabel = t(
+    'encounter.list.discardVisit',
+    t('encounter.list.discardConfirmAction'),
+  );
+
   return (
     <section
       className={[classes.panel, expanded ? classes.panelExpanded : '']
@@ -183,7 +218,7 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
       <button
         type="button"
         className={classes.panelHeader}
-        onClick={() => setExpanded((v) => !v)}
+        onClick={toggleExpanded}
         aria-expanded={expanded}
         aria-controls="ongoing-visits-body"
         data-testid="ongoing-visits-toggle"
@@ -241,7 +276,7 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
                   </span>
                   <span className={classes.rowDate}>
                     {t('encounter.banner.dateLabel')}:{' '}
-                    {enc.header.encounterDate || '—'}
+                    {enc.header.encounterDate ? formatDottedDate(enc.header.encounterDate) : '—'}
                   </span>
                 </div>
                 <div className={classes.rowChips}>
@@ -280,14 +315,19 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
                 >
                   {t('encounter.list.edit', 'Edit')}
                 </EMRButton>
-                <EMRButton
-                  variant="outline"
-                  size="sm"
-                  leftSection={<IconTrash size={16} stroke={1.75} />}
-                  onClick={() => setPendingDiscardId(enc.encounterId)}
-                  data-testid={`ongoing-visits-discard-${enc.encounterId}`}
-                  aria-label={t('encounter.list.discard')}
-                />
+                <EMRTooltip label={discardLabel}>
+                  <EMRButton
+                    variant="outline"
+                    size="sm"
+                    leftSection={<IconTrash size={16} stroke={1.75} />}
+                    onClick={() => {
+                      setDiscardTarget(enc);
+                      setPendingDiscardId(enc.encounterId);
+                    }}
+                    data-testid={`ongoing-visits-discard-${enc.encounterId}`}
+                    aria-label={`${discardLabel}: ${enc.header.patientName || '—'}`}
+                  />
+                </EMRTooltip>
               </div>
             </li>
           );
@@ -326,7 +366,18 @@ export const OngoingVisitsPanel = memo(function OngoingVisitsPanel({
         opened={pendingDiscardId !== null}
         onClose={() => setPendingDiscardId(null)}
         title={t('encounter.list.discardConfirmTitle')}
-        message={t('encounter.list.discardConfirmBody')}
+        message={
+          <>
+            <div data-testid="ongoing-visits-discard-patient">
+              <strong>{discardTarget?.header.patientName || '—'}</strong>
+            </div>
+            <div>
+              {t('encounter.banner.dateLabel')}:{' '}
+              {discardTarget?.header.encounterDate ? formatDottedDate(discardTarget.header.encounterDate) : '—'}
+            </div>
+            <div>{t('encounter.list.discardConfirmBody')}</div>
+          </>
+        }
         confirmLabel={t('encounter.list.discardConfirmAction')}
         cancelLabel={t('common.cancel')}
         onConfirm={() => void handleConfirmDiscard()}

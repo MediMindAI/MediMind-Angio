@@ -162,6 +162,14 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
     [onFindingChange, t],
   );
 
+  // Headless rows sit beside SegmentTable, which shows the segment name on
+  // desktop. Below Mantine lg the two tables stack, so the numeric rows keep
+  // their own name + side badge there (`segmentCellStacked` hides it at lg+).
+  // UX-ANGIO-004 L1 / U-1022 — never an anonymous measurement card.
+  const segmentCellClass = `${classes.cell} ${classes.segmentCell}${
+    headless ? ` ${classes.segmentCellStacked}` : ''
+  }`;
+
   const tableBody = (
     <div
       className={`${classes.tableWrap} ${headless ? classes.tableWrapHeadless : ''}`}
@@ -169,14 +177,9 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
       aria-label={t('venousLE.refluxTable.title')}
     >
       <div className={classes.headRow} role="row">
-        {!headless && (
-          <div
-            className={`${classes.cell} ${classes.segmentCell} ${classes.headCell}`}
-            role="columnheader"
-          >
-            {t('venousLE.segmentTable.segment')}
-          </div>
-        )}
+        <div className={`${segmentCellClass} ${classes.headCell}`} role="columnheader">
+          {t('venousLE.segmentTable.segment')}
+        </div>
         <div className={`${classes.cell} ${classes.headCell}`} role="columnheader">
           {t('venousLE.refluxTable.ms')}
         </div>
@@ -202,16 +205,14 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
           .join(' ');
         return (
           <div key={r.fullId} className={rowClass} role="row">
-            {!headless && (
-              <div className={`${classes.cell} ${classes.segmentCell}`}>
-                <span className={classes.segmentLabel}>
-                  {t(`venousLE.segment.${r.base}`, r.base)}
-                </span>
-                <span className={classes.segmentSide} data-side={r.side}>
-                  {r.side === 'left' ? 'L' : 'R'}
-                </span>
-              </div>
-            )}
+            <div className={segmentCellClass}>
+              <span className={classes.segmentLabel}>
+                {t(`venousLE.segment.${r.base}`, r.base)}
+              </span>
+              <span className={classes.segmentSide} data-side={r.side}>
+                {r.side === 'left' ? 'L' : 'R'}
+              </span>
+            </div>
 
             <div className={classes.cell} data-label={t('venousLE.refluxTable.ms')}>
               <EMRNumberInput
@@ -281,7 +282,7 @@ export const ReflexTimeTable = memo(function ReflexTimeTable({
             <IconRuler2 size={20} stroke={1.75} />
           </Box>
           <Box style={{ minWidth: 0 }}>
-            <Text className={classes.title} id="reflex-table-title">
+            <Text component="h2" className={classes.title} id="reflex-table-title">
               {t('venousLE.refluxTable.title')}
             </Text>
             <Text className={classes.subtitle}>{t('venousLE.refluxTable.subtitle')}</Text>

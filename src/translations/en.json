@@ -34,7 +34,10 @@
     "venousLE": {
       "title": "Lower Extremity Venous Ultrasonography",
       "short": "Venous LE",
-      "description": "Bilateral reflux + DVT assessment"
+      "description": "Bilateral reflux + DVT assessment",
+      "shortBilateral": "Venous LE (bilateral)",
+      "shortRight": "Venous LE (right)",
+      "shortLeft": "Venous LE (left)"
     },
     "arterialLE": {
       "title": "Lower Extremity Arterial Ultrasonography",
@@ -80,7 +83,11 @@
     "exportJSON": "Export FHIR JSON",
     "clearInput": "Clear",
     "noOptionsFound": "No options found",
-    "actionsRegion": "Actions"
+    "actionsRegion": "Actions",
+    "impressionStale": {
+      "title": "Findings changed after this conclusion was written",
+      "body": "Please review the conclusion. Close this note to keep it as it is."
+    }
   },
   "competency": {
     "normal": "Normal",
@@ -93,7 +100,9 @@
     "view": {
       "le-anterior": "Anterior view",
       "le-posterior": "Posterior view",
-      "neck-carotid": "Carotid / vertebral"
+      "neck-carotid": "Carotid / vertebral",
+      "le-arterial-anterior": "Lower-limb arteries",
+      "abdominal-pelvic": "Pelvic venous map"
     },
     "legend": {
       "label": "Competency legend"
@@ -164,7 +173,10 @@
   "formActions": {
     "pdfDownloadFailed": "Failed to download PDF",
     "pdfPreviewFailed": "Failed to preview PDF",
-    "jsonExportFailed": "Failed to export FHIR JSON"
+    "jsonExportFailed": "Failed to export FHIR JSON",
+    "thisStudyOnly": "The PDF contains this study only. The combined report unlocks when every study is done. Not finished: {studies}",
+    "recordThisStudyFirst": "Record at least one finding in this study to export its PDF. Not finished: {studies}",
+    "pdfPrintFailed": "Failed to print PDF"
   },
   "pdf": {
     "issued": "Issued",
@@ -246,9 +258,12 @@
       "dateLabel": "Encounter date",
       "studiesLabel": "Studies",
       "switchTo": "Switch to {study}",
-      "addStudy": "+ Add study",
+      "addStudy": "Add study",
       "editEncounter": "Edit encounter details",
-      "backToList": "Back to all encounters"
+      "backToList": "Back to all encounters",
+      "ageYears": "{age} y",
+      "unnamedPatient": "Unnamed patient",
+      "regionLabel": "Encounter context"
     },
     "list": {
       "title": "In-progress encounters",
@@ -264,7 +279,9 @@
       "clearAllConfirmBody": "This will delete every saved encounter and study draft. Cannot be undone.",
       "clearAllConfirmAction": "Clear all",
       "clearedToast": "All encounters cleared.",
-      "viewAll": "All encounters"
+      "viewAll": "All encounters",
+      "discardVisit": "Discard encounter",
+      "edit": "Edit"
     },
     "listPage": {
       "title": "In-progress encounters",
@@ -273,7 +290,8 @@
       "emptyBody": "Start a new encounter from the intake page.",
       "emptyCta": "+ New encounter",
       "backLink": "Back to intake",
-      "openCount": "{count} encounter(s) on this device"
+      "openCount": "{count} encounter(s) on this device",
+      "eyebrow": "In progress"
     }
   }
 }

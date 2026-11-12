@@ -105,14 +105,26 @@ function buildSide(
       anySignificant = true;
       const category = f.stenosisCategory
         ?? stenosisCategoryFromPct(f.stenosisPct, f.occluded);
-      sentences.push({
-        key: 'arterialLE.narrative.stenosis',
-        params: {
-          severity: `arterialLE.stenosis.${category}`,
-          vein: `arterialLE.segment.${base}`,
-          psv: f.psvCmS ?? 0,
-        },
-      });
+      // No PSV entered → a sentence without it. Never print a blank as
+      // "PSV 0" on a report (level-up U-1040).
+      sentences.push(
+        f.psvCmS === undefined
+          ? {
+              key: 'arterialLE.narrative.stenosisNoPsv',
+              params: {
+                severity: `arterialLE.stenosis.${category}`,
+                vein: `arterialLE.segment.${base}`,
+              },
+            }
+          : {
+              key: 'arterialLE.narrative.stenosis',
+              params: {
+                severity: `arterialLE.stenosis.${category}`,
+                vein: `arterialLE.segment.${base}`,
+                psv: f.psvCmS,
+              },
+            },
+      );
       conclusions.push({
         key: 'arterialLE.conclusion.significantStenosis',
         params: {

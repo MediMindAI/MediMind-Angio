@@ -26,13 +26,10 @@
  *   cleared and the real encounter is persisted via `saveEncounter`.
  */
 
-import { memo, useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   IconUser,
-  IconClipboardText,
-  IconStethoscope,
-  IconChecklist,
   IconCheck,
   IconArrowRight,
   IconCalendarEvent,
@@ -52,7 +49,7 @@ import { EMRButton } from '../common/EMRButton';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { useTranslation } from '../../contexts/TranslationContext';
-import { localDateToIso, isoToLocalDate, nowIsoTimestamp } from '../../services/dateHelpers';
+import { formatDottedDate, localDateToIso, isoToLocalDate, nowIsoTimestamp } from '../../services/dateHelpers';
 import { VASCULAR_ICD10_CODES, icd10Display } from '../../constants/vascular-icd10';
 import { STUDY_PLUGINS } from '../studies';
 import {
@@ -268,7 +265,11 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
     editIdFromUrl,
   );
   const [submitting, setSubmitting] = useState(false);
-  const [hasResumable, setHasResumable] = useState(false);
+  // Newest-updated in-progress encounter (listEncounters is newest-first).
+  // Drives the sticky-footer "continue current visit" button; null hides it.
+  const [latestEncounter, setLatestEncounter] = useState<EncounterDraft | null>(null);
+  const hasResumable = latestEncounter !== null;
+  const formColumnRef = useRef<HTMLDivElement>(null);
 
   // When `?edit=<id>` changes (or appears after mount) we (a) flip the
   // mode flag and (b) async-refresh from IDB, the source of truth for
@@ -286,6 +287,13 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
       .then((enc) => {
         if (cancelled || !enc) return;
         dispatch({ type: 'HYDRATE', state: encounterToIntakeState(enc) });
+        // UX-ANGIO-017 L2: "Edit" keeps the pathname (`/`), so the App-level
+        // scroll reset doesn't fire — bring the pre-filled form into view.
+        // Next frame, so the hydrated form (and the visits list above it)
+        // have rendered. Instant scroll (no animation, §4.1).
+        requestAnimationFrame(() => {
+          if (!cancelled) formColumnRef.current?.scrollIntoView?.({ block: 'start' });
+        });
       })
       .catch((err) => {
         if (cancelled) return;
@@ -310,11 +318,11 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
     listEncounters()
       .then((list) => {
         if (cancelled) return;
-        setHasResumable(list.length > 0);
+        setLatestEncounter(list[0] ?? null);
       })
       .catch(() => {
         if (cancelled) return;
-        setHasResumable(false);
+        setLatestEncounter(null);
       });
     return () => {
       cancelled = true;
@@ -464,9 +472,18 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
+  // UX-ANGIO-009 L1: one click back into the most recent visit. Same
+  // resume rule as OngoingVisitsPanel's row button: open the first study,
+  // or the intake in edit mode for a legacy draft with no study yet.
   const handleResume = useCallback(() => {
-    navigate('/');
-  }, [navigate]);
+    if (!latestEncounter) return;
+    const firstStudy = latestEncounter.selectedStudyTypes[0];
+    navigate(
+      firstStudy
+        ? `/encounter/${latestEncounter.encounterId}/${firstStudy}`
+        : `/?edit=${latestEncounter.encounterId}`,
+    );
+  }, [latestEncounter, navigate]);
 
   // ----- Live summary derivations -----
   const initials = initialsFromName(trimmedName);
@@ -474,16 +491,12 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
   const genderLabel = state.patientGender
     ? genderOptions.find((g) => g.value === state.patientGender)?.label
     : undefined;
-  const formattedEncounterDate = useMemo(() => {
-    if (!state.encounterDate) return '';
-    const d = new Date(state.encounterDate);
-    if (Number.isNaN(d.getTime())) return state.encounterDate;
-    return d.toLocaleDateString(lang === 'ka' ? 'ka-GE' : lang === 'ru' ? 'ru-RU' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }, [state.encounterDate, lang]);
+  // DD.MM.YYYY in local time, same as the PDF. `new Date('YYYY-MM-DD')`
+  // parsed as UTC midnight and could show the previous day (CLAUDE.md dates).
+  const formattedEncounterDate = useMemo(
+    () => (state.encounterDate ? formatDottedDate(state.encounterDate) : ''),
+    [state.encounterDate],
+  );
 
   const selectedStudyLabels = useMemo(() => {
     return state.selectedStudyTypes.map((studyType) => {
@@ -605,28 +618,21 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             // Re-probe `hasResumable` so the sticky-footer Resume link
             // disappears when the user clears all visits from the panel.
             void listEncounters()
-              .then((list) => setHasResumable(list.length > 0))
-              .catch(() => setHasResumable(false));
+              .then((list) => setLatestEncounter(list[0] ?? null))
+              .catch(() => setLatestEncounter(null));
           }}
         />
 
         <div className={classes.layout}>
           {/* ============== FORM COLUMN ============== */}
-          <div className={classes.formColumn}>
+          <div className={classes.formColumn} ref={formColumnRef}>
             {/* Card 1: Identity */}
             <section className={classes.card} aria-labelledby="intake-identity-title">
               <header className={classes.cardHeader}>
-                <span className={classes.cardHeaderIcon} aria-hidden>
-                  <IconUser size={18} stroke={1.75} />
-                </span>
-                <div className={classes.cardHeaderText}>
-                  <span className={classes.cardHeaderEyebrow}>
-                    {t('encounter.intake.stepLabel', 'Step')} 1
-                  </span>
-                  <h2 className={classes.cardHeaderTitle} id="intake-identity-title">
-                    {t('encounter.intake.identity.title')}
-                  </h2>
-                </div>
+                <span className={classes.cardHeaderTick} aria-hidden />
+                <h2 className={classes.cardHeaderTitle} id="intake-identity-title">
+                  {t('encounter.intake.identity.title')}
+                </h2>
                 {stepCompletion.identity && (
                   <span className={classes.cardHeaderBadge} aria-hidden>
                     <IconCheck size={14} stroke={3} />
@@ -684,17 +690,10 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             {/* Card 2: Visit context */}
             <section className={classes.card} aria-labelledby="intake-visit-title">
               <header className={classes.cardHeader}>
-                <span className={classes.cardHeaderIcon} aria-hidden>
-                  <IconClipboardText size={18} stroke={1.75} />
-                </span>
-                <div className={classes.cardHeaderText}>
-                  <span className={classes.cardHeaderEyebrow}>
-                    {t('encounter.intake.stepLabel', 'Step')} 2
-                  </span>
-                  <h2 className={classes.cardHeaderTitle} id="intake-visit-title">
-                    {t('encounter.intake.visit.title')}
-                  </h2>
-                </div>
+                <span className={classes.cardHeaderTick} aria-hidden />
+                <h2 className={classes.cardHeaderTitle} id="intake-visit-title">
+                  {t('encounter.intake.visit.title')}
+                </h2>
                 {stepCompletion.visit && (
                   <span className={classes.cardHeaderBadge} aria-hidden>
                     <IconCheck size={14} stroke={3} />
@@ -769,17 +768,10 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             {/* Card 3: Indication */}
             <section className={classes.card} aria-labelledby="intake-indication-title">
               <header className={classes.cardHeader}>
-                <span className={classes.cardHeaderIcon} aria-hidden>
-                  <IconStethoscope size={18} stroke={1.75} />
-                </span>
-                <div className={classes.cardHeaderText}>
-                  <span className={classes.cardHeaderEyebrow}>
-                    {t('encounter.intake.stepLabel', 'Step')} 3
-                  </span>
-                  <h2 className={classes.cardHeaderTitle} id="intake-indication-title">
-                    {t('encounter.intake.indication.title')}
-                  </h2>
-                </div>
+                <span className={classes.cardHeaderTick} aria-hidden />
+                <h2 className={classes.cardHeaderTitle} id="intake-indication-title">
+                  {t('encounter.intake.indication.title')}
+                </h2>
                 {stepCompletion.indication && (
                   <span className={classes.cardHeaderBadge} aria-hidden>
                     <IconCheck size={14} stroke={3} />
@@ -822,17 +814,10 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
             {/* Card 4: Studies */}
             <section className={classes.card} aria-labelledby="intake-studies-title">
               <header className={classes.cardHeader}>
-                <span className={classes.cardHeaderIcon} aria-hidden>
-                  <IconChecklist size={18} stroke={1.75} />
-                </span>
-                <div className={classes.cardHeaderText}>
-                  <span className={classes.cardHeaderEyebrow}>
-                    {t('encounter.intake.stepLabel', 'Step')} 4
-                  </span>
-                  <h2 className={classes.cardHeaderTitle} id="intake-studies-title">
-                    {t('encounter.intake.studies.title')}
-                  </h2>
-                </div>
+                <span className={classes.cardHeaderTick} aria-hidden />
+                <h2 className={classes.cardHeaderTitle} id="intake-studies-title">
+                  {t('encounter.intake.studies.title')}
+                </h2>
                 {stepCompletion.studies && (
                   <span className={classes.cardHeaderBadge} aria-hidden>
                     <IconCheck size={14} stroke={3} />
@@ -886,7 +871,10 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                           aria-hidden
                           data-checked={checked}
                         >
-                          <IconCheck size={14} stroke={3} />
+                          {/* UX-ANGIO-022 L1: render the tick only when
+                              chosen. Hiding it by colour alone loses to the
+                              global dark-mode icon rule (U-1021). */}
+                          {checked && <IconCheck size={14} stroke={3} />}
                         </span>
                       </button>
                     );
@@ -917,11 +905,6 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                     );
                   })}
                 </div>
-                {state.selectedStudyTypes.length === 0 && (
-                  <p className={classes.studyHelperWarn}>
-                    {t('encounter.intake.studies.selectAtLeastOne')}
-                  </p>
-                )}
               </div>
             </section>
           </div>
@@ -929,11 +912,9 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
           {/* ============== LIVE SUMMARY COLUMN ============== */}
           <aside className={classes.summaryColumn} aria-label={t('encounter.intake.title')}>
             <div className={classes.summaryCard}>
-              <header className={classes.summaryHeader}>
-                <span className={classes.summaryHeaderEyebrow}>
-                  {t('encounter.intake.summary.eyebrow', 'Live preview')}
-                </span>
-                <h3 className={classes.summaryHeaderTitle}>
+              <header className={classes.cardHeader}>
+                <span className={classes.cardHeaderTick} aria-hidden />
+                <h3 className={classes.cardHeaderTitle}>
                   {t('encounter.intake.summary.title', 'Encounter summary')}
                 </h3>
               </header>
@@ -1053,23 +1034,16 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
                   )}
                 </div>
 
-                {/* Status pill */}
-                <div
-                  className={[
-                    classes.summaryStatus,
-                    canStart ? classes.summaryStatusReady : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                >
-                  <span className={classes.summaryStatusDot} aria-hidden />
-                  <span className={classes.summaryStatusText}>
-                    {canStart
-                      ? t('encounter.intake.summary.ready', 'Ready to start encounter')
-                      : startHint ||
-                        t('encounter.intake.summary.notReady', 'Complete required fields to start')}
-                  </span>
-                </div>
+                {/* Ready pill. Blockers are NOT repeated here — each one shows
+                    once, neutral, beside the disabled CTA in the action bar. */}
+                {canStart && (
+                  <div className={`${classes.summaryStatus} ${classes.summaryStatusReady}`}>
+                    <span className={classes.summaryStatusDot} aria-hidden />
+                    <span className={classes.summaryStatusText}>
+                      {t('encounter.intake.summary.ready', 'Ready to start encounter')}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -1086,8 +1060,16 @@ export const EncounterIntake = memo(function EncounterIntake(): React.ReactEleme
               onClick={handleResume}
               data-testid="intake-resume-link"
             >
-              <IconHistory size={16} stroke={1.75} />
-              <span>{t('encounter.intake.actions.resume')}</span>
+              <IconHistory size={16} stroke={1.75} aria-hidden />
+              <span>
+                {t('encounter.intake.actions.resume')}
+                {latestEncounter?.header.patientName ? (
+                  <span className={classes.actionRowResumeName}>
+                    {' · '}
+                    {latestEncounter.header.patientName}
+                  </span>
+                ) : null}
+              </span>
             </button>
           ) : (
             <span aria-hidden />

@@ -664,3 +664,24 @@ describe('Wave 3.6 — CPT lookup + study-namespaced param URLs', () => {
     expect(valueCoding!.system).not.toMatch(/\/StructureDefinition\//);
   });
 });
+
+describe('U-1027 — venous perforator (competencyOverride "inconclusive")', () => {
+  it('exports as "Perforator" in DiagnosticReport.conclusion, never as inconclusive', () => {
+    const form = {
+      ...minimalForm('venousLEBilateral'),
+      parameters: {
+        segmentFindings: { 'gsv-calf-right': { competencyOverride: 'inconclusive' } },
+      },
+    } as FormState;
+    const bundle = buildFhirBundle(form);
+    const report = bundle.entry?.find((e) => e.resource?.resourceType === 'DiagnosticReport')
+      ?.resource as DiagnosticReport | undefined;
+    expect(report?.conclusion).toContain('Perforator — right great saphenous vein, calf.');
+    // The raw internal key survives only in the QR draft snapshot (draft
+    // compatibility); no Observation or report text calls it inconclusive.
+    const exported = (bundle.entry ?? []).filter(
+      (e) => e.resource?.resourceType !== 'QuestionnaireResponse',
+    );
+    expect(JSON.stringify(exported)).not.toMatch(/inconclusive/i);
+  });
+});

@@ -7,26 +7,38 @@
 .previewLabel {
   font-size: var(--emr-font-sm);
   font-weight: var(--emr-font-semibold);
-  color: var(--emr-text-white);
+  color: var(--emr-text-secondary);
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex-shrink: 0;
-  opacity: 0.9;
 }
 
 .previewChip {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--emr-text-white);
+  background: var(--emr-bg-hover);
+  color: var(--emr-text-primary);
   font-size: var(--emr-font-xs);
   font-weight: var(--emr-font-semibold);
   letter-spacing: 0.02em;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--emr-border-color);
   white-space: nowrap;
   line-height: 1.5;
+}
+
+/* Phones: the header row can't wrap, so drop the label (the section title
+   already says NASCET) and let the summary break onto two lines instead of
+   running off the card. */
+@media (max-width: 576px) {
+  .previewLabel {
+    display: none;
+  }
+
+  .previewChip {
+    white-space: normal;
+  }
 }
 
 .axis {
@@ -73,7 +85,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--emr-success, #16a34a);
+  color: var(--emr-text-secondary);
   font-size: var(--emr-font-2xs);
   font-weight: var(--emr-font-semibold);
   white-space: nowrap;

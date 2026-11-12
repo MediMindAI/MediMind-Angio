@@ -35,7 +35,8 @@
       "title": "Segmental assessment",
       "subtitle": "Waveform, PSV, stenosis, and plaque per segment",
       "segment": "Segment",
-      "toggleDetails": "More fields"
+      "toggleDetails": "More fields",
+      "sideSwitchLabel": "Leg shown in the segment table"
     },
     "param": {
       "waveform": "Waveform",
@@ -107,6 +108,7 @@
       "normalSide": "Normal {side} lower-extremity arterial tree with triphasic flow throughout.",
       "occluded": "Occluded — {vein}.",
       "stenosis": "{severity} stenosis — {vein} (PSV {psv} cm/s).",
+      "stenosisNoPsv": "{severity} stenosis — {vein}.",
       "dampedWaveform": "{waveform} flow — {vein}.",
       "notVisualized": "{vein} — not adequately visualized."
     },
@@ -117,10 +119,10 @@
       "runoff": "{side}: {runoff} distal run-off."
     },
     "actions": {
-      "newCase": "+ New case",
-      "newCaseConfirmTitle": "Start a new case?",
+      "newCase": "Clear form",
+      "newCaseConfirmTitle": "Clear this form?",
       "newCaseConfirmBody": "All current findings, pressures, impression and recommendations will be cleared. This cannot be undone.",
-      "newCaseConfirm": "Discard & start new",
+      "newCaseConfirm": "Clear form",
       "newCaseToastTitle": "New case started",
       "newCaseToastMessage": "All data cleared.",
       "applyTemplate": "Apply template",
@@ -271,7 +273,17 @@
       "mild": "Mild",
       "moderate": "Moderate",
       "severe": "Severe",
+      "significant": "Hemodynamically significant stenosis",
       "occluded": "Occluded"
+    },
+    "drawingColor": {
+      "normal": "Normal",
+      "incompetent": "Hemodynamically significant stenosis",
+      "occluded": "Occlusion"
+    },
+    "pressureTable": {
+      "sideRight": "R",
+      "sideLeft": "L"
     }
   }
 }

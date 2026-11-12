@@ -94,6 +94,55 @@ function clientToViewBox(
   return [x, y];
 }
 
+// ----- Text-label clamp (UX-ANGIO-019) -----
+// A label is anchored at its LEFT baseline (`points[0]`) and runs rightward,
+// so one dropped near the right edge used to overflow the viewBox and get
+// cut off — on screen (the overlay SVG clips) and in the PDF (same anchor).
+// We clamp the stored anchor so the whole label sits inside the viewBox;
+// because the clamped anchor is what persists, the PDF matches the screen.
+
+const TEXT_FONT_FAMILY = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+/** Gap (viewBox units) kept between a label and the diagram edge. */
+const TEXT_EDGE_PAD = 6;
+/** Headroom for the PDF font (Noto Sans Georgian bold), which can run a
+ *  little wider than the screen font the label is measured in. */
+const TEXT_WIDTH_SLACK = 1.1;
+
+/** Rendered width of `text` in viewBox units. Measures with a throw-away
+ *  `<text>` in the overlay SVG; falls back to a per-glyph estimate where
+ *  layout is unavailable (jsdom, detached SVG). */
+function measureTextWidth(svg: SVGSVGElement | null, text: string, fontSize: number): number {
+  const estimate = text.length * fontSize * 0.6;
+  if (!svg) return estimate;
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  el.setAttribute('font-size', String(fontSize));
+  el.setAttribute('font-family', TEXT_FONT_FAMILY);
+  el.setAttribute('font-weight', '600');
+  el.textContent = text;
+  svg.appendChild(el);
+  try {
+    const width = typeof el.getComputedTextLength === 'function' ? el.getComputedTextLength() : 0;
+    return width > 0 ? width : estimate;
+  } finally {
+    svg.removeChild(el);
+  }
+}
+
+/** Clamp a label's left-baseline anchor so the whole label fits the viewBox. */
+function clampTextAnchor(
+  x: number,
+  y: number,
+  width: number,
+  fontSize: number,
+  viewBoxW: number,
+  viewBoxH: number,
+): readonly [number, number] {
+  const maxX = Math.max(TEXT_EDGE_PAD, viewBoxW - width * TEXT_WIDTH_SLACK - TEXT_EDGE_PAD);
+  const minY = fontSize + TEXT_EDGE_PAD; // room for the glyph ascent
+  const maxY = Math.max(minY, viewBoxH - fontSize * 0.3 - TEXT_EDGE_PAD); // room for descenders
+  return [Math.min(Math.max(x, TEXT_EDGE_PAD), maxX), Math.min(Math.max(y, minY), maxY)];
+}
+
 export const DrawingCanvas = memo(function DrawingCanvas({
   view,
   mode,
@@ -124,7 +173,7 @@ export const DrawingCanvas = memo(function DrawingCanvas({
   // Live drag of a committed text label: which label, the grab offset from its
   // anchor, and its current (live) anchor. `null` = not dragging.
   const [dragText, setDragText] = useState<
-    { id: string; dx: number; dy: number; x: number; y: number } | null
+    { id: string; dx: number; dy: number; x: number; y: number; width: number } | null
   >(null);
 
   const isDrawing = mode === 'draw' && tool === 'pen';
@@ -224,6 +273,15 @@ export const DrawingCanvas = memo(function DrawingCanvas({
   const commitAndCloseText = useCallback((): void => {
     const value = textValue.trim();
     if (textAnchor && value) {
+      const fontSize = fontForSize(size);
+      const [ax, ay] = clampTextAnchor(
+        textAnchor.x,
+        textAnchor.y,
+        measureTextWidth(svgRef.current, value, fontSize),
+        fontSize,
+        VIEWBOX_W,
+        VIEWBOX_H,
+      );
       onCommitStroke({
         id:
           typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -232,14 +290,14 @@ export const DrawingCanvas = memo(function DrawingCanvas({
         view,
         color,
         size,
-        points: [[textAnchor.x, textAnchor.y]],
+        points: [[ax, ay]],
         text: value,
         createdAt: new Date().toISOString(),
       });
     }
     setTextAnchor(null);
     setTextValue('');
-  }, [textAnchor, textValue, view, color, size, onCommitStroke]);
+  }, [textAnchor, textValue, view, color, size, onCommitStroke, VIEWBOX_W, VIEWBOX_H]);
 
   const handleTextKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLInputElement>): void => {
@@ -293,20 +351,29 @@ export const DrawingCanvas = memo(function DrawingCanvas({
       } catch {
         // capture can race on rapid taps — safe to ignore.
       }
-      setDragText({ id: stroke.id, dx: px - anchor[0], dy: py - anchor[1], x: anchor[0], y: anchor[1] });
+      const width = measureTextWidth(svgRef.current, stroke.text ?? '', fontForSize(stroke.size));
+      setDragText({ id: stroke.id, dx: px - anchor[0], dy: py - anchor[1], x: anchor[0], y: anchor[1], width });
     },
     [isTexting],
   );
 
   const moveTextDrag = useCallback(
-    (event: ReactPointerEvent<SVGTextElement>): void => {
+    (stroke: DrawingStroke) => (event: ReactPointerEvent<SVGTextElement>): void => {
       setDragText((d) => {
         if (!d) return d;
         const [px, py] = clientToViewBox(svgRef.current, event.clientX, event.clientY);
-        return { ...d, x: px - d.dx, y: py - d.dy };
+        const [x, y] = clampTextAnchor(
+          px - d.dx,
+          py - d.dy,
+          d.width,
+          fontForSize(stroke.size),
+          VIEWBOX_W,
+          VIEWBOX_H,
+        );
+        return { ...d, x, y };
       });
     },
-    [],
+    [VIEWBOX_W, VIEWBOX_H],
   );
 
   // Drop: persist the new position. Implemented as erase + re-commit (same id,
@@ -367,6 +434,9 @@ export const DrawingCanvas = memo(function DrawingCanvas({
     return strokeToSvgPath(activePoints, size);
   }, [activePoints, size, isEditingSegment]);
 
+  // Inline input width: as much room as the click leaves, 120–280 units.
+  const textInputW = textAnchor ? Math.max(120, Math.min(280, VIEWBOX_W - textAnchor.x)) : 0;
+
   return (
     <svg
       ref={svgRef}
@@ -414,13 +484,13 @@ export const DrawingCanvas = memo(function DrawingCanvas({
               y={ty}
               fill={DRAWING_COLOR_HEX[stroke.color]}
               fontSize={fontForSize(stroke.size)}
-              fontFamily="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+              fontFamily={TEXT_FONT_FAMILY}
               fontWeight={600}
               data-stroke-id={stroke.id}
               data-testid={`drawing-text-${stroke.id}`}
               onClick={handleStrokeClick(stroke.id)}
               onPointerDown={startTextDrag(stroke)}
-              onPointerMove={moveTextDrag}
+              onPointerMove={moveTextDrag(stroke)}
               onPointerUp={endTextDrag(stroke)}
               style={textStyle}
             >
@@ -474,9 +544,11 @@ export const DrawingCanvas = memo(function DrawingCanvas({
           screen↔userspace math needed to place it at the click point. */}
       {textAnchor && (
         <foreignObject
-          x={textAnchor.x}
-          y={textAnchor.y - fontForSize(size)}
-          width={Math.max(120, Math.min(280, VIEWBOX_W - textAnchor.x))}
+          // Keep the input box inside the viewBox too, so it isn't half-hidden
+          // when the clinician clicks near the right or bottom edge.
+          x={Math.max(0, Math.min(textAnchor.x, VIEWBOX_W - textInputW))}
+          y={Math.max(0, Math.min(textAnchor.y - fontForSize(size), VIEWBOX_H - fontForSize(size) * 2))}
+          width={textInputW}
           height={fontForSize(size) * 2}
           style={{ overflow: 'visible' }}
         >
@@ -494,12 +566,12 @@ export const DrawingCanvas = memo(function DrawingCanvas({
               width: '100%',
               boxSizing: 'border-box',
               fontSize: `${fontForSize(size)}px`,
-              fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+              fontFamily: TEXT_FONT_FAMILY,
               fontWeight: 600,
               color: DRAWING_COLOR_HEX[color],
-              background: 'rgba(255, 255, 255, 0.96)',
+              background: 'var(--emr-bg-input)',
               border: `1.5px solid ${DRAWING_COLOR_HEX[color]}`,
-              borderRadius: 4,
+              borderRadius: 'var(--emr-border-radius-sm)',
               padding: '1px 6px',
               outline: 'none',
             }}

@@ -12,6 +12,7 @@ import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
 import { PDF_THEME, PDF_FONT_SIZES, PDF_FONT_FAMILY } from '../pdfTheme';
 import type { StudyHeader } from '../../../types/form';
+import { formatDottedDate } from '../../../services/dateHelpers';
 
 export interface PatientBlockLabels {
   readonly patientName: string;
@@ -155,12 +156,12 @@ export function PatientBlock({ header, labels }: PatientBlockProps): ReactElemen
       <View style={styles.row}>
         <Cell label={labels.patientName} value={fieldValue(header.patientName)} />
         <Cell label={labels.mrn} value={fieldValue(header.patientId)} />
-        <Cell label={labels.dob} value={fieldValue(header.patientBirthDate)} />
+        <Cell label={labels.dob} value={formatDottedDate(header.patientBirthDate?.trim() || undefined)} />
         <Cell label={labels.age} value={age} />
         <Cell label={labels.gender} value={fieldValue(genderDisplay)} />
       </View>
       <View style={styles.row}>
-        <Cell label={labels.studyDate} value={fieldValue(header.studyDate)} />
+        <Cell label={labels.studyDate} value={formatDottedDate(header.studyDate?.trim() || undefined)} />
         <Cell label={labels.operator} value={fieldValue(header.operatorName)} />
         <Cell label={labels.referring} value={fieldValue(header.referringPhysician)} />
         <Cell label={labels.institution} value={fieldValue(header.institution)} />

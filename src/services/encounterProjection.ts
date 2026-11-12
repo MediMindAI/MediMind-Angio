@@ -36,6 +36,10 @@ import type { EncounterDraft } from '../types/encounter';
 import type { CptCode, FormState, StudyHeader } from '../types/form';
 import type { StudyType } from '../types/study';
 import { localDateToIso } from './dateHelpers';
+import {
+  joinIliacComments,
+  pickCurrentIliacFindings,
+} from '../components/studies/iliac-pelvic-venous/config';
 
 /**
  * Minimal shape every Phase-3b per-study reducer state shares.
@@ -57,6 +61,8 @@ interface PerStudySlotCommon {
   readonly quality?: unknown;
   readonly protocol?: unknown;
   readonly impression?: string;
+  /** Freehand strokes + text labels on the anatomy diagram (every study). */
+  readonly drawings?: unknown;
   readonly sonographerComments?: string;
   readonly clinicianComments?: string;
   readonly recommendations?: FormState['recommendations'];
@@ -66,11 +72,14 @@ interface PerStudySlotCommon {
 interface VenousSlot extends PerStudySlotCommon {
   readonly studyType: 'venousLEBilateral' | 'venousLERight' | 'venousLELeft';
   readonly ceap?: FormState['ceap'];
+  readonly rightFindingsText?: string;
+  readonly leftFindingsText?: string;
 }
 
 interface ArterialSlot extends PerStudySlotCommon {
   readonly studyType: 'arterialLE';
   readonly pressures?: unknown;
+  readonly runoff?: unknown;
 }
 
 interface CarotidSlot extends PerStudySlotCommon {
@@ -88,6 +97,16 @@ interface IliacSlot extends PerStudySlotCommon {
   readonly svp?: FormState['svp'];
   readonly drawings?: unknown;
   readonly context?: unknown;
+}
+
+/**
+ * Drawings ride on every study's `parameters` (the single-study forms put
+ * them there too), so the combined PDF renders the same marks as the
+ * single-study PDF (level-up: combined report dropped venous/arterial/
+ * carotid drawings).
+ */
+function drawingsOf(slot: PerStudySlotCommon): unknown[] {
+  return Array.isArray(slot.drawings) ? slot.drawings : [];
 }
 
 function hasStudyType(slot: unknown, type: StudyType): slot is PerStudySlotCommon {
@@ -186,6 +205,8 @@ export function projectStudyToFormState(
         // `narrative.indication` slot the PDF + FHIR builders read.
         indication: encounter.header.indicationNotes,
         impression: v.impression ?? '',
+        rightFindings: v.rightFindingsText || undefined,
+        leftFindings: v.leftFindingsText || undefined,
         sonographerComments: v.sonographerComments || undefined,
         clinicianComments: v.clinicianComments || undefined,
       },
@@ -193,6 +214,7 @@ export function projectStudyToFormState(
       ceap: v.ceap,
       parameters: {
         segmentFindings: v.findings ?? {},
+        drawings: drawingsOf(v),
       },
     };
   }
@@ -213,6 +235,8 @@ export function projectStudyToFormState(
       parameters: {
         segmentFindings: a.findings ?? {},
         pressures: a.pressures ?? {},
+        drawings: drawingsOf(a),
+        runoff: a.runoff,
       },
     };
   }
@@ -233,6 +257,7 @@ export function projectStudyToFormState(
       parameters: {
         segmentFindings: c.findings ?? {},
         nascet: c.nascet ?? {},
+        drawings: drawingsOf(c),
       },
     };
   }
@@ -265,17 +290,25 @@ export function projectStudyToFormState(
       narrative: {
         indication: encounter.header.indicationNotes,
         impression: ip.impression ?? '',
-        sonographerComments: ip.sonographerComments || undefined,
-        clinicianComments: ip.clinicianComments || undefined,
+        // The pelvic form has ONE comments box. An old draft's sonographer
+        // comments / recommendations are folded into it (same as the form's
+        // normalizeHydratedState), never exported as separate sections.
+        clinicianComments:
+          joinIliacComments([
+            ip.clinicianComments,
+            ip.sonographerComments,
+            ...(ip.recommendations ?? []).map((r) => r.text),
+          ]) || undefined,
       },
-      recommendations: ip.recommendations ?? [],
+      recommendations: [],
       ceap: ip.ceap,
       svp: ip.svp,
       parameters: {
-        // Zone findings ride under `segmentFindings`; the diagram-centric
-        // study also carries `drawings` so the unified PDF renders them.
-        segmentFindings: ip.findings ?? {},
-        drawings: Array.isArray(ip.drawings) ? ip.drawings : [],
+        // Zone findings ride under `segmentFindings` (removed zones / rows
+        // stripped); the diagram-centric study also carries `drawings` so the
+        // unified PDF renders them.
+        segmentFindings: pickCurrentIliacFindings(ip.findings),
+        drawings: drawingsOf(ip),
         context: ip.context ?? {},
       },
     };

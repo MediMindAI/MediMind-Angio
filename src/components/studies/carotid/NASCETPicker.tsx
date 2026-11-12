@@ -3,8 +3,10 @@
  * NASCETPicker — bilateral carotid stenosis-category picker.
  *
  * Two axis cards (Right ICA, Left ICA) each with 5 severity categories
- * (< 50 %, 50–69 %, ≥ 70 %, near-occlusion, occluded). Auto-suggest chip
- * appears per side based on live SRU velocity criteria; user can override.
+ * (< 50 %, 50–69 %, ≥ 70 %, near-occlusion, occluded). The category is
+ * auto-filled per side from the live SRU velocity calculator (PSV / EDV /
+ * ICA-CCA ratio); clicking another category overrides it, clicking the manual
+ * pick again returns to the auto value.
  */
 
 import { memo, useCallback } from 'react';
@@ -48,10 +50,18 @@ export const NASCETPicker = memo(function NASCETPicker({
   const rightSuggestion = suggestNascetCategory(findings, 'right');
   const leftSuggestion = suggestNascetCategory(findings, 'left');
 
-  const summary = formatSummary(value);
+  // What the report actually uses: the manual pick, else the SRU calculation
+  // (same fallback as the diagram, narrative, PDF and FHIR).
+  const summary = formatSummary(
+    {
+      right: value.right ?? rightSuggestion,
+      left: value.left ?? leftSuggestion,
+    },
+    (cat) => t(`carotid.nascet.${cat}`, nascetCategoryFallback(cat)),
+  );
 
   const preview = (
-    <Group gap="xs" align="center" wrap="nowrap" style={{ flexShrink: 0 }}>
+    <Group gap="xs" align="center" wrap="nowrap" style={{ minWidth: 0 }}>
       <Text className={classes.previewLabel}>{t('carotid.nascet.preview', 'NASCET')}</Text>
       <span className={classes.previewChip}>{summary}</span>
     </Group>
@@ -59,6 +69,7 @@ export const NASCETPicker = memo(function NASCETPicker({
 
   return (
     <EMRCollapsibleSection
+      variant="soft"
       title={t('carotid.nascet.title', 'NASCET stenosis classification')}
       subtitle={t('carotid.nascet.subtitle', 'Bilateral ICA severity per SRU 2003 velocity criteria')}
       icon={IconStethoscope}
@@ -67,7 +78,7 @@ export const NASCETPicker = memo(function NASCETPicker({
       rightSection={preview}
     >
       <div className={classes.body}>
-        <Group align="stretch" grow wrap="wrap">
+        <Group align="stretch" grow preventGrowOverflow={false} wrap="wrap">
           <AxisCard
             side="right"
             value={value.right}
@@ -104,7 +115,7 @@ function AxisCard({
         <Text className={classes.axisTitle}>
           {side === 'right' ? t('carotid.side.right', 'Right ICA') : t('carotid.side.left', 'Left ICA')}
         </Text>
-        {suggestion && suggestion !== value ? (
+        {suggestion && value !== undefined && suggestion !== value ? (
           <button
             type="button"
             className={classes.suggestChip}
@@ -114,6 +125,10 @@ function AxisCard({
           >
             {t('carotid.nascet.suggest', 'Suggest')}: {t(`carotid.nascet.${suggestion}`, nascetCategoryFallback(suggestion))}
           </button>
+        ) : suggestion && value === undefined ? (
+          <span className={classes.suggestApplied} data-testid={`nascet-${side}-auto`}>
+            {t('carotid.nascet.auto', 'Auto (SRU)')}
+          </span>
         ) : suggestion && suggestion === value ? (
           // Applied-state confirmation so the chip doesn't silently vanish —
           // the clinician sees the pick matches the SRU velocity suggestion.
@@ -124,19 +139,21 @@ function AxisCard({
       </Group>
       <Stack gap={4}>
         {NASCET_CATEGORY_VALUES.map((cat) => {
-          const selected = value === cat;
+          // Manual pick wins; otherwise the auto-calculated category shows selected.
+          const selected = (value ?? suggestion) === cat;
           const role = nascetCategoryColorRole(cat);
           return (
             <button
               key={cat}
               type="button"
-              onClick={() => onSelect(selected ? undefined : cat)}
+              onClick={() => onSelect(value === cat ? undefined : cat)}
               className={`${classes.option} ${selected ? classes.optionSelected : ''}`}
               data-role={role}
               aria-pressed={selected}
               data-testid={`nascet-${side}-${cat}`}
             >
-              <span className={classes.code}>{nascetCategoryFallback(cat)}</span>
+              {/* U-1006: no separate English code chip — the translated label
+                  already carries the category (percent ranges read the same). */}
               <span className={classes.desc}>
                 {t(`carotid.nascet.${cat}`, nascetCategoryFallback(cat))}
               </span>
@@ -148,9 +165,12 @@ function AxisCard({
   );
 }
 
-function formatSummary(value: CarotidNascetClassification): string {
-  const r = value.right ? nascetCategoryFallback(value.right) : '—';
-  const l = value.left ? nascetCategoryFallback(value.left) : '—';
+function formatSummary(
+  value: CarotidNascetClassification,
+  label: (cat: NascetCategory) => string,
+): string {
+  const r = value.right ? label(value.right) : '—';
+  const l = value.left ? label(value.left) : '—';
   return `R: ${r} · L: ${l}`;
 }
 

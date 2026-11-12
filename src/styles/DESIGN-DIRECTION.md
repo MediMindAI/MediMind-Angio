@@ -83,3 +83,46 @@ decisive solid-navy interaction states, generous-but-dense data surfaces.
 - `node scripts/audit/ui-library-sweep.mjs` — orphan report
   (raw Mantine visual imports + hardcoded hex) → `audit-findings/ui-orphans-<date>.md`
 - ESLint `no-raw-mantine-visual` (see `eslint-rules/`) keeps new code clean.
+
+### Composition, hierarchy & severity
+
+(Ported from MediMind's `DESIGN-DIRECTION.md`, 2026-11-12.) The rules above govern how a
+*component* looks. These govern how a *screen* reads — a page can satisfy every token rule
+above and still be unusable. All five are enforceable: `scripts/ui/composition-metrics.mjs`
+measures them mechanically, the `design-critic` agent judges what a measurement can't.
+Gold-standard mockups live in `src/styles/reference-screenshots/`.
+
+- **Elevation contrast.** A deck must be visually separable from the surface
+  behind it — `--emr-bg-card` differing from `--emr-bg-page` *and* carrying
+  `--emr-shadow-card`. Card-background === page-background with no shadow is a
+  violation, not a flat-design choice. Applies in dark mode too, where the two
+  tokens sit closest together.
+- **Status-color reservation (the collision rule).** Severity colors
+  (`--emr-success` / `--emr-error` and the info blue) signal *clinical severity
+  and nothing else* — in angio: reflux / incompetence, stenosis grade, occlusion.
+  A severity color may not also mark a primary action, a list bullet, a count chip,
+  or decoration. One color = one meaning per screen. When a screen needs both "this
+  is abnormal" and "this is the main action", the action keeps `--emr-gradient-primary`
+  and the severity keeps the semantic color — never the reverse. **Red carrying four
+  meanings on one screen (an incompetent segment, a validation error, a delete button,
+  a "required" badge) is the canonical failure of this rule: when everything is red,
+  nothing is.** The anatomy competency palette counts as severity.
+- **No duplicate primary data.** A given data element (a NASCET %, a CEAP class,
+  an ABI value, a segment's reflux time) may render as a full-weight primary display
+  in exactly ONE place per screen. A second reference elsewhere must be visibly
+  subordinate — a condensed chip, an inline value, a link — never a verbatim second
+  card of equal size and weight. Duplication is not redundancy-for-safety; it costs
+  the screen its hierarchy and teaches clinicians to skip regions.
+- **Empty states collapse.** An empty-state deck renders at reduced footprint
+  (compact padding, no forced min-height matching a populated sibling). A study with
+  nothing recorded yet must *look* quieter than one full of findings — equal-size
+  empty cards make a normal study look identical to a heavily abnormal one.
+- **Density tiers.** Every screen declares which it is:
+  - *Triage / scan* (encounter intake, study picker, encounter list) — bounded
+    primary data points above the fold, one scannable ordering, severity legible
+    at arm's length. Optimize for "what do I do next", not completeness.
+  - *Deep dive* (per-study forms: venous LE, arterial LE, carotid, iliac-pelvic
+    venous; the report preview) — may go dense, but still needs ONE focal element
+    that wins on weight (usually the anatomy diagram or the segment table), with
+    everything else deliberately receding. Boldness is spent once per screen,
+    never distributed evenly across every card.

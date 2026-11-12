@@ -204,6 +204,10 @@ export const EMRContentSection = memo(function EMRContentSection({
       p={0}
       data-testid={dataTestId}
       className={containerClass}
+      // Command decks have no outer border. In dark mode theme.css's global
+      // `.mantine-Paper-root { border-color: … !important }` repaints the
+      // transparent hairline, so drop the border style itself (light unchanged).
+      style={isDark && variant !== 'outlined' ? { borderStyle: 'none' } : undefined}
     >
       {/* Command identity: slim gradient top ribbon (replaces old left rail).
           Inset 12px on each side + matching top radius so it sits cleanly
@@ -233,7 +237,7 @@ export const EMRContentSection = memo(function EMRContentSection({
         >
           <Group justify="space-between" wrap="nowrap" align="flex-start">
             {/* Title area */}
-            <Group gap="sm" align="flex-start">
+            <Group gap="sm" align="flex-start" wrap="nowrap" style={{ minWidth: 0 }}>
               {/* Gradient tick bar before the title */}
               {title && <Box style={tickBarStyle} />}
               {collapsible && (
@@ -283,6 +287,7 @@ export const EMRContentSection = memo(function EMRContentSection({
                 <Stack gap={2}>
                   {title && (
                     <Text
+                      component="h2"
                       fw={600}
                       size="md"
                       data-testid="emr-content-section-title"

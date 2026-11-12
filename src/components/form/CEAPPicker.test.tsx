@@ -27,7 +27,9 @@ function openSection(): void {
   // outer paper that carries `data-testid="ceap-section"`.
   const section = screen.getByTestId('ceap-section');
   const toggle = section.querySelector('[role="button"]') as HTMLElement;
-  fireEvent.click(toggle);
+  // A saved classification now opens expanded (UX-ANGIO-016) — only click
+  // when it is still folded, so this helper always leaves it open.
+  if (toggle.getAttribute('aria-expanded') !== 'true') fireEvent.click(toggle);
 }
 
 describe('CEAPPicker — modifier mutual exclusion (Wave 4.5)', () => {
@@ -108,5 +110,51 @@ describe('CEAPPicker — `n` modifier gating (Wave 4.5)', () => {
 
     const nInput = screen.getByTestId('ceap-modifier-n') as HTMLInputElement;
     expect(nInput.disabled).toBe(false);
+  });
+});
+
+describe('CEAPPicker — default open state (UX-ANGIO-016)', () => {
+  function headerOf(): HTMLElement {
+    return screen.getByTestId('ceap-section').querySelector('[role="button"]') as HTMLElement;
+  }
+
+  it('stays folded when no classification has been recorded', () => {
+    render(
+      <Wrap>
+        <CEAPPicker value={undefined} onChange={vi.fn()} />
+      </Wrap>,
+    );
+    expect(headerOf()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('opens expanded when a classification is already saved', () => {
+    const value: CeapClassification = { c: 'C2', e: 'En', a: 'An', p: 'Pn', modifiers: [] };
+    render(
+      <Wrap>
+        <CEAPPicker value={value} onChange={vi.fn()} />
+      </Wrap>,
+    );
+    expect(headerOf()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('toggles when the passive summary chip in the header is clicked', () => {
+    const value: CeapClassification = { c: 'C2', e: 'En', a: 'An', p: 'Pn', modifiers: [] };
+    render(
+      <Wrap>
+        <CEAPPicker value={value} onChange={vi.fn()} />
+      </Wrap>,
+    );
+    // A recorded classification opens expanded; the chip click folds it.
+    fireEvent.click(screen.getByText('C2,En,An,Pn'));
+    expect(headerOf()).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('shows no placeholder chip when nothing is classified (CEAP is optional)', () => {
+    render(
+      <Wrap>
+        <CEAPPicker value={undefined} onChange={vi.fn()} />
+      </Wrap>,
+    );
+    expect(screen.queryByText('C0,En,An,Pn')).toBeNull();
   });
 });

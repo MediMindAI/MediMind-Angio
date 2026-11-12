@@ -1,108 +1,87 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * IliacCavalTable — zone-2 (iliac & caval) findings editor. The only zone that
- * warrants a tabular layout: IVC (midline) + common/external/internal iliac +
- * common femoral veins, per side. A view toggle (right/bilateral/left) keeps the
- * grid narrow. Phasicity + Valsalva response only render on the CFV rows.
+ * IliacCavalTable — iliac & caval findings editor, shaped like a standard
+ * pelvic venous duplex report (clinician feedback 2026-11): three sections
+ * (IVC + LRV · RIGHT · LEFT), one row per vein level, the SAME columns on every
+ * row: patency/thrombosis · filling · phasicity · competency · AP diameter ·
+ * peak velocity (all optional).
  *
- * Layout mirrors CarotidSegmentTable: a fixed-column CSS grid (see the .module.css)
- * with a single header row + horizontal scroll on desktop, collapsing to stacked
- * cards under 992px. Inputs are the shared EMR* wrappers for styling/a11y parity.
+ * Layout: a fixed-column CSS grid (see the .module.css) with one header row per
+ * section + horizontal scroll on desktop, collapsing to stacked cards under 992px.
+ * Below 992px an empty row is ONE line (label + side + neutral status chip) that
+ * opens on tap; a populated or opened row shows every field (UX-ANGIO-026 L4).
  *
- * Contradiction locks (audit M3): an `occluded` segment carries no measurable
- * flow, so velocity/stenosis/phasicity/Valsalva are disabled + cleared; a `full`-
- * compressibility vein has no thrombus, so thrombus chronicity is disabled + cleared.
+ * "All normal" (UX-ANGIO-011) is a prop callback — the form owns the reducer and
+ * the overwrite confirm.
+ *
+ * Contradiction lock (audit M3): an `occluded` row carries no measurable flow,
+ * so filling/phasicity/competency/velocity are disabled + cleared.
  */
 
-import { memo, useCallback } from 'react';
-import { EMRSelect, EMRNumberInput, EMRCheckbox } from '../../shared/EMRFormFields';
-import { EMRViewToggle } from '../../common';
+import { memo, useCallback, useState } from 'react';
+import { Box, Group, Text, UnstyledButton } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { IconCheck, IconChevronDown } from '@tabler/icons-react';
+import { EMRSelect, EMRNumberInput } from '../../shared/EMRFormFields';
+import { EMRBadge, EMRButton } from '../../common';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import {
   type IliacCavalFindings,
   type IliacCavalFinding,
   type IliacCavalFullId,
-  type IliacCavalBase,
-  type CavalLevel,
-  type VesselLevelMeasurement,
-  type Side,
   type Patency,
-  type CavalCompressibility,
-  type ThrombusChronicity,
-  type CfvPhasicity,
-  type ValsalvaResponse,
+  type Filling,
+  type Phasicity,
+  type CavalCompetency,
+  MIDLINE_ROWS,
+  SIDE_ROW_BASES,
   PATENCY_VALUES,
-  CAVAL_COMPRESSIBILITY_VALUES,
-  THROMBUS_CHRONICITY_VALUES,
-  CFV_PHASICITY_VALUES,
-  VALSALVA_RESPONSE_VALUES,
-  CAVAL_LEVELS_FOR_BASE,
-  ILIAC_THRESHOLDS,
-  effectiveCavalVelocityRatio,
-  cavalStenosisSeverity,
+  FILLING_VALUES,
+  PHASICITY_VALUES,
+  COMPETENCY_VALUES,
+  rowBaseOf,
 } from './config';
 import { numInputToNumber as toNum } from '../../../utils/numberInput';
 import classes from './IliacCavalTable.module.css';
 
-export type CavalView = 'right' | 'bilateral' | 'left';
-
 export interface IliacCavalTableProps {
   readonly findings: IliacCavalFindings;
-  readonly view: CavalView;
-  readonly onViewChange: (view: CavalView) => void;
   readonly onChange: (id: IliacCavalFullId, patch: Partial<IliacCavalFinding>) => void;
-  readonly onLevelChange: (
-    id: IliacCavalFullId,
-    level: CavalLevel,
-    patch: Partial<VesselLevelMeasurement>,
-  ) => void;
+  /** One-click normal fill for all 20 rows (UX-ANGIO-011). Button hidden when absent. */
+  readonly onSetAllNormal?: () => void;
 }
 
-const PER_SIDE_BASES = ['civ', 'eiv', 'iiv', 'cfv'] as const;
-
-/** The vein base for a full id (`cfv-left` → `cfv`, `ivc` → `ivc`). */
-function baseOf(id: IliacCavalFullId): IliacCavalBase {
-  return (id === 'ivc' ? 'ivc' : id.slice(0, id.lastIndexOf('-'))) as IliacCavalBase;
-}
-
-/** Levels that capture a B-mode diameter per protocol: CFV SFJ-level + IVC. */
-function levelCapturesDiameter(base: IliacCavalBase, level: CavalLevel): boolean {
-  if (base === 'cfv') return level === 'sfj';
-  return base === 'ivc';
-}
+/** Same breakpoint as the card layout in IliacCavalTable.module.css. */
+const COMPACT_QUERY = '(max-width: 992px)';
 
 /** Header columns, in grid order. Each maps to an `iliacPelvicVenous.field.*` key. */
 const COLUMNS = [
   'segment',
   'patency',
-  'compressibility',
-  'thrombus',
-  'velocityRatio',
-  'stenosisPct',
+  'filling',
   'phasicity',
-  'valsalvaResponse',
-  'collaterals',
-  'reflux',
-  'confirmImaging',
+  'competency',
+  'apDiameterMm',
+  'peakVelocityCmS',
 ] as const;
 
-function segmentsForView(view: CavalView): IliacCavalFullId[] {
-  const sides: Side[] = view === 'bilateral' ? ['left', 'right'] : [view];
-  const out: IliacCavalFullId[] = ['ivc'];
-  for (const base of PER_SIDE_BASES) {
-    for (const side of sides) out.push(`${base}-${side}` as IliacCavalFullId);
-  }
-  return out;
-}
+const SECTIONS: ReadonlyArray<{ key: 'ivc' | 'right' | 'left'; rows: ReadonlyArray<IliacCavalFullId> }> = [
+  { key: 'ivc', rows: MIDLINE_ROWS },
+  { key: 'right', rows: SIDE_ROW_BASES.map((b) => `${b}-right` as const) },
+  { key: 'left', rows: SIDE_ROW_BASES.map((b) => `${b}-left` as const) },
+];
 
 export const IliacCavalTable = memo(function IliacCavalTable({
   findings,
-  view,
-  onViewChange,
   onChange,
-  onLevelChange,
+  onSetAllNormal,
 }: IliacCavalTableProps): React.ReactElement {
   const { t } = useTranslation();
+  const compact = useMediaQuery(COMPACT_QUERY, false, { getInitialValueInEffect: false });
+  // Per-row open/closed choice made by a tap. Unset → open only if populated.
+  const [openOverride, setOpenOverride] = useState<
+    Partial<Record<IliacCavalFullId, boolean>>
+  >({});
 
   const opts = useCallback(
     (values: ReadonlyArray<string>, ns: string) =>
@@ -115,282 +94,199 @@ export const IliacCavalTable = memo(function IliacCavalTable({
     [t],
   );
 
-  const segments = segmentsForView(view);
-
   return (
     <div data-testid="iliac-caval-table">
-      <div className={classes.toolbar}>
-        <EMRViewToggle
-          value={view}
-          onChange={(v) => onViewChange(v as CavalView)}
-          alwaysShowLabels
-          options={[
-            { value: 'right', label: t('iliacPelvicVenous.tabs.right', 'Right') },
-            { value: 'bilateral', label: t('iliacPelvicVenous.tabs.bilateral', 'Bilateral') },
-            { value: 'left', label: t('iliacPelvicVenous.tabs.left', 'Left') },
-          ]}
-        />
-      </div>
-
-      <div className={classes.tableWrap} role="table">
-        <div className={classes.headRow} role="row">
-          {COLUMNS.map((col) => (
-            <div key={col} className={`${classes.cell} ${classes.headCell}`} role="columnheader">
-              {fieldLabel(col)}
-            </div>
-          ))}
-        </div>
-
-        {segments.map((id) => {
-          const f: IliacCavalFinding = findings[id] ?? {};
-          const base = baseOf(id);
-          const isCfv = base === 'cfv';
-          const isEiv = base === 'eiv';
-          const segLabel = t(`iliacPelvicVenous.segment.${id}`, id);
-          const stenosisHigh = (f.stenosisPct ?? 0) >= ILIAC_THRESHOLDS.cavalStenosisPct;
-          // Ratio is derived from the per-level velocities (falls back to any
-          // stored/legacy value); graded by cavalStenosisSeverity for the chip.
-          const effRatio = effectiveCavalVelocityRatio(f);
-          const ratioHigh = (effRatio ?? 0) >= ILIAC_THRESHOLDS.cavalVelocityRatio;
-          const severity = cavalStenosisSeverity(effRatio);
-          // Contradiction locks (audit M3).
-          const occluded = f.patency === 'occluded';
-          const fullyCompressible = f.compressibility === 'full';
-
-          return (
-            <div key={id} className={classes.row} role="row" data-testid={`iliac-caval-row-${id}`}>
-              <div className={`${classes.cell} ${classes.segmentCell}`}>{segLabel}</div>
-
-              <div className={classes.cell} data-label={fieldLabel('patency')}>
-                <EMRSelect
-                  aria-label={`${segLabel} ${fieldLabel('patency')}`}
-                  data={opts(PATENCY_VALUES, 'patency')}
-                  value={f.patency ?? null}
-                  onChange={(v) => {
-                    const patency = (v as Patency | null) ?? undefined;
-                    // No measurable flow through an occluded segment — clear the
-                    // velocity/stenosis/phasicity/Valsalva so they can't contradict it.
-                    onChange(
-                      id,
-                      patency === 'occluded'
-                        ? {
-                            patency,
-                            velocityRatio: undefined,
-                            stenosisPct: undefined,
-                            phasicity: undefined,
-                            valsalvaResponse: undefined,
-                            levels: {},
-                          }
-                        : { patency },
-                    );
-                  }}
-                  size="sm"
-                  clearable={false}
-                  data-testid={`iliac-${id}-patency`}
-                />
-              </div>
-
-              <div className={classes.cell} data-label={fieldLabel('compressibility')}>
-                <EMRSelect
-                  aria-label={`${segLabel} ${fieldLabel('compressibility')}`}
-                  data={opts(CAVAL_COMPRESSIBILITY_VALUES, 'cavalCompressibility')}
-                  value={f.compressibility ?? null}
-                  onChange={(v) => {
-                    const compressibility = (v as CavalCompressibility | null) ?? undefined;
-                    // A fully compressible vein has no thrombus — clear it.
-                    onChange(
-                      id,
-                      compressibility === 'full'
-                        ? { compressibility, thrombusChronicity: undefined }
-                        : { compressibility },
-                    );
-                  }}
-                  size="sm"
-                  clearable={false}
-                  data-testid={`iliac-${id}-compressibility`}
-                />
-              </div>
-
-              <div className={classes.cell} data-label={fieldLabel('thrombus')}>
-                <EMRSelect
-                  aria-label={`${segLabel} ${fieldLabel('thrombus')}`}
-                  data={opts(THROMBUS_CHRONICITY_VALUES, 'thrombusChronicity')}
-                  value={f.thrombusChronicity ?? null}
-                  onChange={(v) =>
-                    onChange(id, { thrombusChronicity: (v as ThrombusChronicity | null) ?? undefined })
-                  }
-                  disabled={fullyCompressible}
-                  size="sm"
-                  clearable={false}
-                  data-testid={`iliac-${id}-thrombus`}
-                />
-              </div>
-
-              <div className={classes.cell} data-label={fieldLabel('velocityRatio')}>
-                <div className={classes.levelCluster}>
-                  {CAVAL_LEVELS_FOR_BASE[base].map((lvl) => {
-                    const lvlLabel = t(`iliacPelvicVenous.level.${lvl}`, lvl);
-                    const hasDiameter = levelCapturesDiameter(base, lvl);
-                    return (
-                      <div key={lvl} className={classes.levelRow}>
-                        <span className={classes.levelTag} title={lvlLabel}>
-                          {lvlLabel}
-                        </span>
-                        <div className={classes.levelInputs}>
-                          <EMRNumberInput
-                            aria-label={`${segLabel} ${lvlLabel} ${fieldLabel('velocityCmS')}`}
-                            label={fieldLabel('velocityCmS')}
-                            value={f.levels?.[lvl]?.velocityCmS ?? ''}
-                            onChange={(v) => onLevelChange(id, lvl, { velocityCmS: toNum(v) })}
-                            min={0}
-                            max={400}
-                            step={1}
-                            size="sm"
-                            disabled={occluded}
-                            data-testid={`iliac-${id}-vel-${lvl}`}
-                          />
-                          {hasDiameter ? (
-                            <EMRNumberInput
-                              aria-label={`${segLabel} ${lvlLabel} ${fieldLabel('diameterMm')}`}
-                              label={fieldLabel('diameterMm')}
-                              value={f.levels?.[lvl]?.diameterMm ?? ''}
-                              onChange={(v) => onLevelChange(id, lvl, { diameterMm: toNum(v) })}
-                              min={0}
-                              max={40}
-                              step={0.1}
-                              decimalScale={1}
-                              size="sm"
-                              disabled={occluded}
-                              data-testid={`iliac-${id}-dia-${lvl}`}
-                            />
-                          ) : (
-                            <span className={classes.diameterSpacer} aria-hidden />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div
-                    className={`${classes.derivedRatio} ${ratioHigh ? classes.derivedRatioHigh : ''}`}
-                    data-testid={`iliac-${id}-velocity-ratio`}
-                  >
-                    <span className={classes.derivedRatioLabel}>{fieldLabel('velocityRatio')}</span>
-                    <span className={classes.derivedRatioValue}>
-                      {effRatio !== undefined ? effRatio.toFixed(1) : '—'}
-                      {severity !== 'none'
-                        ? ` · ${t(`iliacPelvicVenous.severity.${severity}`, severity)}`
-                        : ''}
-                    </span>
-                  </div>
-                  {isEiv ? (
-                    <div className={classes.bladderFlags}>
-                      <EMRCheckbox
-                        label={fieldLabel('bladderArtifact')}
-                        checked={f.bladderArtifactSuspected ?? false}
-                        onChange={(c) => onChange(id, { bladderArtifactSuspected: c })}
-                        size="sm"
-                        data-testid={`iliac-${id}-bladder-artifact`}
-                      />
-                      {f.bladderArtifactSuspected ? (
-                        <EMRCheckbox
-                          label={fieldLabel('remeasuredAfterVoiding')}
-                          checked={f.remeasuredAfterVoiding ?? false}
-                          onChange={(c) => onChange(id, { remeasuredAfterVoiding: c })}
-                          size="sm"
-                          data-testid={`iliac-${id}-remeasured`}
-                        />
-                      ) : null}
-                    </div>
-                  ) : null}
+      {onSetAllNormal && (
+        <Group justify="flex-end" className={classes.toolbar}>
+          <EMRButton
+            variant="secondary"
+            size="sm"
+            leftSection={<IconCheck size={14} />}
+            onClick={onSetAllNormal}
+            data-testid="iliac-bulk-set-all-normal"
+          >
+            {t('iliacPelvicVenous.actions.allNormal', t('venousLE.bulk.allNormal', 'All normal'))}
+          </EMRButton>
+        </Group>
+      )}
+      {SECTIONS.map((section) => (
+        <div key={section.key} className={classes.section}>
+          {/* h3 under the deck's h2. Mantine Text keeps its own size — the global
+              heading font-size rule skips .mantine-Text-root (W1-G). Sticky below
+              992px so the side never scrolls out of view (UX-ANGIO-026 L4). */}
+          <Text component="h3" className={classes.sectionTitle}>
+            {t(`iliacPelvicVenous.section.${section.key}`, section.key.toUpperCase())}
+          </Text>
+          <div className={classes.tableWrap} role="table">
+            <div className={classes.headRow} role="row">
+              {COLUMNS.map((col) => (
+                <div key={col} className={`${classes.cell} ${classes.headCell}`} role="columnheader">
+                  {fieldLabel(col)}
                 </div>
-              </div>
-
-              <div className={classes.cell} data-label={fieldLabel('stenosisPct')}>
-                <EMRNumberInput
-                  aria-label={`${segLabel} ${fieldLabel('stenosisPct')}`}
-                  value={f.stenosisPct ?? ''}
-                  onChange={(v) => onChange(id, { stenosisPct: toNum(v) })}
-                  min={0}
-                  max={100}
-                  step={1}
-                  size="sm"
-                  disabled={occluded}
-                  error={stenosisHigh ? t('iliacPelvicVenous.warn.stenosisPct', '≥ 50%') : undefined}
-                  data-testid={`iliac-${id}-stenosis`}
-                />
-              </div>
-
-              {/* Phasicity + Valsalva are graded on the CFV rows only; other rows
-                  render an aligned placeholder so the grid columns stay in register. */}
-              <div className={classes.cell} data-label={fieldLabel('phasicity')}>
-                {isCfv ? (
-                  <EMRSelect
-                    aria-label={`${segLabel} ${fieldLabel('phasicity')}`}
-                    data={opts(CFV_PHASICITY_VALUES, 'cfvPhasicity')}
-                    value={f.phasicity ?? null}
-                    onChange={(v) => onChange(id, { phasicity: (v as CfvPhasicity | null) ?? undefined })}
-                    disabled={occluded}
-                    size="sm"
-                    clearable={false}
-                    data-testid={`iliac-${id}-phasicity`}
-                  />
-                ) : (
-                  <span className={classes.muted}>—</span>
-                )}
-              </div>
-
-              <div className={classes.cell} data-label={fieldLabel('valsalvaResponse')}>
-                {isCfv ? (
-                  <EMRSelect
-                    aria-label={`${segLabel} ${fieldLabel('valsalvaResponse')}`}
-                    data={opts(VALSALVA_RESPONSE_VALUES, 'valsalvaResponse')}
-                    value={f.valsalvaResponse ?? null}
-                    onChange={(v) =>
-                      onChange(id, { valsalvaResponse: (v as ValsalvaResponse | null) ?? undefined })
-                    }
-                    disabled={occluded}
-                    size="sm"
-                    clearable={false}
-                    data-testid={`iliac-${id}-valsalva`}
-                  />
-                ) : (
-                  <span className={classes.muted}>—</span>
-                )}
-              </div>
-
-              <div className={`${classes.cell} ${classes.checkCell}`} data-label={fieldLabel('collaterals')}>
-                <EMRCheckbox
-                  aria-label={`${segLabel} ${fieldLabel('collaterals')}`}
-                  checked={f.collateralsPresent ?? false}
-                  onChange={(c) => onChange(id, { collateralsPresent: c })}
-                  size="sm"
-                  data-testid={`iliac-${id}-collaterals`}
-                />
-              </div>
-
-              <div className={`${classes.cell} ${classes.checkCell}`} data-label={fieldLabel('reflux')}>
-                <EMRCheckbox
-                  aria-label={`${segLabel} ${fieldLabel('reflux')}`}
-                  checked={f.reflux ?? false}
-                  onChange={(c) => onChange(id, { reflux: c })}
-                  size="sm"
-                  data-testid={`iliac-${id}-reflux`}
-                />
-              </div>
-
-              <div className={`${classes.cell} ${classes.checkCell}`} data-label={fieldLabel('confirmImaging')}>
-                <EMRCheckbox
-                  aria-label={`${segLabel} ${fieldLabel('confirmImaging')}`}
-                  checked={f.confirmatoryImagingRecommended ?? false}
-                  onChange={(c) => onChange(id, { confirmatoryImagingRecommended: c })}
-                  size="sm"
-                  data-testid={`iliac-${id}-confirm-imaging`}
-                />
-              </div>
+              ))}
             </div>
-          );
-        })}
-      </div>
+
+            {section.rows.map((id) => {
+              const f: IliacCavalFinding = findings[id] ?? {};
+              const rowBase = rowBaseOf(id);
+              const segLabel = t(`iliacPelvicVenous.row.${rowBase}`, rowBase);
+              const sideLabel =
+                section.key === 'ivc' ? null : t(`iliacPelvicVenous.side.${section.key}`, section.key);
+              const fullLabel = sideLabel === null ? segLabel : `${segLabel} (${sideLabel})`;
+              const occluded = f.patency === 'occluded';
+              const populated = Object.values(f).some((v) => v !== undefined);
+              const open = openOverride[id] ?? populated;
+              const showFields = !compact || open;
+              const labelContent = (
+                <>
+                  {segLabel}
+                  {/* Below desktop each row is its own card, far from the RIGHT/LEFT
+                      section chip — so the card title carries the side too
+                      (UX-ANGIO-004 L3). Desktop keeps the narrow label column. */}
+                  {sideLabel !== null && (
+                    <Box component="span" hiddenFrom="md" data-side={section.key}>
+                      {`\u00A0·\u00A0${sideLabel}`}
+                    </Box>
+                  )}
+                </>
+              );
+
+              return (
+                <div
+                  key={id}
+                  className={`${classes.row} ${showFields ? '' : classes.rowCollapsed}`}
+                  role="row"
+                  data-testid={`iliac-caval-row-${id}`}
+                >
+                  {compact ? (
+                    <UnstyledButton
+                      className={`${classes.cell} ${classes.segmentCell} ${classes.rowToggle}`}
+                      aria-expanded={open}
+                      onClick={() => setOpenOverride((prev) => ({ ...prev, [id]: !open }))}
+                      data-testid={`iliac-caval-toggle-${id}`}
+                    >
+                      <span className={classes.rowTitle}>{labelContent}</span>
+                      {/* Only recorded rows carry a chip, so they stand out and the
+                          side suffix never gets squeezed on a phone (critic, 375). */}
+                      {populated && (
+                        <EMRBadge variant="neutral" size="sm" className={classes.rowStatus}>
+                          {t('iliacPelvicVenous.rowStatus.recorded', 'Recorded')}
+                        </EMRBadge>
+                      )}
+                      <IconChevronDown
+                        size={18}
+                        aria-hidden
+                        className={classes.chevron}
+                        data-open={open || undefined}
+                      />
+                    </UnstyledButton>
+                  ) : (
+                    <div className={`${classes.cell} ${classes.segmentCell}`}>{labelContent}</div>
+                  )}
+
+                  {showFields && (
+                    <>
+                      <div className={classes.cell} data-label={fieldLabel('patency')}>
+                        <EMRSelect
+                          aria-label={`${fullLabel} ${fieldLabel('patency')}`}
+                          data={opts(PATENCY_VALUES, 'patency')}
+                          value={f.patency ?? null}
+                          onChange={(v) => {
+                            const patency = (v as Patency | null) ?? undefined;
+                            // No measurable flow through an occluded segment — clear the
+                            // flow columns so they can't contradict it.
+                            onChange(
+                              id,
+                              patency === 'occluded'
+                                ? {
+                                    patency,
+                                    filling: undefined,
+                                    phasicity: undefined,
+                                    competency: undefined,
+                                    peakVelocityCmS: undefined,
+                                  }
+                                : { patency },
+                            );
+                          }}
+                          size="sm"
+                          data-testid={`iliac-${id}-patency`}
+                        />
+                      </div>
+
+                      <div className={classes.cell} data-label={fieldLabel('filling')}>
+                        <EMRSelect
+                          aria-label={`${fullLabel} ${fieldLabel('filling')}`}
+                          data={opts(FILLING_VALUES, 'filling')}
+                          value={f.filling ?? null}
+                          onChange={(v) => onChange(id, { filling: (v as Filling | null) ?? undefined })}
+                          disabled={occluded}
+                          size="sm"
+                          data-testid={`iliac-${id}-filling`}
+                        />
+                      </div>
+
+                      <div className={classes.cell} data-label={fieldLabel('phasicity')}>
+                        <EMRSelect
+                          aria-label={`${fullLabel} ${fieldLabel('phasicity')}`}
+                          data={opts(PHASICITY_VALUES, 'phasicity')}
+                          value={f.phasicity ?? null}
+                          onChange={(v) => onChange(id, { phasicity: (v as Phasicity | null) ?? undefined })}
+                          disabled={occluded}
+                          size="sm"
+                          data-testid={`iliac-${id}-phasicity`}
+                        />
+                      </div>
+
+                      <div className={classes.cell} data-label={fieldLabel('competency')}>
+                        <EMRSelect
+                          aria-label={`${fullLabel} ${fieldLabel('competency')}`}
+                          data={opts(COMPETENCY_VALUES, 'competency')}
+                          value={f.competency ?? null}
+                          onChange={(v) =>
+                            onChange(id, { competency: (v as CavalCompetency | null) ?? undefined })
+                          }
+                          disabled={occluded}
+                          size="sm"
+                          data-testid={`iliac-${id}-competency`}
+                        />
+                      </div>
+
+                      {/* AP diameter — optional on every row (Studycast layout). */}
+                      <div className={classes.cell} data-label={fieldLabel('apDiameterMm')}>
+                        <EMRNumberInput
+                          aria-label={`${fullLabel} ${fieldLabel('apDiameterMm')}`}
+                          value={f.apDiameterMm ?? ''}
+                          onChange={(v) => onChange(id, { apDiameterMm: toNum(v) })}
+                          min={0}
+                          max={40}
+                          step={0.1}
+                          decimalScale={1}
+                          size="sm"
+                          data-testid={`iliac-${id}-ap-diameter`}
+                        />
+                      </div>
+
+                      <div className={classes.cell} data-label={fieldLabel('peakVelocityCmS')}>
+                        <EMRNumberInput
+                          aria-label={`${fullLabel} ${fieldLabel('peakVelocityCmS')}`}
+                          value={f.peakVelocityCmS ?? ''}
+                          onChange={(v) => onChange(id, { peakVelocityCmS: toNum(v) })}
+                          min={0}
+                          max={400}
+                          step={1}
+                          size="sm"
+                          disabled={occluded}
+                          data-testid={`iliac-${id}-pv`}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 });

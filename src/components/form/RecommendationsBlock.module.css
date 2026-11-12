@@ -1,61 +1,49 @@
 /* RecommendationsBlock — editable clinician recommendations.
  *
- * Visual upgrade (2026-04-27): lighter header (matches new ImpressionBlock
- * style) + color-coded priority bar on the left edge of each item card.
- * routine = secondary blue, urgent = warning amber, stat = error red.
+ * Command deck (UX-ANGIO-023/027): borderless card on --emr-shadow-card, a
+ * slim header row led by the 4x15 gradient tick bar, and a theme-blue
+ * priority strip on the left edge of each item card. When the list is empty
+ * the block is the header row alone (no ribbon, no dashed placeholder).
  */
 
 .card {
   background: var(--emr-bg-card);
-  border: 1px solid var(--emr-border-color);
+  border: 1px solid transparent;
   border-radius: var(--emr-border-radius-xl);
-  box-shadow: var(--emr-shadow-sm);
+  box-shadow: var(--emr-shadow-card);
   overflow: hidden;
   position: relative;
   transition: box-shadow 160ms ease;
 }
 
 .card:hover {
-  box-shadow: var(--emr-shadow-md, 0 4px 12px rgba(15, 23, 42, 0.06));
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--emr-secondary) 0%,
-    var(--emr-accent) 100%
-  );
-  z-index: 1;
+  box-shadow: var(--emr-shadow-card-hover);
 }
 
 .head {
-  padding: 16px 22px;
+  padding: 14px 20px;
   background: var(--emr-bg-card);
   color: var(--emr-text-primary);
   border-bottom: 1px solid var(--emr-border-color);
   position: relative;
 }
 
-.iconWrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--emr-border-radius-md);
-  background: var(--emr-secondary-alpha-08, rgba(43, 108, 176, 0.08));
-  color: var(--emr-secondary);
+/* Empty: header is the whole deck, so no divider under it. */
+.card[data-empty] .head {
+  border-bottom: 0;
+}
+
+.tick {
+  display: block;
+  width: 4px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--emr-gradient-primary);
   flex-shrink: 0;
 }
 
 .title {
-  font-size: var(--emr-font-lg);
+  font-size: var(--emr-font-md);
   font-weight: var(--emr-font-semibold);
   color: var(--emr-text-primary);
   letter-spacing: -0.01em;
@@ -82,27 +70,11 @@
 
 @media (max-width: 768px) {
   .head {
-    padding: 14px 16px;
+    padding: 12px 16px;
   }
   .body {
     padding: 14px 16px 16px;
   }
-}
-
-/* ---- Empty state --------------------------------------------------- */
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-  padding: 28px 24px;
-  color: var(--emr-text-secondary);
-  font-size: var(--emr-font-sm);
-  background: var(--emr-bg-page);
-  border: 1px dashed var(--emr-border-color);
-  border-radius: var(--emr-border-radius-lg);
 }
 
 /* ---- Item row ------------------------------------------------------ */

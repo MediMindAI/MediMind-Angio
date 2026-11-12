@@ -1,10 +1,13 @@
-/* SegmentAssessmentCard — unified categorical + numeric shell */
+/* SegmentAssessmentCard — venous segment-entry deck */
 
 .card {
   background: var(--emr-bg-card);
   border-radius: var(--emr-border-radius-xl);
   box-shadow: var(--emr-shadow-card);
-  overflow: hidden;
+  /* `clip` (not `hidden`) keeps the rounded corners without creating a
+     scroll container, so the sticky column header row can stick to the
+     viewport while the long segment list scrolls. */
+  overflow: clip;
 }
 
 .head {
@@ -25,6 +28,17 @@
   flex-shrink: 0;
 }
 
+/* The header text may wrap (Georgian titles are long) — it never pushes the
+   page wider than the viewport (UX-ANGIO-024 L3). */
+.headGroup {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.headText {
+  min-width: 0;
+}
+
 .iconWrap {
   display: inline-flex;
   align-items: center;
@@ -37,20 +51,16 @@
   font-size: var(--emr-font-md);
   font-weight: 600;
   color: var(--emr-text-primary);
-  line-height: 1.2;
+  line-height: 1.25;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .subtitle {
   font-size: var(--emr-font-xs);
   color: var(--emr-text-secondary);
   margin: 2px 0 0 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .tabsWrap {
@@ -74,6 +84,7 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  min-width: 0;
 }
 
 .toolbarDivider {
@@ -91,9 +102,249 @@
 .tableCol {
   min-width: 0;
   /* Row heights inside each child are set to min-height: 48px so rows
-     align when placed side-by-side. */
+     align when placed side-by-side (legacy `layout="split"`). */
   display: flex;
   flex-direction: column;
+}
+
+/* ==================== MERGED RECORDS — mobile-first cards ==================== */
+
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Column header row only exists in the desktop table layout. */
+.recordsHead {
+  display: none;
+}
+
+.record {
+  border-radius: var(--emr-border-radius-lg);
+  background: var(--emr-bg-card);
+  box-shadow: inset 0 0 0 1px var(--emr-border-color);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.recordHeadCell {
+  min-width: 0;
+}
+
+/* Card header: one tappable line — short code, full name, side, summary. */
+.recordHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--emr-border-radius-lg);
+  color: var(--emr-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.recordHead:focus-visible {
+  outline: none;
+  box-shadow: var(--emr-focus-ring);
+}
+
+.recordShort {
+  font-family: var(--emr-font-mono);
+  font-size: var(--emr-font-xs);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-secondary);
+  flex-shrink: 0;
+}
+
+.recordFull {
+  font-size: var(--emr-font-sm);
+  font-weight: var(--emr-font-semibold);
+  color: var(--emr-text-primary);
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow-wrap: anywhere;
+}
+
+.recordSide {
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  padding: 2px 5px;
+  border-radius: var(--emr-border-radius-sm);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.recordSide[data-side='left'] {
+  background: var(--emr-secondary-alpha-10);
+  color: var(--emr-secondary);
+}
+
+.recordSide[data-side='right'] {
+  background: var(--emr-accent-alpha-15);
+  color: var(--emr-accent);
+}
+
+.recordChevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--emr-text-secondary);
+  transition: transform 0.15s ease;
+}
+
+.record[data-open='true'] .recordChevron {
+  transform: rotate(180deg);
+}
+
+/* Summary of entered values: its own line under the name on a closed card. */
+.recordSummary {
+  order: 10;
+  flex-basis: 100%;
+  font-size: var(--emr-font-xs);
+  color: var(--emr-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.record[data-open='true'] .recordSummary {
+  display: none;
+}
+
+/* A closed card shows only its header line; fields stay one tap away. */
+.recordFields {
+  display: none;
+}
+
+.record[data-open='true'] .recordFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+  gap: 8px 10px;
+  padding: 4px 12px 12px 12px;
+}
+
+.recordField {
+  min-width: 0;
+}
+
+.recordField::before {
+  content: attr(data-label);
+  display: block;
+  margin-bottom: 4px;
+  font-size: var(--emr-font-2xs);
+  font-weight: var(--emr-font-bold);
+  color: var(--emr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--emr-letter-spacing-wide);
+  overflow-wrap: anywhere;
+}
+
+.recordHighlighted {
+  background: var(--emr-secondary-alpha-06);
+  box-shadow: inset 3px 0 0 var(--emr-primary), inset 0 0 0 1px var(--emr-border-color);
+}
+
+.recordCritical {
+  background: var(--emr-error-alpha-05);
+  box-shadow: inset 3px 0 0 var(--emr-error), inset 0 0 0 1px var(--emr-error-alpha-25);
+}
+
+/* ==================== MERGED RECORDS — desktop table rows (≥1200px) ==================== */
+
+@media (min-width: 1200px) {
+  .records {
+    gap: 0;
+  }
+
+  .recordsHead,
+  .record {
+    display: grid;
+    grid-template-columns:
+      144px
+      repeat(4, minmax(0, 1.45fr))
+      repeat(3, minmax(0, 0.8fr));
+    column-gap: 8px;
+    align-items: center;
+  }
+
+  .recordsHead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 9px 8px;
+    background: var(--emr-bg-card);
+    background-image: linear-gradient(var(--emr-primary-alpha-04), var(--emr-primary-alpha-04));
+    border-bottom: 1px solid var(--emr-border-color);
+    border-radius: var(--emr-border-radius-lg) var(--emr-border-radius-lg) 0 0;
+  }
+
+  .recordsHeadCell {
+    min-width: 0;
+    font-size: var(--emr-font-2xs);
+    font-weight: var(--emr-font-bold);
+    color: var(--emr-primary);
+    text-transform: uppercase;
+    letter-spacing: var(--emr-letter-spacing-wide);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .record {
+    padding: 5px 8px;
+    min-height: 48px;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid var(--emr-border-color);
+  }
+
+  .record:hover {
+    background: var(--emr-bg-hover);
+  }
+
+  .recordHighlighted,
+  .recordHighlighted:hover {
+    background: var(--emr-secondary-alpha-06);
+    box-shadow: inset 3px 0 0 var(--emr-primary);
+  }
+
+  .recordCritical,
+  .recordCritical:hover {
+    background: var(--emr-error-alpha-05);
+    box-shadow: inset 3px 0 0 var(--emr-error);
+  }
+
+  /* Row label: short code + side badge; full name lives in the tooltip. */
+  .recordHead {
+    flex-wrap: nowrap;
+    min-height: 0;
+    padding: 6px 8px;
+  }
+
+  .recordFull,
+  .recordSummary,
+  .recordChevron {
+    display: none;
+  }
+
+  .recordShort {
+    color: var(--emr-text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Fields are always open and become the row's grid cells. */
+  .recordFields,
+  .record[data-open='true'] .recordFields {
+    display: contents;
+  }
+
+  .recordField::before {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {

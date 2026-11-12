@@ -24,7 +24,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MantineProvider } from '@mantine/core';
 
@@ -35,6 +35,7 @@ import { ThemeProvider } from '../../contexts/ThemeContext';
 import {
   _resetStoreForTests,
   clearAllEncounters,
+  loadEncounterSync,
   saveEncounter,
 } from '../../services/encounterStore';
 import type { EncounterDraft } from '../../types/encounter';
@@ -146,7 +147,7 @@ describe('EncounterContextBanner — render contract', () => {
 
     expect(screen.getByTestId('encounter-context-banner')).toBeInTheDocument();
     expect(screen.getByTestId('banner-patient-name')).toHaveTextContent('Jane Doe');
-    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('2026-04-25');
+    expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('25.04.2026');
     // Age (computed from birthDate 1985-03-21 → 41) now renders within the
     // combined meta line (date · age · ID), not a separate element.
     expect(screen.getByTestId('banner-encounter-date')).toHaveTextContent('41');
@@ -285,13 +286,16 @@ describe('EncounterContextBanner — add-study menu', () => {
     const user = userEvent.setup();
     await user.click(screen.getByTestId('banner-add-study'));
 
-    // Studies NOT in selection should appear as menu items
-    expect(screen.getByTestId('banner-add-option-carotid')).toBeInTheDocument();
-    expect(screen.getByTestId('banner-add-option-ivcDuplex')).toBeInTheDocument();
+    // Studies NOT in selection should appear as menu items. The Mantine
+    // Menu mounts its (portalled) dropdown after the open transition.
+    expect(await screen.findByTestId('banner-add-option-carotid')).toBeInTheDocument();
     expect(screen.getByTestId('banner-add-option-venousLERight')).toBeInTheDocument();
 
     // Studies already selected should NOT
     expect(screen.queryByTestId('banner-add-option-venousLEBilateral')).toBeNull();
+    // ivcDuplex has no study form yet (the route would bounce to `/` and
+    // strand an unopenable study in the visit), so it is never offered.
+    expect(screen.queryByTestId('banner-add-option-ivcDuplex')).toBeNull();
     expect(screen.queryByTestId('banner-add-option-arterialLE')).toBeNull();
   });
 
@@ -310,16 +314,63 @@ describe('EncounterContextBanner — add-study menu', () => {
 
     const user = userEvent.setup();
     await user.click(screen.getByTestId('banner-add-study'));
-    await user.click(screen.getByTestId('banner-add-option-carotid'));
+    await user.click(await screen.findByTestId('banner-add-option-carotid'));
 
-    expect(navigateMock).toHaveBeenCalledWith(
-      `/encounter/${draft.encounterId}/carotid`,
+    // Navigation waits until the sync cache the route guard reads holds the
+    // new study (otherwise EncounterStudyWrapper bounces to `/`).
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(`/encounter/${draft.encounterId}/carotid`),
     );
+    expect(loadEncounterSync(draft.encounterId)?.selectedStudyTypes).toContain('carotid');
 
     // Confirm the encounter store was actually mutated. saveEncounter
     // funnels through the EncounterContext.persist() path; the chip row
     // must now contain the new study.
     expect(await screen.findByTestId('banner-chip-carotid')).toBeInTheDocument();
+  });
+
+  it('renders the menu outside the banner so its overflow cannot clip it (UX-ANGIO-012 L1)', async () => {
+    const draft = buildDraft({ selectedStudyTypes: ['arterialLE'] });
+    await act(async () => {
+      await saveEncounter(draft);
+    });
+
+    render(
+      <Harness
+        encounterId={draft.encounterId}
+        route={`/encounter/${draft.encounterId}/arterialLE`}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('banner-add-study'));
+
+    const menu = await screen.findByTestId('banner-add-study-menu');
+    expect(screen.getByTestId('encounter-context-banner').contains(menu)).toBe(false);
+  });
+
+  it('gives right / left / both-legs venous options distinct labels (UX-ANGIO-012 L2)', async () => {
+    const draft = buildDraft({ selectedStudyTypes: ['arterialLE'] });
+    await act(async () => {
+      await saveEncounter(draft);
+    });
+
+    render(
+      <Harness
+        encounterId={draft.encounterId}
+        route={`/encounter/${draft.encounterId}/arterialLE`}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('banner-add-study'));
+    await screen.findByTestId('banner-add-study-menu');
+
+    const labels = (['venousLEBilateral', 'venousLERight', 'venousLELeft'] as const).map(
+      (s) => screen.getByTestId(`banner-add-option-${s}`).textContent?.trim() ?? '',
+    );
+    expect(labels.every((l) => l.length > 0)).toBe(true);
+    expect(new Set(labels).size).toBe(3);
   });
 
   it('hides the "+ Add study" trigger when every supported study is already selected', async () => {

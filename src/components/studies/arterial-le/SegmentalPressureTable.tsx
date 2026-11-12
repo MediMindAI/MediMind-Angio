@@ -5,8 +5,9 @@
  * side with severity-tinted badges next to the ankle and toe rows.
  *
  * Rows: Brachial · High thigh · Low thigh · Calf · Ankle DP · Ankle PT · Toe
- * Each row: left input · right input.
- * Plus a footer row: ABI L / ABI R badges + TBI L / TBI R badges.
+ * Each row: right input · left input — Right first, like every other side
+ * control and the PDF table (UX-ANGIO-004 L4 / U-1023).
+ * Plus a footer row: ABI R / ABI L badges + TBI R / TBI L badges.
  */
 
 import { memo, useCallback, useMemo } from 'react';
@@ -105,11 +106,11 @@ export const SegmentalPressureTable = memo(function SegmentalPressureTable({
           <div className={classes.labelCell} role="columnheader">
             {t('arterialLE.pressures.level', 'Level')}
           </div>
-          <div className={classes.sideHead} role="columnheader" data-side="left">
-            L
-          </div>
           <div className={classes.sideHead} role="columnheader" data-side="right">
             R
+          </div>
+          <div className={classes.sideHead} role="columnheader" data-side="left">
+            L
           </div>
         </div>
 
@@ -117,18 +118,6 @@ export const SegmentalPressureTable = memo(function SegmentalPressureTable({
           <div key={row.key} className={classes.row} role="row">
             <div className={classes.labelCell}>
               {t(row.labelKey, row.labelFallback)}
-            </div>
-            <div className={classes.inputCell}>
-              <EMRNumberInput
-                aria-label={`${t(row.labelKey, row.labelFallback)} L`}
-                value={(pressures[row.leftProp] as number | undefined) ?? ''}
-                onChange={(v) => setField(row.leftProp, v)}
-                min={0}
-                max={300}
-                step={5}
-                size="sm"
-                data-testid={`pressure-${row.key}-L`}
-              />
             </div>
             <div className={classes.inputCell}>
               <EMRNumberInput
@@ -142,17 +131,29 @@ export const SegmentalPressureTable = memo(function SegmentalPressureTable({
                 data-testid={`pressure-${row.key}-R`}
               />
             </div>
+            <div className={classes.inputCell}>
+              <EMRNumberInput
+                aria-label={`${t(row.labelKey, row.labelFallback)} L`}
+                value={(pressures[row.leftProp] as number | undefined) ?? ''}
+                onChange={(v) => setField(row.leftProp, v)}
+                min={0}
+                max={300}
+                step={5}
+                size="sm"
+                data-testid={`pressure-${row.key}-L`}
+              />
+            </div>
           </div>
         ))}
 
         <Stack gap="xs" className={classes.abiFooter}>
           <Group justify="space-between" wrap="wrap" gap="sm">
-            <AbiBadge label={t('arterialLE.abi.label', 'ABI')} side="L" result={abiL} />
             <AbiBadge label={t('arterialLE.abi.label', 'ABI')} side="R" result={abiR} />
+            <AbiBadge label={t('arterialLE.abi.label', 'ABI')} side="L" result={abiL} />
           </Group>
           <Group justify="space-between" wrap="wrap" gap="sm">
-            <TbiBadge label={t('arterialLE.tbi.label', 'TBI')} side="L" result={tbiL} />
             <TbiBadge label={t('arterialLE.tbi.label', 'TBI')} side="R" result={tbiR} />
+            <TbiBadge label={t('arterialLE.tbi.label', 'TBI')} side="L" result={tbiL} />
           </Group>
         </Stack>
       </div>

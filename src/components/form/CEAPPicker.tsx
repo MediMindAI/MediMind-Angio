@@ -167,12 +167,17 @@ export const CEAPPicker = memo(function CEAPPicker({
 
   return (
     <EMRCollapsibleSection
+      variant="soft"
       title={t('venousLE.ceap.title')}
       subtitle={t('venousLE.ceap.subtitle')}
       icon={IconCategory2}
-      defaultOpen={false}
+      // UX-ANGIO-016: a study that already holds a classification opens
+      // expanded; an untouched one stays folded out of the way.
+      defaultOpen={value != null}
       testId="ceap-section"
-      rightSection={preview}
+      // Nothing classified → no "C0,En,An,Pn" placeholder chip (same as SVP):
+      // an untouched optional classification must not look recorded.
+      rightSection={value != null ? preview : undefined}
     >
       <div className={classes.body}>
         <Grid gutter={{ base: 'sm', sm: 'md' }}>

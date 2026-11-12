@@ -2,8 +2,8 @@
 /**
  * Boundary + classification tests for the carotid SRU-2003 NASCET auto-suggest.
  *
- * Pins the SRU velocity thresholds (PSV ≥230 / EDV ≥100 / ratio ≥4.0 for ≥70%,
- * PSV ≥125 for 50–69%), the occlusion-first rule, and the lt50-vs-normal
+ * Pins the SRU 2003 consensus table (PSV + plaque estimate primary; ICA/CCA
+ * ratio + EDV as tie-breakers), the occlusion-first rule, and the lt50-vs-normal
  * disease gate so a threshold typo can't silently re-grade a stenosis. Mirrors
  * the gold-standard coverage of `arterial-le/abiCalculator.test.ts`.
  */
@@ -41,43 +41,66 @@ describe('suggestNascetCategory', () => {
     ).toBe('occluded');
   });
 
-  describe('≥70% — any of three SRU criteria', () => {
-    it('PSV ≥230 (inclusive boundary)', () => {
-      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 230 } }), 'right')).toBe('ge70');
-      // 229 falls to 50–69 (still ≥125).
-      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 229 } }), 'right')).toBe('50to69');
+  describe('SRU 2003 consensus table — one case per row', () => {
+    it('Normal: PSV <125, no plaque, ratio <2.0, EDV <40', () => {
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 90, edvCmS: 25, plaqueStenosisPct: 0 }, 'cca-dist': { psvCmS: 80 },
+      }), 'right')).toBe('normal');
     });
-
-    it('EDV ≥100 (inclusive boundary) with sub-230 PSV', () => {
-      expect(
-        suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 150, edvCmS: 100 } }), 'right'),
-      ).toBe('ge70');
-      expect(
-        suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 150, edvCmS: 99 } }), 'right'),
-      ).toBe('50to69');
+    it('<50%: PSV <125, plaque <50, ratio <2.0, EDV <40', () => {
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 110, edvCmS: 30, plaqueStenosisPct: 30 }, 'cca-dist': { psvCmS: 80 },
+      }), 'right')).toBe('lt50');
     });
-
-    it('ICA/CCA ratio ≥4.0 (inclusive boundary) with sub-230 PSV', () => {
-      // ICA 200 / CCA-dist 50 = 4.0 exactly.
-      expect(
-        suggestNascetCategory(
-          rightFindings({ 'ica-prox': { psvCmS: 200 }, 'cca-dist': { psvCmS: 50 } }),
-          'right',
-        ),
-      ).toBe('ge70');
-      // 196 / 50 = 3.92 → just under, stays 50–69.
-      expect(
-        suggestNascetCategory(
-          rightFindings({ 'ica-prox': { psvCmS: 196 }, 'cca-dist': { psvCmS: 50 } }),
-          'right',
-        ),
-      ).toBe('50to69');
+    it('50–69%: PSV 125–230, plaque ≥50, ratio 2.0–4.0, EDV 40–100', () => {
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 180, edvCmS: 60, plaqueStenosisPct: 60 }, 'cca-dist': { psvCmS: 60 },
+      }), 'right')).toBe('50to69');
+    });
+    it('≥70%: PSV >230, plaque ≥50, ratio >4.0, EDV >100', () => {
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 300, edvCmS: 130, plaqueStenosisPct: 80 }, 'cca-dist': { psvCmS: 60 },
+      }), 'right')).toBe('ge70');
+    });
+    it('Near occlusion: velocities variable — never auto-filled (manual pick)', () => {
+      // A very tight lesion with a collapsed (low) PSV must not read as
+      // near-occlusion on its own; the clinician selects it.
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 40, plaqueStenosisPct: 95 },
+      }), 'right')).not.toBe('near-occlusion');
+    });
+    it('Total occlusion: undetectable ICA flow', () => {
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { flowDirection: 'absent', plaqueStenosisPct: 100 },
+      }), 'right')).toBe('occluded');
     });
   });
 
-  describe('50–69% — PSV ≥125', () => {
-    it('125 is the inclusive lower bound', () => {
+  describe('range boundaries (50–69% band is inclusive at both ends)', () => {
+    it('PSV 125 → 50–69, 230 → 50–69, 231 → ≥70', () => {
       expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 125 } }), 'right')).toBe('50to69');
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 230 } }), 'right')).toBe('50to69');
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 231 } }), 'right')).toBe('ge70');
+    });
+    it('EDV / ratio alone never upgrade when the primaries agree', () => {
+      // PSV 150 + plaque 60 % agree on 50–69; EDV 120 + ratio 5 are only additional.
+      expect(suggestNascetCategory(rightFindings({
+        'ica-prox': { psvCmS: 150, edvCmS: 120, plaqueStenosisPct: 60 }, 'cca-dist': { psvCmS: 30 },
+      }), 'right')).toBe('50to69');
+    });
+  });
+
+  describe('primaries disagree → ratio + EDV break the tie', () => {
+    it('PSV <125 but plaque ≥50: EDV ≥40 → 50–69, EDV <40 → <50', () => {
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 110, plaqueStenosisPct: 60, edvCmS: 45 } }), 'right')).toBe('50to69');
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 110, plaqueStenosisPct: 60, edvCmS: 30 } }), 'right')).toBe('lt50');
+    });
+    it('PSV >230 but plaque <50: ratio >4.0 → ≥70, ratio 2.0–4.0 → 50–69', () => {
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 260, plaqueStenosisPct: 40 }, 'cca-dist': { psvCmS: 60 } }), 'right')).toBe('ge70');
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 260, plaqueStenosisPct: 40 }, 'cca-dist': { psvCmS: 100 } }), 'right')).toBe('50to69');
+    });
+    it('no additional values entered → keeps the PSV call', () => {
+      expect(suggestNascetCategory(rightFindings({ 'ica-prox': { psvCmS: 180, plaqueStenosisPct: 30 } }), 'right')).toBe('50to69');
     });
   });
 
@@ -146,8 +169,8 @@ describe('icaCcaRatio', () => {
 
 describe('effectiveNascet', () => {
   it('falls back to the SRU velocity suggestion when no explicit pick exists', () => {
-    // ICA PSV 230 → ≥70%; no explicit nascet on the right.
-    const findings = rightFindings({ 'ica-prox': { psvCmS: 230 } });
+    // ICA PSV 240 → ≥70%; no explicit nascet on the right.
+    const findings = rightFindings({ 'ica-prox': { psvCmS: 240 } });
     expect(effectiveNascet(findings, {})).toEqual({ right: 'ge70', left: undefined });
   });
 

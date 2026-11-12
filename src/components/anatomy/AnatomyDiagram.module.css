@@ -12,7 +12,7 @@
 .stage {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 640px;
   aspect-ratio: 600 / 1453;
   margin: 0 auto;
   background: var(--emr-bg-card);
@@ -26,13 +26,13 @@
    doesn't reserve the tall venous footprint (which left a big white gap). */
 .stage[data-view='neck-carotid'] {
   aspect-ratio: 771 / 910;
-  max-width: 540px;
+  max-width: 680px;
 }
 
 /* Iliac/pelvic static illustration backdrop (abdominal-pelvic.png, 345×451). */
 .stage[data-view='abdominal-pelvic'] {
   aspect-ratio: 345 / 451;
-  max-width: 380px;
+  max-width: 560px;
 }
 
 /* AnatomyView lives at z=1, drawing canvas overlays at z=2.

@@ -5,9 +5,14 @@
  *   Segment | Reflux (ms) | AP diameter (mm) | Depth (mm)
  *
  * Rows with reflux duration above the pathological threshold are rendered
- * in the semantic error color so they jump off the page. Rows where every
- * numeric cell is empty are filtered out — tables in final reports only
- * list segments the operator actually measured.
+ * in the semantic error color so they jump off the page.
+ *
+ * Under the numbers, each row prints the categorical values the clinician
+ * entered (competency override, compressibility, thrombosis, phasicity) as
+ * text — UX-ANGIO-003 / U-1033: a reflux or clot finding must never print as
+ * a bare "—". Normal values are not printed (U-1011). A row appears when it
+ * has a number OR a printed categorical value; segments with nothing
+ * abnormal recorded are left out.
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
@@ -16,7 +21,34 @@ import type { VenousSegmentFindings, VenousLESegmentBase } from '../../studies/v
 import {
   VENOUS_LE_SEGMENTS,
   hasPathologicalReflux,
+  deriveCompetency,
 } from '../../studies/venous-le/config';
+
+/**
+ * Categorical fields printed as text under each row, in this order. Which
+ * fields print is clinical sign-off S4 (decisions.md) — edit this list to
+ * change it; labels come from `labels.field` / `labels.value`.
+ */
+export const PRINTED_CATEGORICAL_FIELDS = [
+  'competencyOverride',
+  'compressibility',
+  'thrombosis',
+  'phasicity',
+] as const;
+export type PrintedCategoricalField = (typeof PRINTED_CATEGORICAL_FIELDS)[number];
+
+/**
+ * The NORMAL value of each printed field. Normal values are not printed —
+ * "pertinent findings" reporting (S4 / U-1011, decided under founder
+ * delegation 2026-11-12, pending clinician review): an all-normal bilateral
+ * report stays at 2 pages instead of growing to 4. Abnormal values print.
+ */
+const NORMAL_CATEGORICAL_VALUE: Readonly<Record<PrintedCategoricalField, string>> = {
+  competencyOverride: 'normal',
+  compressibility: 'normal',
+  thrombosis: 'none',
+  phasicity: 'respirophasic',
+};
 
 export interface FindingsTableLabels {
   readonly right: string;
@@ -27,6 +59,14 @@ export interface FindingsTableLabels {
   readonly depthMm: string;
   readonly segmentName: Record<VenousLESegmentBase, string>;
   readonly emptyDash: string;
+  /**
+   * Field names for the categorical line (e.g. "Compressibility").
+   * Optional only so hand-built label fixtures (scripts/test-pdf.ts) keep
+   * compiling; `buildReportLabels` always fills it. Missing → raw key.
+   */
+  readonly field?: Readonly<Record<PrintedCategoricalField, string>>;
+  /** Value labels keyed `${field}.${value}` (e.g. "compressibility.partial"). Missing → raw value. */
+  readonly value?: Readonly<Record<string, string>>;
 }
 
 export interface FindingsTableProps {
@@ -74,7 +114,6 @@ const styles = StyleSheet.create({
     color: PDF_THEME.text,
   },
   row: {
-    flexDirection: 'row',
     paddingVertical: 2,
     paddingHorizontal: 4,
     borderBottomWidth: 0.5,
@@ -109,6 +148,15 @@ const styles = StyleSheet.create({
     color: PDF_THEME.error,
     fontWeight: 'bold',
   },
+  rowLine: {
+    flexDirection: 'row',
+  },
+  categorical: {
+    fontSize: PDF_FONT_SIZES.footnote,
+    lineHeight: 1.25,
+    color: PDF_THEME.text,
+    paddingTop: 1,
+  },
 });
 
 interface RenderRow {
@@ -117,26 +165,49 @@ interface RenderRow {
   readonly apMm: number | undefined;
   readonly depthMm: number | undefined;
   readonly pathological: boolean;
+  /** "Field: value" parts for the categorical line; empty when none. */
+  readonly categorical: ReadonlyArray<string>;
+  /** The entered values colour the diagram reflux/occluded → print red. */
+  readonly categoricalAbnormal: boolean;
 }
 
-function buildRows(findings: VenousSegmentFindings, side: Side): ReadonlyArray<RenderRow> {
+function buildRows(
+  findings: VenousSegmentFindings,
+  side: Side,
+  labels: FindingsTableLabels,
+): ReadonlyArray<RenderRow> {
   const rows: RenderRow[] = [];
   for (const base of VENOUS_LE_SEGMENTS) {
     const key = `${base}-${side}` as keyof typeof findings;
     const f = findings[key];
     if (!f) continue;
     const { refluxDurationMs, apDiameterMm, depthMm } = f;
+    const categorical: string[] = [];
+    for (const field of PRINTED_CATEGORICAL_FIELDS) {
+      const v = f[field];
+      // Normal values ("no thrombosis", full compressibility, …) are skipped.
+      if (v === undefined || v === NORMAL_CATEGORICAL_VALUE[field]) continue;
+      const text = labels.value?.[`${field}.${v}`] ?? v;
+      // Some "nothing found" values are labelled with the dash itself
+      // (thrombosis 'none' → "—"); printing "Thrombosis: —" adds nothing.
+      if (text === labels.emptyDash) continue;
+      categorical.push(`${labels.field?.[field] ?? field}: ${text}`);
+    }
     const anyValue =
       refluxDurationMs !== undefined ||
       apDiameterMm !== undefined ||
-      depthMm !== undefined;
+      depthMm !== undefined ||
+      categorical.length > 0;
     if (!anyValue) continue;
+    const competency = deriveCompetency(base, f);
     rows.push({
       segmentBase: base,
       refluxMs: refluxDurationMs,
       apMm: apDiameterMm,
       depthMm,
       pathological: hasPathologicalReflux(base, f),
+      categorical,
+      categoricalAbnormal: competency === 'incompetent' || competency === 'occluded',
     });
   }
   return rows;
@@ -162,7 +233,7 @@ function SideTable({
   readonly labels: FindingsTableLabels;
   readonly findings: VenousSegmentFindings;
 }): ReactElement {
-  const rows = buildRows(findings, side);
+  const rows = buildRows(findings, side, labels);
   const headerLabel = side === 'right' ? labels.right : labels.left;
 
   return (
@@ -212,33 +283,46 @@ function SideTable({
             ? { ...styles.cell, ...styles.cellRight, ...styles.cellRed }
             : { ...styles.cell, ...styles.cellRight };
           return (
-            <View key={`${side}-${r.segmentBase}`} style={styles.row}>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.cell }}>
-                {segLabel}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.reflux, ...refluxStyle }}>
-                {formatMs(r.refluxMs, labels.emptyDash)}
-              </Text>
-              <Text
-                style={{
-                  flexBasis: 0,
-                  flexGrow: COL_FLEX.ap,
-                  ...styles.cell,
-                  ...styles.cellRight,
-                }}
-              >
-                {formatMm(r.apMm, labels.emptyDash)}
-              </Text>
-              <Text
-                style={{
-                  flexBasis: 0,
-                  flexGrow: COL_FLEX.depth,
-                  ...styles.cell,
-                  ...styles.cellRight,
-                }}
-              >
-                {formatMm(r.depthMm, labels.emptyDash)}
-              </Text>
+            <View key={`${side}-${r.segmentBase}`} style={styles.row} wrap={false}>
+              <View style={styles.rowLine}>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.segment, ...styles.cell }}>
+                  {segLabel}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.reflux, ...refluxStyle }}>
+                  {formatMs(r.refluxMs, labels.emptyDash)}
+                </Text>
+                <Text
+                  style={{
+                    flexBasis: 0,
+                    flexGrow: COL_FLEX.ap,
+                    ...styles.cell,
+                    ...styles.cellRight,
+                  }}
+                >
+                  {formatMm(r.apMm, labels.emptyDash)}
+                </Text>
+                <Text
+                  style={{
+                    flexBasis: 0,
+                    flexGrow: COL_FLEX.depth,
+                    ...styles.cell,
+                    ...styles.cellRight,
+                  }}
+                >
+                  {formatMm(r.depthMm, labels.emptyDash)}
+                </Text>
+              </View>
+              {r.categorical.length > 0 ? (
+                <Text
+                  style={
+                    r.categoricalAbnormal
+                      ? { ...styles.categorical, ...styles.cellRed }
+                      : styles.categorical
+                  }
+                >
+                  {r.categorical.join(' · ')}
+                </Text>
+              ) : null}
             </View>
           );
         })

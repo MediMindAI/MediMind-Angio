@@ -18,9 +18,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
 
-const PORT = 2400;
-const PID_FILE = path.join(os.tmpdir(), 'playwright-server.pid');
+// ESM (package.json "type": "module") has no __dirname.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const PORT = parseInt(process.env.PORT || '2400', 10);
+const PORT_SUFFIX = PORT === 2400 ? '' : `-${PORT}`;
+const PID_FILE = path.join(os.tmpdir(), `playwright-server${PORT_SUFFIX}.pid`);
 const POLL_INTERVAL_MS = 500;
 const MAX_POLLS = 20; // 10 seconds total
 

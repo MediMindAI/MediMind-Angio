@@ -117,6 +117,7 @@ interface ClassifiedSegments {
   readonly inconclusive: VenousLESegmentBase[];
   readonly incompetentValve: VenousLESegmentBase[];
   readonly postAblation: VenousLESegmentBase[];
+  readonly perforator: VenousLESegmentBase[];
 }
 
 function buildSideNarrative(
@@ -135,7 +136,8 @@ function buildSideNarrative(
     classified.chronicThrombosis.length > 0 ||
     classified.inconclusive.length > 0 ||
     classified.incompetentValve.length > 0 ||
-    classified.postAblation.length > 0;
+    classified.postAblation.length > 0 ||
+    classified.perforator.length > 0;
 
   if (!hasAny) {
     return {
@@ -325,7 +327,24 @@ function buildSideNarrative(
     });
   }
 
-  // (e) Inconclusive — flag as a study limitation.
+  // (d.4) Clinician-marked perforator (competencyOverride 'inconclusive').
+  for (const segment of classified.perforator) {
+    const vein = segmentDisplay(segment);
+    sentences.push(`Perforator — ${vein}.`);
+    sentenceKeys.push(`venousLE.narrative.perforator.${segment}.${side}`);
+    sentenceEntries.push({
+      key: 'venousLE.narrative.perforator',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+    conclusions.push(`Perforator — ${sideLabel} ${vein}.`);
+    conclusionsKeys.push(`venousLE.conclusion.perforator.${segment}.${side}`);
+    conclusionsEntries.push({
+      key: 'venousLE.conclusion.perforator',
+      params: { vein: segmentDisplayKey(segment), side },
+    });
+  }
+
+  // (e) Inconclusive compressibility — flag as a study limitation.
   for (const segment of classified.inconclusive) {
     const vein = segmentDisplay(segment);
     sentences.push(`Study limited — inconclusive compressibility of the ${vein}.`);
@@ -366,6 +385,7 @@ function classifySide(findings: VenousSegmentFindings, side: Side): ClassifiedSe
   const inconclusive: VenousLESegmentBase[] = [];
   const incompetentValve: VenousLESegmentBase[] = [];
   const postAblation: VenousLESegmentBase[] = [];
+  const perforator: VenousLESegmentBase[] = [];
 
   for (const segment of VENOUS_LE_SEGMENTS) {
     const fullId = `${segment}-${side}` as VenousLEFullSegmentId;
@@ -397,6 +417,10 @@ function classifySide(findings: VenousSegmentFindings, side: Side): ClassifiedSe
 
     if (finding.competencyOverride === 'incompetent') incompetentValve.push(segment);
     if (finding.competencyOverride === 'ablated') postAblation.push(segment);
+    // Internal key `inconclusive` = perforator since 2026-10-07 (clinician
+    // feedback); key kept for draft compatibility (U-1027). Not to be
+    // confused with compressibility 'inconclusive' (study limitation, above).
+    if (finding.competencyOverride === 'inconclusive') perforator.push(segment);
   }
 
   return {
@@ -411,6 +435,7 @@ function classifySide(findings: VenousSegmentFindings, side: Side): ClassifiedSe
     inconclusive,
     incompetentValve,
     postAblation,
+    perforator,
   };
 }
 

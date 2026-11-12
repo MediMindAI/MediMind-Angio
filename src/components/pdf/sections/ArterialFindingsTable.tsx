@@ -25,7 +25,7 @@ import type {
   VisualizationQuality,
   Waveform,
 } from '../../studies/arterial-le/config';
-import { ARTERIAL_LE_SEGMENTS } from '../../studies/arterial-le/config';
+import { ARTERIAL_LE_SEGMENTS, deriveArterialCompetency } from '../../studies/arterial-le/config';
 
 export interface ArterialFindingsTableLabels {
   readonly right: string;
@@ -172,6 +172,8 @@ function isPathological(f: ArterialSegmentFinding | undefined): boolean {
   if (f.waveform === 'absent') return true;
   const cat = f.stenosisCategory;
   if (cat === 'severe' || cat === 'occluded') return true;
+  // Painted black on the diagram (manual override) = occlusion too.
+  if (deriveArterialCompetency(f) === 'occluded') return true;
   return false;
 }
 
@@ -265,7 +267,11 @@ function SideValueCells({
         {f ? formatStenosis(f, labels) : dash}
       </Text>
       <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.occluded, ...cellStyle }}>
-        {f?.occluded === true ? labels.occludedMark : dash}
+        {/* Same occlusion rule the diagram colours by, so a black vessel
+            always reads as occluded in the table too (U-1012). */}
+        {f?.occluded === true || (f && deriveArterialCompetency(f) === 'occluded')
+          ? labels.occludedMark
+          : dash}
       </Text>
     </View>
   );

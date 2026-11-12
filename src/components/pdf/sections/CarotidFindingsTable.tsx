@@ -2,16 +2,17 @@
 /**
  * CarotidFindingsTable — per-vessel carotid table for PDF page 1.
  *
- * Six columns:
- *   Vessel | PSV | EDV | Flow Dir. | Plaque | ICA/CCA
+ * Seven columns:
+ *   Vessel | PSV | EDV | IMT | Flow Dir. | Plaque | ICA/CCA
  *
  * Only the `ica-prox` row renders a numeric ICA/CCA ratio (from
  * `icaCcaRatio()`). Other rows show an em-dash in that column.
  *
  * Row-red triggers when any of:
  *   - `flowDirection === 'absent'` or `'retrograde'`
- *   - `plaquePresent && (plaqueSurface === 'irregular' || plaqueUlceration)`
- *   - `subclavianStealPhase >= 1` (vertebral steal)
+ *   - `plaquePresent && plaqueSurface === 'irregular'`
+ * Retired fields (`plaqueUlceration`, `subclavianStealPhase`) that old drafts
+ * may still carry are ignored.
  */
 import type { ReactElement } from 'react';
 import { View, Text, StyleSheet } from '@react-pdf/renderer';
@@ -24,7 +25,7 @@ import type {
   PlaqueMorphology,
   PlaqueSurface,
 } from '../../studies/carotid/config';
-import { CAROTID_VESSELS, isCca } from '../../studies/carotid/config';
+import { CAROTID_VESSELS, hasImt } from '../../studies/carotid/config';
 import { icaCcaRatio } from '../../studies/carotid/stenosisCalculator';
 
 export interface CarotidFindingsTableLabels {
@@ -37,7 +38,8 @@ export interface CarotidFindingsTableLabels {
   readonly flow: string;
   readonly plaque: string;
   readonly ratio: string;
-  readonly ulcerationMark: string;
+  /** Prefix for the per-vessel free-text note line (U-1012). */
+  readonly noteLabel: string;
   readonly vesselName: Record<CarotidVesselBase, string>;
   readonly flowName: Record<FlowDirection, string>;
   readonly plaqueName: Record<PlaqueMorphology, string>;
@@ -122,6 +124,13 @@ const styles = StyleSheet.create({
   cellRight: {
     textAlign: 'right',
   },
+  noteText: {
+    fontSize: PDF_FONT_SIZES.footnote,
+    color: PDF_THEME.textMuted,
+    lineHeight: 1.2,
+    paddingHorizontal: 4,
+    paddingBottom: 2,
+  },
 });
 
 interface RenderRow {
@@ -132,12 +141,7 @@ interface RenderRow {
 
 function isPathological(f: CarotidVesselFinding): boolean {
   if (f.flowDirection === 'absent' || f.flowDirection === 'retrograde') return true;
-  if (f.plaquePresent && (f.plaqueSurface === 'irregular' || f.plaqueUlceration)) {
-    return true;
-  }
-  // Subclavian steal (vertebral) is hemodynamically significant — flag it like
-  // the diagram now colors it.
-  if (f.subclavianStealPhase !== undefined && f.subclavianStealPhase >= 1) return true;
+  if (f.plaquePresent && f.plaqueSurface === 'irregular') return true;
   return false;
 }
 
@@ -150,7 +154,8 @@ function hasAnyValue(f: CarotidVesselFinding): boolean {
     f.plaquePresent === true ||
     f.plaqueMorphology !== undefined ||
     f.plaqueLengthMm !== undefined ||
-    f.subclavianStealPhase !== undefined
+    f.plaqueStenosisPct !== undefined ||
+    (f.note !== undefined && f.note.trim() !== '')
   );
 }
 
@@ -180,7 +185,7 @@ function formatVelocity(n: number | undefined, dash: string): string {
 
 /** IMT prints only on common-carotid rows (1 decimal mm); others em-dash. */
 function formatImt(base: CarotidVesselBase, n: number | undefined, dash: string): string {
-  if (!isCca(base) || n === undefined || Number.isNaN(n)) return dash;
+  if (!hasImt(base) || n === undefined || Number.isNaN(n)) return dash;
   return n.toFixed(1);
 }
 
@@ -188,15 +193,15 @@ function formatPlaque(
   f: CarotidVesselFinding,
   labels: CarotidFindingsTableLabels,
 ): string {
-  if (!f.plaquePresent) return labels.emptyDash;
+  const pct = f.plaqueStenosisPct !== undefined ? ` ${f.plaqueStenosisPct}%` : '';
+  if (!f.plaquePresent) return pct ? pct.trim() : labels.emptyDash;
   const morph = f.plaqueMorphology;
   const surface = f.plaqueSurface;
   const pieces: string[] = [];
   if (morph && morph !== 'none') pieces.push(labels.plaqueName[morph]);
   if (surface) pieces.push(labels.surfaceName[surface]);
-  let text = pieces.length > 0 ? pieces.join('·') : labels.plaqueName['type3'];
-  if (f.plaqueUlceration) text += ` ${labels.ulcerationMark}`;
-  return text;
+  const text = pieces.length > 0 ? pieces.join('·') : labels.plaqueName['type3'];
+  return text + pct;
 }
 
 function formatRatio(
@@ -208,7 +213,8 @@ function formatRatio(
   if (vesselBase !== 'ica-prox') return dash;
   const ratio = icaCcaRatio(findings, side);
   if (ratio === null || !Number.isFinite(ratio)) return dash;
-  return ratio.toFixed(1);
+  // 2 decimals — same precision as the on-screen ratio chip (U-1012).
+  return ratio.toFixed(2);
 }
 
 function SideTable({
@@ -293,29 +299,35 @@ function SideTable({
             r.finding.flowDirection !== undefined
               ? labels.flowName[r.finding.flowDirection]
               : labels.emptyDash;
+          const note = r.finding.note?.trim();
           return (
-            <View key={`${side}-${r.vesselBase}`} style={rowStyle}>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.vessel, ...cellStyle }}>
-                {vLabel}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellRightStyle }}>
-                {formatVelocity(r.finding.psvCmS, labels.emptyDash)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.edv, ...cellRightStyle }}>
-                {formatVelocity(r.finding.edvCmS, labels.emptyDash)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.imt, ...cellRightStyle }}>
-                {formatImt(r.vesselBase, r.finding.imtMm, labels.emptyDash)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.flow, ...cellStyle }}>
-                {flowText}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...cellStyle }}>
-                {formatPlaque(r.finding, labels)}
-              </Text>
-              <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.ratio, ...cellRightStyle }}>
-                {formatRatio(r.vesselBase, findings, side, labels.emptyDash)}
-              </Text>
+            <View key={`${side}-${r.vesselBase}`} wrap={false}>
+              <View style={rowStyle}>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.vessel, ...cellStyle }}>
+                  {vLabel}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.psv, ...cellRightStyle }}>
+                  {formatVelocity(r.finding.psvCmS, labels.emptyDash)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.edv, ...cellRightStyle }}>
+                  {formatVelocity(r.finding.edvCmS, labels.emptyDash)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.imt, ...cellRightStyle }}>
+                  {formatImt(r.vesselBase, r.finding.imtMm, labels.emptyDash)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.flow, ...cellStyle }}>
+                  {flowText}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.plaque, ...cellStyle }}>
+                  {formatPlaque(r.finding, labels)}
+                </Text>
+                <Text style={{ flexBasis: 0, flexGrow: COL_FLEX.ratio, ...cellRightStyle }}>
+                  {formatRatio(r.vesselBase, findings, side, labels.emptyDash)}
+                </Text>
+              </View>
+              {note ? (
+                <Text style={styles.noteText}>{`${labels.noteLabel}: ${note}`}</Text>
+              ) : null}
             </View>
           );
         })

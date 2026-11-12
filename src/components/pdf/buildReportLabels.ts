@@ -12,7 +12,12 @@
 
 import type { ReportLabels } from './ReportDocument';
 import type { VenousLESegmentBase } from '../studies/venous-le/config';
-import { VENOUS_LE_SEGMENTS } from '../studies/venous-le/config';
+import {
+  VENOUS_LE_SEGMENTS,
+  COMPRESSIBILITY_VALUES as VENOUS_COMPRESSIBILITY_VALUES,
+  THROMBOSIS_VALUES as VENOUS_THROMBOSIS_VALUES,
+  PHASICITY_VALUES as VENOUS_PHASICITY_VALUES,
+} from '../studies/venous-le/config';
 import type {
   ArterialLESegmentBase,
   Waveform,
@@ -28,7 +33,6 @@ import {
 } from '../studies/arterial-le/config';
 import type {
   CarotidVesselBase,
-  CarotidCompetency,
   FlowDirection,
   PlaqueMorphology as CarotidPlaqueMorphology,
   PlaqueSurface,
@@ -40,28 +44,22 @@ import {
   PLAQUE_MORPHOLOGY_VALUES as CAROTID_PLAQUE_VALUES,
   PLAQUE_SURFACE_VALUES,
   NASCET_CATEGORY_VALUES,
-  carotidBandColor,
 } from '../studies/carotid/config';
 import {
   PATENCY_VALUES,
-  CAVAL_COMPRESSIBILITY_VALUES,
-  THROMBUS_CHRONICITY_VALUES,
-  CFV_PHASICITY_VALUES,
-  VALSALVA_RESPONSE_VALUES,
-  REFLUX_TRIGGER_VALUES,
-  REFLUX_TYPE_VALUES,
-  FLOW_DIRECTION_VALUES as ILIAC_FLOW_DIRECTION_VALUES,
-  TORTUOSITY_VALUES,
-  ESCAPE_POINT_VALUES,
+  FILLING_VALUES,
+  PHASICITY_VALUES,
+  COMPETENCY_VALUES,
+  MIDLINE_ROWS,
+  SIDE_ROW_BASES,
   SEX_VALUES,
   SYMPTOM_VALUES,
   RISK_FACTOR_VALUES,
   APPROACH_VALUES,
   POSITION_VALUES,
-  CAVAL_LEVEL_VALUES,
-  CAVAL_SEVERITY_VALUES,
 } from '../studies/iliac-pelvic-venous/config';
 import type { DiagramLegendItem } from './sections/DiagramSection';
+import { severityLegendItems } from '../anatomy/severityColor';
 import type { Competency } from '../../types/anatomy';
 import { PATIENT_POSITIONS } from '../../types/patient-position';
 import type { FormState } from '../../types/form';
@@ -134,6 +132,8 @@ function buildSingleReportLabels(
       ? 'iliacPelvicVenous.form.subtitle'
       : 'venousLE.form.subtitle';
   const isIliac = form?.studyType === 'iliacPelvicVenous';
+  const sideNarrativeNs =
+    form?.studyType === 'carotid' ? 'carotid' : isIliac ? 'iliacPelvicVenous' : null;
 
   // Per-segment names keyed by base id — the FindingsTable walks VENOUS_LE_SEGMENTS.
   const segmentName: Record<VenousLESegmentBase, string> = VENOUS_LE_SEGMENTS.reduce(
@@ -148,9 +148,28 @@ function buildSingleReportLabels(
     normal: t('competency.normal', 'Normal'),
     occluded: t('competency.occluded', 'Occlusion'),
     incompetent: t('competency.incompetent', 'Incompetent'),
-    inconclusive: t('competency.inconclusive', 'Inconclusive'),
+    // Internal key `inconclusive` = perforator since 2026-10-07 (clinician
+    // feedback); key kept for draft compatibility (U-1027).
+    inconclusive: t('competency.inconclusive', 'Perforator'),
     ablated: t('competency.ablated', 'Ablated'),
   };
+
+  // Venous categorical values printed as text in the PDF table (UX-ANGIO-003,
+  // D9). Same keys the on-screen segment table uses, so screen and paper read
+  // alike — e.g. the override 'inconclusive' prints as the "Perforator" label.
+  const venousValue: Record<string, string> = {};
+  for (const v of VENOUS_COMPRESSIBILITY_VALUES) {
+    venousValue[`compressibility.${v}`] = t(`venousLE.compressibility.${v}`, v);
+  }
+  for (const v of VENOUS_THROMBOSIS_VALUES) {
+    venousValue[`thrombosis.${v}`] = t(`venousLE.thrombosis.${v}`, v);
+  }
+  for (const v of VENOUS_PHASICITY_VALUES) {
+    venousValue[`phasicity.${v}`] = t(`venousLE.phasicity.${v}`, v);
+  }
+  for (const v of Object.keys(legend) as Competency[]) {
+    venousValue[`competencyOverride.${v}`] = t(`venousLE.competency.${v}`, v);
+  }
 
   const positionLabels: Record<string, string> = PATIENT_POSITIONS.reduce(
     (acc, p) => {
@@ -246,25 +265,14 @@ function buildSingleReportLabels(
     {} as Record<NascetCategory, string>,
   );
 
-  // Carotid uses a 5-band severity scale on the neck diagram. Colors come from
-  // `carotidBandColor` (the same resolver the form + PDF diagram use) so the
-  // legend matches exactly — normal/occluded reuse the venous palette.
-  const CAROTID_SEVERITY_FALLBACK: Record<CarotidCompetency, string> = {
-    normal: 'Normal',
-    mild: 'Mild',
-    moderate: 'Moderate',
-    severe: 'Severe',
-    occluded: 'Occluded',
-  };
-  const carotidLegend: ReadonlyArray<DiagramLegendItem> = (
-    ['normal', 'mild', 'moderate', 'severe', 'occluded'] as ReadonlyArray<CarotidCompetency>
-  ).map((band) => ({
-    key: band,
-    label: t(`carotid.severity.${band}`, CAROTID_SEVERITY_FALLBACK[band]),
-    // Use the same resolver as the diagram so legend ↔ vessel colors agree
-    // (normal = venous slate grey, occluded = venous black).
-    ...carotidBandColor(band),
-  }));
+  // Carotid + arterial diagrams show 3 colours (grey normal, red significant
+  // stenosis, black occlusion). Reuse the exact helper the in-app legend uses
+  // so paper and screen list the same entries (U-1008, U-1009).
+  const carotidLegend: ReadonlyArray<DiagramLegendItem> = severityLegendItems(t, 'carotid.severity');
+  const arterialLegend: ReadonlyArray<DiagramLegendItem> = severityLegendItems(
+    t,
+    'arterialLE.severity',
+  );
 
   // ----- Iliac / pelvic venous -----
   const iliacValue: Record<string, string> = {};
@@ -272,91 +280,31 @@ function buildSingleReportLabels(
     for (const v of vals) iliacValue[`${ns}.${v}`] = t(`iliacPelvicVenous.${ns}.${v}`, v);
   };
   addIliacVals('patency', PATENCY_VALUES);
-  addIliacVals('cavalCompressibility', CAVAL_COMPRESSIBILITY_VALUES);
-  addIliacVals('thrombusChronicity', THROMBUS_CHRONICITY_VALUES);
-  addIliacVals('cfvPhasicity', CFV_PHASICITY_VALUES);
-  addIliacVals('valsalvaResponse', VALSALVA_RESPONSE_VALUES);
-  addIliacVals('refluxTrigger', REFLUX_TRIGGER_VALUES);
-  addIliacVals('refluxType', REFLUX_TYPE_VALUES);
-  addIliacVals('flowDirection', ILIAC_FLOW_DIRECTION_VALUES);
-  addIliacVals('tortuosity', TORTUOSITY_VALUES);
-  addIliacVals('escapePoint', ESCAPE_POINT_VALUES);
-  // Zone-0 technique/context value labels (audit H3 — render technique block).
+  addIliacVals('filling', FILLING_VALUES);
+  addIliacVals('phasicity', PHASICITY_VALUES);
+  addIliacVals('competency', COMPETENCY_VALUES);
+  // Technique/context value labels (audit H3 — render technique block).
   addIliacVals('sex', SEX_VALUES);
   addIliacVals('symptom', SYMPTOM_VALUES);
   addIliacVals('riskFactor', RISK_FACTOR_VALUES);
   addIliacVals('approach', APPROACH_VALUES);
   addIliacVals('position', POSITION_VALUES);
-  // Protocol additions: graded stenosis tiers + per-level velocity labels.
-  addIliacVals('severity', CAVAL_SEVERITY_VALUES);
-  addIliacVals('level', CAVAL_LEVEL_VALUES);
 
-  const iliacSegment: Record<string, string> = {};
-  for (const id of [
-    'ivc',
-    'civ-left',
-    'civ-right',
-    'eiv-left',
-    'eiv-right',
-    'iiv-left',
-    'iiv-right',
-    'cfv-left',
-    'cfv-right',
-  ]) {
-    iliacSegment[id] = t(`iliacPelvicVenous.segment.${id}`, id);
+  const iliacRow: Record<string, string> = {};
+  for (const id of [...MIDLINE_ROWS, ...SIDE_ROW_BASES]) {
+    iliacRow[id] = t(`iliacPelvicVenous.row.${id}`, id);
   }
 
   const iliacField: Record<string, string> = {
-    // Zone-0 technique/context (audit H3) + previously-dropped flags (audit H4, M8).
+    // Technique/context (audit H3) + left gonadal vein.
     sex: t('iliacPelvicVenous.field.sex', 'Sex'),
     symptoms: t('iliacPelvicVenous.field.symptoms', 'Symptoms'),
+    riskFactors: t('iliacPelvicVenous.field.riskFactors', 'Comorbidities'),
     approaches: t('iliacPelvicVenous.field.approaches', 'Approaches used'),
     positions: t('iliacPelvicVenous.field.positions', 'Patient positions'),
     valsalva: t('iliacPelvicVenous.field.valsalva', 'Valsalva performed'),
-    valsalvaResponse: t('iliacPelvicVenous.field.valsalvaResponse', 'Valsalva response'),
-    confirmImaging: t('iliacPelvicVenous.field.confirmImaging', 'Confirmatory imaging recommended'),
-    ratio: t('iliacPelvicVenous.field.ratio', 'Ratio'),
-    peakVelocityRatio: t('iliacPelvicVenous.field.peakVelocityRatio', 'Peak-velocity ratio'),
-    apDiameterRatio: t('iliacPelvicVenous.field.apDiameterRatio', 'AP-diameter ratio'),
-    velocityRatio: t('iliacPelvicVenous.field.velocityRatio', 'Velocity ratio'),
-    lrvVelocity_proximal: t('iliacPelvicVenous.field.lrvVelocityProximal', 'Proximal LRV velocity'),
-    lrvVelocity_mid: t('iliacPelvicVenous.field.lrvVelocityMid', 'Mid LRV velocity'),
-    lrvVelocity_distal: t('iliacPelvicVenous.field.lrvVelocityDistal', 'Distal LRV velocity'),
-    hilarDiameterMm: t('iliacPelvicVenous.field.hilarDiameterMm', 'Hilar (distal) LRV diameter (mm)'),
-    retroAortic: t('iliacPelvicVenous.field.retroAortic', 'Retro-aortic left renal vein'),
-    beakSign: t('iliacPelvicVenous.field.beakSign', 'Beak sign'),
-    hilarVarices: t('iliacPelvicVenous.field.hilarVarices', 'Renal hilar varices'),
-    reflux: t('iliacPelvicVenous.field.reflux', 'Reflux'),
-    collaterals: t('iliacPelvicVenous.field.collaterals', 'Collaterals'),
     diameterMm: t('iliacPelvicVenous.field.diameterMm', 'Diameter (mm)'),
-    refluxPresent: t('iliacPelvicVenous.field.refluxPresent', 'Reflux present'),
-    refluxTrigger: t('iliacPelvicVenous.field.refluxTrigger', 'Reflux trigger'),
-    refluxDurationS: t('iliacPelvicVenous.field.refluxDurationS', 'Reflux duration (s)'),
-    refluxType: t('iliacPelvicVenous.field.refluxType', 'Reflux type'),
-    flowDirection: t('iliacPelvicVenous.field.flowDirection', 'Flow direction'),
-    largestDiameterMm: t('iliacPelvicVenous.field.largestDiameterMm', 'Largest diameter (mm)'),
-    flowVelocityCmS: t('iliacPelvicVenous.field.flowVelocityCmS', 'Flow velocity (cm/s)'),
-    tortuosity: t('iliacPelvicVenous.field.tortuosity', 'Tortuosity'),
-    crossingVeins: t('iliacPelvicVenous.field.crossingVeins', 'Crossing (arcuate) veins'),
-    crossPelvicCollateral: t(
-      'iliacPelvicVenous.field.crossPelvicCollateral',
-      'Cross-pelvic collateral',
-    ),
-    riskFactors: t('iliacPelvicVenous.field.riskFactors', 'Risk factors'),
-    smaAortaAngle: t('iliacPelvicVenous.field.smaAortaAngle', 'SMA–aorta angle (°)'),
-    caInspiratoryPsv: t('iliacPelvicVenous.field.caInspiratoryPsv', 'Celiac PSV — inspiration (cm/s)'),
-    caExpiratoryPsv: t('iliacPelvicVenous.field.caExpiratoryPsv', 'Celiac PSV — expiration (cm/s)'),
-    chaPsv: t('iliacPelvicVenous.field.chaPsv', 'Common hepatic artery PSV (cm/s)'),
-    splenicPsv: t('iliacPelvicVenous.field.splenicPsv', 'Splenic artery PSV (cm/s)'),
-    hookSign: t('iliacPelvicVenous.field.hookSign', 'Hook-shaped celiac artery'),
-    'extrapelvic.vulvar': t('iliacPelvicVenous.extrapelvic.vulvar', 'Vulvar'),
-    'extrapelvic.perineal': t('iliacPelvicVenous.extrapelvic.perineal', 'Perineal'),
-    'extrapelvic.gluteal': t('iliacPelvicVenous.extrapelvic.gluteal', 'Gluteal'),
-    'extrapelvic.posteromedialThigh': t(
-      'iliacPelvicVenous.extrapelvic.posteromedialThigh',
-      'Posteromedial thigh',
-    ),
-    'extrapelvic.sciatic': t('iliacPelvicVenous.extrapelvic.sciatic', 'Sciatic'),
+    reflux: t('iliacPelvicVenous.field.reflux', 'Reflux'),
   };
 
   return {
@@ -406,6 +354,13 @@ function buildSingleReportLabels(
       depthMm: t('venousLE.refluxTable.depth', 'Depth (mm)'),
       segmentName,
       emptyDash: '—',
+      field: {
+        competencyOverride: t('venousLE.param.competency', 'Competency'),
+        compressibility: t('venousLE.param.compressibility', 'Compressibility'),
+        thrombosis: t('venousLE.param.thrombosis', 'Thrombosis'),
+        phasicity: t('venousLE.param.phasicity', 'Phasicity'),
+      },
+      value: venousValue,
     },
     arterialFindings: {
       right: t('arterialLE.tabs.right', 'Right'),
@@ -416,7 +371,8 @@ function buildSingleReportLabels(
       pvr: t('arterialLE.findingsTable.pvrShort', 'PVR'),
       stenosis: t('arterialLE.findingsTable.stenShort', t('arterialLE.param.stenosisCategory', 'Stenosis')),
       occluded: t('arterialLE.findingsTable.occlShort', t('arterialLE.param.occluded', 'Occl.')),
-      occludedMark: '✓',
+      // A word, not '✓': neither PDF font has the check-mark glyph (U-1012).
+      occludedMark: t('common.yes', 'Yes'),
       segmentName: arterialSegmentName,
       waveformName,
       stenosisName,
@@ -450,7 +406,7 @@ function buildSingleReportLabels(
       flow: t('carotid.findingsTable.flowShort', t('carotid.param.flowDirection', 'Flow')),
       plaque: t('carotid.findingsTable.plaqueShort', t('carotid.param.plaqueMorphology', 'Plaque')),
       ratio: t('carotid.findingsTable.ratioShort', t('carotid.param.ratio', 'ICA/CCA')),
-      ulcerationMark: t('carotid.findingsTable.ulcerationMark', '⚠'),
+      noteLabel: t('carotid.param.note', 'Note'),
       vesselName,
       flowName,
       plaqueName: carotidPlaqueName,
@@ -458,6 +414,7 @@ function buildSingleReportLabels(
       emptyDash: '—',
     },
     carotidLegend,
+    arterialLegend,
     nascet: {
       title: t('carotid.nascetSummary.title', t('carotid.nascet.title', 'NASCET classification')),
       rightIca: t('carotid.nascetSummary.rightIca', 'Right ICA'),
@@ -466,36 +423,41 @@ function buildSingleReportLabels(
       noneLabel: t('carotid.nascetSummary.noneLabel', '—'),
     },
     iliacFindings: {
-      heading: t('iliacPelvicVenous.findings.heading', 'Findings by zone'),
+      heading: t('iliacPelvicVenous.findings.heading', 'Findings'),
       none: t('iliacPelvicVenous.findings.none', 'No findings recorded.'),
       zone: {
         technique: t('iliacPelvicVenous.zone.context.short', 'Technique & context'),
-        renal: t('iliacPelvicVenous.zone.renal.short', 'Left renal vein'),
         caval: t('iliacPelvicVenous.zone.caval.short', 'Iliac & caval veins'),
-        gonadal: t('iliacPelvicVenous.zone.gonadal.short', 'Gonadal veins'),
-        plexus: t('iliacPelvicVenous.zone.plexus.short', 'Pelvic plexus'),
-        escape: t('iliacPelvicVenous.zone.escape.short', 'Escape points'),
-        extrapelvic: t('iliacPelvicVenous.zone.extrapelvic.short', 'Extrapelvic varices'),
-        special: t('iliacPelvicVenous.zone.special.short', 'Special considerations (SMAS / MALS)'),
+        gonadal: t('iliacPelvicVenous.zone.gonadal.short', 'Left gonadal vein'),
       },
-      segment: iliacSegment,
-      side: {
-        left: t('iliacPelvicVenous.side.left', 'Left'),
-        right: t('iliacPelvicVenous.side.right', 'Right'),
+      section: {
+        ivc: t('iliacPelvicVenous.section.ivc', 'IVC'),
+        right: t('iliacPelvicVenous.section.right', 'Right'),
+        left: t('iliacPelvicVenous.section.left', 'Left'),
       },
+      column: {
+        segment: t('iliacPelvicVenous.field.segment', 'Vein'),
+        patency: t('iliacPelvicVenous.field.patency', 'Patency / thrombosis'),
+        filling: t('iliacPelvicVenous.field.filling', 'Filling'),
+        phasicity: t('iliacPelvicVenous.field.phasicity', 'Phasicity'),
+        competency: t('iliacPelvicVenous.field.competency', 'Competency'),
+        apDiameterMm: t('iliacPelvicVenous.field.apDiameterMm', 'AP diam. (mm)'),
+        peakVelocityCmS: t('iliacPelvicVenous.field.peakVelocityCmS', 'PV (cm/s)'),
+      },
+      row: iliacRow,
       field: iliacField,
       value: iliacValue,
-      yes: t('iliacPelvicVenous.yes', 'Present'),
+      yes: t('iliacPelvicVenous.reflux.yes', 'Present'),
+      no: t('iliacPelvicVenous.reflux.no', 'Absent'),
     },
     narrative: {
-      rightFindings: t(
-        'venousLE.narrativeSections.rightFindings',
-        'Right lower extremity — findings',
-      ),
-      leftFindings: t(
-        'venousLE.narrativeSections.leftFindings',
-        'Left lower extremity — findings',
-      ),
+      // Carotid + pelvic findings are per side, not per lower limb (U-1010).
+      rightFindings: sideNarrativeNs
+        ? t(`${sideNarrativeNs}.narrativeSections.rightFindings`, 'Right side — findings')
+        : t('venousLE.narrativeSections.rightFindings', 'Right lower extremity — findings'),
+      leftFindings: sideNarrativeNs
+        ? t(`${sideNarrativeNs}.narrativeSections.leftFindings`, 'Left side — findings')
+        : t('venousLE.narrativeSections.leftFindings', 'Left lower extremity — findings'),
       indication: t('venousLE.header.indicationNotes', t('venousLE.header.indication', 'Indication')),
       technique: t('venousLE.technique', 'Technique'),
       findings: t('venousLE.findings', 'Findings'),
@@ -503,7 +465,10 @@ function buildSingleReportLabels(
       comments: t('venousLE.comments', 'Comments'),
       conclusions: t('venousLE.narrativeSections.conclusions', 'Conclusions'),
       sonographerComments: t('venousLE.narrative.sonographerComments', 'Sonographer comments'),
-      clinicianComments: t('venousLE.narrative.clinicianComments', 'Clinician impression'),
+      // Iliac/pelvic uses this slot as its single free-text comments box.
+      clinicianComments: isIliac
+        ? t('iliacPelvicVenous.narrative.comments', 'Comments')
+        : t('venousLE.narrative.clinicianComments', 'Clinician impression'),
     },
     ceap: {
       heading: t('venousLE.ceap.title', 'CEAP 2020 Classification'),
