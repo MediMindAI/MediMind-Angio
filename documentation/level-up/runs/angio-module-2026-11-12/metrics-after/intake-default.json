@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:09:27.443Z",
+  "route": "/",
+  "slug": "intake",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "triage",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 1,
+      "cardsTotal": 5
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "text"
+        ],
+        "sampleSelectors": [
+          "div._field_6ds4k_479 > div.emr-field-wrapper.size-md > label.emr-field-label > span.emr-field-label-required"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "ვიზიტის თარიღი",
+        "occurrences": 2,
+        "selectors": [
+          "div._fieldGrid_6ds4k_479 > div._field_6ds4k_479 > div > label.mantine-focus-auto.m_b6d8b162",
+          "div._summaryCard_6ds4k_702 > div._summaryBody_6ds4k_748 > div._summaryRow_6ds4k_812 > span._summaryRowLabel_6ds4k_832"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "ICD-10 კოდები",
+        "occurrences": 2,
+        "selectors": [
+          "div._fieldGrid_6ds4k_479 > div._field_6ds4k_479._fieldFull_6ds4k_496 > div.emr-field-wrapper.size-md > label.emr-field-label",
+          "div._summaryCard_6ds4k_702 > div._summaryBody_6ds4k_748 > div._summarySection_6ds4k_850 > span._summarySectionLabel_6ds4k_856"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 16,
+      "tabs": 6,
+      "buttons": 1,
+      "rawCount": 16,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div._container_6ds4k_101 > div._layout_6ds4k_339 > aside._summaryColumn_6ds4k_689 > div._summaryCard_6ds4k_702",
+        "heightPx": 411,
+        "populatedSiblingMedianHeightPx": 348,
+        "ratio": 1.18
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div._container_6ds4k_101 > div._layout_6ds4k_339 > aside._summaryColumn_6ds4k_689 > div._summaryCard_6ds4k_702 is 411px tall vs 348px for its populated siblings (1.18) — a quiet shift must look quieter",
+      "measured": 1.18,
+      "threshold": 0.75
+    },
+    {
+      "rule": "density-tier-overflow",
+      "severity": "P2",
+      "evidence": "16 actions above the fold (6 tabs + 1 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness",
+      "measured": 16,
+      "threshold": 12
+    }
+  ]
+}

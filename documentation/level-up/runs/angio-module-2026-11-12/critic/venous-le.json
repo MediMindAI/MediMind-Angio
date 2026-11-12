@@ -1,0 +1,230 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/venousLEBilateral",
+    "slug": "venous-le-default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 9 decks carry a box-shadow — the decks are not separable from the surface",
+        "recommendation": "Page canvas must use --emr-bg-page (the navy-tinted gray the reference uses), not white. Every deck should carry --emr-shadow-card with no outer hairline border (Cards rule). Today the decks are held apart only by faint outer borders, and the Diagram section has no visible deck at all."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._page_1dzo7_3 > div._container_1dzo7_127 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 137px for its populated siblings (1.63) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty Recommendations deck. Remove the dashed placeholder box and its icon, and show 'რეკომენდაციები არ დამატებულა' as one muted line in the header row next to the add button. Also remove the gradient top ribbon from this deck, because ribbons are for KPI/stat cards only."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (deep-dive: boldness is spent once per screen)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "About 12 solid-navy, primary-weight buttons are visible in the first viewport: back, '+ კვლევის დამატება', '+ ახალი კვლევა', 5 bulk actions (ყველა ნორმაში / გასუფთავება / R→L / L→R / შაბლონები), the active side tab, and 3 bottom-bar buttons. Lower down, the collapsed CEAP section is a full-width solid gradient band. It is the loudest object on the page and breaks the Section-headers rule ('No full-width tinted band'). Every one of these outweighs the segment table, which is the screen's actual job.",
+        "recommendation": "Give the gradient to exactly one action: 'PDF ჩამოტვირთვა' in the bottom bar. Make 'მონახაზის შენახვა' and 'PDF ნახვა' secondary (white deck plus hairline). Make the 5 bulk actions secondary, or ghost buttons in one toolbar row. Make 'Back' a ghost button. Turn the CEAP header into a slim section header (4×15 tick bar on a deck) and show the CEAP code as a neutral soft badge. Remove either '+ ახალი კვლევა' or the header's '+ კვლევის დამატება', since they appear to do the same thing. Removing one is a content change, so route it as a product decision."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation; color-discipline (never Tailwind blues)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "A solid red dot (sampled rgb 202,65,65) sits beside 'ბოლოს შენახული' in the fixed bottom bar, so red marks save status as well as reflux. The anatomy legend and segments use rgb(37,99,235) for perforator, which is Tailwind blue-600 and prohibited. Reflux is drawn in rgb(220,38,38), while the table marks the same reflux with --emr-error rgb(229,62,62): one meaning, two reds.",
+        "recommendation": "Make the save-status dot neutral (--emr-text-secondary) and let the timestamp carry the information. Route the anatomy competency palette through tokens: reflux on --emr-error so it matches the table row, and perforator on a theme-blue token instead of Tailwind blue."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: ONE focal element, everything else receding)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The two focal candidates are stacked. The anatomy diagram starts only after the full 22-row segment table, so a clinician cannot see a row and its segment at the same time. Inside the table, a dead gutter of about 240px separates the categorical columns from the numeric ones. The diagram is about 480px wide, centred, with about 480px of empty deck on each side. The reference uses the full width in deliberate columns.",
+        "recommendation": "This is a layout restructure. At ≥1280px, put the diagram in a sticky right column (about one-third width) beside the segment table (about two-thirds), close the gap between the column groups, and make the table the single dominant deck."
+      }
+    ],
+    "reasoning": "Density tier was supplied (deep-dive). The eye has nowhere to land. White decks sit on a white page, and a dozen equal-weight navy buttons plus a gradient CEAP band take all the visual weight away from the segment table. The one well-made signal is the pink abnormal row (GSV Prox Thigh, 1.8 s), which is correctly the only tinted row. The reflux segment on the diagram is the other good signal, but it sits a full scroll away. Rule 3 applies: four dimensions score ≤1. Two of those scores (hierarchy, densityFit) are capped by mechanical fails that token fixes would lift (page background, card shadow, collapsing the empty state). The parts that need real restructuring are the spread-out button weight and the stacked table and diagram. Not scored because no rule covers them (the rubric's 'Content & layout' section does not exist in this DESIGN-DIRECTION.md): select values clipped mid-glyph ('სრულr'), a truncated column header 'ნაკადის ფაზურ…', and a doubled '+' glyph in '+ + ახალი კვლევა'. Highest-leverage fix: one gradient action per screen, with every other button set to secondary or ghost."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/venousLEBilateral",
+    "slug": "venous-le-768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 0,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 45 decks carry a box-shadow — the decks are not separable from the surface",
+        "recommendation": "Same token fix as desktop: --emr-bg-page canvas, and --emr-shadow-card on the outer decks. The 40+ nested per-segment boxes should become hairline-separated rows inside a single deck, not floating boxes."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._page_1dzo7_3 > div._container_1dzo7_127 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 268px for its populated siblings (0.79) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty Recommendations deck to a single header row with an inline muted 'none added' line. Remove the dashed placeholder box."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: rich but still ordered); no-duplicate-primary-data (row identity)",
+        "severity": "P0",
+        "mechanical": false,
+        "evidence": "The table breaks into two separate stacks. First come 20 cards with the categorical fields (each with a segment name and R chip). Then come 20 more cards with only duration, diameter and depth, and no segment name. The abnormal card (1.8 s / 7.2 mm, red border and warning icon) is anonymous. Nothing on it says it is GSV Prox Thigh. A clinician would have to count cards to know which segment they are typing into. The page is about 13,000px tall.",
+        "recommendation": "This is a structural rebuild. Below desktop width, render ONE card or row per segment holding all 7 fields, with the segment name as its header. Alternatively, keep the table with horizontal scroll and a sticky segment-name column. The numeric fields must never appear without their segment name."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness spent once); buttons (secondary = white deck + hairline)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The 5 solid-navy bulk-action buttons wrap into 3 rows. The pill-shaped study switcher wraps into an oval blob. Three solid buttons fill the bottom bar. Together these take more of the first screen than the first segment does.",
+        "recommendation": "Collapse the bulk actions into one row of secondary buttons, with R→L, L→R and templates in an overflow menu. Make the study switcher a horizontally scrolling segmented control. Keep one gradient button in the bottom bar and make the rest secondary."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation; color-discipline (never Tailwind blues)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same as desktop: a red save-status dot in the fixed bar, and Tailwind blue-600 for perforator in the anatomy legend and segments.",
+        "recommendation": "Make the save dot neutral (--emr-text-secondary). Use --emr-error for reflux and a theme-blue token for perforator."
+      }
+    ],
+    "reasoning": "Deep-dive tier was supplied. At tablet width the screen stops being usable for its job. The segment table, which should be the focal element, falls apart into 40 near-identical boxes. Half of them hold measurements with no indication of which vein they belong to, including the one abnormal value on the screen. The red border on that card is correct severity use, but it points at an unnamed segment. The per-row 'R' chip repeating the active side tab is a small subordinate chip, so I counted it as acceptable disclosure (redundancy 2), not bloat. densityFit 0 triggers rule 3. Highest-leverage fix: one card per segment containing all of its fields. That removes the unlabeled stack and roughly halves the page height."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/venousLEBilateral",
+    "slug": "venous-le-375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 0,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 45 decks carry a box-shadow — the decks are not separable from the surface",
+        "recommendation": "Use the --emr-bg-page canvas plus --emr-shadow-card on the outer decks. Inner per-segment boxes become hairline rows inside a single deck."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: rich but still ordered)",
+        "severity": "P0",
+        "mechanical": false,
+        "evidence": "Same split as at 768: 20 categorical cards, then 20 unlabeled duration/diameter/depth cards, so the abnormal 1.8 s entry has no segment name. The page is about 14,800px tall. The capture is 556px wide at a 375px viewport, so content runs off the side: the 'PDF ჩამოტვირთვა' button in the fixed bar and the end of the section subtitle ('…მონაცემები თ') fall outside the viewport.",
+        "recommendation": "This is a structural rebuild: one card per segment, named, holding all 7 fields. Each card can have a collapsible numeric sub-row that shows its values as an inline summary when collapsed. Stack the bottom-bar actions, or move the secondary ones into an overflow menu, so nothing extends past 375px."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness spent once); section headers (no full-width tinted band)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The first viewport is almost all navigation and actions: back, the oval-wrapped study switcher, '+ კვლევის დამატება', '+ ახალი კვლევა', and 5 solid bulk buttons stacked one per row. The first segment field appears at about y=880. The CEAP gradient band is the loudest element further down.",
+        "recommendation": "Make 'Back' a ghost button. Merge the two add-study buttons (product decision). Put the bulk actions behind one secondary 'მოქმედებები' menu. Turn the CEAP header into a slim header with a tick bar. The first segment should then appear above the fold."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation; color-discipline (never Tailwind blues)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Red save-status dot in the fixed bar, and Tailwind blue-600 for perforator in the anatomy legend.",
+        "recommendation": "Make the save dot neutral (--emr-text-secondary). Use --emr-error for reflux and a theme-blue token for perforator."
+      }
+    ],
+    "reasoning": "Deep-dive tier was supplied. The empty-state check passes at this width (0.68), so only the elevation fail is mechanical. The rest is visual. The phone layout has the same unlabeled numeric stack as tablet, plus horizontal overflow. No rule in DESIGN-DIRECTION.md covers viewport overflow, so I put it in the densityFit evidence and here rather than inventing a rule id. It does make the primary export action partly unreachable. The diagram itself scales well at this width (R/L legible, reflux segment clear). It is just about 10,000px below the top. densityFit 0 triggers rule 3. Confidence is 0.8 because the full-page capture is wider than the viewport. Highest-leverage fix: one named card per segment with all fields."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/venousLEBilateral",
+    "slug": "venous-le-dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._page_1dzo7_3 > div._container_1dzo7_127 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 137px for its populated siblings (1.63) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty Recommendations deck to its header row with an inline muted 'none added' line. Remove the dashed placeholder and the top ribbon."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "color-discipline (dark mode via semantic vars only)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The anatomy silhouette keeps its light-mode near-white fill on the dark deck. It is the brightest object on the screen and wins attention through glare, not design. The 'R' and 'L' side labels are drawn in light text on that white fill and are nearly invisible, so the diagram loses its left/right orientation in dark mode.",
+        "recommendation": "Give the silhouette fill a dark-semantic surface token (the --emr-bg-input / --emr-bg-hover tier), the outline --emr-border, and the R/L labels --emr-text-primary, so the diagram reads like the reference's dark decks."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation; color-discipline (never Tailwind blues)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The red save-status dot is still in the fixed bar, and perforator still uses Tailwind blue-600. The drawing-tool toggles in --emr-primary that the metrics flag are checked-state controls, which the Forms rule allows, so they are not a finding.",
+        "recommendation": "Make the save dot neutral (--emr-text-secondary). Use --emr-error for reflux and a theme-blue token for perforator."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "reference parity (structure is never theme-dependent)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Structure differs by theme. In dark, the bulk actions and the CEAP header are quiet slate. In light, the same elements are solid navy and a full gradient band. The reference pair is structurally identical between themes, so one of these treatments is wrong. The dark one matches the rubric.",
+        "recommendation": "Use the dark treatment in both themes: bulk actions as secondary buttons, CEAP as a slim header deck. Keep the gradient for the single bottom-bar primary action."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: ONE focal element)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same layout as light desktop: the diagram sits below the 22-row table with large empty side margins, and a dead gutter splits the table.",
+        "recommendation": "Layout restructure: at ≥1280px, a sticky diagram column beside the segment table."
+      }
+    ],
+    "reasoning": "Deep-dive tier was supplied. I judged against deep-dive-dark.png. Dark is the better-composed variant. The decks separate from the page (1.22, passes the script), and the bulk buttons drop to slate, so the segment table and the abnormal row stand out more. The page still wins only a 2 on hierarchy because the unthemed white silhouette dominates by glare and loses its R/L labels. It is blocked from PASS by the mechanical empty-state fail and colorDiscipline 1. Only two dimensions score ≤1, so the verdict is NEEDS-REWORK, not redesign. Highest-leverage fix: theme the anatomy silhouette and its labels with dark semantic tokens."
+  }
+]

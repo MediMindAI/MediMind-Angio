@@ -1,0 +1,21 @@
+# ux-task-cartographer — vascular-physician (run angio-module-2026-11-12)
+
+- Model: `qa-reports/ux/task-models/vascular-physician.task-model.json` (+ `.md` sibling). Valid JSON. taskIds = sha1(persona|area|goal)[:12], spot-checked against `shasum`.
+- Tasks: **23 active** (23 new, 0 kept, 0 retired). There was no prior model.
+- Areas: intake 4 · venousLE 5 · arterialLE 3 · carotid 3 · iliacPelvicVenous 3 · report 5. Area slugs are the study keys. The sonographer model uses kebab-case slugs; the two personas hash separately, so the IDs do not collide.
+- Budget sources:
+  - angio-resume ×1
+  - angio-resume-export ×5 (ratified D4, 4 clicks from `/`)
+  - class-default ×17: note 15 ×4 · order 6 ×6 · review/read 5 ×4 · find/open 4 ×3
+- Safety: high-alert ×4, routine ×19. The 4 high-alert tasks:
+  - discard a visit: the only one with a stopAtThreshold, at the Georgian confirm button წაშლა
+  - download the single-study PDF
+  - download the combined PDF
+  - download the finished study while the other study is empty
+- Headline: angio-export (≤2) is defined from a completed study, but every walk must enter at `/` behind a collapsed in-progress panel. Under angio-export alone, the 5 report tasks would have scored over budget just from the resume clicks.
+  - **Ratified as D4 and applied:** `angio-resume-export` = 4 from `/` (angio-resume 2 + angio-export 2). The sonographer cartographer proposed the same thing independently.
+- Likely findings for the walker:
+  - Exporting one finished study while the other study is empty: probably FAILED_BLOCKED, because `FormActions` disables both export buttons ("TODO Phase 5 per-study escape hatch"). The task is high-alert, so that becomes CRITICAL.
+  - There is no in-app print control.
+  - The in-progress panel has no search.
+- Class mapping to review: "order 6" is used for structured coded entries (segment finding, CEAP, SVP, NASCET override, recommendation).

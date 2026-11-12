@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "persona": "vascular-sonographer",
+  "scope": "angio-module",
+  "generatedAt": "2026-11-12T11:21:44Z",
+  "priorRun": null,
+  "tasks": [
+    {
+      "taskId": "a93706776962",
+      "goal": "Start an encounter for a new patient with one study",
+      "area": "intake",
+      "frequencyPerShift": 9,
+      "clickBudget": 3,
+      "budgetSource": "angio-start",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The chosen study form is open at /encounter/<id>/<studyType> with the typed patient name shown in the encounter banner",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "f7d966f9347f",
+      "goal": "Start an encounter for a new patient with several studies",
+      "area": "intake",
+      "frequencyPerShift": 3,
+      "clickBudget": 3,
+      "budgetSource": "angio-start",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The first selected study form is open and the encounter banner shows the patient name plus one chip per selected study (patient typed once, never asked again)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "d5c84bc79cf3",
+      "goal": "Start a right-leg-only venous study for a new patient",
+      "area": "intake",
+      "frequencyPerShift": 1,
+      "clickBudget": 3,
+      "budgetSource": "angio-start",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A venous study form is open whose encounter banner chip / study type marks it right-leg-only (venousLERight), not bilateral",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "0a46facacdbc",
+      "goal": "Switch to another study of the same patient",
+      "area": "encounter",
+      "frequencyPerShift": 4,
+      "clickBudget": 1,
+      "budgetSource": "angio-switch",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The other study's form is open in the same encounter, banner shows the same patient name and no intake field is shown again",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (two studies selected, e.g. venous LE + iliac-pelvic venous); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "17e266d15e6a",
+      "goal": "Add a forgotten study to the patient's open encounter",
+      "area": "encounter",
+      "frequencyPerShift": 1,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The added study's form is open, its chip appears in the encounter banner, and the patient name was not re-typed",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (one study selected, e.g. venous LE only); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "332f579ec7b3",
+      "goal": "Reopen an unfinished encounter after the browser was closed",
+      "area": "encounter",
+      "frequencyPerShift": 3,
+      "clickBudget": 2,
+      "budgetSource": "angio-resume",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The study form is open again showing the findings entered before the reload (e.g. a segment previously marked incompetent still reads incompetent)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (with at least one finding entered); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id",
+        "the walker reloads the page before the task starts (entry navigate to /)"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "3a68650e893d",
+      "goal": "Correct the patient's details in an open encounter",
+      "area": "encounter",
+      "frequencyPerShift": 1,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The encounter banner shows the corrected patient name and the previously entered study findings are still present",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (with a deliberately misspelled patient name and at least one finding entered); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "3f161856f938",
+      "goal": "Remove an abandoned encounter from the in-progress list",
+      "area": "encounter",
+      "frequencyPerShift": 1,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "The discard confirmation dialog for the chosen encounter is open with its confirm button reachable and enabled",
+      "stopAtThreshold": "Discard-confirm button in the in-progress list's discard ConfirmDialog (ongoing-visits-discard-<id> → confirm action) reachable+enabled — DO NOT CLICK",
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (a throwaway encounter the walker itself created for this task); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "03a18f254204",
+      "goal": "Record a normal venous study of both legs",
+      "area": "venous-le",
+      "frequencyPerShift": 3,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Every segment row in both legs reads normal/competent, the anatomy diagram shows all segments in the normal colour, and the save status shows a last-saved time",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "ad9b03d7d7d3",
+      "goal": "Record great saphenous vein reflux with reflux time and CEAP class",
+      "area": "venous-le",
+      "frequencyPerShift": 3,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The GSV row of one leg reads incompetent with the reflux time in seconds, that segment is coloured incompetent on the anatomy diagram, and a CEAP clinical class is selected",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "a10e45d68aa5",
+      "goal": "Record a deep vein thrombosis in one leg",
+      "area": "venous-le",
+      "frequencyPerShift": 2,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The affected deep-vein row (e.g. femoral or popliteal) shows non-compressible / thrombosed and the anatomy diagram colours that segment as thrombosed",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "9acf2a952037",
+      "goal": "Record a normal arterial study with ankle-brachial index",
+      "area": "arterial-le",
+      "frequencyPerShift": 1,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Segment rows read normal (triphasic) and the ABI badges for both legs show an auto-computed value in the normal band",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "71f3dd3afb01",
+      "goal": "Record a femoral artery stenosis with waveform and peak velocity",
+      "area": "arterial-le",
+      "frequencyPerShift": 2,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The superficial femoral artery row of one leg shows the chosen waveform, the PSV value and a stenosis grade, and the segment is coloured abnormal on the anatomy diagram",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "831ea4f62f94",
+      "goal": "Record a normal carotid study",
+      "area": "carotid",
+      "frequencyPerShift": 2,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "All carotid segment rows read normal and the NASCET panel shows the normal / <50% category for both ICAs",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "264f943ebf15",
+      "goal": "Enter internal carotid velocities and plaque and read the stenosis category",
+      "area": "carotid",
+      "frequencyPerShift": 2,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "With ICA PSV, EDV and plaque entered for one side, the NASCET panel shows the auto (SRU) category for that side",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "85025cca62ba",
+      "goal": "Record a normal iliac and pelvic venous study",
+      "area": "iliac-pelvic-venous",
+      "frequencyPerShift": 1,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Every IVC / right / left row of the iliac-caval table reads patent and competent and the save status shows a last-saved time",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "fd309042464d",
+      "goal": "Record left gonadal vein reflux with its diameter",
+      "area": "iliac-pelvic-venous",
+      "frequencyPerShift": 1,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The left gonadal vein shows the entered diameter (mm) and reflux present, and the anatomy diagram reflects the finding",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "none beyond the app being reachable — the walk starts a fresh encounter at / with patient name '[UXWALK-angio-module-2026-11-12] <task>'"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "4c683280f693",
+      "goal": "Draw a freehand mark on the anatomy diagram",
+      "area": "anatomy",
+      "frequencyPerShift": 3,
+      "clickBudget": 3,
+      "budgetSource": "angio-annotate",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A freehand stroke is visible on the anatomy diagram and is still there after reopening the encounter from /",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (with a venous LE study selected); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "454da3f3a800",
+      "goal": "Add a text label on the anatomy diagram",
+      "area": "anatomy",
+      "frequencyPerShift": 2,
+      "clickBudget": 3,
+      "budgetSource": "angio-annotate",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A text label with the typed words is visible on the anatomy diagram and is still there after reopening the encounter from /",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (with a venous LE study selected); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "5cb8f72c92e1",
+      "goal": "Write the conclusion for a finished study",
+      "area": "conclusion",
+      "frequencyPerShift": 8,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The conclusion (impression) field holds the typed text and the save status shows a last-saved time; the text is still there after reopening from /",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (whose venous LE study already has findings entered); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "6d7af6f56e93",
+      "goal": "Download the PDF report of a finished study",
+      "area": "report",
+      "frequencyPerShift": 9,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "A PDF file download event fires (filename venous-le-<patient>-<date>.pdf or the study's equivalent) and no PDF-failed error toast appears",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (single study, findings and conclusion complete); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "bcbf7f5b50f1",
+      "goal": "Preview the PDF report before printing",
+      "area": "report",
+      "frequencyPerShift": 6,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The PDF opens in a new browser tab showing the patient name and the study findings",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (single study, findings and conclusion complete); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "8b62e94cf890",
+      "goal": "Download one combined PDF for a patient with several studies",
+      "area": "report",
+      "frequencyPerShift": 3,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "One PDF file download event fires (filename encounter-<patient>-<date>.pdf) containing every study of the encounter, and no error toast appears",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter exists in this browser profile (two studies, both with findings complete (unified export is disabled until every study is complete)); created through the intake by an earlier walk step or task, patient name tagged [UXWALK-angio-module-2026-11-12] — never a hardcoded encounter id"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12",
+      "retiredOn": null,
+      "retireReason": null
+    }
+  ]
+}

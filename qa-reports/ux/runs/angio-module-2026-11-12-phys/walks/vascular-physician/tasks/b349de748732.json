@@ -1,0 +1,98 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys",
+ "persona": "vascular-physician",
+ "taskId": "b349de748732",
+ "goal": "Download one combined report PDF for a visit with two studies",
+ "startedAt": "2026-11-12T11:54:57.097Z",
+ "endedAt": "2026-11-12T11:55:31.489Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Expand, Giorgi, გაგრძელება (opens venous), footer 'PDF ჩამოტვირთვა': one download 'encounter-[UXWALK-angio-module-2026-11-12-phys]-გიორგი-კაპანაძე-2026-11-12.pdf' (61 KB, 4 pages) with the venous section (title ქვედა კიდურების ვენების ულტრასონოგრაფია, დასკვნა) and the carotid section (velocity table, NASCET 50–69 %, carotid დასკვნა). No in-app confirmation. Saved as pdfs/t15-combined.pdf.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:54:57.119Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "bc4bcc324848da7f",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "74c8bfe798ec",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/b349de748732-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:54:59.280Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "IN PROGRESS მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:54:59.990Z",
+   "do": "click გაგრძელება on Giorgi's row (first)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-4a8d2a00-e494-4e6c-93d5-b1fc97ad3c7a\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-4a8d2a00-e494-4e6c-93d5-b1fc97ad3c7a\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "720f49c5b64e01ef",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/b349de748732-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:55:01.869Z",
+   "do": "click PDF ჩამოტვირთვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "29f4215c21338e23",
+   "fpAfter": "29f4215c21338e23",
+   "paneKeyBefore": "320fb16ee145",
+   "paneKeyAfter": "320fb16ee145",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "The same footer label 'PDF ჩამოტვირთვა' downloads the single study on a one-study visit but the whole visit (encounter-…pdf) on a two-study visit; nothing on the button says which"
+  }
+ ],
+ "timeToUsableSec": 0.9
+}

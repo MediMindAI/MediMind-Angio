@@ -1,0 +1,1064 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "taskId": "03a18f254204",
+      "persona": "vascular-sonographer",
+      "goal": "Record a normal venous study of both legs",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "0a46facacdbc",
+      "persona": "vascular-sonographer",
+      "goal": "Switch to another study of the same patient",
+      "budget": 1,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "17e266d15e6a",
+      "persona": "vascular-sonographer",
+      "goal": "Add a forgotten study to the patient's open encounter",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 8,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "264f943ebf15",
+      "persona": "vascular-sonographer",
+      "goal": "Enter internal carotid velocities and plaque and read the stenosis category",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "332f579ec7b3",
+      "persona": "vascular-sonographer",
+      "goal": "Reopen an unfinished encounter after the browser was closed",
+      "budget": 2,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "3a68650e893d",
+      "persona": "vascular-sonographer",
+      "goal": "Correct the patient's details in an open encounter",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "3f161856f938",
+      "persona": "vascular-sonographer",
+      "goal": "Remove an abandoned encounter from the in-progress list",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "REACHED_THRESHOLD",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "REACHED_THRESHOLD",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "454da3f3a800",
+      "persona": "vascular-sonographer",
+      "goal": "Add a text label on the anatomy diagram",
+      "budget": 3,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 9,
+          "outcome": "COMPLETED",
+          "backtracks": 2
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 7,
+          "outcome": "COMPLETED",
+          "backtracks": 2
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "4c683280f693",
+      "persona": "vascular-sonographer",
+      "goal": "Draw a freehand mark on the anatomy diagram",
+      "budget": 3,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 7,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "5cb8f72c92e1",
+      "persona": "vascular-sonographer",
+      "goal": "Write the conclusion for a finished study",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "6d7af6f56e93",
+      "persona": "vascular-sonographer",
+      "goal": "Download the PDF report of a finished study",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "71f3dd3afb01",
+      "persona": "vascular-sonographer",
+      "goal": "Record a femoral artery stenosis with waveform and peak velocity",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "831ea4f62f94",
+      "persona": "vascular-sonographer",
+      "goal": "Record a normal carotid study",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "85025cca62ba",
+      "persona": "vascular-sonographer",
+      "goal": "Record a normal iliac and pelvic venous study",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 19,
+          "outcome": "FAILED_DISCOVERABILITY",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "8b62e94cf890",
+      "persona": "vascular-sonographer",
+      "goal": "Download one combined PDF for a patient with several studies",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "9acf2a952037",
+      "persona": "vascular-sonographer",
+      "goal": "Record a normal arterial study with ankle-brachial index",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 5,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "a10e45d68aa5",
+      "persona": "vascular-sonographer",
+      "goal": "Record a deep vein thrombosis in one leg",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "a93706776962",
+      "persona": "vascular-sonographer",
+      "goal": "Start an encounter for a new patient with one study",
+      "budget": 3,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "ad9b03d7d7d3",
+      "persona": "vascular-sonographer",
+      "goal": "Record great saphenous vein reflux with reflux time and CEAP class",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 7,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "bcbf7f5b50f1",
+      "persona": "vascular-sonographer",
+      "goal": "Preview the PDF report before printing",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "d5c84bc79cf3",
+      "persona": "vascular-sonographer",
+      "goal": "Start a right-leg-only venous study for a new patient",
+      "budget": 3,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 7,
+          "outcome": "FAILED_DISCOVERABILITY",
+          "backtracks": 2
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "f7d966f9347f",
+      "persona": "vascular-sonographer",
+      "goal": "Start an encounter for a new patient with several studies",
+      "budget": 3,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "fd309042464d",
+      "persona": "vascular-sonographer",
+      "goal": "Record left gonadal vein reflux with its diameter",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-sono",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "FAILED_BLOCKED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-sono-after",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "FAILED_BLOCKED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "2b116c3dbda9",
+      "persona": "vascular-physician",
+      "goal": "Download the report PDF for a single-study visit",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "3088c351aa84",
+      "persona": "vascular-physician",
+      "goal": "Download the finished study's report while the visit's other study is still empty",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 6,
+          "outcome": "FAILED_BLOCKED",
+          "backtracks": 2
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "42d763c1e133",
+      "persona": "vascular-physician",
+      "goal": "Add a follow-up recommendation to the venous report",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "4694a7f74e68",
+      "persona": "vascular-physician",
+      "goal": "Write the arterial conclusion and clinician comment",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "4f1b689e4374",
+      "persona": "vascular-physician",
+      "goal": "Set the SVP classification for a pelvic venous study",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 10,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 10,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "51f8fdd2aebb",
+      "persona": "vascular-physician",
+      "goal": "Review the arterial findings and ankle-brachial index for both legs",
+      "budget": 5,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "6c8627b00e20",
+      "persona": "vascular-physician",
+      "goal": "Write the venous conclusion and clinician comment",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "7ddfddbf4c8b",
+      "persona": "vascular-physician",
+      "goal": "Print the report on paper",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "FAILED_BLOCKED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "FAILED_BLOCKED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "7f498505079c",
+      "persona": "vascular-physician",
+      "goal": "Correct one arterial segment finding the sonographer entered",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "802d04f6063d",
+      "persona": "vascular-physician",
+      "goal": "Review the pelvic venous findings for the iliac veins, cava and gonadal veins",
+      "budget": 5,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "84c9daf274e4",
+      "persona": "vascular-physician",
+      "goal": "Move from one study to the other inside a two-study visit",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "acfa2ced1941",
+      "persona": "vascular-physician",
+      "goal": "Review the venous findings and diagram for both legs",
+      "budget": 5,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "afc608e3416b",
+      "persona": "vascular-physician",
+      "goal": "Preview the report PDF before giving it to the patient",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "b349de748732",
+      "persona": "vascular-physician",
+      "goal": "Download one combined report PDF for a visit with two studies",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "b9b131e672b8",
+      "persona": "vascular-physician",
+      "goal": "Set the CEAP classification for a venous study",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 10,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 7,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "c2ca3d94fcb2",
+      "persona": "vascular-physician",
+      "goal": "Write the pelvic venous conclusion and comments",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 1,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "c4a29c48523e",
+      "persona": "vascular-physician",
+      "goal": "Override the NASCET category when it does not match the images",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "d14d2d29a594",
+      "persona": "vascular-physician",
+      "goal": "Check the NASCET stenosis category for each internal carotid artery",
+      "budget": 5,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "d238785449bc",
+      "persona": "vascular-physician",
+      "goal": "Remove a finished visit from the in-progress list",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "REACHED_THRESHOLD",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "REACHED_THRESHOLD",
+          "backtracks": 0
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "d45cf28e1a49",
+      "persona": "vascular-physician",
+      "goal": "Reopen a sonographer's in-progress visit from the start page",
+      "budget": 2,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "e54837a93442",
+      "persona": "vascular-physician",
+      "goal": "Correct one venous segment finding the sonographer entered",
+      "budget": 6,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 0
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    },
+    {
+      "taskId": "eac7013f7172",
+      "persona": "vascular-physician",
+      "goal": "Correct a wrong birth date on an in-progress visit",
+      "budget": 4,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 4,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "flat"
+    },
+    {
+      "taskId": "f0a93328734a",
+      "persona": "vascular-physician",
+      "goal": "Write the carotid impression and clinician comments",
+      "budget": 15,
+      "history": [
+        {
+          "runId": "angio-module-2026-11-12-phys",
+          "date": "2026-11-12",
+          "clicks": 3,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        },
+        {
+          "runId": "angio-module-2026-11-12-phys-after",
+          "date": "2026-11-12",
+          "clicks": 2,
+          "outcome": "COMPLETED",
+          "backtracks": 1
+        }
+      ],
+      "trend": "improving"
+    }
+  ],
+  "planItems": []
+}

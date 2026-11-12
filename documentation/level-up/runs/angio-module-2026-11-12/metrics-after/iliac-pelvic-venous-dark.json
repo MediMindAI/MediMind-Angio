@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:32:37.425Z",
+  "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "dark",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(15, 23, 42)",
+      "cardBg": "rgb(30, 41, 59)",
+      "contrastRatio": 1.22,
+      "cardsWithShadow": 4,
+      "cardsTotal": 9
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(43, 108, 176)",
+        "occurrences": 3,
+        "distinctContexts": [
+          "button"
+        ],
+        "sampleSelectors": [
+          "button[data-testid=\"drawing-size-4\"]",
+          "button[data-testid=\"drawing-tool-pen\"]",
+          "button[data-testid=\"download-pdf\"]"
+        ]
+      }
+    ],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 50,
+      "tabs": 4,
+      "buttons": 31,
+      "rawCount": 50,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"svp-section\"]",
+        "heightPx": 69,
+        "populatedSiblingMedianHeightPx": 69,
+        "ratio": 1
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div[data-testid=\"svp-section\"] is 69px tall vs 69px for its populated siblings (1) — a quiet shift must look quieter",
+      "measured": 1,
+      "threshold": 0.75
+    }
+  ]
+}

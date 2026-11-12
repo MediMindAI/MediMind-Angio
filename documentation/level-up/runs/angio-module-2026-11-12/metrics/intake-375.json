@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:21:35.134Z",
+  "route": "/",
+  "slug": "intake",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "triage",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 0,
+      "cardsTotal": 6
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "text"
+        ],
+        "sampleSelectors": [
+          "div._field_37ob4_473 > div.emr-field-wrapper.size-md > label.emr-field-label > span.emr-field-label-required"
+        ]
+      }
+    ],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 12,
+      "tabs": 6,
+      "buttons": 1,
+      "rawCount": 12,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 > div._summaryBody_37ob4_742 > div._summaryPatient_37ob4_750",
+        "heightPx": 74,
+        "populatedSiblingMedianHeightPx": 59,
+        "ratio": 1.25
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "elevation-contrast",
+      "severity": "P1",
+      "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 6 decks carry a box-shadow — the decks are not separable from the surface",
+      "measured": 1,
+      "threshold": 1.05
+    },
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 > div._summaryBody_37ob4_742 > div._summaryPatient_37ob4_750 is 74px tall vs 59px for its populated siblings (1.25) — a quiet shift must look quieter",
+      "measured": 1.25,
+      "threshold": 0.75
+    }
+  ]
+}

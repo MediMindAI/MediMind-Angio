@@ -1,0 +1,98 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono",
+ "persona": "vascular-sonographer",
+ "taskId": "6d7af6f56e93",
+ "goal": "Download the PDF report of a finished study",
+ "startedAt": "2026-11-12T11:55:21.367Z",
+ "endedAt": "2026-11-12T11:55:51.185Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: list, Continue T10 (form opens at top; footer is sticky), 'PDF ჩამოტვირთვა' -> download event: venous-le-[UXWALK-angio-module-2026-11-12]-T10-Sono-Tsiklauri-2026-11-12.pdf (application/pdf, 45,629 bytes) via a[download] blob; no error toast. Detected with a passive in-page hook (a.click/createObjectURL wrappers) because the harness has no download listener.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:55:21.384Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "f8d3433a1908aaed",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "a6616b69488c",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/6d7af6f56e93-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:55:23.298Z",
+   "do": "open in-progress visits",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "6fed2edfcbde",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:55:24.017Z",
+   "do": "Continue T10 (findings + conclusion done)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-99fd1c31-f995-4e21-ae22-4b58f6f0169c\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-99fd1c31-f995-4e21-ae22-4b58f6f0169c\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "f8d3433a1908aaed",
+   "paneKeyBefore": "6fed2edfcbde",
+   "paneKeyAfter": "a6616b69488c",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/6d7af6f56e93-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:55:32.485Z",
+   "do": "press 'PDF ჩამოტვირთვა' in the sticky footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "f8d3433a1908aaed",
+   "fpAfter": "f8d3433a1908aaed",
+   "paneKeyBefore": "a6616b69488c",
+   "paneKeyAfter": "a6616b69488c",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "After 'PDF ჩამოტვირთვა' the app gives no feedback at all (no spinner, no toast, button unchanged) — the PDF (45.6 KB) is generated and downloaded silently; success is only visible in the browser's download UI. Filename embeds the raw patient name including brackets/spaces→dashes"
+  }
+ ],
+ "timeToUsableSec": 0.8
+}

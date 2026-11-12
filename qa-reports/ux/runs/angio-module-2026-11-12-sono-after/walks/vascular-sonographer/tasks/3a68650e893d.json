@@ -1,0 +1,98 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "3a68650e893d",
+ "goal": "Correct the patient's details in an open encounter",
+ "startedAt": "2026-11-12T15:26:28.413Z",
+ "endedAt": "2026-11-12T15:27:24.752Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: list (open) -> 'რედაქტირება' on T11 row: intake loads AND auto-scrolls to the name field. Corrected Mamaladzze -> Mamaladze, 'ვიზიტის გაგრძელება' -> venous form at top. Banner DOM text shows corrected name (visually truncated); CFV R ნაწილობრივი still present.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": true,
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:26:28.496Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "328af0edd7f0d48f",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "577928df79bf",
+   "paneKeyAfter": "88b2b797d488",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/3a68650e893d-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:26:44.683Z",
+   "do": "press 'რედაქტირება' (edit) on the T11 Mamaladzze row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-edit-6d05a368-fe65-4cf5-9866-d6c2055778b1\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-edit-6d05a368-fe65-4cf5-9866-d6c2055778b1\"]",
+   "labelText": "რედაქტირება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "88b2b797d488",
+   "paneKeyAfter": "9845f1aaa89b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 970,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:27:05.157Z",
+   "do": "correct the surname Mamaladzze -> Mamaladze",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"fill\" \"[data-testid=\\\"intake-patientName\\\"]\" \"[UXWALK-angio-module-2026-11-12-after] T11 Nana Mamaladze\"",
+   "kind": "fill",
+   "selector": "[data-testid=\"intake-patientName\"]",
+   "labelText": "პაციენტის სახელი და გვარი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "9845f1aaa89b",
+   "paneKeyAfter": "9845f1aaa89b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T15:27:06.376Z",
+   "do": "press 'ვიზიტის გაგრძელება' (continue visit)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-start\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-start\"]",
+   "labelText": "ვიზიტის გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "328af0edd7f0d48f",
+   "paneKeyBefore": "9845f1aaa89b",
+   "paneKeyAfter": "577928df79bf",
+   "transition": "route-change",
+   "scrollDeltaY": -970,
+   "screenshot": "shots/3a68650e893d-s04.png"
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "Corrected surname is not visible on screen: the banner truncates right after the run tag ('[UXWALK-angio-module-2026-11-12-...'), no tooltip — the fix can only be confirmed from DOM text"
+  }
+ ],
+ "timeToUsableSec": 1.8
+}

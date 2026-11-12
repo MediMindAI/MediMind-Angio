@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T18:06:34.761Z",
+  "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+  "slug": "arterial-le-dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "dark",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(15, 23, 42)",
+      "cardBg": "rgb(30, 41, 59)",
+      "contrastRatio": 1.22,
+      "cardsWithShadow": 4,
+      "cardsTotal": 9
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(43, 108, 176)",
+        "occurrences": 34,
+        "distinctContexts": [
+          "badge-or-chip",
+          "border",
+          "bullet-or-dot",
+          "button",
+          "icon",
+          "text"
+        ],
+        "sampleSelectors": [
+          "button[data-testid=\"emr-view-toggle-bilateral\"]",
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "button[data-testid=\"drawing-mode-toggle-click\"]",
+          "button[data-testid=\"drawing-size-4\"]",
+          "button[data-testid=\"drawing-tool-pen\"]",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ]
+      },
+      {
+        "color": "rgb(34, 197, 94)",
+        "occurrences": 2,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "R",
+        "occurrences": 18,
+        "selectors": [
+          "g#side-labels > text",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "L",
+        "occurrences": 18,
+        "selectors": [
+          "g#side-labels > text",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 129,
+      "tabs": 1,
+      "buttons": 87,
+      "rawCount": 164,
+      "repeatedLists": 10
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_8c1hx_3 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 67,
+        "populatedSiblingMedianHeightPx": 125,
+        "ratio": 0.54
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "status-color-collision",
+      "severity": "P1",
+      "evidence": "rgb(43, 108, 176) carries 6 unrelated meanings (badge-or-chip, border, bullet-or-dot, button, icon, text) across 34 marks — one color, one meaning",
+      "measured": 6,
+      "threshold": 3
+    }
+  ]
+}

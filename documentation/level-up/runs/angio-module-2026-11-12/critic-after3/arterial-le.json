@@ -1,0 +1,198 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+    "slug": "arterial-le-default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Status-color reservation (validation error vs clinical severity) + Alerts/notices (borderless deck + 4px left rail)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Red now means two things. (1) Clinical severity: the red SFA segment on the leg drawing and the red 'მსუბუქი პად' (mild PAD) TBI chips. (2) A data-consistency check: the full-width 'გადაამოწმეთ ეს მონაცემები' (check this data) box below the table, which says 'significant stenosis with triphasic waveform, please confirm'. The rubric names 'a validation error' as a meaning that must stay separate from clinical severity. This box also breaks the alert style rule: it has a full red outline and a pink fill instead of a borderless deck with a 4px left rail. The intended review prompt under the conclusion ('findings changed') uses blue. So two prompts that both mean 'please re-check' come in two different colours, and one of them borrows the stenosis red. Smaller issue, carried over: the red pen swatch in the drawing toolbar.",
+        "recommendation": "Give the waveform/stenosis consistency check the same treatment as the 'findings changed' review prompt: a borderless deck with a 4px info rail and calm body text. Place it inline directly under the SFA Mid R row, not as a page-wide box. On this screen, red should then appear only on stenosis and occlusion marks. Remove the red swatch from the drawing pen palette, or swap it for a theme blue."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Tables: critical row = error 4% tint + error rail; Density tiers (deep dive: one focal element wins)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The only abnormal finding is SFA Mid R at 70–99 %. In the 34-row segment table it shows up only as the plain text '70–99 %' inside a select, and that row looks exactly like the 33 normal ones. Meanwhile the heaviest mark in the table is the solid navy 'triphasic' waveform chip, repeated on all 34 rows. So the boldest ink goes to the normal default value, and the abnormal row gets none. To find the abnormal row, a clinician has to read the stenosis column line by line, or look across to the red segment on the drawing.",
+        "recommendation": "Give any row with stenosis ≥50 % or occlusion the critical-row treatment: an error 4% tint plus an inset 3px error rail. Show the selected waveform chip as a hairline-outlined selection, not a solid navy fill, so the 34 normal selections recede. Keep solid navy for the active laterality control only."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "No duplicate primary data",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Carried over. In the bilateral table each Georgian segment name is printed in full twice, once for R and once for L (17 × 2), and many wrap to 3 lines. This repeats row labels, not data, so it is layout bloat. It is not progressive disclosure. The 768 layout already solves it with one card per segment and R | L halves.",
+        "recommendation": "At 1440, use one row per segment with R and L sub-cells, as the 768 card does. Print the name once and put a small R/L chip inside each half."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive: everything else deliberately receding); Empty states collapse (closest fit)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The დასკვნა (conclusion) textarea holds 3 lines of text, but it renders at least 750px tall and runs past the bottom of the capture. That makes it the largest object on the page, bigger than the segment table deck, and almost all of it is empty. Because of it, the 1440 capture cuts off the review note, doctor notes, clinical assessment and recommendations. At 768 and 375 the same textarea fits its text (about 130px), so this is specific to the 1440 layout. Dark 1440 shows the identical height, so it is deterministic, but it should be confirmed in the live DOM. The rule fit is indirect: no rule names textarea height. The cost is that an empty field outweighs the focal element.",
+        "recommendation": "Cap the conclusion textarea at autosize to its content plus about 2 rows, with a sensible max-height and inner scroll, matching what 768 already does. The notes, assessment and recommendations should then fall within one scroll of the table."
+      }
+    ],
+    "reasoning": "The density tier was given as deep-dive. I compared against deep-dive.png. The screenshot and the metrics are both light (page #e7ebf1 under white decks, contrast 1.2, decks with shadow). There are no mechanical hard-fails. Structure still matches round 2: pressures and the diagram sit in the left column beside the table, and the only gradient action is PDF download. What a clinician's eye does: it lands on the dense navy waveform column. The single abnormal finding (SFA Mid R 70–99 %) is visible only on the drawing and in the red check box. Its table row is indistinguishable. colorDiscipline drops to 1 because this round's data triggers a red, fully outlined data-consistency box. The rubric explicitly separates validation errors from clinical severity, and the parallel review prompt is already blue. This rule blocks PASS, so the verdict is NEEDS-REWORK. Only one dimension is at 1, so this is not a redesign. Confidence is 0.75 because the capture ends partway through the conclusion textarea. I did not apply 'Content & layout rules 1–9': this repo's DESIGN-DIRECTION.md has no such section. The highest-leverage fix is to make the consistency check an info-railed inline note under the SFA Mid R row and give that row the critical-row error rail. That moves red to the right place and gives the table a focal row at the same time."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+    "slug": "arterial-le-768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Status-color reservation (validation error vs clinical severity) + Alerts/notices (borderless deck + 4px left rail)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "There is a full-width red-outlined, pink-filled box, 'გადაამოწმეთ ეს მონაცემები' (check this data: significant stenosis with triphasic waveform), above distal runoff. It is a data-consistency check. It uses the same red as the stenosed SFA segment on the drawing, its legend swatch and the TBI 'მსუბუქი პად' chips. The intended 'findings changed' review prompt below the conclusion uses a blue rail-style note. So red means both 'abnormal artery' and 'check your entry'. The box's full outline also breaks the borderless-deck + left-rail alert rule. The red pen swatch in the drawing toolbar is still there.",
+        "recommendation": "Restyle the consistency check as a borderless deck with a 4px info rail, the same treatment as the 'findings changed' note, and place it inside the SFA Mid card, under the R half. Drop the red pen swatch. Red is then left for stenosis and occlusion only."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Empty states collapse; Density tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Round 2's main win was that unrecorded halves showed only the waveform picker. In this capture it is gone. Applying the normal template fills every half, so all 34 halves expand to waveform, PSV, stenosis, plaque and occlusion. Each card is about 410px and the page is about 10,900px (about 10.7 viewports). The SFA Mid card with the 70–99 % stenosis looks identical to the 16 normal cards around it. This is exactly the failure the empty-state rule describes, 'a normal study looks identical to a heavily abnormal one', reached by template defaults instead of blanks.",
+        "recommendation": "Treat halves whose values all equal the template normal (triphasic, <30 %, no plaque, no occlusion) like unrecorded halves: collapse each to its name row plus a one-line 'normal' summary, and expand on tap. Expand automatically any half that differs from normal, such as SFA Mid R. This is a product decision about whether template-filled halves count as 'recorded'; see the oscillation finding."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Tables: critical row = error tint + error rail; Density tiers (one focal element)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The leg drawing correctly dominates near the top (large, legend underneath, red SFA segment). Below it, though, the abnormal SFA Mid R half has no severity treatment: no rail, no tint, just '70–99 %' inside a select. Every half instead carries a solid navy waveform chip, the boldest repeated mark in the list.",
+        "recommendation": "Give the abnormal half (stenosis ≥50 % or occlusion) an error 4% tint and an inset 3px error rail. Render selected waveform chips as an outlined selection so the normal default recedes."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "Oscillation check",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "densityFit has gone 1 → 3 → 2 across the last three rounds. The fall is not a code regression: the input changed. Round 2 had few recorded segments. Round 3 applied the normal template, which fills every half, so the collapse-when-unrecorded behaviour never triggers. 'Empty states collapse' conflicts with 'template values are recorded clinical data' on this screen.",
+        "recommendation": "Escalate as a product decision: should segment halves that equal the template normal collapse like unrecorded ones? Settle that before another fix round, or this score will keep moving with the test data."
+      }
+    ],
+    "reasoning": "The density tier was given as deep-dive. I compared against deep-dive.png. The screenshot is light. The metrics report pageBg as white with contrast 1.0 and no hard-fail, but the image clearly shows a tinted page around the white decks, so I judged depth from the image. There are no mechanical hard-fails. Several things are now right: one card per segment with R | L halves (redundancy 3), a large leg drawing directly after pressures with its legend, the patient-header study tab no longer wrapping into an oval, one gradient action, and recommendations collapsed. What the eye does: drawing first (correct), then roughly ten screens of identical, fully expanded normal cards. The abnormal SFA Mid R card is unmarked. colorDiscipline is 1 because a red, fully outlined data-consistency box borrows the stenosis red while the parallel review prompt is blue. That blocks PASS, so the verdict is NEEDS-REWORK. densityFit fell from 3 to 2 because of the template data, which I flagged for escalation. The highest-leverage fix is to make the consistency check an info-railed note inside the SFA Mid card, and put an error rail on that half. That reserves red for stenosis and gives the list a focal card."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+    "slug": "arterial-le-375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Status-color reservation (validation error vs clinical severity) + Alerts/notices (borderless deck + 4px left rail)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "There is a red-outlined, pink-filled 'გადაამოწმეთ ეს მონაცემები' (check this data) box after the segment list. It is a data-consistency check (significant stenosis with triphasic waveform). It uses the same red as the stenosed SFA segment on the drawing and the four TBI/ABI severity tiles. The intended 'findings changed' review prompt in the conclusion deck is blue. On a phone the box also sits about 6,000px below the SFA Mid card it refers to. The full outline breaks the left-rail alert style. The red pen swatch is still in the drawing toolbar.",
+        "recommendation": "Move the consistency check into the SFA Mid card, under the field it questions, as a borderless deck with a 4px info rail, the same treatment as the review note. Remove the red pen swatch. Red is then left for stenosis and occlusion only."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Empty states collapse; Density tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The normal template fills every segment, so each R-side card renders the full waveform, PSV, stenosis, plaque and occlusion stack, about 410px each, 17 cards. The page is about 11,000px, roughly 13.5 phone viewports. The abnormal SFA Mid card is the same size and weight as the normal ones. Last round's problems are fixed: the sticky bar is one row of icon buttons plus a labelled PDF download, and the ABI/TBI tiles stack and read in full.",
+        "recommendation": "Collapse halves that equal the template normal to a name row plus a one-line 'normal' summary, and expand automatically any half that differs (SFA Mid R). This matches the product decision flagged on the 768 variant."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Tables: critical row = error tint + error rail",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The drawing comes before the list and is clearly focal, with the legend stacked under it. That is correct. In the list, though, the SFA Mid card's only sign of abnormality is '70–99 %' as select text, and every card leads with a solid navy waveform chip.",
+        "recommendation": "Add an error 4% tint and an inset 3px error rail to any card with stenosis ≥50 % or occlusion. Show selected waveform chips as an outlined selection."
+      }
+    ],
+    "reasoning": "The density tier was given as deep-dive. I compared against deep-dive.png. The screenshot is light. The metrics' pageBg (white, contrast 1.0) disagrees with the tinted page visible in the image, so I judged depth from the image. hardFails[] is empty: last round's duplicate-label hard-fail is gone because the phone switch now uses R/L chips. Redundancy moves to 3: segment names appear once, and the R/L chip repeats are visibly subordinate. Other fixes since last round: the ABI R chip no longer truncates, the sticky bar is a single row, and the selected half of the side switch is solid navy instead of a second gradient. What the eye does: patient header, pressures, then the large leg drawing with its red SFA segment (correct). After that come about 13 phone screens of identical expanded normal cards, and the check-this-data box is far from the card it refers to. colorDiscipline is 1 because that box borrows the stenosis red for a validation meaning while the parallel review prompt is blue. That blocks PASS, so the verdict is NEEDS-REWORK. The '15' pill is a capture artifact and I ignored it. The highest-leverage fix is the same as at 768: make the check an info-railed note inside the SFA Mid card, put an error rail on that card, and collapse halves that are template-normal."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+    "slug": "arterial-le-dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "rgb(43, 108, 176) carries 6 unrelated meanings (badge-or-chip, border, bullet-or-dot, button, icon, text) across 34 marks — one color, one meaning (measured 6, threshold 3; composition-metrics.mjs). Context, not a re-derivation: in dark mode #2b6cb0 is the value of --emr-info (theme.css dark block), and it is also the middle stop of --emr-gradient-primary, which this round restored to the brand gradient in dark. The flagged marks are gradient and checked-state surfaces: the selected bilateral option, header tick bars, the selected drawing tool and size, R/L side chips, and the 34 selected waveform chips. The script ignores a severity colour only when it is byte-identical to a brand token. In dark, --emr-primary, --emr-secondary and --emr-accent are all #3182ce, so #2b6cb0 is no longer covered by that exception.",
+        "recommendation": "Fix this at the token level, not in components. Make dark mode follow the same pattern as light mode, where --emr-info equals --emr-accent (#3182ce). Either set dark --emr-info to #3182ce, or set dark --emr-secondary to #2b6cb0 so the gradient's middle stop is a declared brand value. Treat this as a palette decision for the token owner. With only four permitted blues, dark info and brand blues cannot be fully distinct, so you must pick which of them owns #2b6cb0."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Status-color reservation (validation error vs clinical severity) + Alerts/notices",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "As in light mode, the 'გადაამოწმეთ ეს მონაცემები' (check this data) box has a red outline and a maroon fill. It is a data-consistency check, but it uses the same red as the stenosed SFA segment and the TBI 'მსუბუქი პად' chips. It also breaks the left-rail alert style. A near-black pen swatch nearly disappears on the dark card, next to a red pen swatch.",
+        "recommendation": "Give the check an info left rail inline under the SFA Mid R row, as in light mode. Remove the red pen swatch, and give the dark swatch a hairline border or replace it with a theme-blue ink."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Density tiers (boldness spent once per screen)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "In dark mode the 34 selected waveform chips are bright #2b6cb0-range squares running in one column down the table. They are the most saturated, loudest element on the screen, brighter than the PDF download action, and they all encode the normal default (triphasic). The active study tab in the patient header is still a muted grey pill, while deep-dive-dark.png shows solid selected states. So the current study is the quietest control on the screen, and the normal waveform default is the loudest.",
+        "recommendation": "Render selected waveform chips as an outlined selection (hairline in --emr-primary, card fill) in both themes. Give the active study tab the solid --emr-primary checked fill that the rubric's Navigation chrome rule asks for."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Tables: critical row = error tint + error rail",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "This is not theme-dependent. In the 34-row table the SFA Mid R row (70–99 %) has no rail or tint, so the drawing and the check box are the only places that reveal the abnormal finding.",
+        "recommendation": "Apply the critical-row treatment, an error 4% tint plus an inset 3px error rail, to rows with stenosis ≥50 % or occlusion."
+      }
+    ],
+    "reasoning": "The density tier was given as deep-dive. I compared against the matching deep-dive-dark.png. The screenshot and metrics are both dark. Decks separate from the page (rgb(30,41,59) on rgb(15,23,42), contrast 1.22, with shadow). Structure matches light, and the leg drawing stays legible in dark. The metrics recorded a status-color-collision hard-fail, which caps colorDiscipline at 1 and blocks PASS. In my reading this is token aliasing introduced this round: restoring the brand gradient in dark put #2b6cb0 on checked and tick surfaces, and that value is also dark --emr-info. Visually the blue reads as one meaning (selection/brand), which is why I score 1 rather than 0. The fix is still real, and it is a one-token decision. Separately, the red data-check box borrows the stenosis red. What the eye does: it lands first on the bright column of 34 selected waveform chips, then the red SFA segment. The abnormal row and the active study tab are both quiet. Confidence is 0.75 because the capture ends inside the conclusion textarea, so the review note and lower decks are not visible. The verdict is NEEDS-REWORK. The highest-leverage fix is to align dark --emr-info with how light mode handles it, then demote the selected waveform chips to an outline."
+  }
+]

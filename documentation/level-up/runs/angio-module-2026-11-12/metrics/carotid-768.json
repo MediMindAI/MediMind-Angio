@@ -1,0 +1,467 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:31:01.390Z",
+  "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/carotid",
+  "slug": "carotid",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 0,
+      "cardsTotal": 33
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 2,
+        "distinctContexts": [
+          "bullet-or-dot",
+          "text"
+        ],
+        "sampleSelectors": [
+          "span[data-testid=\"nascet-right-auto\"]",
+          "div._bar_fi654_3.no-print > div._inner_fi654_16 > div._status_fi654_33 > span._dot_fi654_40._dotClean_fi654_47"
+        ]
+      },
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 2,
+        "distinctContexts": [
+          "button"
+        ],
+        "sampleSelectors": [
+          "button[data-testid=\"nascet-right-ge70\"]",
+          "button[data-testid=\"nascet-right-ge70\"]"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "< 50 %",
+        "occurrences": 4,
+        "selectors": [
+          "button[data-testid=\"nascet-right-lt50\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-lt50\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-lt50\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-right-lt50\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "50–69 %",
+        "occurrences": 4,
+        "selectors": [
+          "button[data-testid=\"nascet-right-50to69\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-50to69\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-50to69\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-right-50to69\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "≥ 70 %",
+        "occurrences": 4,
+        "selectors": [
+          "button[data-testid=\"nascet-right-ge70\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-ge70\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-ge70\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-right-ge70\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CCA Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CCA Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CCA Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "BIF",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ICA Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ICA Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ICA Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ECA",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "VA V1",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "VA V2",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "VA V3",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "A Subcl Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "A Subcl Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "Normal",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-normal\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-normal\"] > span._code_atwhq_124"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ნორმა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-normal\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-left-normal\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "Near-occlusion",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-near-occlusion\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-near-occlusion\"] > span._code_atwhq_124"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "სუბოკლუზია",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-near-occlusion\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-left-near-occlusion\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "Occluded",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-occluded\"] > span._code_atwhq_124",
+          "button[data-testid=\"nascet-left-occluded\"] > span._code_atwhq_124"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ოკლუზია",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-occluded\"] > span._desc_atwhq_139",
+          "button[data-testid=\"nascet-left-occluded\"] > span._desc_atwhq_139"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "R",
+        "occurrences": 14,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "L",
+        "occurrences": 14,
+        "selectors": [
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119",
+          "div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselSide_7ty0z_119"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 28,
+      "tabs": 4,
+      "buttons": 18,
+      "rawCount": 28,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8",
+        "heightPx": 212,
+        "populatedSiblingMedianHeightPx": 243,
+        "ratio": 0.87
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "elevation-contrast",
+      "severity": "P1",
+      "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 33 decks carry a box-shadow — the decks are not separable from the surface",
+      "measured": 1,
+      "threshold": 1.05
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"< 50 %\" renders 4× at comparable weight and size (button[data-testid=\"nascet-right-lt50\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-lt50\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 4,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"50–69 %\" renders 4× at comparable weight and size (button[data-testid=\"nascet-right-50to69\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-50to69\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 4,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"≥ 70 %\" renders 4× at comparable weight and size (button[data-testid=\"nascet-right-ge70\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-ge70\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 4,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CCA Prox\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CCA Mid\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CCA Dist\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"BIF\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ICA Prox\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ICA Mid\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ICA Dist\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ECA\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"VA V1\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"VA V2\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"VA V3\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"A Subcl Prox\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"A Subcl Dist\" renders 2× at comparable weight and size (div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109 | div._tableWrap_7ty0z_54 > div._row_7ty0z_60 > div._cell_7ty0z_97._vesselCell_7ty0z_101 > span._vesselLabel_7ty0z_109) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"Normal\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-normal\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-normal\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ნორმა\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-normal\"] > span._desc_atwhq_139 | button[data-testid=\"nascet-left-normal\"] > span._desc_atwhq_139) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"Near-occlusion\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-near-occlusion\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-near-occlusion\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"სუბოკლუზია\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-near-occlusion\"] > span._desc_atwhq_139 | button[data-testid=\"nascet-left-near-occlusion\"] > span._desc_atwhq_139) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"Occluded\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-occluded\"] > span._code_atwhq_124 | button[data-testid=\"nascet-left-occluded\"] > span._code_atwhq_124) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ოკლუზია\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-occluded\"] > span._desc_atwhq_139 | button[data-testid=\"nascet-left-occluded\"] > span._desc_atwhq_139) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 243px for its populated siblings (0.87) — a quiet shift must look quieter",
+      "measured": 0.87,
+      "threshold": 0.75
+    }
+  ]
+}

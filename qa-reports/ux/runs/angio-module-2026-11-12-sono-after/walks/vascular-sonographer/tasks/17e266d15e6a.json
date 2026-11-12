@@ -1,0 +1,142 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "17e266d15e6a",
+ "goal": "Add a forgotten study to the patient's open encounter",
+ "startedAt": "2026-11-12T15:13:16.804Z",
+ "endedAt": "2026-11-12T15:14:44.686Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: in-progress list (remembered open; walker collapsed it then reopened), Continue T01 -> venous form; banner '+ კვლევის დამატება' menu opens visibly -> 'ქვ. კიდურების არტერიები' -> /encounter/<same id>/arterialLE directly, new chip active. Patient not re-typed. Draft selectedStudyTypes = [venousLEBilateral, arterialLE].",
+ "attempts": 1,
+ "arrivedAtStep": 5,
+ "persistenceVerified": true,
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:13:16.916Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "57753b3e9e49bdcd",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "5951de954b95",
+   "paneKeyAfter": "f6fe85fe6893",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/17e266d15e6a-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:13:19.479Z",
+   "do": "open in-progress visits",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "f6fe85fe6893",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:13:50.650Z",
+   "do": "re-open the in-progress list",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "f6fe85fe6893",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T15:13:51.772Z",
+   "do": "Continue T01 Gelashvili (venous only)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-4f6ca12b-806c-4ea7-bab8-1e6243bf3936\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-4f6ca12b-806c-4ea7-bab8-1e6243bf3936\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "a6919e658726cfc2",
+   "paneKeyBefore": "f6fe85fe6893",
+   "paneKeyAfter": "f6fe85fe6893",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/17e266d15e6a-s04.png"
+  },
+  {
+   "n": 5,
+   "ts": "2026-11-12T15:13:55.934Z",
+   "do": "click '+ add study' in the banner",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"banner-add-study\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"banner-add-study\"]",
+   "labelText": "კვლევის დამატება",
+   "selectorConfidence": "unique",
+   "fpBefore": "7b976ffd3734c370",
+   "fpAfter": "7b976ffd3734c370",
+   "paneKeyBefore": "577928df79bf",
+   "paneKeyAfter": "46958cdd5f03",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 6,
+   "ts": "2026-11-12T15:14:12.885Z",
+   "do": "choose 'lower-limb arteries' (the forgotten study)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"banner-add-option-arterialLE\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"banner-add-option-arterialLE\"]",
+   "labelText": "ქვ. კიდურების არტერიები",
+   "selectorConfidence": "unique",
+   "fpBefore": "7b976ffd3734c370",
+   "fpAfter": "9f9e98a43a5c8d78",
+   "paneKeyBefore": "46958cdd5f03",
+   "paneKeyAfter": "7aab7ab8b7e4",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/17e266d15e6a-s06.png"
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 2,
+   "type": "confusion",
+   "note": "In-progress list now remembers it was expanded and opens expanded on return to /; the walker clicked the header by habit (baseline list started collapsed) and collapsed it — walker error, but the header toggle gives no hint which state it will go to"
+  },
+  {
+   "atStep": 6,
+   "type": "confusion",
+   "note": "Side switcher order and default differ between studies: venous = მარჯვენა|მარცხენა|ორმხრივი with მარჯვენა preselected; arterial = მარჯვენა|ორმხრივი|მარცხენა with ორმხრივი preselected"
+  },
+  {
+   "atStep": 6,
+   "type": "duplicate-path",
+   "note": "Add-study menu still offers 'ქვ. კიდურების ვენები (მარჯვენა)' and '(მარცხენა)' on an encounter that already has a bilateral venous study"
+  }
+ ],
+ "timeToUsableSec": 2
+}

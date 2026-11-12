@@ -1,0 +1,378 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "Not a script hard-fail (hardFails[] is empty), but the script's own metrics read pageBg = cardBg = rgb(255,255,255), contrastRatio 1, and only 1 of 9 cards carries a shadow. Visually, only the clinical-context deck reads as a surface. The veins table, left-gonadal, diagram and conclusion sections sit flat on the white page, so the sections do not group. The same markup in dark mode renders them as distinct decks, which confirms they are meant to be decks.",
+        "recommendation": "Give the veins-table, left-gonadal-vein, pelvic-vein-diagram and conclusion sections the same deck treatment the clinical-context card already has: --emr-bg-card + --emr-shadow-card + 12px radius, no outer border, on a light --emr-bg-page that is not identical to --emr-bg-card. Also report to the metrics owner that a 1.0 ratio with 1/9 shadowed cards emitted no elevation-contrast hard-fail."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Section headers ('No full-width tinted band') + Density tiers (focal element wins on weight)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The collapsed SVP and CEAP accordions render as full-bleed brand-gradient bands. They are the most saturated surfaces on the page, yet the line right above them says 'SVP და CEAP კლასიფიკაციები არასავალდებულოა' (they are optional). The optional add-on outweighs the segment findings it summarises. Dark mode renders the same two bands as calm slate decks, which shows the light gradient fill is not structural.",
+        "recommendation": "Render SVP and CEAP as standard decks with the slim section header (4x15 gradient tick + title). Show the code summary (S0 V0 P_, C0,En,An,Pn) as a neutral soft badge. Move the 'optional' sentence inside that deck header as a subordinate caption. It currently floats at x=0 outside every deck."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (one primary) + Density tiers ('boldness is spent once per screen')",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "About nine controls share solid navy primary weight: back-to-studies, '+ კვლევის დამატება', 'შაბლონები', '+ ახალი შემთხვევა', save draft, PDF view, PDF download, 'გენერაცია ნაპოვნიდან', and the active study pill. None of them wins. Add-study and new-case also show a doubled plus (a + icon AND a literal '+' in the label).",
+        "recommendation": "Keep --emr-gradient-primary on exactly one action: PDF download in the sticky bar (product may pick save draft instead, but only one). Make save draft, PDF view, templates, new case, add study and generate-from-findings secondary (white deck + hairline). Make back-to-studies a ghost button. Remove the literal '+' from the labels."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive needs ONE focal element; usually the anatomy diagram or the segment table)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The IVC/Right/Left table uses about 1020 of 1400 px. Every row ends at the PV column, leaving about 380 px dead on the right. The pelvic-vein diagram sits about 1,500 px further down, below 21 rows of identical controls, so the table and the diagram it describes are never on screen together. The structure differs from deep-dive reference (main column + right rail); that is theme-independent.",
+        "recommendation": "RELOCATION, route as a layout change, not a token swap: at >=1280px put the pelvic-vein diagram in a sticky right rail beside the veins table, using the dead 380 px, so the table + diagram pair becomes the single focal element. Fallback if product refuses the rail: spread the six table columns across the full deck width."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "--emr-success green (metrics: span._dotClean in the sticky bar, context 'bullet-or-dot') marks the status 'ჯერ არ შენახულა' ('not saved yet'). Green is borrowed for a draft-persistence status that is neither clinical severity nor success. It is the only severity-colour borrow on the screen and it is in a low-stakes spot.",
+        "recommendation": "Make the save-status dot neutral (--emr-text-secondary), or drop it and let the text carry the state. Keep green for competent/normal findings only."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Cards / surfaces (decks float on shadows, 12px radius) vs. reference spacing rhythm",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Decks and the SVP/CEAP bands run flush to x=0 and x=1440, the back button is flush in the top-left corner, and the templates/new-case buttons touch the right edge. The reference has about 20 px page gutters, so decks visibly float with rounded corners. The spacing rhythm is theme-independent, so this is a real difference.",
+        "recommendation": "Restore horizontal padding on the page container, matching the reference gutter, so every deck floats with visible 12px corners. No content change."
+      }
+    ],
+    "reasoning": "Rubric note: this repo's DESIGN-DIRECTION.md has no '### Content & layout' section, so I judged only against the Composition section and the component rules. Density tier: deep-dive, as supplied. Metrics colorScheme=light matches the screenshot. The fixed sticky bar shown mid-page is a capture artifact and was not scored. What the eye does: it lands first on the navy button cluster at the top, then gets pulled down to the two gradient SVP/CEAP bands, the loudest surfaces on the page and an optional add-on. The segment table, the real work, is about 2,000 px of identical empty controls on a white page with no deck edges, so nothing groups and nothing leads. The diagram it should pair with is 1,500 px below. Colour is mostly disciplined: one low-stakes green borrow. There is no duplicate data at this width. hierarchy=1 and restraint=1, so rule 2 blocks PASS. Only two dimensions are <=1, so the verdict is NEEDS-REWORK, not a redesign. Highest-leverage fix: restore deck elevation in light mode and calm the SVP/CEAP bands to standard decks. Those two changes alone hand visual weight back to the segment table."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: NOT copy-paste bloat. These are distinct right- and left-side segments that share an anatomical label. But in the stacked-card layout the side shows only as a small gray group pill above the first card of each group, so two identical full-weight titles thousands of px apart really are ambiguous (wrong-side entry risk). The metric is right that the screen has a problem, even though the text match is a coincidence.",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"IIV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-iiv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-iiv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CFV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-cfv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-cfv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"OV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-ov-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-ov-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity / Empty states collapse + Density tiers",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "At 768 the IVC/Right/Left table becomes 21 stacked segment cards (3 IVC + 9 right + 9 left). Each is about 535 px tall with 6 full-width fields, and all are empty, so the page is 13,848 px tall (about 13.5 viewports at 1024). Every empty segment takes the same footprint a fully populated one would, so a normal study looks as heavy as a grossly abnormal one. A 768 px tablet has room for a compact table row: the desktop row's controls fit in about 870 px with fixed-width selects. The svp-section empty state does collapse correctly (ratio 0.32).",
+        "recommendation": "STRUCTURAL, route as a redesign: keep a table row at >=768 (segment label + 6 compact controls, allowed to wrap into two lines), or render each segment as a one-line summary row (label + neutral status chip) that expands on tap. Only expanded or populated segments take full card height."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Density tiers (one focal element) + No duplicate primary data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "21 white bordered cards of identical size and weight. Nothing wins, and the side (მარჯვენა / მარცხენა) is carried only by a small gray pill above the first card of each group. After one card of scrolling the clinician cannot see which leg's veins they are entering. The navy buttons and gradient SVP/CEAP bands stay the loudest elements. The study-tab strip also wraps into a three-line oval pill in the patient header.",
+        "recommendation": "Make the side group header sticky and use the slim section-header style for it. Put the side in each card title (see the mechanical findings). Lay the study tabs out as a horizontally scrollable single row instead of a wrapping pill."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (one primary) + Density tiers ('boldness is spent once per screen')",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same as desktop: about nine solid navy controls, none winning. The two full-bleed gradient SVP/CEAP bands are still the most saturated surfaces, next to 21 equal bordered cards. That is the 'bordered boxes of equal size' pattern.",
+        "recommendation": "Keep --emr-gradient-primary on exactly one action: PDF download in the sticky bar (product may pick save draft instead, but only one). Make save draft, PDF view, templates, new case, add study and generate-from-findings secondary (white deck + hairline). Make back-to-studies a ghost button. Remove the literal '+' from the labels."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "--emr-success green (metrics: span._dotClean in the sticky bar, context 'bullet-or-dot') marks the status 'ჯერ არ შენახულა' ('not saved yet'). Green is borrowed for a draft-persistence status that is neither clinical severity nor success. It is the only severity-colour borrow on the screen and it is in a low-stakes spot.",
+        "recommendation": "Make the save-status dot neutral (--emr-text-secondary), or drop it and let the text carry the state. Keep green for competent/normal findings only."
+      }
+    ],
+    "reasoning": "Compared against deep-dive.png; scheme matches (light). Density tier: deep-dive, as supplied. The fixed bar over the IVC card is a capture artifact. Nine mechanical duplicate-primary-data fails cap redundancy at 1. My judgment: the label match is a coincidence of bilateral anatomy (right CIV and left CIV are different data), but the stacked layout really does strip side context from each card, so the cap reflects a real readability and wrong-side risk. The bigger problem is structural. A tablet-width screen turns a 6-column table into 21 identical 535 px cards and a 13,848 px scroll, with every empty segment at full footprint. The eye finds no focal element: 21 equal boxes, gradient bands, and a navy button cluster. Four dimensions are <=1, so rule 3 gives REDESIGN-REQUIRED. Restyling cannot fix a layout that multiplies empty cards. Highest-leverage fix: at >=768, keep the compact table row (or collapsed one-line segment rows that expand on tap) with the side in every row title."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: NOT copy-paste bloat. These are distinct right- and left-side segments that share an anatomical label. But in the stacked-card layout the side shows only as a small gray group pill above the first card of each group, so two identical full-weight titles thousands of px apart really are ambiguous (wrong-side entry risk). The metric is right that the screen has a problem, even though the text match is a coincidence.",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"IIV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-iiv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-iiv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CFV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-cfv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-cfv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"OV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-ov-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-ov-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate | critic judgment: same as the CIV პროქს. finding (bilateral label, side not carried in the title).",
+        "recommendation": "Put the side in every segment-card title (e.g. 'CIV პროქს. · მარჯვენა' / '· მარცხენა'), or pin the Right/Left group header (slim header: 4x15 gradient tick + --emr-font-md/600 title) while its cards scroll. Each title is then unique and the side can never scroll out of view. Do not remove either side's card."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity / Empty states collapse + Density tiers",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "21 stacked segment cards, each about 535 px tall with six full-width empty fields, make the page 14,266 px tall (about 17.5 phone viewports). Stacking is reasonable on a phone, but every empty segment keeps full footprint, so 'nothing recorded' looks as heavy as 'everything abnormal'.",
+        "recommendation": "STRUCTURAL, route as a redesign: render each segment as a one-line summary row (label + side + neutral status chip) that expands to the six fields on tap. Only expanded or populated segments take full height. Keep the IVC/Right/Left grouping as sticky group headers."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (one primary) + Density tiers ('boldness is spent once')",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The sticky action bar puts three solid primary buttons in one row (მონახაზის შენახვა, PDF ნახვა, PDF ჩამოტვირთვა). They do not fit 375 px: PDF download runs to about x=556, and the full-page capture is 556 px wide against a 375 px viewport, i.e. the document scrolls horizontally and the final action is partly off-screen. The study-tab strip also wraps into a three-line oval pill.",
+        "recommendation": "Keep one primary in the bar (PDF download). Make save draft and PDF view icon-only secondary buttons (white deck + hairline), or move them into an overflow menu, so the bar fits 375 px with no horizontal scroll. Lay the study tabs out as a single horizontally scrollable row."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Density tiers (one focal element) + No duplicate primary data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same as 768: 21 identical cards, and the side is carried only by a small gray pill above each group, so mid-scroll the clinician cannot tell right from left. The gradient SVP/CEAP bands remain the loudest elements, and the CEAP band title wraps to two lines.",
+        "recommendation": "Make the side group header sticky and use the slim section-header style for it. Put the side in each card title (see the mechanical findings). Lay the study tabs out as a horizontally scrollable single row instead of a wrapping pill."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "--emr-success green (metrics: span._dotClean in the sticky bar, context 'bullet-or-dot') marks the status 'ჯერ არ შენახულა' ('not saved yet'). Green is borrowed for a draft-persistence status that is neither clinical severity nor success. It is the only severity-colour borrow on the screen and it is in a low-stakes spot.",
+        "recommendation": "Make the save-status dot neutral (--emr-text-secondary), or drop it and let the text carry the state. Keep green for competent/normal findings only."
+      }
+    ],
+    "reasoning": "Compared against deep-dive.png; scheme matches (light). Density tier: deep-dive, as supplied. The screenshot is 556 px wide for a 375 px viewport. I read that as real horizontal overflow from the sticky action bar, not a capture fault, because every deck ends at about 355 px and only the bar extends beyond it. Confidence is 0.75 on that basis. Nine mechanical duplicate-primary-data fails cap redundancy at 1. As at 768, the matched labels are bilateral segments, not copied data, but the card titles drop the side, which makes the duplication a real ambiguity. On a phone a clinician scrolls about 17 screens of identical empty cards with no focal element, the side scrolls out of view, and the final action sits partly off-screen. Four dimensions are <=1, so the verdict is REDESIGN-REQUIRED. Highest-leverage fix: collapse segments to one-line rows (label + side + status chip) that expand on tap, and cut the sticky bar to one primary button."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive needs ONE focal element; usually the anatomy diagram or the segment table)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The IVC/Right/Left table uses about 1020 of 1400 px. Every row ends at the PV column, leaving about 380 px dead on the right. The pelvic-vein diagram sits about 1,500 px further down, below 21 rows of identical controls, so the table and the diagram it describes are never on screen together. The structure differs from deep-dive reference (main column + right rail); that is theme-independent.",
+        "recommendation": "RELOCATION, route as a layout change, not a token swap: at >=1280px put the pelvic-vein diagram in a sticky right rail beside the veins table, using the dead 380 px, so the table + diagram pair becomes the single focal element. Fallback if product refuses the rail: spread the six table columns across the full deck width."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (one primary) + Density tiers ('boldness is spent once per screen')",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "In dark mode the roughly nine navy controls are toned down (deep-navy fill), so they compete less than in light mode, but they are still equal in weight: back, + add study, templates, + new case, save draft, PDF view, PDF download, generate-from-findings. The literal '+' is still doubled on two labels.",
+        "recommendation": "Keep --emr-gradient-primary on exactly one action: PDF download in the sticky bar (product may pick save draft instead, but only one). Make save draft, PDF view, templates, new case, add study and generate-from-findings secondary (white deck + hairline). Make back-to-studies a ghost button. Remove the literal '+' from the labels."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "--emr-success green (metrics: span._dotClean in the sticky bar, context 'bullet-or-dot') marks the status 'ჯერ არ შენახულა' ('not saved yet'). Green is borrowed for a draft-persistence status that is neither clinical severity nor success. It is the only severity-colour borrow on the screen and it is in a low-stakes spot.",
+        "recommendation": "Make the save-status dot neutral (--emr-text-secondary), or drop it and let the text carry the state. Keep green for competent/normal findings only."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Cards / surfaces ('no outer border') + Section headers (4x15 gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Dark decks separate correctly from the page (metrics: pageBg rgb(15,23,42) vs cardBg rgb(30,41,59), ratio 1.22). But each deck also draws an outer hairline border, and the section tick bars render as flat gray instead of the brand gradient seen in light mode and in deep-dive-dark.png. Decks also run edge to edge with no page gutter (theme-independent; same as light).",
+        "recommendation": "Remove the outer border on primary content decks (shadow + surface step only, as in deep-dive-dark.png). Have the section tick use --emr-gradient-primary in dark mode too. Restore the page-container gutter so decks float."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Forms (inputs: --emr-bg-input fill, hairline border)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The empty multiselects (სიმპტომები, თანმხლები დაავადებები, გამოყენებული მიდგომები, პაციენტის პოზიციები) show a second, darker bar nested inside the input fill, which reads as an input inside an input. Single selects (სქესი) and the table selects do not.",
+        "recommendation": "Make the multiselect's inner search field transparent, so the control shows one --emr-bg-input fill with one hairline, matching the single selects."
+      }
+    ],
+    "reasoning": "Compared against deep-dive-dark.png, so the scheme matches. Metrics colorScheme=dark matches the screenshot, and hardFails[] is empty. The sticky bar mid-page is a capture artifact. In dark mode the composition holds together much better than in light: clinical context, veins table, left gonadal, diagram and conclusion each read as a separate deck. The SVP/CEAP accordions are calm slate rather than gradient, and the buttons are subdued. The eye goes header, then context deck, then the long veins table, which is correct for an entry form. The table does not dominate decisively, because the diagram sits far below it and every row is equal weight (hierarchy 2). The script flagged #2b6cb0 on the drawing pen/size buttons. That is the documented solid-primary checked state, not a severity borrow. The only real colour borrow is the green 'not saved yet' dot (colorDiscipline 2). No duplicates at this width. Density is workable but leaves about 380 px of dead space beside the table (densityFit 2). Every dimension is >=2 with no mechanical fails and confidence 0.8, so the verdict is PASS. Highest-leverage fix (shared with light): move the diagram into a right rail beside the table so one focal unit wins."
+  }
+]

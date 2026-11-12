@@ -1,0 +1,238 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/venousLEBilateral",
+    "slug": "venous-le-default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "priorDelta": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Color discipline (only theme blues; never Tailwind blues) + Status-color reservation (one color = one meaning)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "This finding is unchanged from the prior run. The anatomy palette is still off-token. Sampled pixels: reflux segment on the diagram is rgb(220,38,38), but the table's reflux rail is --emr-error rgb(229,62,62), so one meaning has two reds. The legend swatches, sampled at 768 and 375 where the legend is visible, are perforator rgb(37,99,235) (Tailwind blue-600, which is prohibited), ablated rgb(22,163,74) and normal rgb(148,163,184). Separately, the drawing toolbar's pen swatches use pastel red, blue and green, the same hues that encode severity on the same diagram.",
+        "recommendation": "Route the anatomy competency palette through tokens. Reflux uses --emr-error so the diagram and the table row match. Perforator uses a theme-blue token (the --emr-primary family), ablated uses --emr-success, and normal uses a neutral border/text-secondary token. Give the pen swatches neutral and theme-blue options only, or explicitly separate annotation colors from the competency hues, so a hand-drawn red mark cannot be read as reflux."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep-dive: ONE focal element, rich but still ordered)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The diagram now sits in a right-hand column beside the segment table, which fixes the prior layout finding. In the full-page capture, however, the diagram deck ends flat at about y=1010. The silhouette is cut off mid-thigh: the calf segments (PTV, PER, GASTROC, SOLEAL, GSV Calf, SSV) and the color legend are not visible, and the deck has no bottom padding or radius. This is probably a sticky column with an inner scroll that a full-page capture cannot show. Even so, in a 900px viewport the clinician sees only about 60% of the leg and no legend unless they scroll inside the column.",
+        "recommendation": "Fit the whole front view plus the legend inside the sticky column's height at 1440x900. Scale the silhouette to the available height, collapse the drawing toolbar to a single row (select/draw toggle plus an overflow for color, size and undo), and pin the legend under the silhouette so it is always visible."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Density tiers (deep-dive: one focal element that wins on weight, everything else deliberately receding)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The segment table is now the dominant deck and the decks separate from the page (1.2 contrast plus shadow). Inside the table, though, all 22 rows render identical full-weight filled inputs. The one abnormal row (GSV Prox Thigh, 1.8 s) is set apart only by a very faint tint, sampled at rgb(254,245,245), and a 3px rail. The full-width solid-navy 'მარჯვენა' side tab out-weighs it, so the eye lands on the tab before the finding.",
+        "recommendation": "Strengthen the critical-row treatment to the Tables rule: an error 4% tint plus the error rail, with the abnormal numeric cell in --emr-error text. Optionally render the categorical inputs in normal rows with a quieter (borderless until hover) input variant so that abnormal rows win."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Density tiers (boldness is spent once per screen)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "'ფორმის გასუფთავება' (clear form, a destructive action) sits alone in its own roughly 70px band between the patient header and the segment deck. A destructive action gets a dedicated row at the top of the page.",
+        "recommendation": "Move 'ფორმის გასუფთავება' into the patient-header overflow menu (the existing list-icon button) or into the bottom action bar as a ghost button. This removes the empty band."
+      }
+    ],
+    "reasoning": "The density tier was supplied (deep-dive); I judged against deep-dive.png. This is a real structural improvement. The canvas is --emr-bg-page gray, the decks are white with shadow, and the table and diagram sit side by side the way the reference uses its width. The gradient is spent once ('PDF ჩამოტვირთვა'), the bulk actions are now secondary or ghost, CEAP is a slim header, the empty Recommendations deck collapses to 67px (0.5 ratio), and the save dot is neutral (sampled rgb 107,114,128). No mechanical hard-fails. Red now carries one meaning (reflux: row rail, warning icon, diagram segment), but in two shades and next to an off-palette legend, so colorDiscipline is 2. The 'R' chip on each row is a subordinate chip and deliberate disclosure, so redundancy is 3. Hierarchy is 2 because the abnormal row is too faint to beat the solid-navy side tab. Confidence is 0.85 because the diagram clipping may be an inner-scroll artifact of the full-page capture. Highest-leverage remaining fix: tokenize the anatomy palette, so reflux is one red and perforator is no longer Tailwind blue."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/venousLEBilateral",
+    "slug": "venous-le-768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 0,
+      "restraint": 1
+    },
+    "priorDelta": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": -1,
+      "densityFit": 2,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"სრული · რესპიროფაზული\" renders 18× at comparable weight and size (button[data-testid=\"segment-head-cfv-right\"] > span._recordSummary_135b5_203 | button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSummary_135b5_203) — a second reference must be visibly subordinate. measured 18, threshold 2. Critic's judgment: visually this is NOT copy-paste bloat. Each instance is the collapsed summary of a different segment's own values (progressive disclosure on an accordion). The text matches because 18 segments are normal. It is still noise, however: 18 identical gray lines carry no information beyond 'normal'.",
+        "recommendation": "Show the collapsed summary line only on segments that deviate from the default normal state. Normal segments show just the name plus a subordinate neutral 'ნორმა' chip, or nothing. Optionally add one line in the deck header, for example '18 / 20 ნორმაში'. This clears the metric and makes the abnormal card stand out more. If the product owner judges these to be distinct data elements, the orchestrator should log this as a metric false-positive (a product/tooling decision) rather than restyle."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Color discipline (never Tailwind blues) + Status-color reservation",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Legend swatches sampled at 768: reflux rgb(220,38,38), but the abnormal card rail and warning icon use --emr-error rgb(229,62,62). Perforator is rgb(37,99,235), which is Tailwind blue-600 and prohibited. Ablated is rgb(22,163,74). The pen swatches in the drawing toolbar repeat the red, blue and green severity hues.",
+        "recommendation": "Use the same palette tokenization as desktop: reflux on --emr-error, perforator on a theme-blue token, ablated on --emr-success, and neutral or theme-blue-only pen swatches."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Density tiers (boldness spent once) + Navigation chrome",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The study switcher still wraps into an oval blob of 4 pills inside the patient header. The bulk actions still wrap onto 3 rows ('ყველა ნორმაში / გასუფთავება / R→L', then 'L→R', then 'შაბლონები'). The first segment card starts at about y=665.",
+        "recommendation": "Make the study switcher a horizontally scrolling single-row segmented control below 1024px. Keep 'ყველა ნორმაში' visible and move გასუფთავება, R→L, L→R and შაბლონები into one secondary 'მოქმედებები' overflow menu, so the bulk-action strip is one row."
+      }
+    ],
+    "reasoning": "The density tier was supplied (deep-dive); reference is deep-dive.png. The prior P0 is fixed. The table is now one accordion card per segment, each named. The abnormal GSV Prox Thigh card opens by default with its full name, error tint, error rail and warning icon, so it clearly wins inside the table. The diagram stacks below with a legend, and the Recommendations deck collapses (0.26 ratio). The canvas is visibly --emr-bg-page gray (sampled rgb 231,235,241) even though the script's pageBg sample read white; no elevation hard-fail was emitted. The verdict is blocked only by the mechanical duplicate-primary-data fail, which caps redundancy at 1 (rule 1/2). Only one dimension is ≤1, so this is NEEDS-REWORK, not redesign. The redundancy drop from 2 to 1 is caused by the new mechanical measurement on the new accordion layout, not a regression in composition; it is not oscillation (only one prior iteration). Highest-leverage fix: show summaries only on non-normal segments."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/venousLEBilateral",
+    "slug": "venous-le-375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 0,
+      "restraint": 1
+    },
+    "priorDelta": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": -1,
+      "densityFit": 2,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"სრული · რესპიროფაზული\" renders 18× at comparable weight and size (button[data-testid=\"segment-head-cfv-right\"] > span._recordSummary_135b5_203 | button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSummary_135b5_203) — a second reference must be visibly subordinate. measured 18, threshold 2. Critic's judgment: these are per-segment collapsed summaries (distinct data, identical text because the segments are normal). This is progressive disclosure, not a copy, but it adds 18 lines of noise.",
+        "recommendation": "Render the summary line only for segments that deviate from normal. Normal segments show their name plus at most a subordinate 'ნორმა' chip. If the product owner rules these distinct, the orchestrator should log this as a metric false-positive."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Color discipline (never Tailwind blues) + Status-color reservation",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same as the other variants. The legend shows perforator in Tailwind blue-600 and reflux in rgb(220,38,38), while the abnormal card uses --emr-error. The pen swatches reuse the red, blue and green severity hues.",
+        "recommendation": "Tokenize the anatomy palette (reflux on --emr-error, perforator on theme blue, ablated on --emr-success) and limit pen swatches to neutral or theme blue."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep-dive: rich but still ordered)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Horizontal overflow is fixed (capture is 375px wide) and the page is about 4,950px tall, down from about 14,800. The first viewport is still chrome: back, the oval study-switcher blob, '+ კვლევის დამატება', 'ფორმის გასუფთავება', side tabs, then the bulk actions stacked one per row. The first segment card starts at about y=840. Long Georgian segment names push the 'R' chip onto its own line (GASTROC, GSV Prox/Dist Thigh).",
+        "recommendation": "Below 480px, put the bulk actions behind one secondary 'მოქმედებები' menu, move 'ფორმის გასუფთავება' into the header overflow, and make the study switcher a horizontally scrolling row. Put the side chip inline with the short code ('GSV Prox · R') ahead of the long name, so it never wraps alone."
+      }
+    ],
+    "reasoning": "The density tier was supplied (deep-dive); reference is deep-dive.png. Both prior P0s are resolved: there is no more anonymous numeric stack, and nothing extends past 375px. The accordion makes the abnormal segment the single loudest object in the table (expanded, error tint, rail, warning icon on 1.8 s), which is exactly the deep-dive focal rule at phone width. The diagram scales cleanly with R/L and the reflux segment legible, and the legend is present. The bottom bar seen mid-page is a full-page-capture artifact and was ignored. The verdict is NEEDS-REWORK only because of the mechanical duplicate-primary-data fail, which caps redundancy at 1. The redundancy drop from 2 to 1 is a single move caused by a new measurement, not oscillation. Hierarchy stays at 2 because the first viewport is spent on navigation and bulk actions rather than findings. Highest-leverage fix: show summaries only on non-normal segments, then compress the chrome above the table."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/venousLEBilateral",
+    "slug": "venous-le-dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "priorDelta": {
+      "hierarchy": 0,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 0
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "Color discipline (never Tailwind blues; dark mode via semantic vars) + Status-color reservation",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The diagram reflux segment is still rgb(220,38,38), not --emr-error, and perforator is still Tailwind blue in the shared palette. In dark mode the pen swatches render saturated red, blue and green right above the anatomy, which makes the overlap with severity hues more prominent than in light. The metrics flag rgb(43,108,176) on download-pdf, drawing-tool-pen and drawing-size-4: that is the brand primary action plus checked-state toggles, which the Buttons and Forms rules allow, so it is not a finding.",
+        "recommendation": "Tokenize the anatomy palette (reflux on --emr-error, perforator on theme blue, ablated on --emr-success) and limit pen swatches to neutral or theme-blue options."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep-dive: ONE focal element)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "As in light mode, the sticky diagram deck is clipped at about y=1010 in the full-page capture. The calf segments and the legend are not visible.",
+        "recommendation": "Fit the whole front view plus the legend in the sticky column at 1440x900. Scale the silhouette to the available height, use a single-row toolbar, and pin the legend."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Reference parity (structure is never theme-dependent) + Section headers (4×15px gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Two structural differences between themes. (1) The collapsed CEAP header shows a 'CEAP: C0,En,An,Pn' summary chip in dark but none in light. (2) The section tick bars render slate rgb(72,86,106) in dark instead of the gradient, which is about rgb(43,109,177) in light. The gradient tokens are theme-invariant, so the tick should match. The CEAP difference may come from captured state (dark was captured 3 minutes later), but if it does not, it is a theme-dependent structure.",
+        "recommendation": "Render the tick bar with --emr-gradient-primary in both themes. Decide once whether the collapsed CEAP header shows its summary chip, and render it the same way in both themes. The chip is good subordinate disclosure, so keep it in light too."
+      }
+    ],
+    "reasoning": "The density tier was supplied (deep-dive). The screenshot is dark and the metrics colorScheme is dark, so they agree; I judged against deep-dive-dark.png. The prior P1 is fixed: the silhouette now uses a dark semantic fill with readable R/L labels and no longer wins by glare. The decks separate from the page (1.22 plus shadow), the layout puts table and diagram side by side, the empty Recommendations deck collapses (0.5), and the save dot is neutral. There are no mechanical hard-fails. Red carries only reflux, but the diagram uses a different red from the table and the pen swatches echo severity hues, so colorDiscipline is 2. Hierarchy holds at 2: the table dominates, but the bright-blue active side tab still out-weighs the faint abnormal-row tint. Highest-leverage remaining fix: tokenize the anatomy palette and fit the full diagram plus legend inside the sticky column."
+  }
+]

@@ -1,0 +1,104 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "d45cf28e1a49",
+ "goal": "Reopen a sonographer's in-progress visit from the start page",
+ "startedAt": "2026-11-12T15:25:51.857Z",
+ "endedAt": "2026-11-12T15:28:33.308Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Expanded the collapsed in-progress card (eyebrow now Georgian 'მიმდინარე'), Nino's row (5th of 5) under the sticky footer, one scroll, გაგრძელება; venous form opened at /encounter/<id>/venousLEBilateral scrolled to top (scrollY 0) with banner '[UXWALK…] ნინო ბერიძე · 7 წლის'. Row buttons now Georgian (რედაქტირება).",
+ "attempts": 1,
+ "arrivedAtStep": 4,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:25:51.937Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "4f6d0d0147754362",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "7292e9b0e345",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d45cf28e1a49-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:26:16.034Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:26:42.364Z",
+   "do": "scroll to see the last in-progress visit row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"600\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 600,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T15:26:43.247Z",
+   "do": "click გაგრძელება on Nino's visit row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-779494af-f951-4fb1-bc45-6cfc494800ca\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-779494af-f951-4fb1-bc45-6cfc494800ca\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "bfdac106898a70a4",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "7a694c0ddce8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d45cf28e1a49-s04.png",
+   "afterStateReprobed": true
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 2,
+   "type": "confusion",
+   "note": "After expanding, the 5th row (Nino, the target) sits under the sticky footer bar; only its top edge shows"
+  },
+  {
+   "atStep": 4,
+   "type": "duplicate-path",
+   "note": "Two ways to resume: the expanded 'მიმდინარე ვიზიტები' list and the footer button, which now names the visit it continues ('მიმდინარე ვიზიტის გაგრძელება · … თამარ ჯაფარიძე' = last edited, not the target)"
+  }
+ ],
+ "timeToUsableSec": 1.6
+}

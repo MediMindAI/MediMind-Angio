@@ -1,0 +1,82 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "2b116c3dbda9",
+ "goal": "Download the report PDF for a single-study visit",
+ "startedAt": "2026-11-12T15:44:42.660Z",
+ "endedAt": "2026-11-12T15:45:17.639Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Footer resume (names Nino) -> venous form, footer 'PDF ჩამოტვირთვა': anchor download 'venous-le-[UXWALK-angio-module-2026-11-12-phys-after]-ნინო-ბერიძე-2026-11-12.pdf' (application/pdf 55 KB, 4 pages) started, no red notification. Saved copy (pdfs/t9-download.pdf) embeds NotoSansGeorgian Regular+Bold, pdftotext yields Georgian text and 0 replacement glyphs; both GSV prox thigh reflux rows print 'კომპეტენტურობა: რეფლუქი'.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:44:42.698Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/2b116c3dbda9-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:44:45.870Z",
+   "do": "click the footer button that names Nino's visit",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-phys-after] ნინო ბერიძე",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/2b116c3dbda9-s02.png",
+   "afterStateReprobed": true
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:44:50.852Z",
+   "do": "click PDF ჩამოტვირთვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "PDF ჩამოტვირთვა gives no in-app confirmation (no toast); the only feedback is the browser's own download bar"
+  }
+ ],
+ "timeToUsableSec": 1.3
+}

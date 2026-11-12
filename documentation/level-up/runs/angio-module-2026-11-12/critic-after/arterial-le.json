@@ -1,0 +1,250 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/arterialLE",
+    "slug": "arterial-le",
+    "variant": "default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "delta": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 0,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep dive: ONE focal element that wins on weight)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The diagram now sits in a sticky left column beside the table. That fixes the last round's main problem. But inside that column the legend sentence and a two-row drawing toolbar come before the diagram, and the column is a fixed-height box that scrolls on its own. The capture shows the box ending mid-calf, so the lower-leg half of the leg drawing (PTA/ATA/peroneal, 9 of 17 segments) and the colour legend are hidden. I only checked the CSS (ArterialLEForm.module.css .diagramArea: max-height calc(100vh - lg - 96px); overflow-y auto) to explain why the capture is clipped. At 1440x900 the focal element needs an inner scroll before it is complete.",
+        "recommendation": "Put the diagram first in the left column, with the legend directly under it. Scale the diagram so the whole leg drawing fits the box height. Move the drawing toolbar below the legend as one compact row, or into the diagram deck's header row as icon buttons. Done right, the whole leg drawing and its legend are visible with no inner scroll at 1440x900."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "no-duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Unchanged from last round. In the bilateral table each Georgian segment name is printed in full twice, once on the R row and once on the L row (17 x 2). This repeats row labels, not data, so it is layout bloat rather than progressive disclosure. The 768 layout has already solved this with one card per segment and R | L halves.",
+        "recommendation": "Print each segment name once, as a group label spanning its two rows. The R and L rows then carry only the side chip and their inputs. This matches the one-name-per-segment pattern already used at 768."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (slim row, 4x15 gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The pressures and segment-assessment headers still stack an icon tile next to the tick bar. Distal runoff and recommendations show the tick bar alone. The conclusion deck (დასკვნა / doctor notes / clinical assessment) has no section header at all, so it reads differently from its siblings.",
+        "recommendation": "Remove the icon tiles from the pressures and segment-assessment headers and keep the tick bar plus title only. Give the conclusion deck a header row (tick bar plus title) like the distal runoff deck."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation (anatomy competency palette counts as severity)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The drawing toolbar's pen colours include a red swatch. Red ink drawn on the leg drawing would look the same as the red that marks haemodynamically significant stenosis (SFA-prox R). This is a minor borrow in a low-stakes place. The red autosave dot from last round is now neutral, which is fixed.",
+        "recommendation": "Swap the red pen swatch for a theme navy (--emr-primary or --emr-secondary). That keeps red on the leg drawing meaning stenosis only."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I compared against deep-dive.png. The screenshot and metrics are both light mode. The earlier run judged a different encounter (fb54...), but the screen shape is the same. The structure is now right. The page is tinted (#e7ebf1-level) under white decks (metrics contrast 1.2, decks with shadow). There is one gradient action (PDF download). The pressures deck has joined the left column, so the dead column is gone. The table fits its deck and the empty recommendations card is collapsed. Severity colour is disciplined: red appears only on the stenosed SFA-prox segment, its legend swatch and the moderate-PAD ABI chip, and green only on normal ABI. The pressures table now lists R before L, which fixes last round's laterality inconsistency. The eye now goes from the pressures deck to the segment table, and the diagram is beside it, but the diagram does not yet dominate. Not scored because no rule covers it: segment names wrap to 3 lines in a narrow column while about 120px sits empty between the waveform picker and the PSV column, which makes every row about 62px tall. The fixed footer mid-page is a capture artifact, and the clipped sticky column is explained above. Highest-leverage fix: put the diagram first in the sticky column and scale it so the whole leg drawing and legend fit without an inner scroll."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/arterialLE",
+    "slug": "arterial-le",
+    "variant": "768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 3,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "delta": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 2,
+      "densityFit": 2,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "restraint",
+        "rule": "Navigation chrome / density-tiers (boldness spent once)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Unchanged from last round. The study tabs in the patient header wrap into a two-row oval pill about 125px tall. It is the most oddly shaped object above the fold and pulls the eye away from the pressures deck.",
+        "recommendation": "Show the study tabs as a single row that scrolls sideways (same pill style, no wrapping), so the patient header stays one compact band."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation (anatomy competency palette counts as severity)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The drawing toolbar offers a red pen swatch. Red ink drawn on the leg drawing would look the same as the red stenosis segment (SFA-prox R) and its legend entry.",
+        "recommendation": "Replace the red pen swatch with a theme navy (--emr-primary or --emr-secondary)."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I compared against deep-dive.png. The screenshot is light, matching the metrics. One discrepancy: the metrics report pageBg rgb(255,255,255), but the screenshot clearly shows a tinted page around the white decks, so I judged depth from the image. This variant changed the most. The leg drawing now comes right after the pressures deck, is large, and has its legend under it. Below it, each segment is one card with its name printed once and R | L halves. Unrecorded halves show only the waveform picker, while the recorded half (SFA-prox R) expands to PSV, stenosis, plaque and occlusion. Empty segments now look visibly quieter than recorded ones, which is exactly what the empty-states rule asks for, and the card count has halved. Recommendations is collapsed. There is one gradient action. Red is used only for stenosis and the moderate-PAD chip. Not scored because no rule covers them: the L chip's position moves from card to card, following the length of the R segment name; and the label ტალღური ფორმა (waveform) repeats in every half. The fixed footer mid-page is a capture artifact. Highest-leverage polish: show the study tabs as a single row that scrolls sideways."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/arterialLE",
+    "slug": "arterial-le",
+    "variant": "375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "delta": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 0,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "2 hardFails entries merged. (1) \"\\\"მარჯვენა\\\" renders 2× at comparable weight and size (button[data-testid=\\\"arterial-phone-side-toggle-right\\\"] > span | div[data-testid=\\\"emr-content-section-content\\\"] > div.m_4081bf90.mantine-Group-root > div.emr-field-wrapper.size-sm > label.emr-field-label) — a second reference must be visibly subordinate\" (2) the same text for \"მარცხენა\" (arterial-phone-side-toggle-left vs the distal-runoff field label). My judgment: the matched pair is a view-switch label and a distal-runoff field label, a shared word rather than duplicated clinical data. A real issue sits behind it, though. The screen has two right/left controls at comparable weight: the study laterality selector (მარჯვენა / ორმხრივი / მარცხენა) near the top, and a full-width phone switch (მარჯვენა / მარცხენა) above the segment cards. The phone switch is the heavier of the two.",
+        "recommendation": "Make the phone view switch visibly subordinate by labelling its two options with the same R / L side chips the segment cards use, instead of repeating the words. The words then remain only in the study laterality selector and the distal-runoff field labels. This is a label change, not a layout change."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (severity legible)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Unchanged from last round. The ABI R severity chip is cut off ('საშუალო პა…') and runs into the ABI L tile. It is the only abnormal-severity label in the pressures deck, and on a phone it cannot be read. The sideways scrolling from last round is gone: the page is now 375px wide.",
+        "recommendation": "Below about 480px, stack the ABI tiles one per row (ABI R, then ABI L, then the TBI tiles), so each band chip has the full row width. Alternatively put the chip on its own line under the value."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The sticky report bar wraps to three rows at 375: save draft; PDF preview + print; PDF download. Its position mid-page is a capture artifact, but its height (about 190px, about 23% of an 812px viewport) is real and covers that much of every scroll position while the clinician fills segment cards.",
+        "recommendation": "Fit the bar into one row: a full-width-minus-icons PDF download (gradient) plus icon-only secondary buttons (44px) for save draft, preview and print. Alternatively keep PDF download and move the other three into a secondary 'more' menu."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Forms (checked states solid --emr-primary) + density-tiers (boldness spent once)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The selected half of the full-width phone switch (მარჯვენა) has a gradient fill as heavy as the PDF download button. That makes a second gradient-weight object on the screen. The study tabs still wrap into a two-row oval pill in the patient header.",
+        "recommendation": "Render the selected switch option as solid --emr-primary (the checked-state rule), not the gradient. Show the study tabs as a single row that scrolls sideways."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I compared against deep-dive.png. The screenshot is light, matching the metrics, but the metrics' pageBg white disagrees with the tinted page visible in the image, so I judged depth from the image. Big gains: the page is now exactly 375px wide (no sideways scroll), the diagram and its stacked legend come before the segment list, segments collapse to one name row plus waveform picker until recorded, and recommendations is collapsed. Severity colour stays disciplined. The verdict is NEEDS-REWORK by rule: the metrics script recorded a duplicate-primary-data hard-fail, which caps redundancy at 1 and blocks PASS. In my judgment the measured pair is a shared word, but it points at a real problem: two right/left controls compete. Only one dimension is at 1 and none at 0, so this does not need a redesign. Highest-leverage fixes: label the phone switch with R / L chips, stack the ABI tiles so the moderate-PAD chip is readable, and fit the report bar into one row."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/arterialLE",
+    "slug": "arterial-le",
+    "variant": "dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "delta": {
+      "hierarchy": 0,
+      "colorDiscipline": 0,
+      "redundancy": 0,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "restraint",
+        "rule": "Forms (checked states solid --emr-primary) + Section headers (gradient tick bar)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Unchanged from last round. In dark mode the selected 'ორმხრივი' (bilateral) option and the active study tab are muted grey fills, and the section-header tick bars are grey. In light mode the same controls are solid navy with gradient tick bars. deep-dive-dark.png keeps gradient ticks and solid selected states. In dark mode, then, the selected laterality and current study are the least visible controls on the page.",
+        "recommendation": "Render selected segmented-control and tab items in dark mode as solid --emr-primary with white text, and render tick bars with --emr-gradient-primary, as the dark reference does. Fix this at the token or wrapper level, not per page."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep dive: ONE focal element that wins on weight)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The layout does not depend on theme. The legend sentence and drawing toolbar sit above the diagram inside the sticky left column, which scrolls on its own. The column ends mid-calf, so the lower-leg half of the drawing and the legend need an inner scroll.",
+        "recommendation": "Same fix as light: diagram first, sized to the box height, legend directly under it, drawing toolbar compacted below or moved into the deck header."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "no-duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Each segment name is still printed twice, once for the R row and once for the L row (17 x 2). This is row-label bloat, not progressive disclosure.",
+        "recommendation": "Print each segment name once, as a group label over its R and L rows, matching the 768 one-card-per-segment pattern."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation + Color discipline (dark mode via semantic vars only)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The leg drawing now uses a themed dark fill and its R/L labels are readable, which fixes last round's P2. In the drawing toolbar the near-black pen swatch nearly disappears against the dark card. Like light mode, it offers a red pen swatch that would look the same as the stenosis red on the leg drawing. The colour legend is hidden by the capture's fixed footer, so I could not check whether the black occlusion swatch is visible in dark mode.",
+        "recommendation": "Give the black pen swatch and the occlusion legend swatch a hairline border in --emr-text-secondary so they stay visible on --emr-bg-card. Swap the red pen swatch for a theme navy."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I compared against the matching deep-dive-dark.png. The screenshot and metrics are both dark. Decks separate from the page (bg-card vs bg-page contrast 1.22, with shadow). There is one gradient action (PDF download). The structure matches light: pressures and diagram are in the left column beside the 34-row table, the table fits, and recommendations is collapsed. The metrics list rgb(43,108,176) in button and badge contexts. These are the R/L side chips and the selected drawing tool, which use the brand primary as the checked-state rule requires, so there is no severity collision and no hard-fail. Red is reserved for the SFA-prox stenosis and the moderate-PAD chip, green for normal ABI. The leg-drawing legibility problem from last round is fixed. What remains is a dark-mode token gap: selected states and tick bars go grey, so the current study and laterality are the hardest things to see, plus the same sticky-column ordering as light. Highest-leverage fix: solid --emr-primary selected states and gradient tick bars in dark mode, done at the token or wrapper level."
+  }
+]

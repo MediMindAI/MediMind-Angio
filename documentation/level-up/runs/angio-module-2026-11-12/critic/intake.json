@@ -1,0 +1,274 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake",
+    "variant": "default-1440-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_37ob4_93 > div._layout_37ob4_333 > aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 is 411px tall vs 349px for its populated siblings (1.18) — a quiet shift must look quieter",
+        "recommendation": "When no patient or study is entered, collapse the visit-summary deck to its slim header plus one muted line (e.g. 'ახალი პაციენტი · კვლევა არ არის არჩეული'). Drop the boxed new-patient tile and the ICD-10 / study sub-sections until they have values."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "16 actions above the fold (6 tabs + 1 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness",
+        "recommendation": "Put the optional visit fields (referring doctor, institution, informed-consent row and its date) inside one collapsed 'დამატებითი დეტალები' disclosure in section 2. This relocates content, so it needs a product decision."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "On a pristine form with zero clinical severity, red carries three of the rubric's named non-severity meanings: a 'required' marker (asterisk on patient name), a destructive control (red × clearing the visit date), and validation blockers (red dot + red text chip in the summary deck, plus a red-tinted box under the study grid). The metric only caught the asterisk; the other three are plain to see in the screenshot.",
+        "recommendation": "Asterisk → --emr-text-secondary. Clear × → ghost muted icon (--emr-text-secondary, navy on hover). Remove the red-tinted box under the study grid and the red summary chip. The 'what's missing' state is a workflow state, so it lives once, as the existing neutral line next to the disabled CTA in the action bar (solid navy if it needs emphasis). Keep --emr-error for clinical severity on the study forms."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Page background is white, the same as the card background (contrast 1.0). The four section decks are separated only by an outer hairline border, and only the summary deck carries a shadow. The metric passed on that 1-of-5 shadow, but visually the form decks are outlined boxes on white, not floating decks as in triage.png. This also breaks the Cards rule 'no outer border on primary content cards'.",
+        "recommendation": "Set the page field to the tinted --emr-bg-page / --emr-bg-accent-primary surface used by the references. Remove the outer border from all four section decks and give each --emr-shadow-card at radius --emr-border-radius-xl."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "section-headers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "All five decks shout the same way: a full-width gray header band, a full-height blue left rail (the rail treatment is reserved for alerts), an icon tile, a 'ნაბიჯი N' eyebrow and a bold title. The summary deck adds a gradient slab header. Step numbers appear twice, in the hero stepper and in every eyebrow. The stepper also reads '1/4 დასრულებულია' while showing step 1 as current and step 2 ticked, which breaks the single scan order.",
+        "recommendation": "Use the Section-headers rule: a slim row with a 4×15px --emr-gradient-primary tick and a --emr-font-md/600 title, a hairline under it, no tinted band, no left rail. Drop either the icon tiles or the 'ნაბიჯი N' eyebrows (the stepper already numbers the steps). Give the summary deck the same slim header instead of the gradient slab."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "On a triage screen meant to answer 'what do I do next', the decision that unlocks the only CTA (choosing studies, section 4) starts at about y≈1255, well below the 900px fold. Above the fold the loudest things are the hero gradient and the summary's gradient header, neither of which is the task. The CTA is a pale disabled gradient at the bottom edge.",
+        "recommendation": "Move the study picker up. Either place it directly after patient identification, or render the 4 available studies as a compact selectable row in the right column above the summary. Show the 2 coming-soon studies as one muted line, not two full-size ghost cards. This relocates content and needs a layout decision."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The metric's duplicateLabels (visit date, ICD-10) are subordinate mirrors in the summary deck (bothFullWeight:false). That is deliberate progressive disclosure and is allowed. The real repeats are the blocker messages: 'შეიყვანეთ პაციენტის სახელი' appears both in the summary chip and the action bar, and 'აირჩიეთ მინიმუმ ერთი კვლევა' appears in the summary and again in the louder red box.",
+        "recommendation": "Keep each blocker message only once, in the action bar next to the CTA. The summary deck should only mirror entered values."
+      }
+    ],
+    "reasoning": "Light 1440 matches the metrics' colorScheme. The tier is triage, as given. The reference is triage.png, but the shape table would map this entry form to deep-dive.png, so confidence is 0.8. DESIGN-DIRECTION.md here has no 'Content & layout' section, so all findings trace to the Cards, Section-headers, Composition and Forms rules. The eye goes first to the two gradient slabs (hero, summary header) and then finds four identical banded, railed, numbered boxes on a white field. Nothing groups by depth and nothing ranks above anything else. Red shows up in four places with no clinical meaning at all. The one decision that matters, picking studies, is below the fold. Three dimensions score 1 or lower and colour discipline is 0, so the problem is the structure, not the tokens. Highest-leverage fix: tinted page field with borderless shadowed decks and slim tick headers, then lift the study picker above the fold and take red out of the required, clear and blocker roles."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake",
+    "variant": "768-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_37ob4_93 > div._layout_37ob4_333 > aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 is 411px tall vs 349px for its populated siblings (1.18) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty summary deck to its header plus one muted line until a patient or study is entered."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "16 actions above the fold (6 tabs + 1 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness",
+        "recommendation": "Put the optional visit fields in a collapsed disclosure, as at 1440. Content relocation, so it needs a product decision."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "Same as 1440: red marks the required asterisk, the visit-date clear ×, the summary blocker chip and the red-tinted box under the study grid. That is three non-severity meanings on a screen with no clinical severity.",
+        "recommendation": "Asterisk → --emr-text-secondary. Clear × → muted ghost icon. Remove the red box and red chip, and keep one neutral blocker line next to the CTA."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "White page and white decks; the section decks are outlined, not shadowed, so grouping relies on borders that the Cards rule forbids.",
+        "recommendation": "Tinted page field (--emr-bg-page / --emr-bg-accent-primary), decks without borders on --emr-shadow-card."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "In single-column layout the summary deck drops to the very end (y≈1820+), after the study picker. Its red 'enter patient name' chip is now about 1,200px from both the name field and the CTA it explains. The study picker still starts below the fold (y≈1250 of 1024).",
+        "recommendation": "Below 1024px, drop the summary deck. Its only unique content is the blocker, which already sits in the action bar. Put the study picker straight after identification. Content relocation, so it needs a layout decision."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "section-headers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Every section has a gray header band, a left rail, an icon tile and a 'ნაბიჯი N' eyebrow, while the hero stepper repeats the same numbering. The summary uses a gradient slab header.",
+        "recommendation": "Slim headers with the 4×15 gradient tick, no band and no rail. Drop either the eyebrow or the icon tile, and use the same slim header on the summary."
+      }
+    ],
+    "reasoning": "Light 768 matches the metrics. Same reference caveat as 1440 (confidence 0.8). This layout has every 1440 defect plus a worse one: the summary, now a full-width deck at the bottom, is cut off from what it summarises, and its red blocker chip sits far from both the field and the CTA. Visit date and ICD-10 repeat only as subordinate mirrors, which is progressive disclosure and allowed, so redundancy stays at 2. On a narrow layout the eye goes down a column of identical banded boxes, and the study decision is below the fold. Highest-leverage fix: remove the summary deck below 1024px, lift the study picker, and use borderless shadowed decks on a tinted field."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake",
+    "variant": "375-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 0,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 6 decks carry a box-shadow — the decks are not separable from the surface",
+        "recommendation": "Tinted page field (--emr-bg-page / --emr-bg-accent-primary) at every breakpoint, with --emr-shadow-card on every deck. If the shadow is being removed by a mobile media query, keep it."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 > div._summaryBody_37ob4_742 > div._summaryPatient_37ob4_750 is 74px tall vs 59px for its populated siblings (1.25) — a quiet shift must look quieter",
+        "recommendation": "Replace the boxed 'ახალი პაციენტი / იდენტიფიკაცია არ არის დასრულებული' tile with one muted line while it is empty. Better still, drop the summary deck on mobile."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "Red marks the required asterisk, the visit-date clear ×, the summary blocker chip and the red box under the study list. That is three non-severity meanings.",
+        "recommendation": "Same fix as the other light variants. Asterisk and × become muted, the red box and red chip go, and one neutral blocker line stays in the sticky action bar."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The page is about 3,100px tall, nearly 4 screens at 812px. The six study cards are each full-width and about 90px tall and fill about 2 screens on their own; two of them are disabled coming-soon cards at almost full size. The summary deck repeats everything after it at the bottom.",
+        "recommendation": "Render available studies as compact one-line selectable rows (icon, name, check) and reduce coming-soon to one muted text line. Remove the summary deck below 768px. Both remove or relocate content."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "section-headers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same banded, railed, icon-tiled and numbered section headers as desktop, and the summary deck has a gradient slab header. The language and theme switchers sit on top of the 'ანგიოლოგიური კვლევის ანგარიში' hero badge, so the badge is half hidden.",
+        "recommendation": "Slim tick headers as on desktop. At 375, either hide the hero badge or move the language/theme switchers to their own row, so the chrome doesn't overlap."
+      }
+    ],
+    "reasoning": "Light 375 matches the metrics. Confidence is 0.75: same reference caveat, and the full-page capture puts the sticky bar over the section-2 header. Here the decks fail the elevation rule mechanically (no shadows at all), so nothing groups. The screen is a nearly four-screen scroll of identical boxed sections. The study choice is about 1.5 screens down and then takes another two screens because each study is a tall card. The overlap of the switchers and hero badge isn't covered by a specific rule; I'm noting it only as chrome noise. Highest-leverage fix: restore deck shadows on a tinted field, turn the study picker into compact rows placed early, and remove the mobile summary deck."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake",
+    "variant": "dark-1440",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "rgb(43, 108, 176) carries 4 unrelated meanings (badge-or-chip, border, button, surface) across 10 marks — one color, one meaning",
+        "recommendation": "Study-card icon tiles and the hero backdrop are decoration: move them to a neutral surface (--emr-bg-hover) with --emr-text-secondary icons. Keep this blue only for interaction (focus ring, checked state, the primary CTA gradient)."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_37ob4_93 > div._layout_37ob4_333 > aside._summaryColumn_37ob4_683 > div._summaryCard_37ob4_696 is 411px tall vs 349px for its populated siblings (1.18) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty summary deck to its header plus one muted line."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "16 actions above the fold (6 tabs + 1 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness",
+        "recommendation": "Collapse the optional visit fields into a disclosure, as in light mode. Content relocation, so it needs a product decision."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "forms-checked-state",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "All four available study cards show a ✓ inside their selection circle while the red box below says no study is chosen ('დასაწყებად აირჩიეთ მინიმუმ ერთი კვლევა'). In light mode the same unselected state is an empty circle. Unselected and selected look the same, or reversed, in dark mode. The stepper has the same problem: step 2's completion tick is invisible white on white, steps 3 and 4 become solid blue dots that look done or active (outlined in light), and the moon icon in the theme toggle is invisible. Structure must not change with theme.",
+        "recommendation": "Unselected = empty circle with a hairline border in both themes. Checked = solid --emr-primary with a white ✓, as the Forms rule says. Stepper pending steps = outlined, completed = solid with a visible ✓, in both themes. Fix the dark tokens for the toggle icon and tick glyph so they contrast with their fill."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Red marks the required asterisk, the summary blocker chip and the red-tinted box under the study grid: two non-severity meanings (required, blocker). The clear × is neutral here, unlike light mode, which is also a theme-dependent inconsistency.",
+        "recommendation": "Make the asterisk muted, remove the red box and chip, and keep one neutral blocker line in the action bar. Use the same neutral × in both themes."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "navigation-chrome / section-headers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The hero and summary header lose the brand gradient and become flat slate slabs, while the Navigation-chrome rule says the gradient owns the chrome. Each section still has a gray band, a left rail, an icon tile and a 'ნაბიჯი N' eyebrow, so five decks share equal weight.",
+        "recommendation": "Keep --emr-gradient-primary on the hero chrome in dark mode (as triage-dark.png does with its chrome hairline and CTA). Slim tick headers with no band or rail, and the same slim header on the summary."
+      }
+    ],
+    "reasoning": "Dark 1440 matches the metrics' colorScheme dark, and I compared it against triage-dark.png. Elevation is fine here (1.22, decks visible), so the light-mode elevation failure doesn't carry over. Composition is the same as light: equal-weight banded decks and the study picker below the fold. Dark mode adds a state-legibility failure, P1 on an intake that selects which studies get done: every available study looks ticked while the warning says none is selected, and the stepper's done and pending states are reversed or invisible. Highest-leverage fix: make the checked, unchecked and stepper states identical in both themes, then apply the light-mode structural fixes."
+  }
+]

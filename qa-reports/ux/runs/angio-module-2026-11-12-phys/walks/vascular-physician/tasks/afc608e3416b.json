@@ -1,0 +1,103 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys",
+ "persona": "vascular-physician",
+ "taskId": "afc608e3416b",
+ "goal": "Preview the report PDF before giving it to the patient",
+ "startedAt": "2026-11-12T11:49:42.643Z",
+ "endedAt": "2026-11-12T11:50:25.309Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Expand in-progress, resume Nino, footer 'PDF ნახვა' (sticky, visible without scrolling): window.open(blob:http://localhost:3001/…) fired, application/pdf 48 KB, 2 pages, NotoSansGeorgian embedded, no notification. New tab not screenshot-able by the harness; blob captured via in-page hook and saved to pdfs/t8-preview.pdf.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:49:42.684Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "e11aa003f2df0a7b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "ea923bd4f7d5",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/afc608e3416b-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:49:44.433Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "IN PROGRESS მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:49:45.107Z",
+   "do": "click გაგრძელება on Nino's row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "e11aa003f2df0a7b",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "ea923bd4f7d5",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/afc608e3416b-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:49:47.311Z",
+   "do": "click PDF ნახვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"preview-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"preview-pdf\"]",
+   "labelText": "PDF ნახვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "e11aa003f2df0a7b",
+   "fpAfter": "e11aa003f2df0a7b",
+   "paneKeyBefore": "ea923bd4f7d5",
+   "paneKeyAfter": "ea923bd4f7d5",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "PDF right-leg findings table prints only '—' although the right GSV prox thigh was set to რეფლუქი (competency select, no duration) and is drawn red on the same page's diagram: a reflux entered via the competency column never reaches the report table (evidence pdfs/t8-preview.pdf, pdfs/t8p-1.png)"
+  },
+  {
+   "atStep": 4,
+   "type": "jargon",
+   "note": "PDF header/footer dates are US-format English ('11/12/2026', '03:49 PM GMT+4') in a Georgian report; patient name wraps as '[-' + 'UXWALK…'"
+  }
+ ],
+ "timeToUsableSec": 0.8
+}

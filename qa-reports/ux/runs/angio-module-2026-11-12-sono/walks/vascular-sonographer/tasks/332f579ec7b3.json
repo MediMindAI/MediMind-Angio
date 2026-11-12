@@ -1,0 +1,142 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono",
+ "persona": "vascular-sonographer",
+ "taskId": "332f579ec7b3",
+ "goal": "Reopen an unfinished encounter after the browser was closed",
+ "startedAt": "2026-11-12T11:36:31.340Z",
+ "endedAt": "2026-11-12T11:37:38.682Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Fresh load of /. Footer 'continue current visit' = dead click. Opened in-progress list, Continue on T10 -> venous form; scrolled 2 screens: GSV Mid Thigh R still რეფლუქი with reflux 2.5 s (flagged red).",
+ "attempts": 1,
+ "arrivedAtStep": 4,
+ "persistenceVerified": true,
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:36:31.389Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "f8d3433a1908aaed",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "0dd32b368dd3",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/332f579ec7b3-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:36:50.873Z",
+   "do": "press 'continue current visit' in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:37:03.413Z",
+   "do": "open the in-progress visits list",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "ab9d824416f9",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:37:13.333Z",
+   "do": "Continue the T10 Tsiklauri visit (top row)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-99fd1c31-f995-4e21-ae22-4b58f6f0169c\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-99fd1c31-f995-4e21-ae22-4b58f6f0169c\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "f8d3433a1908aaed",
+   "paneKeyBefore": "ab9d824416f9",
+   "paneKeyAfter": "a6616b69488c",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/332f579ec7b3-s04.png"
+  },
+  {
+   "n": 5,
+   "ts": "2026-11-12T11:37:26.079Z",
+   "do": "scroll down to the GSV rows",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"600\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "f8d3433a1908aaed",
+   "fpAfter": "f8d3433a1908aaed",
+   "paneKeyBefore": "a6616b69488c",
+   "paneKeyAfter": "a6616b69488c",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 600,
+   "screenshot": null
+  },
+  {
+   "n": 6,
+   "ts": "2026-11-12T11:37:27.109Z",
+   "do": "scroll down to the GSV rows",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"600\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "f8d3433a1908aaed",
+   "fpAfter": "f8d3433a1908aaed",
+   "paneKeyBefore": "a6616b69488c",
+   "paneKeyAfter": "a6616b69488c",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 600,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 1,
+   "type": "duplicate-path",
+   "note": "Intake offers two resume paths: footer 'მიმდინარე ვიზიტის გაგრძელება' and the collapsed 'მიმდინარე ვიზიტები' list (5 visits) with per-row 'გაგრძელება'"
+  },
+  {
+   "atStep": 2,
+   "type": "dead-end",
+   "note": "Footer 'მიმდინარე ვიზიტის გაგრძელება' (continue current visit) after a fresh load: nothing visible happens — no navigation, no list expand, no message (5 visits exist)"
+  },
+  {
+   "atStep": 6,
+   "type": "confusion",
+   "note": "Reopened form starts at the top (sy=0) — the only recorded finding (GSV mid-thigh) is 1,205px below; nothing on the first screen says which segments have findings. Merely opening the encounter bumps 'ბოლოს შენახული' to a new time (15:37:14) with no edit made"
+  }
+ ],
+ "timeToUsableSec": 1.1
+}

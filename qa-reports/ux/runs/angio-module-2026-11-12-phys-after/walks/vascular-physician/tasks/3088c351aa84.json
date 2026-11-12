@@ -1,0 +1,82 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "3088c351aa84",
+ "goal": "Download the finished study's report while the visit's other study is still empty",
+ "startedAt": "2026-11-12T15:58:53.438Z",
+ "endedAt": "2026-11-12T15:59:53.511Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "In-progress card expanded (remembered), Tamar's row first, გაგრძელება -> venous form. Footer PDF ნახვა / ბეჭდვა / PDF ჩამოტვირთვა all ENABLED (baseline: disabled with an English tooltip), with a Georgian note under the footer: 'PDF შეიცავს მხოლოდ ამ კვლევას. ერთიანი ანგარიში ხელმისაწვდომი გახდება ყველა კვლევის დასრულების შემდეგ. დაუსრულებელი: საძილე არტერიები'. PDF ჩამოტვირთვა: anchor download 'venous-le-[UXWALK-angio-module-2026-11-12-phys-after]-თამარ-ჯაფარიძე-2026-11-12.pdf' (application/pdf 54 KB, 4 pages), no notification. Content: venous study only (right GSV reflux row, narrative, დასკვნა); no carotid section and no carotid wording anywhere, so the empty study is not reported as normal. 0 replacement glyphs. Saved as pdfs/t16-partial-visit.pdf.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:58:53.459Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "72087ae72b4c0ebc",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "e455c9f25cec",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/3088c351aa84-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:59:03.766Z",
+   "do": "click გაგრძელება on Tamar's row (first row)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-7a81fc68-ca7d-44cf-9d7d-480f9190e3f4\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-7a81fc68-ca7d-44cf-9d7d-480f9190e3f4\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "4f6d0d0147754362",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "7292e9b0e345",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/3088c351aa84-s02.png",
+   "afterStateReprobed": true
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:59:20.162Z",
+   "do": "click PDF ჩამოტვირთვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "4f6d0d0147754362",
+   "fpAfter": "4f6d0d0147754362",
+   "paneKeyBefore": "7292e9b0e345",
+   "paneKeyAfter": "7292e9b0e345",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "Study table cells clip their values to 2-3 letters at this layout ('სრუ ✕', 'რეს ✕ ო'); the right column is wider than in earlier tasks"
+  }
+ ],
+ "timeToUsableSec": 0.8
+}

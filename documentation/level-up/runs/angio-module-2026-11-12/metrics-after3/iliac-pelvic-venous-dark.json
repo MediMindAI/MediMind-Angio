@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T18:08:33.345Z",
+  "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous-dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "dark",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(15, 23, 42)",
+      "cardBg": "rgb(30, 41, 59)",
+      "contrastRatio": 1.22,
+      "cardsWithShadow": 5,
+      "cardsTotal": 8
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(43, 108, 176)",
+        "occurrences": 10,
+        "distinctContexts": [
+          "bullet-or-dot",
+          "button"
+        ],
+        "sampleSelectors": [
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "button[data-testid=\"drawing-mode-toggle-click\"]",
+          "button[data-testid=\"drawing-size-4\"]"
+        ]
+      }
+    ],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 52,
+      "tabs": 1,
+      "buttons": 36,
+      "rawCount": 52,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"iliac-zone-classification\"]",
+        "heightPx": 233,
+        "populatedSiblingMedianHeightPx": 370,
+        "ratio": 0.63
+      }
+    ]
+  },
+  "hardFails": []
+}

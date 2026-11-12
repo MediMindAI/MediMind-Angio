@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T17:39:43.993Z",
+  "route": "/encounter/e1b01f92-ab92-43d7-8c6d-d436b21078df/arterialLE",
+  "slug": "arterial-le-default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 4,
+      "cardsTotal": 9
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 6,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147",
+          "div._abiFooter_t0rdx_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_t0rdx_108 > span._bandChip_t0rdx_137._band-success_t0rdx_147"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "R",
+        "occurrences": 18,
+        "selectors": [
+          "g#side-labels > text",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "L",
+        "occurrences": 18,
+        "selectors": [
+          "g#side-labels > text",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 129,
+      "tabs": 1,
+      "buttons": 87,
+      "rawCount": 164,
+      "repeatedLists": 10
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_8c1hx_3 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 67,
+        "populatedSiblingMedianHeightPx": 126,
+        "ratio": 0.53
+      }
+    ]
+  },
+  "hardFails": []
+}

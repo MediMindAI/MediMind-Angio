@@ -1,0 +1,198 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake-default-1440-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_1i3r3_103 > div._layout_1i3r3_352 > aside._summaryColumn_1i3r3_698 > div._summaryCard_1i3r3_711 is 328px tall vs 282px for its populated siblings (1.16) — a quiet shift must look quieter (composition-metrics.mjs, threshold 0.75)",
+        "recommendation": "While nothing is entered, collapse the summary deck's three empty rows (patient card, ICD-10 'not selected', studies 'choose at least one') into one compact muted line such as 'Summary fills in as you go'. Keep the visit-date row. Show each section only once it has a value, so the empty deck drops below 0.75 of its siblings' height."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "18 actions above the fold (6 tabs + 3 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness (composition-metrics.mjs, threshold 12)",
+        "recommendation": "Merge the language segmented control (ქართ/EN/RU) and the theme segmented control (light/dark/system) into one compact settings menu button in the hero. That turns 6 tabs into 1 action and puts the count near the threshold. If more cuts are needed, the founder-level option is to move the study picker above the doctor/insurance fields and fold 'ვიზიტის დეტალები' into a collapsed section. That is a content relocation, not restyling."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Depth is now right: 5 of 6 decks have shadows, the page tint differs (1.2), and the focused name field is the correct first target above the fold. But the one decision that unlocks the CTA, choosing studies, starts at y≈1283, well below the 900px fold. Doctor, insurance, ICD-10 and symptoms, all optional, sit before it.",
+        "recommendation": "FOUNDER-LEVEL (known open product decision): put 'ჩასატარებელი კვლევები' directly after patient identification, and move visit details and indication below it, or collapse them by default. This relocates content, so it is not a token fix."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "section-headers",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Section headers now follow the rule: slim gradient tick, no band, no eyebrow, a real improvement. The collapsed 'მიმდინარე ვიზიტები' panel still stacks five devices for one collapsed row: a 3px gradient top ribbon (the Cards rule reserves this for KPI/stat cards), an icon tile, an eyebrow 'მიმდინარე' that repeats the title word, a count chip, and a chevron.",
+        "recommendation": "Remove the gradient top ribbon and the 'მიმდინარე' eyebrow from the ongoing-visits panel. Give it the standard slim header (tick + title) with the count chip and chevron on the right, so it recedes behind the form decks."
+      }
+    ],
+    "reasoning": "Screenshot is light and matches colorScheme light. Tier is triage, as supplied and as the rubric names encounter intake. The triage.png reference is a board, while this screen is an entry form, so I compared only the design language (surfaces, ticks, type scale). Confidence 0.8. Big change from the prior round (prior scores 1/0/2/1/1). Red is gone: the required asterisk is neutral, the date clear × is gray, and there is no blocker chip or red box, so colorDiscipline goes from 0 to 3. That is a real fix, not oscillation. Section headers are slim ticks without bands, eyebrows or rails. Decks carry shadows. The summary repeats only as subordinate rows, which is deliberate disclosure. The eye now goes hero, then the focused name field, which is correct. Hierarchy stops at 2 because the study choice, the gate for the CTA, is still a full scroll down. densityFit is capped at 1 by two mechanical hard-fails, which alone block PASS. Highest-leverage fix: merge the language and theme switchers into one menu and collapse the empty summary rows. That likely clears both hard-fails without touching structure. Lifting the study picker is the founder call."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake-768-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_1i3r3_103 > div._layout_1i3r3_352 > aside._summaryColumn_1i3r3_698 > div._summaryCard_1i3r3_711 is 328px tall vs 282px for its populated siblings (1.16) — a quiet shift must look quieter (composition-metrics.mjs, threshold 0.75)",
+        "recommendation": "Same as 1440: while empty, collapse the summary deck to one muted line and add the ICD-10 and studies sections only once they hold values."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "18 actions above the fold (6 tabs + 3 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness (composition-metrics.mjs, threshold 12)",
+        "recommendation": "Merge the language and theme segmented controls into one settings menu button. At 768 they are the largest objects in the hero, so they also compete visually with the title."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "In one column the summary deck falls to the very end (y≈1770+), after the study picker. It mirrors the visit date, ICD-10 and studies the clinician has just scrolled past. The mirrors are subordinate (metrics: bothFullWeight false for both duplicate labels), but here a full-width deck adds about 330px of scroll and gives no at-a-glance value, because it is never on screen next to the content it summarizes.",
+        "recommendation": "FOUNDER-LEVEL (known open product decision): below the two-column breakpoint, drop the summary deck. Its only unique content, the 'new patient / identification incomplete' state, is already carried by the action-bar hint. This removes content, so it is not a restyle."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The focused name field is correctly above the 1024px fold and depth reads well. The study picker starts at y≈1280, below the fold, behind optional doctor, insurance and indication fields. The fixed action bar wraps to two rows at 768 (resume link, then hint + CTA), which takes about 120px of a 1024px viewport.",
+        "recommendation": "FOUNDER-LEVEL: lift the study picker to directly after patient identification. Separately, keep the action bar on one row at 768: shorten the resume button to an icon + patient name, or move it into the ongoing-visits panel."
+      }
+    ],
+    "reasoning": "Screenshot is light, 768 wide, consistent with the metrics. Tier is triage. The reference has a different shape (board vs. entry form), so I compared design language only. The full-page capture puts the fixed bar mid-page, which I did not judge as a defect. Confidence 0.75. Red is gone from all non-severity roles, so colorDiscipline goes from 0 to 3. Section headers are compliant slim ticks, and decks have shadows (5/6) against the tinted field. The eye lands on the hero and then the focused name field, which is correct, but the study decision sits below the fold, so hierarchy is 2. Redundancy is 2 rather than 3: the stacked summary at the bottom is subordinate but bigger than it needs to be in a single column. densityFit is capped at 1 by two mechanical hard-fails, which block PASS. Highest-leverage fix: merge the language and theme switchers and collapse the empty summary. Dropping the summary below the breakpoint and lifting the picker are founder decisions."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake-375-light",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "13 actions above the fold (6 tabs + 3 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness (composition-metrics.mjs, threshold 12)",
+        "recommendation": "Merge the Ka/En/Ru and theme segmented controls into one settings menu button. At 375 they fill the whole top strip of the hero, and this one change brings the count under 12."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The page is about 3,000px tall, nearly 4 screens at 812px. The study picker starts around y≈1610, two screens down. Six full-width study cards (about 95–110px each, two of them disabled 'coming soon') take about 1.5 screens. The fixed action bar stacks into three rows (resume link, hint, full-width CTA), about 130px or 16% of the viewport. The mechanical empty-state hard-fail from the prior round is cleared (0.75).",
+        "recommendation": "Make the study cards compact single-line rows (icon + name + radio, subtitle dropped) at mobile widths. Collapse the two 'coming soon' cards into one muted line ('2 more studies coming soon'). Move the resume-visit link out of the fixed bar into the ongoing-visits panel, so the bar is just hint + CTA. FOUNDER-LEVEL: lift the picker above visit details."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The summary deck sits at the very bottom (about y≈2850), mirroring the visit date, ICD-10 and studies the user has just scrolled through. The repetition is subordinate, which is deliberate disclosure in principle, but on mobile it is never visible together with its source and only adds scroll.",
+        "recommendation": "FOUNDER-LEVEL (known open product decision): drop the summary deck at mobile widths. The action-bar hint already carries the 'what is missing' message. This removes content, so it is not a restyle."
+      }
+    ],
+    "reasoning": "Screenshot is light, 375 wide, consistent with the metrics. Tier is triage, and the reference shape differs, so I compared design language only. The sticky bar showing mid-page is a capture artifact. Confidence 0.75. Prior scores were 1/0/2/1/1. Red is gone, so colorDiscipline is 3. Decks now have shadows (5/6) and section headers are slim ticks, so depth and grouping work. The focused name field is above the fold and is the correct first target, which gives hierarchy 2. It is not 3 because the CTA-gating decision is two screens down. The empty-state hard-fail is cleared at this width, but density-tier-overflow (13 vs 12) remains and caps densityFit at 1, blocking PASS. Visually, the page is still a nearly four-screen scroll of tall study cards and a duplicated summary. Highest-leverage fix: merge the language and theme switchers, which clears the only mechanical failure. Then compact the study rows. Dropping the summary and lifting the picker are founder calls."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/",
+    "slug": "intake-dark-1440",
+    "densityTier": "triage",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div._container_1i3r3_103 > div._layout_1i3r3_352 > aside._summaryColumn_1i3r3_698 > div._summaryCard_1i3r3_711 is 328px tall vs 282px for its populated siblings (1.16) — a quiet shift must look quieter (composition-metrics.mjs, threshold 0.75)",
+        "recommendation": "Same as light: while nothing is entered, collapse the summary deck to one muted line and add ICD-10 and studies sections only once filled."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tier-overflow",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "18 actions above the fold (6 tabs + 3 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness (composition-metrics.mjs, threshold 12)",
+        "recommendation": "Merge the language and theme segmented controls into one settings menu button in the hero."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "forms",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Input fills are uneven in dark only. The sex select and the ICD-10 select render with a visibly lighter slate fill than the text inputs and date fields beside them, which sit near the card color. The ICD-10 placeholder 'მოძებნეთ და აირჩიეთ' also shows its own highlighted rectangle behind the text. The Forms rule requires one --emr-bg-input fill; in light mode all inputs match.",
+        "recommendation": "Route the select/combobox wrappers' dark-mode input background and placeholder background through the same --emr-bg-input token the text inputs use, and remove the separate placeholder background, so every input in a row has the same fill."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Elevation reads (page rgb(15,23,42) vs card rgb(30,41,59), 1.22, shadows 5/6). The hero now keeps the brand gradient, and the stepper states match light mode (active ring, done check, outlined pending), so the prior dark-only defects are fixed. The remaining hierarchy cap is structural and shared with light: the study picker starts at y≈1283, below the 900px fold.",
+        "recommendation": "FOUNDER-LEVEL (known open product decision): put the study picker directly after patient identification. This relocates content, so it is not a token fix."
+      }
+    ],
+    "reasoning": "Screenshot is dark and matches colorScheme dark. I compared it against triage-dark.png, which is the correct scheme. Same shape caveat as light (board reference, entry form), so confidence is 0.8. Prior scores were 1/1/2/1/1. The mechanical blue collision is gone: rgb(43,108,176) now appears only in button and surface contexts, which is the brand gradient and not a severity borrow, and no red is used anywhere. colorDiscipline is 3. The prior dark-only problems are fixed: the hero keeps the gradient, the stepper matches light, and no slate slabs remain. Section headers are compliant ticks, and the summary's repeats are subordinate. The eye goes hero, then the focused name field, which is correct, but the study gate sits below the fold, so hierarchy is 2. Restraint is 2 because of the dark-only uneven select fills and the placeholder highlight box. densityFit is capped at 1 by two mechanical hard-fails, which block PASS. Highest-leverage fix: merge the language and theme switchers and collapse the empty summary, which clears both mechanical failures in every variant at once. Then unify dark select fills."
+  }
+]

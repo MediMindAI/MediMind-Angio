@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:24:43.226Z",
+  "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/arterialLE",
+  "slug": "arterial-le",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 3,
+      "cardsTotal": 25
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 3,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165"
+        ]
+      },
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 3,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "მარჯვენა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"arterial-phone-side-toggle-right\"] > span",
+          "div[data-testid=\"emr-content-section-content\"] > div.m_4081bf90.mantine-Group-root > div.emr-field-wrapper.size-sm > label.emr-field-label"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "მარცხენა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"arterial-phone-side-toggle-left\"] > span",
+          "div[data-testid=\"emr-content-section-content\"] > div.m_4081bf90.mantine-Group-root > div.emr-field-wrapper.size-sm > label.emr-field-label"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "R",
+        "occurrences": 18,
+        "selectors": [
+          "g#side-labels > text",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124",
+          "div > div._row_47m6o_60 > div._cell_47m6o_101._segmentCell_47m6o_105 > span._segmentSide_47m6o_124"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 35,
+      "tabs": 4,
+      "buttons": 25,
+      "rawCount": 35,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_bgvla_3 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 119,
+        "populatedSiblingMedianHeightPx": 258,
+        "ratio": 0.46
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"მარჯვენა\" renders 2× at comparable weight and size (button[data-testid=\"arterial-phone-side-toggle-right\"] > span | div[data-testid=\"emr-content-section-content\"] > div.m_4081bf90.mantine-Group-root > div.emr-field-wrapper.size-sm > label.emr-field-label) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"მარცხენა\" renders 2× at comparable weight and size (button[data-testid=\"arterial-phone-side-toggle-left\"] > span | div[data-testid=\"emr-content-section-content\"] > div.m_4081bf90.mantine-Group-root > div.emr-field-wrapper.size-sm > label.emr-field-label) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "bcbf7f5b50f1",
+ "goal": "Preview the PDF report before printing",
+ "startedAt": "2026-11-12T15:52:01.180Z",
+ "endedAt": "2026-11-12T15:52:51.364Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: footer 'მიმდინარე ვიზიტის გაგრძელება · …T07 Eka Tsiklauri' (1 click) -> form; 'PDF ნახვა' -> window.open(blob: application/pdf, 45,596 bytes) = new tab (harness cannot view other tabs). Verification probe outside the recorded steps (same blob fetched in-page, saved, pdftotext): PDF shows patient '[UXWALK-angio-module-2026-11-12-after] T07 Eka Tsiklauri', GSV mid-thigh R reflux 2.5 s 'კომპეტენტურობა: რეფლუქი', NotoSansGeorgian fonts embedded.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:52:01.251Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "ca6795fcf20f5cc2",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "05ab5451693b",
+   "paneKeyAfter": "f67a08d9c1bf",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/bcbf7f5b50f1-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:52:10.679Z",
+   "do": "press 'continue current visit · T07 Eka Tsiklauri' in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-after] T07 Eka Tsiklauri",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "ca6795fcf20f5cc2",
+   "paneKeyBefore": "f67a08d9c1bf",
+   "paneKeyAfter": "05ab5451693b",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/bcbf7f5b50f1-s02.png"
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:52:14.991Z",
+   "do": "press 'PDF ნახვა' (view PDF) in the sticky footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"preview-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"preview-pdf\"]",
+   "labelText": "PDF ნახვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "ca6795fcf20f5cc2",
+   "fpAfter": "ca6795fcf20f5cc2",
+   "paneKeyBefore": "05ab5451693b",
+   "paneKeyAfter": "05ab5451693b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "'PDF ნახვა' opens the PDF in a new browser tab with no in-app confirmation; the original tab shows no change. In the PDF the patient-name cell breaks the name after '[-' onto a new line and the title hyphenates 'ულტრასონოგ-რაფია'"
+  }
+ ],
+ "timeToUsableSec": 2.8
+}

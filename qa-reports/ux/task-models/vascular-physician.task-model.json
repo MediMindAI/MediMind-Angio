@@ -1,0 +1,472 @@
+{
+  "schemaVersion": 1,
+  "persona": "vascular-physician",
+  "scope": "angio-module",
+  "generatedAt": "2026-11-12T00:00:00Z",
+  "priorRun": null,
+  "runId": "angio-module-2026-11-12",
+  "tasks": [
+    {
+      "taskId": "d45cf28e1a49",
+      "goal": "Reopen a sonographer's in-progress visit from the start page",
+      "area": "intake",
+      "frequencyPerShift": 15,
+      "clickBudget": 2,
+      "budgetSource": "angio-resume",
+      "budgetClass": null,
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The visit's first study form is open at /encounter/<id>/<studyType> with the patient's name shown in the encounter banner",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings filled by the sonographer",
+        "at least 3 in-progress encounters exist in this browser, so the target is not the only row"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "84c9daf274e4",
+      "goal": "Move from one study to the other inside a two-study visit",
+      "area": "intake",
+      "frequencyPerShift": 5,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "budgetClass": "find/open",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The second study's form is open for the same visit (banner patient name unchanged, second study chip marked active)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral + carotid selected and findings filled in both studies"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "eac7013f7172",
+      "goal": "Correct a wrong birth date on an in-progress visit",
+      "area": "intake",
+      "frequencyPerShift": 2,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "budgetClass": "find/open",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Back on the study form, the encounter banner shows the corrected birth date/age, and it is still there after a page reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and findings filled and a deliberately wrong birth date"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "d238785449bc",
+      "goal": "Remove a finished visit from the in-progress list",
+      "area": "intake",
+      "frequencyPerShift": 5,
+      "clickBudget": 4,
+      "budgetSource": "class-default",
+      "budgetClass": "find/open",
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "The discard confirmation dialog for the target visit is open with its confirm button reachable and enabled",
+      "stopAtThreshold": "Discard-confirm button (Georgian label წაშლა) in the discard dialog of the target visit row reachable+enabled — DO NOT CLICK",
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and findings filled and the report already exported",
+        "at least 3 in-progress encounters exist in this browser, so the target is not the only row"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "acfa2ced1941",
+      "goal": "Review the venous findings and diagram for both legs",
+      "area": "venousLE",
+      "frequencyPerShift": 8,
+      "clickBudget": 5,
+      "budgetSource": "class-default",
+      "budgetClass": "review/read",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Venous segment findings for both legs and the coloured anatomy diagram are on screen for the visit (bilateral view)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings for both legs filled, including at least one refluxing segment"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "e54837a93442",
+      "goal": "Correct one venous segment finding the sonographer entered",
+      "area": "venousLE",
+      "frequencyPerShift": 4,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The corrected segment shows the new finding in the table, the diagram colour for that segment changes, and the change survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings filled, one of them wrong (e.g. right GSV marked normal instead of reflux)"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "6c8627b00e20",
+      "goal": "Write the venous conclusion and clinician comment",
+      "area": "venousLE",
+      "frequencyPerShift": 8,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "budgetClass": "note",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Right-leg findings, left-leg findings, impression and clinician comment fields hold the typed text, the save indicator reads saved, and the text survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings filled, conclusion fields empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "b9b131e672b8",
+      "goal": "Set the CEAP classification for a venous study",
+      "area": "venousLE",
+      "frequencyPerShift": 5,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The CEAP picker shows the chosen C, E, A, P values (with one modifier) and they survive a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings filled, CEAP empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "42d763c1e133",
+      "goal": "Add a follow-up recommendation to the venous report",
+      "area": "venousLE",
+      "frequencyPerShift": 6,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A new recommendation row with the typed text and a priority is listed in the recommendations block and survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral selected and segment findings filled, no recommendations"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "51f8fdd2aebb",
+      "goal": "Review the arterial findings and ankle-brachial index for both legs",
+      "area": "arterialLE",
+      "frequencyPerShift": 4,
+      "clickBudget": 5,
+      "budgetSource": "class-default",
+      "budgetClass": "review/read",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Arterial segment findings, segmental pressures with the computed ABI for both legs, and the anatomy diagram are on screen",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with arterialLE selected and segment findings and segmental pressures (brachial + ankle) filled"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "7f498505079c",
+      "goal": "Correct one arterial segment finding the sonographer entered",
+      "area": "arterialLE",
+      "frequencyPerShift": 2,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The corrected arterial segment shows the new waveform/stenosis value in the table and the change survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with arterialLE selected and segment findings filled, one of them wrong"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "4694a7f74e68",
+      "goal": "Write the arterial conclusion and clinician comment",
+      "area": "arterialLE",
+      "frequencyPerShift": 4,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "budgetClass": "note",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Impression and clinician comment fields hold the typed text and it survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with arterialLE selected and segment findings filled, conclusion fields empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "d14d2d29a594",
+      "goal": "Check the NASCET stenosis category for each internal carotid artery",
+      "area": "carotid",
+      "frequencyPerShift": 5,
+      "clickBudget": 5,
+      "budgetSource": "class-default",
+      "budgetClass": "review/read",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The NASCET picker for both right and left ICA is on screen showing the category the report will use (auto from velocities or manual)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with carotid selected and ICA/CCA velocities filled so that one side calculates to a 50-69% or >=70% category"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "c4a29c48523e",
+      "goal": "Override the NASCET category when it does not match the images",
+      "area": "carotid",
+      "frequencyPerShift": 1,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The chosen NASCET category for the target side is marked as the manual pick and survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with carotid selected and ICA/CCA velocities filled so one side auto-calculates a category the clinician disagrees with"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "f0a93328734a",
+      "goal": "Write the carotid impression and clinician comments",
+      "area": "carotid",
+      "frequencyPerShift": 5,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "budgetClass": "note",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Impression and clinician comment fields hold the typed text and it survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with carotid selected and segment findings filled, impression and comments empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "802d04f6063d",
+      "goal": "Review the pelvic venous findings for the iliac veins, cava and gonadal veins",
+      "area": "iliacPelvicVenous",
+      "frequencyPerShift": 1,
+      "clickBudget": 5,
+      "budgetSource": "class-default",
+      "budgetClass": "review/read",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The iliac/caval findings table, gonadal vein findings and the pelvic anatomy diagram are on screen",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with iliacPelvicVenous selected and caval/iliac rows and left gonadal vein findings filled"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "4f1b689e4374",
+      "goal": "Set the SVP classification for a pelvic venous study",
+      "area": "iliacPelvicVenous",
+      "frequencyPerShift": 1,
+      "clickBudget": 6,
+      "budgetSource": "class-default",
+      "budgetClass": "order",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "The SVP picker shows the chosen S, V and one P entry (segment + laterality + etiology) and they survive a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with iliacPelvicVenous selected and findings filled, SVP empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "c2ca3d94fcb2",
+      "goal": "Write the pelvic venous conclusion and comments",
+      "area": "iliacPelvicVenous",
+      "frequencyPerShift": 1,
+      "clickBudget": 15,
+      "budgetSource": "class-default",
+      "budgetClass": "note",
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "Impression and comments fields hold the typed text and it survives a reload",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with iliacPelvicVenous selected and findings filled, impression and comments empty"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "afc608e3416b",
+      "goal": "Preview the report PDF before giving it to the patient",
+      "area": "report",
+      "frequencyPerShift": 10,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "budgetClass": null,
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A new browser tab opens showing the study's report PDF (blob: URL), and no red failure notification appears",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral only selected and findings and conclusion filled"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "2b116c3dbda9",
+      "goal": "Download the report PDF for a single-study visit",
+      "area": "report",
+      "frequencyPerShift": 12,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "budgetClass": null,
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "A .pdf download named after the patient starts, no red failure notification appears, and the file opens with Georgian text (no empty boxes)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral only selected and findings and conclusion filled"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "b349de748732",
+      "goal": "Download one combined report PDF for a visit with two studies",
+      "area": "report",
+      "frequencyPerShift": 4,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "budgetClass": null,
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "One encounter-<patient>-<date>.pdf download starts and the file contains a section for each of the visit's studies",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral + carotid selected and findings and conclusions filled in both studies"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "3088c351aa84",
+      "goal": "Download the finished study's report while the visit's other study is still empty",
+      "area": "report",
+      "frequencyPerShift": 2,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "budgetClass": null,
+      "safetyClass": "high-alert",
+      "entryRoute": "/",
+      "doneCriterion": "A .pdf download containing the finished study starts (the empty study is not reported as normal)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral + carotid selected and venous findings and conclusion filled, carotid untouched"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    },
+    {
+      "taskId": "7ddfddbf4c8b",
+      "goal": "Print the report on paper",
+      "area": "report",
+      "frequencyPerShift": 8,
+      "clickBudget": 4,
+      "budgetSource": "angio-resume-export",
+      "budgetClass": null,
+      "safetyClass": "routine",
+      "entryRoute": "/",
+      "doneCriterion": "A print dialog opens for the report PDF (from an in-app print control or the opened PDF viewer's print button)",
+      "stopAtThreshold": null,
+      "preconditions": [
+        "an in-progress encounter seeded by the walker through the intake (patient name carries [UXWALK-angio-module-2026-11-12]) with venousLEBilateral only selected and findings and conclusion filled"
+      ],
+      "status": "active",
+      "addedOn": "2026-11-12T00:00:00Z",
+      "retiredOn": null,
+      "retireReason": null
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T18:01:42.320Z",
+  "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous-768",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 25,
+      "cardsTotal": 28
+    },
+    "severityColorUsage": [],
+    "duplicateLabels": [
+      {
+        "label": "შევსებულია",
+        "occurrences": 21,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-ivc-prox\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label",
+          "button[data-testid=\"iliac-caval-toggle-ivc-mid\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label",
+          "button[data-testid=\"iliac-caval-toggle-ivc-dist\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label",
+          "button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label",
+          "button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label",
+          "button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "· მარჯვენა",
+        "occurrences": 9,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-prox-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-mid-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-dist-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "· მარცხენა",
+        "occurrences": 9,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-civ-dist-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-prox-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-mid-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md",
+          "button[data-testid=\"iliac-caval-toggle-eiv-dist-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CIV პროქს.",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CIV შუა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CIV დისტ.",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-civ-dist-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV პროქს.",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-eiv-prox-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-eiv-prox-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV შუა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-eiv-mid-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-eiv-mid-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV დისტ.",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-eiv-dist-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-eiv-dist-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "IIV",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-iiv-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-iiv-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CFV",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-cfv-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-cfv-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "OV",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"iliac-caval-toggle-ov-right\"] > span._rowTitle_1wv7a_236",
+          "button[data-testid=\"iliac-caval-toggle-ov-left\"] > span._rowTitle_1wv7a_236"
+        ],
+        "bothFullWeight": true
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 27,
+      "tabs": 1,
+      "buttons": 16,
+      "rawCount": 27,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"iliac-zone-classification\"]",
+        "heightPx": 231,
+        "populatedSiblingMedianHeightPx": 380,
+        "ratio": 0.61
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"შევსებულია\" renders 21× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ivc-prox\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label | button[data-testid=\"iliac-caval-toggle-ivc-mid\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label) — a second reference must be visibly subordinate",
+      "measured": 21,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"· მარჯვენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate",
+      "measured": 9,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"· მარცხენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate",
+      "measured": 9,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"IIV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-iiv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-iiv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CFV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-cfv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-cfv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"OV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ov-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-ov-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:32:08.172Z",
+  "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 1,
+      "cardsTotal": 9
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "bullet-or-dot"
+        ],
+        "sampleSelectors": [
+          "div._bar_fi654_3.no-print > div._inner_fi654_16 > div._status_fi654_33 > span._dot_fi654_40._dotClean_fi654_47"
+        ]
+      }
+    ],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 40,
+      "tabs": 4,
+      "buttons": 16,
+      "rawCount": 40,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"svp-section\"]",
+        "heightPx": 69,
+        "populatedSiblingMedianHeightPx": 273,
+        "ratio": 0.25
+      }
+    ]
+  },
+  "hardFails": []
+}

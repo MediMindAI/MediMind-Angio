@@ -1,0 +1,98 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys",
+ "persona": "vascular-physician",
+ "taskId": "7ddfddbf4c8b",
+ "goal": "Print the report on paper",
+ "startedAt": "2026-11-12T11:51:19.161Z",
+ "endedAt": "2026-11-12T11:51:56.578Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "FAILED_BLOCKED",
+ "outcomeNote": "No in-app print control exists anywhere on the study page (footer offers only მონახაზის შენახვა / PDF ნახვა / PDF ჩამოტვირთვა). PDF ნახვა opened a new tab (window.open blob:, application/pdf 48 KB, print() never called by the app). The only remaining route is the browser PDF viewer's own print button in that new tab, which this walker's harness cannot drive (it controls only the app tab), so no print dialog was observed. MEASUREMENT LIMIT: a human can probably print from the Chromium viewer toolbar; re-verify by hand before treating this as an app block. The app-side fact is: printing depends entirely on the browser viewer.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:51:19.185Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "e11aa003f2df0a7b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "ea923bd4f7d5",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/7ddfddbf4c8b-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:51:21.553Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "IN PROGRESS მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:51:22.250Z",
+   "do": "click გაგრძელება on Nino's row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "43e7cf455edec9c6",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/7ddfddbf4c8b-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:51:42.621Z",
+   "do": "click PDF ნახვა hoping to print from the opened report",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"preview-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"preview-pdf\"]",
+   "labelText": "PDF ნახვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "e11aa003f2df0a7b",
+   "fpAfter": "e11aa003f2df0a7b",
+   "paneKeyBefore": "ea923bd4f7d5",
+   "paneKeyAfter": "ea923bd4f7d5",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "dead-end",
+   "note": "No in-app print control (no button/menu with ბეჭდვა/print on the study page footer, banner or form); printing is only possible from the browser's PDF viewer after PDF ნახვა"
+  }
+ ],
+ "timeToUsableSec": 0.9
+}

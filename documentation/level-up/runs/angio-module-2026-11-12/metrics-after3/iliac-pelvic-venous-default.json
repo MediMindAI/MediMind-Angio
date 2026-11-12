@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T17:54:05.879Z",
+  "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous-default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 5,
+      "cardsTotal": 8
+    },
+    "severityColorUsage": [],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 52,
+      "tabs": 1,
+      "buttons": 36,
+      "rawCount": 52,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"iliac-zone-classification\"]",
+        "heightPx": 239,
+        "populatedSiblingMedianHeightPx": 372,
+        "ratio": 0.64
+      }
+    ]
+  },
+  "hardFails": []
+}

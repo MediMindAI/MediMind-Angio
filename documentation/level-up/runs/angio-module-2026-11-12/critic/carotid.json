@@ -1,0 +1,266 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/carotid",
+    "slug": "carotid",
+    "variant": "default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "9 hardFails, all in the NASCET picker: \"< 50 %\" 4x, \"50–69 %\" 4x, \"≥ 70 %\" 4x; \"Normal\", \"ნორმა\", \"Near-occlusion\", \"სუბოკლუზია\", \"Occluded\", \"ოკლუზია\" 2x each (nascet-right-* vs nascet-left-*). What the screenshot shows: having separate right and left panels is correct, because the two sides are different clinical data. The real bloat is inside each option button, where the description repeats the code chip word for word ('< 50 %  < 50 %'). That is copy-paste, not progressive disclosure. The header chip 'R: ≥ 70 % · L: —' is properly subordinate and is fine.",
+        "recommendation": "In NASCETPicker, don't render the description span when it matches the code. Keep the Georgian gloss only on the named grades (Normal/ნორმა, Near-occlusion/სუბოკლუზია, Occluded/ოკლუზია). Keep both side panels."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 284px for its populated siblings (0.78), threshold 0.75. This is the Recommendations deck: a full header with an icon tile and gradient button above a 105px dashed empty box.",
+        "recommendation": "When there are no recommendations, collapse the deck to a single row: the tick-bar title, the muted empty text inline, and a secondary 'add recommendation' button. Remove the dashed placeholder box."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The metrics measure pageBg rgb(255,255,255) = cardBg rgb(255,255,255), contrast 1.0, with only 1 of 8 decks shadowed. The script passed this only because one shadow exists. In the screenshot, the anatomy deck and the conclusion deck can't be seen against the page. The dark capture shows they are real decks. deep-dive.png sets white decks on a tinted page.",
+        "recommendation": "Render the page surface with --emr-bg-page (tinted, as in deep-dive.png), not --emr-bg-card. Give all 8 decks (segment table, NASCET, anatomy, conclusion, recommendations) --emr-shadow-card and remove their outer hairline borders."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The --emr-success green rgb(56,161,105) appears twice on the screen, and neither use is clinical. (1) The 'ავტომატური (SRU)' provenance text on the right NASCET panel. (2) The save-status dot in the action bar, next to 'ჯერ არ შენახულა' ('not saved yet'), so a 'success' color sits on an unsaved state. Red use is clean: the ≥70% row, the anatomy ICA segment and the legend all mean hemodynamically significant stenosis.",
+        "recommendation": "Change the provenance label to a soft neutral-gray metadata badge (Badges rule). Change the save dot to a --emr-text-secondary dot when there are no changes, and a navy --emr-primary dot when there are unsaved changes. Keep green only for normal or patent clinical results."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness spent once per screen) + Section headers (no full-width tinted band)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The NASCET header is a full-width solid blue band, the loudest surface on the page. The doc forbids this: 'No full-width tinted band'. The page uses 3 different header styles: tick bar (table, anatomy), blue band (NASCET), and a top ribbon plus icon tile (Recommendations; ribbons are reserved for KPI cards). There are 7 gradient primary buttons: back to studies, add study, templates, save draft, PDF view, PDF download, add recommendation. All boldness is spread out instead of spent once.",
+        "recommendation": "Give the NASCET header the slim style: a 4×15 gradient tick, the title at --emr-font-md/600, and the 'R/L' summary chip right-aligned. Drop the Recommendations ribbon. Keep exactly one gradient primary: PDF ჩამოტვირთვა in the action bar. Make save draft, PDF view, templates, add study and add recommendation secondary, and the back link ghost."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep-dive needs ONE focal element — anatomy diagram or segment table)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The segment table takes about 1,150px of height but its columns end at x≈965, so the right ~35% of the deck is empty. The anatomy diagram is the only place the abnormal finding is visible (red R-ICA segment), and it starts about 2,780px down, three screens below the fold. Neither candidate focal element wins. The blue NASCET band wins by default.",
+        "recommendation": "Relocation, not restyling, so this goes to redesign. At ≥1280px, put the anatomy diagram in a sticky right column beside the segment table, using the empty width. Move the NASCET picker under the diagram so the finding and its grade sit together."
+      }
+    ],
+    "reasoning": "Inferred nothing: tier is deep-dive as supplied, compared against deep-dive.png (light). A clinician's eye goes first to the solid-blue NASCET band, the only saturated surface, then has to scroll back up through an 8-column table of empty inputs. The anatomy diagram, the screen's best visual summary, is three screens down. White decks on a white page give the screen almost no depth. Green carries two non-clinical meanings, including 'not saved yet'. Red is disciplined. The verdict is REDESIGN-REQUIRED because five dimensions score ≤1, and two of those caps are mechanical. Several fixes are only restyling: page surface token, header style, button demotion, green removal. Defects with no rule in the doc, not scored as findings: truncated column headers ('ინტიმა-მე…', 'ICA/C…'), clipped plaque multiselect chip and placeholders ('III ტიპის ç × ჯ…', 'ფოლაქის შე…'), and ICA rows at about twice the height of other rows. Highest-leverage fix: put the anatomy diagram beside the segment table as the one focal element, and turn the NASCET band into a standard tick header."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/carotid",
+    "slug": "carotid",
+    "variant": "768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.5,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 33 decks carry a box-shadow — the decks are not separable from the surface (threshold 1.05)",
+        "recommendation": "Render the page with --emr-bg-page and every deck with --emr-bg-card plus --emr-shadow-card at this breakpoint. The shadow is currently lost at tablet width. The 24 per-segment sub-cards should be hairline-separated rows inside one deck, not 24 cards."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "22 hardFails. NASCET picker (9): \"< 50 %\", \"50–69 %\", \"≥ 70 %\" 4x each; \"Normal\", \"ნორმა\", \"Near-occlusion\", \"სუბოკლუზია\", \"Occluded\", \"ოკლუზია\" 2x each. Vessel labels (13): \"CCA Prox\", \"CCA Mid\", \"CCA Dist\", \"BIF\", \"ICA Prox\", \"ICA Mid\", \"ICA Dist\", \"ECA\", \"VA V1\", \"VA V2\", \"VA V3\", \"A Subcl Prox\", \"A Subcl Dist\" 2x each. My judgment: the repeated vessel labels are the R and L rows, which are distinct measurements, so this is structure, not bloat. The real bloat is the code/description echo inside each NASCET option, plus the 7 field labels (PSV, ED, ინტიმა-მედიის სისქე, ნაკადი, ფოლაქი, ICA/CCA, შენიშვნა) repeated in all 24 segment cards.",
+        "recommendation": "Don't render the NASCET description when it matches the code. At 768px, keep the table layout: one header row of column labels and one row per segment, with columns that scroll horizontally if needed. Don't stack labelled fields per segment."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 243px for its populated siblings (0.87), threshold 0.75",
+        "recommendation": "Collapse the empty Recommendations deck to a single row: title, inline muted empty text, and a secondary add button."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: dense but ordered, ONE focal element)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The segment table becomes 24 stacked cards of about 560px each, with 7 full-width fields apiece. That is about 13,000px of mostly empty inputs before the NASCET result (~y 14,900) and the anatomy diagram (~y 15,500). On a tablet, the stenosis finding is about 15 screens from the top.",
+        "recommendation": "Layout change, so this goes to redesign. At 768px, keep the compact table (vessel + side as row header, numeric columns at about 72px). Put the anatomy diagram and NASCET grade first in a collapsible summary deck above the table, so the focal element is above the fold."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Same as desktop. --emr-success green rgb(56,161,105) marks the 'ავტომატური (SRU)' provenance label and the 'ჯერ არ შენახულა' save-status dot. That is two non-clinical meanings, and one of them labels an unsaved state with success green.",
+        "recommendation": "Use a neutral soft badge for provenance. Make the save dot --emr-text-secondary when there are no changes and --emr-primary when there are unsaved changes. Keep green for clinical normal only."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (no full-width tinted band) + boldness spent once",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The full-width blue NASCET band is still there and its subtitle wraps to 2 lines. There are 7 gradient primary buttons. The fixed action bar puts 3 of them side by side over the content.",
+        "recommendation": "Give NASCET a slim tick header with a right-aligned summary chip. Keep one gradient primary (PDF ჩამოტვირთვა). Make the others secondary and the back link ghost."
+      }
+    ],
+    "reasoning": "Tier is deep-dive as supplied. The capture is partial: after the anatomy diagram, at about y 16,350, the page starts over from the top (back button, patient header, CCA Prox). The conclusion and recommendations can't be seen, so confidence is capped at 0.5. The table-to-cards switch fails a tablet clinician: the eye scrolls through 24 nearly identical empty field stacks, all white on white with no shadows, before reaching any clinical result. Nothing groups and nothing wins. Five dimensions score ≤1, so the verdict is REDESIGN-REQUIRED. No rule covers it, so not scored as a finding: the study-switcher pill wraps into a stretched oval blob with chips in a 2×2 grid. Highest-leverage fix: don't collapse the segment table into per-segment cards at 768px, and move the anatomy and NASCET summary above it."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/carotid",
+    "slug": "carotid",
+    "variant": "375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.5,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 33 decks carry a box-shadow — the decks are not separable from the surface (threshold 1.05)",
+        "recommendation": "Use --emr-bg-page for the page and --emr-bg-card plus --emr-shadow-card for the decks at mobile width. Merge the 24 segment sub-cards into hairline-separated rows inside one deck."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "22 hardFails, the same set as at 768. NASCET picker (9): \"< 50 %\", \"50–69 %\", \"≥ 70 %\" 4x; \"Normal\", \"ნორმა\", \"Near-occlusion\", \"სუბოკლუზია\", \"Occluded\", \"ოკლუზია\" 2x. Vessel labels (13): \"CCA Prox\" through \"A Subcl Dist\" 2x each. Judgment: the vessel R/L pairs are structure. The NASCET code/description echo and the 7 field labels repeated per segment card are bloat.",
+        "recommendation": "Don't render the NASCET description when it matches the code. Replace the per-segment labelled stacks with a compact row per segment and a single sticky column-label header."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 271px for its populated siblings (0.78), threshold 0.75",
+        "recommendation": "Collapse the empty Recommendations deck to a single row: title, inline muted empty text, and a secondary add button."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: dense but ordered, ONE focal element)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "About 14,000px of stacked empty segment cards come before the NASCET grade (~y 15,050) and the anatomy diagram (~y 16,250). The NASCET header text wraps to 3 lines and the summary chip is clipped at the deck edge ('R: ≥ 70 % · L'). The right/left NASCET sub-cards fill only about 75% of their container.",
+        "recommendation": "Redesign. On mobile, open with a summary deck (anatomy thumbnail + NASCET R/L chips). Make the segment table a per-vessel accordion where only rows with entered values expand. Let the NASCET sub-cards use the full container width and keep the summary chip on its own line under the title."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "--emr-success green rgb(56,161,105) marks the 'ავტომატური (SRU)' provenance label and the 'ჯერ არ შენახულა' save dot. Two non-clinical meanings.",
+        "recommendation": "Use a neutral soft badge for provenance and a --emr-text-secondary or --emr-primary dot for save state. Keep green for clinical normal only."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (no full-width tinted band) + boldness spent once",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The full-width blue NASCET band remains. There are 7 gradient primary buttons, and on a 375px screen 4 of them are visible at once (back, add study, templates, plus the action bar). The anatomy section's tick bar sits orphaned on its own line above the wrapped title.",
+        "recommendation": "Give NASCET a slim tick header and keep the tick inline with the first title line. Keep one gradient primary (PDF ჩამოტვირთვა). Make the other buttons secondary or ghost. Fold the three action-bar buttons into one primary plus an overflow menu."
+      }
+    ],
+    "reasoning": "Tier is deep-dive as supplied. The capture is partial: it starts over from the top after the anatomy diagram, so the conclusion and recommendations can't be seen. Confidence is capped at 0.5. The capture is 580px wide for a 375px viewport because the fixed action bar does not wrap. 'PDF ჩამოტვირთვა' renders off-screen to the right and the page scrolls horizontally. That is a real P1 layout defect, but no Composition rule covers it, so it is reported here rather than as a finding. I counted it against densityFit. A phone user sees white-on-white stacked inputs for about 14,000px before any clinical result. Five dimensions score ≤1, so the verdict is REDESIGN-REQUIRED. Highest-leverage fix: let the action bar wrap or overflow within 375px, then restructure the mobile segment entry so the anatomy and NASCET summary come first."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/carotid",
+    "slug": "carotid",
+    "variant": "dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "9 hardFails, NASCET picker: \"< 50 %\", \"50–69 %\", \"≥ 70 %\" 4x each; \"Normal\", \"ნორმა\", \"Near-occlusion\", \"სუბოკლუზია\", \"Occluded\", \"ოკლუზია\" 2x each. Judgment: the bilateral panels are correct. The verbatim code/description echo inside each option ('≥ 70 %  ≥ 70 %') is copy-paste bloat.",
+        "recommendation": "Don't render the description span when it matches the code. Keep the Georgian gloss only on the named grades."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1oubg_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 284px for its populated siblings (0.78), threshold 0.75",
+        "recommendation": "Collapse the empty Recommendations deck to a single row: title, inline muted empty text, and a secondary add button. Remove the dashed placeholder panel."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "--emr-success green marks the 'ავტომატური (SRU)' provenance label and the 'ჯერ არ შენახულა' save dot. Both read brighter, so more prominent, against the dark surface. The metrics also log info blue rgb(43,108,176) in 15 R/L side chips and buttons. That is a theme blue, so it is ambiguous whether it counts as severity, and I don't count it here.",
+        "recommendation": "Use a neutral soft badge for provenance and a --emr-text-secondary or --emr-primary dot for save state. Keep green for clinical normal only."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (ONE focal element) + Forms (checked states solid --emr-primary) + Section headers (gradient tick bar)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "In dark mode the decks separate (contrast 1.22) and the eye correctly goes to the red R-ICA segment and the red ≥70% row. But the anatomy diagram still starts about 2,780px down, beside nothing, while the table leaves about 35% of its width empty. Compared with deep-dive-dark.png, some styling is theme-dependent when it shouldn't be. Section tick bars render flat gray, not gradient. The selected segmented control ('ორმხრივი') and the active study chip ('საძილე არტერიები') render as low-contrast slate instead of solid --emr-primary, so the current selection almost disappears.",
+        "recommendation": "Put the anatomy diagram in a right column beside the segment table at ≥1280px (relocation, so this goes to redesign). Bind the tick bars to --emr-gradient-primary, and the checked segmented control and active study chip to solid --emr-primary with white text, in both themes."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (no full-width tinted band) + boldness spent once",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The NASCET header is still a full-width tinted band, slate in dark, so it shouts less than in light. The page still uses 3 header styles. The 7 primary buttons are muted navy in dark, so they compete less, but no single action is clearly the main one.",
+        "recommendation": "Give NASCET a slim 4×15 tick header with a right-aligned summary chip. Drop the Recommendations ribbon. Keep one --emr-gradient-primary button (PDF ჩამოტვირთვა). Make the rest secondary and the back link ghost."
+      }
+    ],
+    "reasoning": "Tier is deep-dive as supplied. Compared against deep-dive-dark.png; the scheme matches (metrics colorScheme: dark). Dark is the strongest variant. Decks separate, the muted chrome lets the red stenosis signals lead, and red is used only for severity. It still fails on the two mechanical caps (redundancy, densityFit) plus the green borrow, so three dimensions score ≤1 and the verdict is REDESIGN-REQUIRED. Structurally the page is the same as light: the anatomy focal element is three screens below a wide, half-empty table. Highest-leverage fix: put the anatomy diagram beside the segment table and fix the dark checked-state and tick-bar tokens so the current selection can be seen."
+  }
+]

@@ -1,0 +1,82 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "afc608e3416b",
+ "goal": "Preview the report PDF before giving it to the patient",
+ "startedAt": "2026-11-12T15:43:20.170Z",
+ "endedAt": "2026-11-12T15:44:34.916Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Footer resume (names Nino) -> venous form, footer 'PDF ნახვა': window.open(blob:http://localhost:3001/…, '_blank', 'noopener,noreferrer') fired, application/pdf 55 KB, 4 pages, NotoSansGeorgian Regular+Bold embedded, no notification, no replacement glyphs. Right AND left GSV prox thigh rows now print 'კომპეტენტურობა: რეფლუქი' in red under the row (baseline: right side only '—'); dates DD.MM.YYYY. New tab not screenshot-able by the harness; blob captured via in-page hook -> pdfs/t8-preview.pdf, pages pdfs/t8p-*.png, pdfs/t8hi-2.png.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:43:20.216Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/afc608e3416b-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:43:24.395Z",
+   "do": "click the footer button that names Nino's visit",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-phys-after] ნინო ბერიძე",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/afc608e3416b-s02.png",
+   "afterStateReprobed": true
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:43:36.648Z",
+   "do": "click PDF ნახვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"preview-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"preview-pdf\"]",
+   "labelText": "PDF ნახვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "PDF page 1 patient name still wraps as '[-' + 'UXWALK…' (bracketed prefix breaks at the hyphen); a normal-heavy bilateral report is now 4 pages because every normal value prints as a text line under each segment (pdfs/t8hi-2.png)"
+  }
+ ],
+ "timeToUsableSec": 1.1
+}

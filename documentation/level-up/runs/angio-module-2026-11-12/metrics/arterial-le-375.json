@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:29:49.990Z",
+  "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/arterialLE",
+  "slug": "arterial-le",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 1,
+      "cardsTotal": 41
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 3,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-error_16iem_165"
+        ]
+      },
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 3,
+        "distinctContexts": [
+          "badge-or-chip"
+        ],
+        "sampleSelectors": [
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147",
+          "div._abiFooter_16iem_102.m_6d731127 > div.m_4081bf90.mantine-Group-root > div._badgeRow_16iem_108 > span._bandChip_16iem_137._band-success_16iem_147"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "ბარძაყის საერთო არტერია (CFA)",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ბარძაყის ღრმა არტერია (DFA)",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ბარძაყის ზედაპირული არტერია (SFA) Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ბარძაყის ზედაპირული არტერია (SFA) Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ბარძაყის ზედაპირული არტერია (SFA) Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "მუხლქვეშა არტერია (PopA) Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "მუხლქვეშა არტერია (PopA) Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის უკანა არტერია (PTA) Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის უკანა არტერია (PTA) Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის უკანა არტერია (PTA) Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "პერონეალური არტერია (Peroneal A) Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "პერონეალური არტერია (Peroneal A) Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "პერონეალური არტერია (Peroneal A) Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის წინა არტერია (ATA) Prox",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის წინა არტერია (ATA) Mid",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "წვივის წინა არტერია (ATA) Dist",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ტერფზურგის არტერია (DPA)",
+        "occurrences": 2,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "R",
+        "occurrences": 18,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "L",
+        "occurrences": 18,
+        "selectors": [
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124",
+          "div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentSide_y4sp8_124"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 40,
+      "tabs": 4,
+      "buttons": 28,
+      "rawCount": 40,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8",
+        "heightPx": 212,
+        "populatedSiblingMedianHeightPx": 258,
+        "ratio": 0.82
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ბარძაყის საერთო არტერია (CFA)\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ბარძაყის ღრმა არტერია (DFA)\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ბარძაყის ზედაპირული არტერია (SFA) Prox\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ბარძაყის ზედაპირული არტერია (SFA) Mid\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ბარძაყის ზედაპირული არტერია (SFA) Dist\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"მუხლქვეშა არტერია (PopA) Prox\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"მუხლქვეშა არტერია (PopA) Dist\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის უკანა არტერია (PTA) Prox\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის უკანა არტერია (PTA) Mid\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის უკანა არტერია (PTA) Dist\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"პერონეალური არტერია (Peroneal A) Prox\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"პერონეალური არტერია (Peroneal A) Mid\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"პერონეალური არტერია (Peroneal A) Dist\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის წინა არტერია (ATA) Prox\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის წინა არტერია (ATA) Mid\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"წვივის წინა არტერია (ATA) Dist\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ტერფზურგის არტერია (DPA)\" renders 2× at comparable weight and size (div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113 | div > div._row_y4sp8_60 > div._cell_y4sp8_101._segmentCell_y4sp8_105 > span._segmentLabel_y4sp8_113) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 258px for its populated siblings (0.82) — a quiet shift must look quieter",
+      "measured": 0.82,
+      "threshold": 0.75
+    }
+  ]
+}

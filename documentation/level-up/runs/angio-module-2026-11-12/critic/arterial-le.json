@@ -1,0 +1,258 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/arterialLE",
+    "slug": "arterial-le",
+    "variant": "default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 176px for its populated siblings (1.27) — a quiet shift must look quieter. Visually: the empty Recommendations deck is the loudest card at the bottom of the page. It has a gradient top ribbon, an icon tile, a two-line header and a dashed placeholder box.",
+        "recommendation": "When Recommendations is empty, collapse it to one header row: tick bar + title + a secondary (white deck + hairline) add button, plus one muted line of text. Remove the dashed placeholder box, the icon tile and the 3px gradient top ribbon. The ribbon is reserved for KPI/stat cards. Target ≤0.75× a populated sibling (~130px)."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "elevation-contrast",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The metrics show pageBg rgb(255,255,255) === cardBg rgb(255,255,255), contrast 1.0, with only 2 of 8 decks carrying a shadow. The script did not hard-fail because the shadow count is above 0. In the screenshot the decks barely separate from the page. Distal runoff and the anatomy diagram sit directly on the page with no deck. The deep-dive.png reference shows a tinted page surface with white decks clearly floating above it.",
+        "recommendation": "Render the page surface with --emr-bg-page as a value distinct from --emr-bg-card, matching the reference. Wrap the distal runoff, anatomy diagram and conclusion sections in decks (--emr-bg-card, 12px radius, --emr-shadow-card, no outer border) so every content group sits at the same depth."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep dive: ONE focal element that wins on weight)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The two-column grid puts a 7-row pressures deck (ends ~y830) next to a 34-row segment table (ends ~y2460). That leaves about 1,600px of empty left column. The anatomy diagram is the natural focal element and the table's visual output, yet it starts around y2780. It is centred in a ~480px box with empty space on both sides and is never on screen together with the table that colours it. The segment table also runs past its deck's right edge, cutting off the plaque/occlusion columns.",
+        "recommendation": "This is a relocation, not a restyle, so it routes to redesign. Move the anatomy diagram (with its legend and drawing toolbar) into the left column directly under the pressures deck. Make it sticky (stays in view on scroll, top offset below the header) so it stays beside the segment table while scrolling. Give the table the full right-column width so all columns fit inside the deck."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness is spent once per screen) + Buttons",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "About 8 solid gradient buttons compete: the back button, + add study, templates, three equal-weight footer buttons (save draft, PDF preview, PDF download) and + add recommendation. These buttons are the heaviest things on screen, heavier than any clinical content. Section headers also stack a tick bar with an icon tile, and each title has the same weight and size as its subtitle.",
+        "recommendation": "Keep exactly one --emr-gradient-primary button: footer 'PDF ჩამოტვირთვა'. Make save-draft, PDF preview, templates, + add study and + add recommendation secondary buttons (white deck + hairline border). Make the back button a ghost button. In section headers, drop the icon tiles and keep the 4×15 gradient tick bar alone. Set the title to --emr-font-md/600 and step the subtitle down to secondary text."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "no-duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "In bilateral mode every Georgian segment name is printed twice in a row at full weight, once for the R row and once for the L row. That is 17 names × 2 across 34 rows. At 1440 the script did not flag it. My judgment: this repeats row labels, not data values (the R and L rows hold different data), so it is layout bloat rather than progressive disclosure. It doubles the label ink and makes the table twice as tall to scan.",
+        "recommendation": "Print each segment name once, as a group label spanning its two sub-rows. The R and L sub-rows then carry only the side chip and their inputs."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The autosave indicator in the footer ('ბოლოს შენახული: 15:28:38') uses a red dot. Red otherwise means hemodynamically significant stenosis (diagram, legend) and the moderate-PAD ABI chip. The dot is small and low-stakes, so this is one minor borrow.",
+        "recommendation": "Make the autosave dot neutral (--emr-text-secondary). Use --emr-error only if saving actually fails, and then with an explicit failure label."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I used the matching light reference, deep-dive.png. The eye first goes to the scattered solid-navy buttons, then to the ABI chips. Severity colour itself is well disciplined: red appears only on the SFA-prox 70–99% segment, its legend and the moderate-PAD ABI chip, and grey/black are kept for normal/occlusion. The structure is what fails. Page and cards are both pure white, so nothing groups. A short pressures card next to a 34-row table leaves a dead column, and the diagram that should be the focal element sits far below the fold. No rule covers two other problems, so they are not scored: the segment table is clipped at its right edge, and the pressures table lists L before R while the side toggle, segment rows, distal runoff and diagram all list R first. That left/right inconsistency is a clinical-safety concern to escalate as a product decision. The agent definition cites 'Content & layout' rules 1–9, but DESIGN-DIRECTION.md has no such section, so no findings rest on them. Biggest fix: move the anatomy diagram into the left column as a sticky panel beside the segment table."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/arterialLE",
+    "slug": "arterial-le",
+    "variant": "768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.5,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "17 hardFails entries (same rule, severity and selector pair span._segmentLabel_y4sp8_113 ×2), merged into one finding. Each reads '\"<label>\" renders 2× at comparable weight and size … — a second reference must be visibly subordinate', for labels: ბარძაყის საერთო არტერია (CFA); ბარძაყის ღრმა არტერია (DFA); ბარძაყის ზედაპირული არტერია (SFA) Prox / Mid / Dist; მუხლქვეშა არტერია (PopA) Prox / Dist; წვივის უკანა არტერია (PTA) Prox / Mid / Dist; პერონეალური არტერია (Peroneal A) Prox / Mid / Dist; წვივის წინა არტერია (ATA) Prox / Mid / Dist; ტერფზურგის არტერია (DPA). My judgment: this is bloat, not progressive disclosure. At this width each repeated name heads its own full-size ~410px card, so the R and L copies have identical weight.",
+        "recommendation": "Use one card per segment, with the name printed once, and an R | L side-by-side pair of input columns inside it (the 768 width fits two ~330px columns). That halves the card count from 34 to 17 and removes the duplicate headings."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 202px for its populated siblings (1.05) — a quiet shift must look quieter. Separately, every empty segment card is exactly as tall as the one populated card (SFA Prox R).",
+        "recommendation": "Collapse the empty Recommendations deck to a single header row with a secondary add button and one muted line, and drop the gradient ribbon and dashed box. Show unrecorded segment cards collapsed: name, side chip and the waveform picker only. Expand PSV, stenosis, plaque and occlusion once the card has any value or is tapped."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep dive: ONE focal element)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The segment table becomes 34 identical bordered cards, each stacking four full-width fields. That is about 14,000px of near-identical boxes before the anatomy diagram appears around y15,300. Nothing wins on weight. The page is pure white with flat decks (pageBg = cardBg, contrast 1.0). The study-switch tabs wrap into an oval pill blob in the patient header.",
+        "recommendation": "This is a relocation, so it routes to redesign. Place the anatomy diagram directly after the pressures deck so it comes before the segment list. Apply the collapsed-card pattern above. Let the study tabs scroll horizontally in a single row instead of wrapping."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness is spent once per screen) + Buttons",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The same set of about 8 solid gradient buttons as at desktop (back, + add study, templates, three footer actions, + add recommendation). At this width they take a larger share of the screen.",
+        "recommendation": "Keep one gradient button (footer 'PDF ჩამოტვირთვა'). Make the rest secondary (white deck + hairline) and make back a ghost button."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The autosave status uses a red dot, while red otherwise means significant stenosis and the moderate-PAD ABI chip.",
+        "recommendation": "Make the autosave dot neutral (--emr-text-secondary). Reserve --emr-error for clinical severity and an actual save failure."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I used the matching light reference, deep-dive.png. The capture is damaged: below the diagram (around y16,380) the full-page screenshot repeats the top of the page, so the conclusion and recommendations decks are not visible. I judged those from the metrics only and capped confidence at 0.5. The fixed footer appearing partway down is a capture artifact, not a defect. At tablet width the table turns into a long run of identical cards. A clinician scrolls about 14,000px of mostly empty, equal-size boxes before reaching the diagram, so a normal limb looks the same as a diseased one. Severity colour stays disciplined (red only on SFA-prox R and the moderate-PAD chip). The pressures table also lists L before R, the opposite of every other control; no rule covers this, but it should be escalated. Biggest fix: one card per segment with R/L inputs side by side, collapsed until a value is recorded, and the diagram placed before the list."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/arterialLE",
+    "slug": "arterial-le",
+    "variant": "375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "REDESIGN-REQUIRED",
+    "confidence": 0.5,
+    "scores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "17 hardFails entries, identical to the 768 variant (same labels, selector pair span._segmentLabel_y4sp8_113 ×2), merged into one finding. Each reads '\"<label>\" renders 2× at comparable weight and size … — a second reference must be visibly subordinate', covering CFA, DFA, SFA Prox/Mid/Dist, PopA Prox/Dist, PTA Prox/Mid/Dist, Peroneal A Prox/Mid/Dist, ATA Prox/Mid/Dist and DPA. My judgment: bloat. Each repeated name heads its own full-size card.",
+        "recommendation": "Use one card per segment, with the name printed once and an R/L segmented control (a two-option toggle) inside it that switches the input set. Show the side with data first, so 34 cards become 17."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 212px tall vs 258px for its populated siblings (0.82) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty Recommendations deck to a header row (tick bar, title, secondary add button) plus one muted line, without the ribbon, icon tile or dashed box. Show unrecorded segment cards collapsed to their name row."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "The document is 580px wide at a 375px viewport, so the page scrolls sideways. The three-button footer bar does not fit. The moderate-PAD ABI chip is cut off ('საშუალო პა…'), so the one severity label in the pressures deck is unreadable. Section-header tick bars drop onto their own line above wrapped titles (distal runoff, anatomy diagram).",
+        "recommendation": "Stack the footer as one full-width primary button ('PDF ჩამოტვირთვა') with save draft and preview as a row of icon+label secondary buttons. Let the ABI card put its band chip on a second line under the value at this width. Keep the tick bar on the title's first line by vertically aligning it to the title's line height."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep dive: ONE focal element) + elevation-contrast",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "There are 34 equal-size segment cards on a pure-white page (pageBg = cardBg, contrast 1.0). The diagram appears only around y16,000. Nothing wins on weight. Above the fold the heaviest elements are the back button, + add study and templates, which are navigation and setup controls, not clinical content.",
+        "recommendation": "Make the back button a ghost button and make + add study and templates secondary. Place the diagram right after the pressures deck. Render the page on --emr-bg-page distinct from --emr-bg-card so the decks separate."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The autosave status uses a red dot, while red otherwise means significant stenosis and the moderate-PAD ABI chip.",
+        "recommendation": "Make the autosave dot neutral (--emr-text-secondary)."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive; I used the matching light reference, deep-dive.png. The capture is damaged: the image is 580px wide (real horizontal overflow) and, from about y16,380, repeats the top of the page instead of the conclusion and recommendations decks. Confidence is capped at 0.5. On a phone, the 34-card segment list is a very long scroll in which empty and recorded segments look identical. Sideways scrolling cuts off the one severity chip in the pressures deck. Severity colour itself stays disciplined. The pressures table also lists L before R, inconsistent with every other control; no rule covers this, so it is unscored but should be escalated. Biggest fix: one collapsible card per segment with an R/L toggle, and a stacked footer that fits 375px."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/arterialLE",
+    "slug": "arterial-le",
+    "variant": "dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 2,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div#root > div._wrap_1fkkt_3 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8 is 223px tall vs 176px for its populated siblings (1.27) — a quiet shift must look quieter",
+        "recommendation": "Collapse the empty Recommendations deck to a single header row with a secondary add button and one muted line. Remove the gradient top ribbon, icon tile and dark dashed placeholder box."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep dive: ONE focal element)",
+        "severity": "P1",
+        "mechanical": false,
+        "evidence": "Same layout as light, since structure does not depend on theme: about 1,600px of empty left column beside the 34-row segment table. The diagram sits far below the table it visualises, and the table runs past its deck's right edge.",
+        "recommendation": "This is a relocation, so it routes to redesign. Put the anatomy diagram, legend and toolbar in the left column under the pressures deck as a sticky panel, and give the segment table the full right-column width."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation (anatomy palette counts as severity) + Color discipline (dark mode via semantic vars only)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The anatomy silhouette keeps its light fill in dark mode, so it becomes the brightest slab on the page. Its R/L side labels are effectively invisible (light text on the light silhouette). The legend's black 'ოკლუზია' (occlusion) swatch and the black drawing-toolbar swatch nearly vanish against the dark card. In dark mode a clinician cannot read the most severe grade from the legend, or the laterality from the diagram.",
+        "recommendation": "Keep the silhouette fill, and the R/L labels and swatch outlines, on semantic surface/text tokens so they follow the theme. Give the occlusion swatch and the black toolbar swatch a hairline border in --emr-text-secondary so they stay visible on --emr-bg-card."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "density-tiers (boldness spent once) + Section headers + Forms (checked states solid --emr-primary)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "There are about 8 filled primary-style buttons (back, + add study, templates, three footer actions, + add recommendation). Meanwhile the controls that should be bold are muted: the selected 'ორმხრივი' (bilateral) toggle and the active study tab render as grey fills, not solid primary. Section-header tick bars render grey rather than gradient. The deep-dive-dark.png reference keeps the gradient ticks and solid selected states.",
+        "recommendation": "Keep one gradient button (footer 'PDF ჩამოტვირთვა') and make the rest secondary or ghost. Render selected segmented-control and tab items as solid --emr-primary with white text. Render tick bars with --emr-gradient-primary in dark mode, as the reference does."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "no-duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Every segment name is printed twice, once for the R row and once for the L row (17 × 2). My judgment: row-label bloat, not data duplication. The script did not flag it at 1440.",
+        "recommendation": "Print each segment name once, as a group label over its R and L sub-rows. The sub-rows carry only the side chip."
+      },
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-reservation",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The autosave dot is red, a non-clinical use of the severity colour.",
+        "recommendation": "Make the autosave dot neutral (--emr-text-secondary)."
+      }
+    ],
+    "reasoning": "Density tier was supplied as deep-dive. The screenshot and metrics both say dark, and I judged against the matching dark reference, deep-dive-dark.png. Unlike light mode, the decks do separate from the page (bg-card vs bg-page contrast 1.22, with shadow), so depth ordering exists and hierarchy reaches 2. The diagram also wins on brightness, but only far below the fold, and it achieves that by glaring rather than by design. The same structural problems as light remain: a dead left column, the diagram far from the table that drives it, and too many filled buttons. Dark mode adds a severity-legibility problem: the occlusion swatch and the diagram's R/L labels almost disappear. The pressures table also lists L before R, inconsistent with the rest of the screen; no rule covers this, so it is unscored but should be escalated. Biggest fix: put the diagram in a sticky left-column panel beside the segment table and make its silhouette, labels and swatches follow the theme."
+  }
+]

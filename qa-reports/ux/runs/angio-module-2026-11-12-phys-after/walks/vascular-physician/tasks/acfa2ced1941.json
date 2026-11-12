@@ -1,0 +1,99 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "acfa2ced1941",
+ "goal": "Review the venous findings and diagram for both legs",
+ "startedAt": "2026-11-12T15:31:55.584Z",
+ "endedAt": "2026-11-12T15:33:05.338Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Start page footer resume button now names the last-edited visit ('მიმდინარე ვიზიტის გაგრძელება · … ნინო ბერიძე') -> 1 click into the venous form (scrollY 0), opened on the remembered 'მარცხენა' tab; clicked ორმხრივი; the diagram now sits in a sticky right column beside the segment table, so after 1 scroll both legs' rows (R/L interleaved) and the coloured diagram (left GSV red) are on one screen. Footer now has 4 buttons incl. a new 'ბეჭდვა'.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:31:55.667Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "bfdac106898a70a4",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "7a694c0ddce8",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/acfa2ced1941-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:32:20.260Z",
+   "do": "click the footer button that names Nino's visit",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-phys-after] ნინო ბერიძე",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "bfdac106898a70a4",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "7a694c0ddce8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/acfa2ced1941-s02.png",
+   "afterStateReprobed": true
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:32:36.734Z",
+   "do": "click ორმხრივი to show both legs",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[role=tab][data-grow=true]:has-text(\\\"ორმხრივი\\\")\"",
+   "kind": "activation",
+   "selector": "[role=tab][data-grow=true]:has-text(\"ორმხრივი\")",
+   "labelText": "ორმხრივი",
+   "selectorConfidence": "positional",
+   "fpBefore": "bfdac106898a70a4",
+   "fpAfter": "bfdac106898a70a4",
+   "paneKeyBefore": "7a694c0ddce8",
+   "paneKeyAfter": "0b6f69b5695b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T15:32:50.736Z",
+   "do": "scroll down to see the diagram drawing next to the table",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"600\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "bfdac106898a70a4",
+   "fpAfter": "bfdac106898a70a4",
+   "paneKeyBefore": "0b6f69b5695b",
+   "paneKeyAfter": "0b6f69b5695b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 600,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "Table cells clip their Georgian values ('რესპირ ✕ ჯ' for რესპიროფაზული) and column heads are cut ('ხანგრძ. (…', 'დიამეტრ…', 'სიღრმე (…') at 1280 px"
+  }
+ ],
+ "timeToUsableSec": 2
+}

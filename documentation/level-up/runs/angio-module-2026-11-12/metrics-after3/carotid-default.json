@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T17:40:34.173Z",
+  "route": "/encounter/74473d78-af9a-4a24-a8d3-557507e586b9/carotid",
+  "slug": "carotid-default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 3,
+      "cardsTotal": 8
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 2,
+        "distinctContexts": [
+          "button"
+        ],
+        "sampleSelectors": [
+          "button[data-testid=\"nascet-right-ge70\"]",
+          "button[data-testid=\"nascet-right-ge70\"]"
+        ]
+      },
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 2,
+        "distinctContexts": [
+          "button"
+        ],
+        "sampleSelectors": [
+          "button[data-testid=\"nascet-left-normal\"]",
+          "button[data-testid=\"nascet-left-normal\"]"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "ნორმა",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-normal\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-normal\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "< 50 %",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-lt50\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-lt50\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "50–69 %",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-50to69\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-50to69\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "≥ 70 %",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-ge70\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-ge70\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "სუბოკლუზია",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-near-occlusion\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-near-occlusion\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "ოკლუზია",
+        "occurrences": 2,
+        "selectors": [
+          "button[data-testid=\"nascet-right-occluded\"] > span._desc_1mmld_151",
+          "button[data-testid=\"nascet-left-occluded\"] > span._desc_1mmld_151"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "R",
+        "occurrences": 14,
+        "selectors": [
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "g#side-labels > text",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "L",
+        "occurrences": 14,
+        "selectors": [
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "g#side-labels > text",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129",
+          "div._tableWrap_d3ixu_54 > div._row_d3ixu_63 > div._cell_d3ixu_107._vesselCell_d3ixu_111 > span._vesselSide_d3ixu_129"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "✓ შეესაბამება SRU-ს",
+        "occurrences": 2,
+        "selectors": [
+          "div.m_4081bf90.mantine-Group-root > div._axis_1mmld_44 > div._axisHead_1mmld_53.m_4081bf90 > span._suggestApplied_1mmld_84",
+          "div.m_4081bf90.mantine-Group-root > div._axis_1mmld_44 > div._axisHead_1mmld_53.m_4081bf90 > span._suggestApplied_1mmld_84"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 153,
+      "tabs": 1,
+      "buttons": 98,
+      "rawCount": 153,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div#root > div._wrap_a6yj2_3 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 67,
+        "populatedSiblingMedianHeightPx": 217,
+        "ratio": 0.31
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ნორმა\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-normal\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-normal\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"< 50 %\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-lt50\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-lt50\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"50–69 %\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-50to69\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-50to69\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"≥ 70 %\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-ge70\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-ge70\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"სუბოკლუზია\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-near-occlusion\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-near-occlusion\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"ოკლუზია\" renders 2× at comparable weight and size (button[data-testid=\"nascet-right-occluded\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-occluded\"] > span._desc_1mmld_151) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    }
+  ]
+}

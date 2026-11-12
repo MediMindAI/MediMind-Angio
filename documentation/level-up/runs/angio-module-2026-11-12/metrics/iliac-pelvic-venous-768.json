@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:32:33.325Z",
+  "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 21,
+      "cardsTotal": 29
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(56, 161, 105)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "bullet-or-dot"
+        ],
+        "sampleSelectors": [
+          "div._bar_fi654_3.no-print > div._inner_fi654_16 > div._status_fi654_33 > span._dot_fi654_40._dotClean_fi654_47"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "CIV პროქს.",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-civ-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-civ-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CIV შუა",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-civ-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-civ-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CIV დისტ.",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-civ-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-civ-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV პროქს.",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-eiv-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-eiv-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV შუა",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-eiv-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-eiv-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "EIV დისტ.",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-eiv-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-eiv-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "IIV",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-iiv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-iiv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "CFV",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-cfv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-cfv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "OV",
+        "occurrences": 2,
+        "selectors": [
+          "div[data-testid=\"iliac-caval-row-ov-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84",
+          "div[data-testid=\"iliac-caval-row-ov-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84"
+        ],
+        "bothFullWeight": true
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 21,
+      "tabs": 4,
+      "buttons": 10,
+      "rawCount": 21,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"svp-section\"]",
+        "heightPx": 65,
+        "populatedSiblingMedianHeightPx": 202,
+        "ratio": 0.32
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-civ-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-civ-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-prox-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-prox-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-mid-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-mid-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-eiv-dist-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-eiv-dist-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"IIV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-iiv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-iiv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"CFV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-cfv-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-cfv-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    },
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"OV\" renders 2× at comparable weight and size (div[data-testid=\"iliac-caval-row-ov-right\"] > div._cell_kgms5_80._segmentCell_kgms5_84 | div[data-testid=\"iliac-caval-row-ov-left\"] > div._cell_kgms5_80._segmentCell_kgms5_84) — a second reference must be visibly subordinate",
+      "measured": 2,
+      "threshold": 2
+    }
+  ]
+}

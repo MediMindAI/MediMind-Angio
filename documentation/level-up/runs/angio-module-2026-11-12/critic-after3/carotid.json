@@ -1,0 +1,198 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/:encounterId/carotid",
+    "slug": "carotid-default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.8,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 1,
+      "densityFit": 3,
+      "restraint": 3
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "6 hardFails, copied word for word from composition-metrics.mjs (measured 2, threshold 2 each). The labels \"ნორმა\", \"< 50 %\", \"50–69 %\", \"≥ 70 %\", \"სუბოკლუზია\" and \"ოკლუზია\" each render 2× at comparable weight and size (button[data-testid=\"nascet-right-*\"] > span._desc_1mmld_151 | button[data-testid=\"nascet-left-*\"] > span._desc_1mmld_151). My judgment: this is not copy-paste bloat. The two panels are independent R/L inputs. It is also not progressive disclosure, because both lists sit at full weight side by side.",
+        "recommendation": "FOUNDER-LEVEL DECISION (open item from round 2; restyling cannot fix it). Option A: merge into one grade grid. List the six grade labels once as rows, with two narrow R and L radio columns. Each label renders once and the block gets half as tall. Option B: accept the two pickers as an intentional bilateral form. The founder then signs off that NASCET option labels are structural rather than primary data, and the metrics gate is changed to match. Do not hide the duplication with styling."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "density-tiers (deep-dive: ONE focal element; primary data legible)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The NASCET grade now sits in the page flow under a 28-row segment table, about 2,100 px down in a 3,231 px page. On the first 900 px screen, the only sign of the ≥70 % right ICA finding is the red segment in the diagram. The summary chip 'R: ≥ 70 % · L: ნორმა' is small and only appears after scrolling past the whole table. The diagram correctly wins on weight. The study's headline grade simply arrives late.",
+        "recommendation": "Move the NASCET summary chip (keep it as the one condensed chip) into the anatomy card's header row in the sticky right column, next to 'საძილე არტერიების ანატომია'. The grade is then visible on the first screen as a subordinate chip. The full picker stays in the flow below the table. Use one chip only; do not add a second one."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (slim row, 4×15px gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The segment table, anatomy and recommendations cards all use the gradient tick-bar header. The NASCET card instead uses a chevron plus a stethoscope icon with no tick bar, and adds a 'NASCET' eyebrow word that repeats its own title. The conclusion card (დასკვნა / კლინიცისტის შეფასება) has no section header at all, only field labels.",
+        "recommendation": "Give the NASCET card the standard tick-bar header row. The chevron can stay on the right as the collapse control. Drop the stethoscope icon and the 'NASCET' eyebrow word. Give the conclusion card a tick-bar header 'დასკვნა', and keep 'კლინიცისტის შეფასება' as a field label inside the card."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Alerts / notices (borderless deck + 4px solid left rail)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The 'findings changed after this conclusion was written' note is intended and clinically correct. It renders as a fully outlined blue box (1px info border on all four sides, rounded, tinted fill), not as a borderless deck with a left rail.",
+        "recommendation": "Keep the note and its wording. Restyle it through the EMR alert wrapper: no outer border, a 4px solid --emr-info left rail, --emr-shadow-card, and a bold first line with calm body text."
+      }
+    ],
+    "reasoning": "Color scheme: light, matching the metrics JSON. Compared against deep-dive.png. The density tier was supplied. A clinician's eye lands on the red right-ICA segment in the large anatomy diagram, which is the right focal element. It then reads down a long, orderly segment table where the populated rows (CCA Dist 85, ICA Prox) stand out from the empty ones. Red means ≥70 % stenosis and green means a normal selection, nothing else, so color discipline is clean. The empty recommendations card is properly collapsed (ratio 0.31). Restraint is good: the loud elements are the red segment and the gradient PDF button. The verdict is held at NEEDS-REWORK only by the mechanical duplicate-label hard-fail on the twin NASCET pickers, and that is a founder decision between a merged R/L grade grid and accepting the pickers as structural. Moving NASCET into the flow cost the grade its first-screen visibility. Note: the brief cites Content & layout rules 1–9, but this repo's DESIGN-DIRECTION.md has no such section, so I judged only against the sections that exist. Highest-leverage fix: the founder decides on the NASCET grid, and if it is merged the hard-fails clear and this variant passes."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/:encounterId/carotid",
+    "slug": "carotid-768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.6,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 1,
+      "densityFit": 2,
+      "restraint": 3
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "6 hardFails, copied word for word (measured 2, threshold 2 each), nascet-right-* vs nascet-left-* > span._desc_1mmld_151: \"ნორმა\", \"< 50 %\", \"50–69 %\", \"≥ 70 %\", \"სუბოკლუზია\", \"ოკლუზია\". The capture shows the two side-by-side panels with identical six-option lists at equal weight.",
+        "recommendation": "FOUNDER-LEVEL DECISION, same as the 1440 variant: either merge into one grade grid (labels once, R and L radio columns) or formally accept the pickers as a structural bilateral form and change the gate to match."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Empty states collapse / density tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The conclusion textarea renders about 6 lines of narrative inside a box over 650 px tall. It runs past the bottom of the 3,277 px capture, so the info note, clinician-assessment field and recommendations card do not appear at all. Blank space ends up as the largest region on the page. ImpressionBlock.tsx uses Mantine autosize with minRows 6 and maxRows 24, so the box should hug its content. This looks like autosize measuring before layout settled, or the capture resizing the viewport. Check it in the live browser before fixing.",
+        "recommendation": "Check at a live 768×1024 viewport. If the textarea really grows to maxRows, make the autosize measurement re-run after the form settles (or on width change) so it fits its 6 lines. If it cannot be reproduced live, fix the capture step and recapture this variant. This verdict is based on a partial artifact."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: primary data legible)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Below 992 px the segment table becomes an inner scroll box (CarotidSegmentTable.module.css: max-height min(70vh, 640px)). In the capture it also clips on the right: the notes column is cut off and ICA/CCA is only partly visible, with no visible sign that it scrolls sideways. Only the rows down to ICA Prox R are visible before the fixed bar.",
+        "recommendation": "At ≤992 px, pin the vessel column (position: sticky; left: 0) and add a right-edge fade inside the table wrapper, so a clinician can tell more columns exist off to the right."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (slim row, 4×15px gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Same as 1440: the NASCET header has a chevron and stethoscope icon but no tick bar, plus a 'NASCET' eyebrow that repeats the title. The conclusion card has no header.",
+        "recommendation": "Use the tick-bar header row on NASCET (drop the icon and eyebrow, keep the chevron on the right). Add a 'დასკვნა' tick-bar header to the conclusion card."
+      }
+    ],
+    "reasoning": "Color scheme: light, matching the metrics. Density tier was supplied. Below 992 px the layout stacks: table (inner scroll), NASCET, diagram, conclusion. The order holds up: the table and the red ICA segment in the diagram give the eye clear anchors, and red and green are used only for the stenosis grade. Redundancy is held at 1 by the mechanical NASCET duplicate-label hard-fail, which is a founder decision. The new problem on this variant is the conclusion textarea, which takes far more height than its six lines need and pushes the rest of the page out of the capture. The capture is clipped at the bottom, so confidence is 0.6. Highest-leverage fix: verify and fix the textarea autosize at 768, then have the founder decide on the NASCET grid."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/:encounterId/carotid",
+    "slug": "carotid-375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 1,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "6 hardFails, copied word for word (measured 2, threshold 2 each), nascet-right-* vs nascet-left-* > span._desc_1mmld_151: \"ნორმა\", \"< 50 %\", \"50–69 %\", \"≥ 70 %\", \"სუბოკლუზია\", \"ოკლუზია\". At 375 the panels stack, so the same six-option list appears twice in a row: 12 option rows, about 640 px, for one grade per side. This is where the duplication costs the most.",
+        "recommendation": "FOUNDER-LEVEL DECISION. A merged grade grid (six label rows, each with compact R and L radio targets of at least 44 px) would cut this block roughly in half on phones. Otherwise the founder accepts the stacked pickers as structural and the gate is changed to match."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "density-tiers (deep-dive: primary data legible)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "On phones the segment table shows only the vessel, PSV and ED columns. Flow, plaque and ICA/CCA ratio are off-screen to the right in a scroll box limited to 70vh, with no sign that it scrolls. The ICA Prox R row (PSV 250) is visible, but its derived ratio is not.",
+        "recommendation": "At ≤576 px, pin the vessel column and add a right-edge fade, as on tablet. Also consider showing the ICA/CCA ratio as a small inline value under the PSV input on ICA rows, so the key derived number is not off-screen."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers (slim row, 4×15px gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The NASCET summary chip now wraps cleanly onto two lines ('R: ≥ 70 % · / L: ნორმა'), which fixes the round-2 clipping. The header still packs a chevron, an icon, a two-line title and the chip into one row with no tick bar, unlike the other cards.",
+        "recommendation": "Use the tick-bar header on the NASCET card and drop the stethoscope icon. That frees width so the title can sit on one line next to the chip."
+      }
+    ],
+    "reasoning": "Color scheme: light, matching the metrics. Density tier was supplied; the '15' pill is ignored as a capture artifact. On a phone the page reads in order: table, NASCET, diagram, conclusion with the info note, and a collapsed recommendations card. Red and green mean the grade and nothing else. The chip wrap fix landed. The weakest part is the twin NASCET pickers. Stacked, they become 12 near-identical rows that outweigh the diagram, which is both the mechanical hard-fail and the reason restraint stays at 2. The table's hidden columns make density only workable. Highest-leverage fix: the founder decides on the NASCET grid; a merged grid fixes redundancy and phone density together."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/:encounterId/carotid",
+    "slug": "carotid-dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.75,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 1,
+      "redundancy": 1,
+      "densityFit": 3,
+      "restraint": 3
+    },
+    "findings": [
+      {
+        "dimension": "colorDiscipline",
+        "rule": "status-color-collision",
+        "severity": "P1",
+        "mechanical": true,
+        "evidence": "rgb(43, 108, 176) carries 5 unrelated meanings (border, bullet-or-dot, button, icon, text) across 16 marks: one color, one meaning (measured 5, threshold 3), from composition-metrics.mjs. Sample selectors: emr-view-toggle-bilateral, the emr-content-section-header tick, drawing-mode-toggle-click, drawing-size-4, drawing-tool-pen. My reading: every flagged mark is brand selected-state or section chrome, not a clinical severity signal. In dark mode, theme.css sets --emr-info to #2b6cb0 (line 1596), and these selected-state and tick tokens resolve to that same value, so the blue on the active toggle and pen tool is literally the info notice's color. This is new since round 2 because the bigger drawing toolbar is now inside the measured area.",
+        "recommendation": "TOKEN/TOOLING DECISION, route to the founder. Either (a) move the dark-mode selected-state and tick tokens (--emr-selected-border, the view-toggle and drawing-toolbar active fill, the section tick) to a brand value that differs from dark --emr-info, so info blue only appears on the 'findings changed' notice; or (b) declare in DESIGN-DIRECTION that info blue in dark mode is shared with brand chrome, and add those tokens to the metric's brandTokens. Option (a) follows the collision rule as written."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "6 hardFails, copied word for word (measured 2, threshold 2 each), nascet-right-* vs nascet-left-* > span._desc_1mmld_151: \"ნორმა\", \"< 50 %\", \"50–69 %\", \"≥ 70 %\", \"სუბოკლუზია\", \"ოკლუზია\". Visible in this capture as two equal-weight panels under the table.",
+        "recommendation": "FOUNDER-LEVEL DECISION, same as the light variants: merge into one grade grid, or accept the pickers as structural and change the gate."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "status-color-collision",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Dark colorDiscipline went 1 (round 1) → 2 (round 2) → 1 (round 3, capped by the new mechanical hard-fail). Visually, the clinical colors are unchanged and correct: red means the ≥70 % right ICA (diagram segment and selected option), green means the normal left selection. The score swings with how much brand chrome falls inside the measured area, not with any change in how severity is shown.",
+        "recommendation": "Stop iterating this dimension in the fix loop and escalate it as a product/token decision (see the status-color-collision finding). Two rules conflict here: the Command rule that info badges are solid navy brand, and the collision rule that info blue is a severity color. A human has to pick."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Section headers / Alerts (left-rail notice)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "As in light mode: the NASCET header has no tick bar and has an icon plus eyebrow; the conclusion card has no header; the 'findings changed' notice is a fully outlined blue box instead of a borderless deck with a left rail.",
+        "recommendation": "Apply the tick-bar header to NASCET and the conclusion card. Render the notice through the EMR alert wrapper with a 4px --emr-info left rail and no outer border."
+      }
+    ],
+    "reasoning": "Color scheme: dark, matching the metrics JSON. Compared against deep-dive-dark.png. Density tier was supplied. Composition holds up in dark: the cards lift off the page (contrast 1.22, shadows present), the R/L laterality chips are now neutral gray, the red ICA segment and red/green NASCET selections carry the only severity meaning, and the empty recommendations card is collapsed. Two mechanical hard-fails block PASS. One is the shared NASCET duplicate (founder decision). The other is a new status-color collision on rgb(43,108,176), caused by dark --emr-info resolving to the same blue as brand selected-state chrome, now that the larger drawing toolbar is measured. That is a token conflict, not a misuse of red or green, and the score has oscillated across rounds, so it should be escalated rather than iterated. Highest-leverage fix: give dark-mode selected/active chrome a brand token distinct from dark --emr-info."
+  }
+]

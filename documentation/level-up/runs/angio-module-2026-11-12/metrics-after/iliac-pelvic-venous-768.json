@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:30:33.053Z",
+  "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+  "slug": "iliac-pelvic-venous",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 4,
+      "cardsTotal": 9
+    },
+    "severityColorUsage": [],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 24,
+      "tabs": 4,
+      "buttons": 15,
+      "rawCount": 24,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div[data-testid=\"svp-section\"]",
+        "heightPx": 65,
+        "populatedSiblingMedianHeightPx": 65,
+        "ratio": 1
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div[data-testid=\"svp-section\"] is 65px tall vs 65px for its populated siblings (1) — a quiet shift must look quieter",
+      "measured": 1,
+      "threshold": 0.75
+    }
+  ]
+}

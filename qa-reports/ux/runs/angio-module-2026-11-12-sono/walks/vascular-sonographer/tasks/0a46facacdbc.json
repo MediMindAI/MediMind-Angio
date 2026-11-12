@@ -1,0 +1,103 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono",
+ "persona": "vascular-sonographer",
+ "taskId": "0a46facacdbc",
+ "goal": "Switch to another study of the same patient",
+ "startedAt": "2026-11-12T11:28:56.291Z",
+ "endedAt": "2026-11-12T11:29:43.619Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: open in-progress list, Continue on T02, banner chip თეძო/მენჯი -> /encounter/<same id>/iliacPelvicVenous; same banner/patient, no intake fields. Switch itself = 1 chip click.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:28:56.401Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "575295989e1a",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:28:58.632Z",
+   "do": "open the in-progress visits list to find my patient",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "9b2708073c8a",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:29:15.091Z",
+   "do": "press Continue on the T02 Kapanadze row (venous + iliac chips)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-c856f49a-9a31-4cb5-9444-ac5691c93cd1\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-c856f49a-9a31-4cb5-9444-ac5691c93cd1\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "e54b5915dfbc1ee3",
+   "paneKeyBefore": "9b2708073c8a",
+   "paneKeyAfter": "7ac390da946f",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:29:26.460Z",
+   "do": "click the iliac/pelvic chip in the banner to switch study",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"banner-chip-iliacPelvicVenous\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"banner-chip-iliacPelvicVenous\"]",
+   "labelText": "თეძო/მენჯი",
+   "selectorConfidence": "unique",
+   "fpBefore": "e54b5915dfbc1ee3",
+   "fpAfter": "b3d48e03dfb15113",
+   "paneKeyBefore": "7ac390da946f",
+   "paneKeyAfter": "0f51edff6aa7",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s04.png"
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 2,
+   "type": "jargon",
+   "note": "In-progress list row buttons: 'Edit' is English in the Georgian UI; the trash-icon discard button's accessible name is 'გაუქმება' (= cancel), same word used for dialog Cancel"
+  },
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "Iliac/pelvic form arrives with 'სქესი' pre-filled 'მდედრი' (female) although no sex was entered at intake; layout loses the page gutter (back button at x=0, banner flush to left edge) unlike the venous form; reset button here is '+ ახალი შემთხვევა' vs '+ ახალი კვლევა' on venous"
+  }
+ ],
+ "timeToUsableSec": 1.7
+}

@@ -1,0 +1,87 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys-after",
+ "persona": "vascular-physician",
+ "taskId": "7ddfddbf4c8b",
+ "goal": "Print the report on paper",
+ "startedAt": "2026-11-12T15:45:24.346Z",
+ "endedAt": "2026-11-12T15:49:29.566Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "FAILED_BLOCKED",
+ "outcomeNote": "New in-app footer control 'ბეჭდვა' (print-pdf) clicked 1 step after resume. App built the PDF (application/pdf 55 KB blob) and mounted a hidden 0x0 iframe with it; the iframe's document is cross-origin to the app in this Chrome-for-Testing build (SecurityError reading its window), and the PDF opened in a NEW TAB in the browser's viewer. Window capture of this context's browser window (shots/7ddfddbf4c8b-browser-window-after-print.png) shows the PDF tab in front with no print dialog. A re-press without the walker's iframe hook (outside recorded steps) also produced a new PDF tab, no error, no notification. MEASUREMENT LIMIT (same as baseline): the harness cannot drive the viewer's print button in the new tab; a human can probably print from there, and whether the app's iframe print() opens a dialog in a regular Chrome is unverified. App-side fact: no print dialog was observed from the in-app control.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:45:24.447Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "84015228faf8",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/7ddfddbf4c8b-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:45:29.549Z",
+   "do": "click the footer button that names Nino's visit",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-phys-after] ნინო ბერიძე",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "84015228faf8",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/7ddfddbf4c8b-s02.png",
+   "afterStateReprobed": true
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:45:44.352Z",
+   "do": "click ბეჭდვა in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"print-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"print-pdf\"]",
+   "labelText": "ბეჭდვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "72dc93d460597514",
+   "fpAfter": "72dc93d460597514",
+   "paneKeyBefore": "70a0e2e46368",
+   "paneKeyAfter": "70a0e2e46368",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "dead-end",
+   "note": "In-app 'ბეჭდვა' exists now, but in this browser it ends in a new tab showing the PDF in the browser viewer (same as PDF ნახვა) with no print dialog in front; printing still needs the viewer's own print button"
+  },
+  {
+   "atStep": 3,
+   "type": "duplicate-path",
+   "note": "'ბეჭდვა' and 'PDF ნახვა' produce the same visible result here (a new PDF tab); the user cannot tell them apart by outcome"
+  }
+ ],
+ "timeToUsableSec": 1.9
+}

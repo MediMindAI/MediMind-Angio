@@ -1,0 +1,81 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "8b62e94cf890",
+ "goal": "Download one combined PDF for a patient with several studies",
+ "startedAt": "2026-11-12T15:54:06.816Z",
+ "endedAt": "2026-11-12T15:55:20.107Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Precondition prepared via UI before the walk (unrecorded): T02 venous all-normal both legs + conclusion; iliac 'ყველა ნორმაში'. Walk: / -> footer 'მიმდინარე ვიზიტის გაგრძელება · …T02 Giorgi Beridze' (1 click) -> venous form -> 'PDF ჩამოტვირთვა' -> download encounter-[UXWALK-angio-module-2026-11-12-after]-T02-Giorgi-Beridze-2026-11-12.pdf (application/pdf, 226,466 bytes); no error toast. Hook as in 6d7af6f56e93. Verification probe outside the recorded steps ('PDF ნახვა' blob, pdftotext): 5 pages, venous section + 'თეძოს და მენჯის ვენების დუპლექსი' section with patient name.",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:54:07.079Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "5b0ff2b05a8e9839",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "c5a6b152f3e9",
+   "paneKeyAfter": "f67a08d9c1bf",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/8b62e94cf890-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:54:20.814Z",
+   "do": "press 'continue current visit · T02 Giorgi Beridze' in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-after] T02 Giorgi Beridze",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "cd74bd5a7e02e8d3",
+   "paneKeyBefore": "f67a08d9c1bf",
+   "paneKeyAfter": "f67a08d9c1bf",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/8b62e94cf890-s02.png"
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:54:33.372Z",
+   "do": "press 'PDF ჩამოტვირთვა' in the sticky footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "3020dfe607350a9e",
+   "fpAfter": "3020dfe607350a9e",
+   "paneKeyBefore": "056bfb5b01f6",
+   "paneKeyAfter": "056bfb5b01f6",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "Only one 'PDF ჩამოტვირთვა' button: on a two-study visit it silently produces the combined encounter PDF (226 KB) from the venous page — nothing on the button or after the click says it contains both studies; no feedback after the click. Resume from the footer opens the first study (venous), not the last edited one (iliac)"
+  }
+ ],
+ "timeToUsableSec": 3.5
+}

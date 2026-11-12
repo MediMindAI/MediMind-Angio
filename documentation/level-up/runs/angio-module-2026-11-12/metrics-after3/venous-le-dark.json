@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T17:13:06.630Z",
+  "route": "/encounter/66f4c37f-9a98-4207-b951-578253f4fcff/venousLEBilateral",
+  "slug": "venous-le-dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "dark",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(15, 23, 42)",
+      "cardBg": "rgb(30, 41, 59)",
+      "contrastRatio": 1.22,
+      "cardsWithShadow": 3,
+      "cardsTotal": 8
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(43, 108, 176)",
+        "occurrences": 5,
+        "distinctContexts": [
+          "bullet-or-dot",
+          "button"
+        ],
+        "sampleSelectors": [
+          "div[data-testid=\"emr-content-section-header\"] > div.m_4081bf90.mantine-Group-root > div.m_4081bf90.mantine-Group-root > div",
+          "button[data-testid=\"drawing-mode-toggle-click\"]",
+          "button[data-testid=\"drawing-size-4\"]",
+          "button[data-testid=\"drawing-tool-pen\"]",
+          "button[data-testid=\"download-pdf\"]"
+        ]
+      },
+      {
+        "color": "rgb(239, 68, 68)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "icon"
+        ],
+        "sampleSelectors": [
+          "div.m_e2f5cd4e.m_46b77525 > div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "R",
+        "occurrences": 20,
+        "selectors": [
+          "button[data-testid=\"segment-head-cfv-right\"] > span._recordSide_135b5_172",
+          "g#side-labels > text",
+          "button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-fv-mid-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-fv-dist-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-pfv-right\"] > span._recordSide_135b5_172"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 156,
+      "tabs": 4,
+      "buttons": 96,
+      "rawCount": 162,
+      "repeatedLists": 1
+    },
+    "emptyStates": [
+      {
+        "selector": "div._page_5ssyc_3 > div._container_5ssyc_106 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 67,
+        "populatedSiblingMedianHeightPx": 135,
+        "ratio": 0.5
+      }
+    ]
+  },
+  "hardFails": []
+}

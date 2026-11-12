@@ -1,0 +1,98 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono",
+ "persona": "vascular-sonographer",
+ "taskId": "8b62e94cf890",
+ "goal": "Download one combined PDF for a patient with several studies",
+ "startedAt": "2026-11-12T11:58:17.781Z",
+ "endedAt": "2026-11-12T11:59:11.306Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Precondition prepared via UI before the walk (unrecorded): T02 venous all-normal both legs + conclusion; iliac 'normal' template. Walk: / -> list -> Continue T02 -> 'PDF ჩამოტვირთვა' -> download encounter-[UXWALK-angio-module-2026-11-12]-T02-Sono-Kapanadze-2026-11-12.pdf (application/pdf, 213,171 bytes), no error toast. pdftotext: 2 pages — p1 venous LE (patient, conclusion), p2 iliac/pelvic duplex (template conclusion).",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:58:17.796Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "b3d48e03dfb15113",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "0f51edff6aa7",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/8b62e94cf890-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:58:19.660Z",
+   "do": "open in-progress visits",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "6fed2edfcbde",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:58:20.469Z",
+   "do": "Continue T02 Kapanadze (venous + iliac)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-c856f49a-9a31-4cb5-9444-ac5691c93cd1\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-c856f49a-9a31-4cb5-9444-ac5691c93cd1\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "14227cdeca33c069",
+   "paneKeyBefore": "6fed2edfcbde",
+   "paneKeyAfter": "6fed2edfcbde",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/8b62e94cf890-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:58:41.947Z",
+   "do": "press 'PDF ჩამოტვირთვა'",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"download-pdf\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"download-pdf\"]",
+   "labelText": "PDF ჩამოტვირთვა",
+   "selectorConfidence": "unique",
+   "fpBefore": "e54b5915dfbc1ee3",
+   "fpAfter": "e54b5915dfbc1ee3",
+   "paneKeyBefore": "c0532a535b88",
+   "paneKeyAfter": "c0532a535b88",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "Only one 'PDF ჩამოტვირთვა' button — nothing tells the clinician it now exports the WHOLE encounter (both studies) rather than the open study; filename switches silently to 'encounter-...'. Combined PDF page 2 (iliac) prints 'მენჯის ვენური რეფლუქსი ან ობსტრუქცია არ ვლინდება… მარცხენა გონადური ვენა ნორმალური კალიბრის' from the template while zero iliac rows were recorded; no in-app feedback after click"
+  }
+ ],
+ "timeToUsableSec": 0.8
+}

@@ -1,0 +1,86 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "332f579ec7b3",
+ "goal": "Reopen an unfinished encounter after the browser was closed",
+ "startedAt": "2026-11-12T15:22:43.853Z",
+ "endedAt": "2026-11-12T15:23:47.911Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Fresh load of /. Footer 'მიმდინარე ვიზიტის გაგრძელება · …T07 Eka Tsiklauri' now names the visit and works: 1 click -> venous form at top. Scrolled 1 screen: GSV Mid Thigh R still რეფლუქი with reflux 2.5 s (red row flag).",
+ "attempts": 1,
+ "arrivedAtStep": 2,
+ "persistenceVerified": true,
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:22:43.929Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "ca6795fcf20f5cc2",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "05ab5451693b",
+   "paneKeyAfter": "096cc9823c93",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/332f579ec7b3-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:23:03.243Z",
+   "do": "press 'continue current visit · T07 Eka Tsiklauri' in the footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"intake-resume-link\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"intake-resume-link\"]",
+   "labelText": "მიმდინარე ვიზიტის გაგრძელება · [UXWALK-angio-module-2026-11-12-after] T07 Eka Tsiklauri",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "ca6795fcf20f5cc2",
+   "paneKeyBefore": "096cc9823c93",
+   "paneKeyAfter": "05ab5451693b",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/332f579ec7b3-s02.png"
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:23:25.902Z",
+   "do": "scroll down to the GSV rows",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"600\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "ca6795fcf20f5cc2",
+   "fpAfter": "ca6795fcf20f5cc2",
+   "paneKeyBefore": "05ab5451693b",
+   "paneKeyAfter": "05ab5451693b",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 600,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 1,
+   "type": "duplicate-path",
+   "note": "Intake offers two resume paths for the same visit: footer 'მიმდინარე ვიზიტის გაგრძელება · … T07 Eka Tsiklauri' and the top row 'გაგრძელება' in the (expanded) in-progress list"
+  },
+  {
+   "atStep": 3,
+   "type": "confusion",
+   "note": "Reopened form starts at the top; the only finding (GSV mid-thigh R) is 1 screen down and nothing on the first screen says which segments carry findings. Merely opening the encounter bumps 'ბოლოს შენახული' to a new time (19:23:05) with no edit made"
+  }
+ ],
+ "timeToUsableSec": 2
+}

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:20:32.903Z",
+  "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/venousLEBilateral",
+  "slug": "venous-le",
+  "viewport": {
+    "width": 768,
+    "height": 1024
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 1,
+      "cardsTotal": 26
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 4,
+        "distinctContexts": [
+          "icon"
+        ],
+        "sampleSelectors": [
+          "div.m_e2f5cd4e.m_46b77525 > div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon",
+          "div.m_e2f5cd4e.m_46b77525 > div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon",
+          "div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon > svg.tabler-icon.tabler-icon-alert-triangle",
+          "div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon > svg.tabler-icon.tabler-icon-alert-triangle > path"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "სრული · რესპიროფაზული",
+        "occurrences": 18,
+        "selectors": [
+          "button[data-testid=\"segment-head-cfv-right\"] > span._recordSummary_135b5_203",
+          "button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSummary_135b5_203",
+          "button[data-testid=\"segment-head-fv-mid-right\"] > span._recordSummary_135b5_203",
+          "button[data-testid=\"segment-head-fv-dist-right\"] > span._recordSummary_135b5_203",
+          "button[data-testid=\"segment-head-pfv-right\"] > span._recordSummary_135b5_203",
+          "button[data-testid=\"segment-head-pop-ak-right\"] > span._recordSummary_135b5_203"
+        ],
+        "bothFullWeight": true
+      },
+      {
+        "label": "R",
+        "occurrences": 20,
+        "selectors": [
+          "button[data-testid=\"segment-head-cfv-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-fv-mid-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-fv-dist-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-pfv-right\"] > span._recordSide_135b5_172",
+          "button[data-testid=\"segment-head-pop-ak-right\"] > span._recordSide_135b5_172"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 22,
+      "tabs": 7,
+      "buttons": 15,
+      "rawCount": 27,
+      "repeatedLists": 1
+    },
+    "emptyStates": [
+      {
+        "selector": "div._page_g9hjy_3 > div._container_g9hjy_106 > div.m_6d731127.mantine-Stack-root > section._card_e3h9b_9",
+        "heightPx": 70,
+        "populatedSiblingMedianHeightPx": 265,
+        "ratio": 0.26
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "duplicate-primary-data",
+      "severity": "P2",
+      "evidence": "\"სრული · რესპიროფაზული\" renders 18× at comparable weight and size (button[data-testid=\"segment-head-cfv-right\"] > span._recordSummary_135b5_203 | button[data-testid=\"segment-head-fv-prox-right\"] > span._recordSummary_135b5_203) — a second reference must be visibly subordinate",
+      "measured": 18,
+      "threshold": 2
+    }
+  ]
+}

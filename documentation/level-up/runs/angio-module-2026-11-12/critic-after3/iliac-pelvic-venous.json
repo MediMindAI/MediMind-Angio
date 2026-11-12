@@ -1,0 +1,366 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous-default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 3
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive: ONE focal element, usually the anatomy diagram or the segment table)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The veins table is the focal element, but at 1440 it is clipped at the right inner edge of its deck (x≈875). The 7th column header reads 'PV (სმ' and every PV input is cut in half, in all three groups (IVC, right, left). The bigger diagram rail left the table column narrower than the grid's 866px min-width plus padding, so PV is only reachable by scrolling each group sideways. The patency value 'გამავალი' also shows as 'გამავალ…' beside its ×. The overlap is fixed, but the value is still cut off. DESIGN-DIRECTION.md has no rule against truncated values. I grade this as the focal table failing to show all its columns at the main desktop width.",
+        "recommendation": "Fit all 7 grid tracks inside the table column at 1440 with no inner horizontal scroll. Either cap the diagram rail about 40px narrower, or trim the grid gap from 10px to 8px and the segment-column minimum from 96px to about 84px. Re-check at 1440 that the 'PV (სმ/წმ)' header and inputs show in full and the patency select shows 'გამავალი' untruncated."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Density tiers (one focal element that wins on weight)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "At a 1440×900 viewport, three things fill y=0–600: the banner, a separate row holding only 'შაბლონები' and '+ ახალი შემთხვევა', and the clinical-context deck (about 380px, five mostly empty inputs). The first table data row starts around y=900 and the diagram image around y=840. So on load the eye lands on empty context inputs rather than the table or diagram. Ordering and depth are correct (decks lift off the page at a 1.2 contrast ratio), but the focal pair does not win the first view.",
+        "recommendation": "Move 'შაბლონები' and 'ახალი შემთხვევა' into the banner's right-hand action group, next to 'კვლევის დამატება', so their separate row goes away. Lay out the clinical-context deck in two rows: სქესი + სიმპტომები + თანმხლები on the first, მიდგომები + პოზიციები + the Valsalva checkbox on the second. That brings the table header and diagram toolbar above the fold. This moves content, so it is a layout change rather than a token swap."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "Step 4 oscillation check",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "densityFit went 2 → 1 → 2 across rounds 1–3. The round-2 dip came only from the mechanical empty-state-parity cap on the SVP row. This round collapsed that row: SVP is now a one-line row with no subtitle, visibly quieter than the CEAP row, and the metrics no longer report the failure (classification ratio 0.64). The cause is a real defect that has been fixed, not two rules in conflict.",
+        "recommendation": "No product decision needed. Confirm densityFit holds at 2 on the next run. If it drops again without a new mechanical failure, escalate."
+      }
+    ],
+    "reasoning": "The light capture matches the light metrics (colorScheme light, no hard fails, elevation 1.2, 5/8 decks shadowed). It was judged against deep-dive.png. DESIGN-DIRECTION.md has no 'Content & layout' section, so only the Composition rules and component rules apply. A clinician sees a clean main column plus right rail, like the reference. The table and the enlarged diagram sit side by side, there is one gradient primary ('PDF ჩამოტვირთვა'), and section ticks and decks are consistent. The empty SVP row is now a compact one-liner, and the page has proper gutters. Nothing is duplicated, and no severity color appears in the chrome. Colour discipline stays at 3. The static pelvic illustration's red and pink anatomy is the open founder decision, so I did not grade it. Note that it is the most saturated red on a screen where red should mean reflux. The remaining problems are polish. The focal table loses its PV column to an inner scroll at 1440, and the first viewport is spent on empty clinical-context inputs. The rail looking empty below the diagram is the sticky-column capture artifact you flagged, so it is not a finding. Highest-leverage fix: make the 7-column grid fit beside the rail at 1440 so every row reads fully without sideways scrolling."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous-768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"შევსებულია\" renders 21× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ivc-prox\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label | button[data-testid=\"iliac-caval-toggle-ivc-mid\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label) — a second reference must be visibly subordinate. Critic judgment: this is bloat, not progressive disclosure. After 'ყველა ნორმაში' all 21 rows carry the same light-blue chip, so it tells the rows apart in no way.",
+        "recommendation": "Remove the per-row 'შევსებულია' badge. Mark only rows that differ from normal (see the densityFit finding). If a recorded marker must stay, make it neutral gray per the Badges rule, not tinted blue."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"· მარჯვენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate. Critic judgment: this is deliberate disambiguation. Round 2 asked for the side suffix so bilateral rows stay distinct. It does repeat the 'მარჯვენა' group header at the same weight as the segment name.",
+        "recommendation": "Keep the side information but make the suffix subordinate: render '· მარჯვენა' in --emr-text-secondary at regular weight so the segment name alone carries the title weight. See the oscillation finding for the conflict between rules."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"· მარცხენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate. Critic judgment: same as the right-side suffix. It is intentional, but too heavy.",
+        "recommendation": "Same as '· მარჯვენა': demote the suffix to --emr-text-secondary at regular weight."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate. Critic judgment: these are two different bilateral segments, not a duplicate. Same for the 8 entries below.",
+        "recommendation": "No content change. This is resolved by the side-suffix demotion plus the escalation in the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"IIV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-iiv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-iiv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CFV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-cfv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-cfv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"OV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ov-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-ov-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Empty states collapse (equal-size cards make a normal study look identical to a heavily abnormal one) + Density tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "IliacCavalTable.tsx opens every populated row by default (`const open = openOverride[id] ?? populated`). So one tap on 'ყველა ნორმაში' expands all 21 segment cards, each about 240px tall with 6 fields. The page grows to 8062px. An all-normal study is now the longest page this screen can produce, and it looks exactly like a fully abnormal one. The diagram and conclusion are pushed about 6,500px down. In round 2 the same rows were one-line collapsed rows.",
+        "recommendation": "On compact widths, open a row by default only when it holds an abnormal or measured value: patency other than გამავალი, a reflux value, competency other than კომპეტენტური, or an AP/PV number. Rows that are normal stay collapsed as one line, with a muted --emr-text-secondary summary such as 'გამავალი · სრული · კომპეტენტური' in place of the badge. This changes behaviour, not tokens."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "Step 4 oscillation check",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "redundancy has gone 1 → 3 → 1 across rounds 1–3. Nine of the twelve duplicate-primary-data hits are bilateral segment names ('CIV პროქს.' right vs left) and the '· მარჯვენა/· მარცხენა' suffix that round 2 required so each bilateral segment reads as distinct. Two rules now conflict: 'side must make each bilateral segment distinct' and the duplicate detector, which treats the same segment name on two sides as duplicate data.",
+        "recommendation": "Escalate to the founder as a product or tooling decision. Either (a) accept that bilateral segment titles are distinct data and exempt `iliac-caval-toggle-*-right/-left` row titles from duplicate-primary-data, or (b) remove the per-row side suffix and rely on the 'მარჯვენა/მარცხენა' group header, accepting that the round-2 disambiguation finding comes back on mobile. Stop iterating on this dimension until that is chosen."
+      }
+    ],
+    "reasoning": "The light capture matches the light metrics. It was judged against deep-dive.png and inferred as a 768 single-column stack. The metrics report a white page background (contrast 1.0), but the screenshot clearly shows a gray page under white, shadowed decks, and no elevation hard fail was emitted, so I treat it as a scope quirk. The real problem comes from the data state. This capture used 'ყველა ნორმაში', and because populated rows open themselves, every segment becomes a full expanded card with the same blue 'შევსებულია' chip. A clinician scrolls through 21 identical normal cards to reach the diagram and conclusion, and a normal study looks like a busy abnormal one. Colour is still disciplined: no severity colour appears outside its role, and there is one gradient primary. Nothing in the cards is loud. They are uniform and quiet, so restraint holds at 2. The repetition is a footprint problem, scored under densityFit 1. The mechanical cap puts redundancy at 1. Most of those hits are legitimate bilateral names, which I escalate as an oscillation. Highest-leverage fix: open only rows with abnormal or measured values, and collapse normal rows to a muted one-line summary with no badge. That one change shrinks the page by about 4,000px and removes the 21-chip repetition."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous-375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"შევსებულია\" renders 21× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ivc-prox\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label | button[data-testid=\"iliac-caval-toggle-ivc-mid\"] > div._rowStatus_1wv7a_244.m_347db0ec > span.m_5add502a.mantine-Badge-label) — a second reference must be visibly subordinate. Critic judgment: this is bloat. The chip is the same on all 21 rows, and at 375 it also takes the width the row title needs.",
+        "recommendation": "Remove the per-row 'შევსებულია' badge and mark only rows that differ from normal. If kept, make it neutral gray per the Badges rule."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"· მარჯვენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate. Critic judgment: this is intentional disambiguation, but it carries title weight and is the part that gets truncated (see below).",
+        "recommendation": "Render the suffix in --emr-text-secondary at regular weight. See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"· მარცხენა\" renders 9× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236 > span.mantine-hidden-from-md) — a second reference must be visibly subordinate",
+        "recommendation": "Same as '· მარჯვენა'."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate. Critic judgment: these are two different bilateral segments, not a duplicate. Same for the 8 entries below.",
+        "recommendation": "No content change. See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-civ-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-civ-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV პროქს.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-prox-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-prox-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV შუა\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-mid-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-mid-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"EIV დისტ.\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-eiv-dist-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-eiv-dist-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"IIV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-iiv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-iiv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"CFV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-cfv-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-cfv-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "duplicate-primary-data",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "\"OV\" renders 2× at comparable weight and size (button[data-testid=\"iliac-caval-toggle-ov-right\"] > span._rowTitle_1wv7a_236 | button[data-testid=\"iliac-caval-toggle-ov-left\"] > span._rowTitle_1wv7a_236) — a second reference must be visibly subordinate",
+        "recommendation": "Bilateral segment (distinct data). See the oscillation finding."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Empty states collapse (equal-size cards make a normal study look identical to a heavily abnormal one) + Density tiers",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Populated rows open by default (`openOverride[id] ?? populated`). After 'ყველა ნორმაში' all 21 cards stack open at about 540px each, with 6 full-width fields per card. The page is 14,549px tall, about 18 phone screens, and the diagram, classification and conclusion only begin around y≈12,800. An all-normal study is the worst case for scrolling.",
+        "recommendation": "Default-open only rows with an abnormal or measured value. Normal rows stay as one-line collapsed rows with a muted --emr-text-secondary summary ('გამავალი · სრული · კომპეტენტური') and no badge. This changes behaviour, not tokens."
+      },
+      {
+        "dimension": "redundancy",
+        "rule": "No duplicate primary data (side must make each bilateral segment distinct) + Badges / status",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Still present from round 2. The 'შევსებულია' chip squeezes the row title, so right and left titles truncate exactly where the side is written: 'CIV შუა · მარჯვ…', 'CIV დისტ. · მარ…', 'EIV პროქს. · მა…'. The side suffix, the one part added to tell bilateral rows apart, is the part that gets cut off.",
+        "recommendation": "Removing the badge (above) frees the width. If any chip stays, let the title wrap to two lines instead of using an ellipsis, so the side is never truncated."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "Step 4 oscillation check",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "redundancy has gone 1 → 3 → 1 across rounds 1–3. The hits are mostly bilateral segment names and the side suffix that round 2 required. 'Side must make each bilateral segment distinct' conflicts with the duplicate detector's same-text rule.",
+        "recommendation": "Escalate to the founder: either exempt bilateral `-right/-left` row titles from duplicate-primary-data, or drop the per-row side suffix and rely on the group header. Stop grading this dimension until that is decided."
+      }
+    ],
+    "reasoning": "The light capture matches the light metrics. It was judged against deep-dive.png as a 375 single-column stack. As at 768, the elevation reading of 1.0 contradicts the visible gray page under shadowed white decks, and no hard fail was emitted. The round-2 horizontal overflow is fixed: the capture is 375 wide, and the action bar is now a compact icon row plus the single 'PDF ჩამოტვირთვა' primary. Colour remains disciplined. The failure comes from the data state. 'ყველა ნორმაში' opens all 21 segment cards, each about 540px, so a normal study becomes an 18-screen scroll of identical cards with identical blue chips. The diagram and conclusion end up at the very bottom. Titles still truncate the side suffix because the chip takes the width. No single element shouts, so restraint is 2. The footprint is the problem, so densityFit is 1, and the mechanical cap holds redundancy at 1. The bilateral-name hits are escalated as an oscillation rather than graded again. Highest-leverage fix: open only rows with abnormal or measured values, and show normal rows as one muted summary line with no badge. That fixes the scroll length, the chip repetition and the title truncation in one change."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/035b7361-d701-4cb9-9ba9-5fe3c6f78bf2/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous-dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "PASS",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "findings": [
+      {
+        "dimension": "restraint",
+        "rule": "Color discipline (dark mode via semantic vars only; never non-token surfaces) + reference parity (surface treatment)",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "The pelvic illustration is a raster image on a pure-white background. In dark mode it shows as a white block of about 470×380px at y≈900–1390 inside a rgb(30,41,59) deck. It is by far the brightest thing on the page, brighter than any text or the primary button, and this round's enlargement doubled its area. deep-dive-dark.png has no light surface anywhere. The diagram should be the focal element, but here it wins by glare, not design.",
+        "recommendation": "Ship the pelvic illustration with a transparent background, as a PNG or SVG, so it sits on --emr-bg-card like the other studies' anatomy views. Until then, give the image a 12px-radius inset frame with an --emr-border-color hairline, so it reads as a deliberate film panel rather than a hole in the deck. This ties into the open founder decision: if the diagram becomes a colouring-book SVG, it picks up the dark tokens automatically."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Forms (inputs: --emr-bg-input fill, hairline border)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Still present from rounds 1–2. The empty multiselects (სიმპტომები, თანმხლები დაავადებები, გამოყენებული მიდგომები, პაციენტის პოზიციები) each show a second, darker rectangle about 145×20px inside the input fill. The inner search field is painting its own background, so each reads as an input inside an input. The single selects (სქესი, რეფლუქსი) do not show it.",
+        "recommendation": "Make the multiselect's inner search field transparent in the central theme bridge, so only --emr-bg-input shows, matching the სქესი select."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive: ONE focal element — the segment table)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "This is not theme-dependent and matches the light 1440 variant. The 7th column header reads 'PV (სმ' and the PV inputs are cut at the deck's inner edge in all three groups, and 'გამავალი' truncates beside its ×. As with light, no rule names truncation; I grade it as focal-table legibility.",
+        "recommendation": "Same fix as light 1440: shave about 40px from the rail, or from the grid gap and segment-column minimum, so all 7 tracks fit at 1440 with no inner scroll."
+      },
+      {
+        "dimension": "oscillation",
+        "rule": "Step 4 oscillation check",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "densityFit went 2 → 1 → 2 across rounds 1–3. The round-2 dip was the mechanical SVP empty-state-parity cap. This round the empty SVP row is a compact one-liner beside a CEAP row that carries a 'CEAP: C0,En,An,Pn' chip, and the metrics report no failure (classification ratio 0.63). The cause is a fixed defect, not a rule conflict.",
+        "recommendation": "No product decision needed. Confirm stability on the next run."
+      }
+    ],
+    "reasoning": "The dark capture matches the dark metrics (colorScheme dark). It was judged against deep-dive-dark.png, the correct scheme. Decks separate from the page (rgb(15,23,42) vs rgb(30,41,59), ratio 1.22) and no hard fails were emitted. One state difference from the light capture: the dark run shows a populated CEAP chip, while light shows none. It does not change any grade. Structure is the same as the light variant: table in the main column, enlarged diagram in the rail, one gradient primary, gradient section ticks, table headers in primary text per the Tables rule, and no duplicated data. The info-blue usage the metrics list (section ticks, active drawing-mode toggle) is the brand tick and the checked state, not severity, so colour stays at 3. The static illustration's anatomical red is the open founder decision and was not graded. What sets dark apart is the illustration's pure-white background. Enlarged this round, it is now a glaring white panel that pulls the eye harder than anything else, which is why restraint is 2. The nested multiselect fill is still a known P3. Highest-leverage fix: a transparent-background pelvic asset, so the diagram sits on the card surface in dark mode."
+  }
+]

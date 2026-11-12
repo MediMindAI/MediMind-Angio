@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T15:11:39.668Z",
+  "route": "/",
+  "slug": "intake",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "triage",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(231, 235, 241)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1.2,
+      "cardsWithShadow": 0,
+      "cardsTotal": 6
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 1,
+        "distinctContexts": [
+          "text"
+        ],
+        "sampleSelectors": [
+          "div._field_6ds4k_479 > div.emr-field-wrapper.size-md > label.emr-field-label > span.emr-field-label-required"
+        ]
+      }
+    ],
+    "duplicateLabels": [],
+    "aboveFoldActions": {
+      "count": 12,
+      "tabs": 6,
+      "buttons": 1,
+      "rawCount": 12,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "aside._summaryColumn_6ds4k_689 > div._summaryCard_6ds4k_702 > div._summaryBody_6ds4k_748 > div._summaryPatient_6ds4k_756",
+        "heightPx": 74,
+        "populatedSiblingMedianHeightPx": 59,
+        "ratio": 1.25
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck aside._summaryColumn_6ds4k_689 > div._summaryCard_6ds4k_702 > div._summaryBody_6ds4k_748 > div._summaryPatient_6ds4k_756 is 74px tall vs 59px for its populated siblings (1.25) — a quiet shift must look quieter",
+      "measured": 1.25,
+      "threshold": 0.75
+    }
+  ]
+}

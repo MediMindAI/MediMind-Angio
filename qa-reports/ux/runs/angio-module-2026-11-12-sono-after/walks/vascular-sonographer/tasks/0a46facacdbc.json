@@ -1,0 +1,103 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-sono-after",
+ "persona": "vascular-sonographer",
+ "taskId": "0a46facacdbc",
+ "goal": "Switch to another study of the same patient",
+ "startedAt": "2026-11-12T15:11:40.860Z",
+ "endedAt": "2026-11-12T15:13:09.306Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "From /: open in-progress list (3 visits), Continue on T02 -> venous form at top; banner chip 'თეძო/მენჯი' -> /encounter/<same id>/iliacPelvicVenous; same banner/patient, no intake fields. Switch itself = 1 chip click.",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T15:11:40.915Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "aa71965733fa6e85",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cd02ec0b7d53",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T15:11:58.275Z",
+   "do": "open the in-progress visits list to find Beridze (T02)",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "მიმდინარე ვიზიტები",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "f6fe85fe6893",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T15:12:29.282Z",
+   "do": "Continue the T02 Beridze visit",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-1bd90c2a-626a-41c2-b91a-cdda07ffbde4\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-1bd90c2a-626a-41c2-b91a-cdda07ffbde4\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "cd74bd5a7e02e8d3",
+   "paneKeyBefore": "f6fe85fe6893",
+   "paneKeyAfter": "f6fe85fe6893",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s03.png"
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T15:12:47.330Z",
+   "do": "click the 'თეძო/მენჯი' chip in the banner",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"banner-chip-iliacPelvicVenous\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"banner-chip-iliacPelvicVenous\"]",
+   "labelText": "თეძო/მენჯი",
+   "selectorConfidence": "unique",
+   "fpBefore": "3020dfe607350a9e",
+   "fpAfter": "bfaaf1a244627566",
+   "paneKeyBefore": "fde0b8c189db",
+   "paneKeyAfter": "fde0b8c189db",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/0a46facacdbc-s04.png"
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 2,
+   "type": "confusion",
+   "note": "In-progress list row for T03 shows two identical chips 'ქვ. კიდურების ვენები' 'ქვ. კიდურების ვენები' — bilateral vs right-leg not distinguished; list chips are not clickable (plain spans), so a study cannot be opened directly from the list"
+  },
+  {
+   "atStep": 4,
+   "type": "confusion",
+   "note": "Iliac/pelvic form: 'სქესი' (sex) is pre-filled 'მდედრობითი' (female) although no sex was entered at intake for this male-named patient; the page also renders flush to the left window edge (x=0) unlike the venous form's 24px margin, and carries a '+ ახალი შემთხვევა' button next to შაბლონები"
+  }
+ ],
+ "timeToUsableSec": 2.2
+}

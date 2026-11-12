@@ -1,0 +1,120 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys",
+ "persona": "vascular-physician",
+ "taskId": "d238785449bc",
+ "goal": "Remove a finished visit from the in-progress list",
+ "startedAt": "2026-11-12T12:05:26.413Z",
+ "endedAt": "2026-11-12T12:05:59.540Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "REACHED_THRESHOLD",
+ "outcomeNote": "Expand in-progress, scroll (Nino's row 5th, under sticky footer), row trash icon (accessible name 'გაუქმება') opened the confirm dialog; 'წაშლა' exists (count 1), enabled, fully in viewport. Not clicked. Dialog closed with Escape after the walk (outside the recorded steps).",
+ "attempts": 1,
+ "arrivedAtStep": 3,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T12:05:26.423Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "54b51eccb92c6d58",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "0f86e1525b61",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d238785449bc-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T12:05:27.131Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "IN PROGRESS მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T12:05:35.162Z",
+   "do": "scroll to Nino's row under the sticky footer",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"300\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 300,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T12:05:35.864Z",
+   "do": "click the trash icon on Nino's row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-discard-c551e66a-6abf-412d-bc4a-50120671d02a\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-discard-c551e66a-6abf-412d-bc4a-50120671d02a\"]",
+   "labelText": "გაუქმება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0be26b2edd0542fb",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "modal-open",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d238785449bc-s04.png"
+  },
+  {
+   "n": 5,
+   "ts": "2026-11-12T12:05:59.322Z",
+   "do": "WOULD click წაშლა — stop-at-threshold",
+   "playwright": "WOULD click \"[role=dialog] button:has-text(\\\"წაშლა\\\")\" (irreversible, not pressed)",
+   "kind": "activation",
+   "selector": "[role=dialog] button:has-text(\"წაშლა\")",
+   "labelText": "წაშლა",
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "0be26b2edd0542fb",
+   "fpAfter": "0be26b2edd0542fb",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 5,
+   "type": "confusion",
+   "note": "Discard dialog 'გსურთ ვიზიტის გაუქმება? ამ ვიზიტის ყველა მონაცემი სამუდამოდ წაიშლება.' does not name the patient/visit being deleted; its safe button is 'გაუქმება' — the same word as the row's trash-icon name 'გაუქმება' that opened it; the destructive 'წაშლა' has the same blue primary styling as the cancel button"
+  },
+  {
+   "atStep": 5,
+   "type": "confusion",
+   "note": "The row offers no 'finished'/'archive' state: removing a completed visit from the list is only possible by permanently deleting it, and the list never shows whether a report was exported; 'ყველა ვიზიტის წაშლა' (delete all visits) sits directly under the list"
+  }
+ ],
+ "timeToUsableSec": 0.6
+}

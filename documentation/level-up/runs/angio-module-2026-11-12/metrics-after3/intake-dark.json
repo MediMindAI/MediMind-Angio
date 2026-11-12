@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T18:05:37.153Z",
+  "route": "/",
+  "slug": "intake-dark",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "colorScheme": "dark",
+  "locale": "ka",
+  "densityTier": "triage",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(15, 23, 42)",
+      "cardBg": "rgb(30, 41, 59)",
+      "contrastRatio": 1.22,
+      "cardsWithShadow": 5,
+      "cardsTotal": 6
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(43, 108, 176)",
+        "occurrences": 6,
+        "distinctContexts": [
+          "button",
+          "surface"
+        ],
+        "sampleSelectors": [
+          "div#root > div._backdrop_1i3r3_20",
+          "div#root > div._backdrop_1i3r3_20 > div._hero_1i3r3_41",
+          "button[data-testid=\"ongoing-visits-toggle\"] > span._panelHeaderIcon_mz5n5_96",
+          "button[data-testid=\"intake-resume-link\"]",
+          "button[data-testid=\"intake-resume-link\"]",
+          "button[data-testid=\"intake-start\"]"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "ვიზიტის თარიღი",
+        "occurrences": 2,
+        "selectors": [
+          "div._fieldGrid_1i3r3_460 > div._field_1i3r3_460 > div > label.mantine-focus-auto.m_b6d8b162",
+          "div._summaryCard_1i3r3_711 > div._summaryBody_1i3r3_719 > div._summaryRow_1i3r3_784 > span._summaryRowLabel_1i3r3_804"
+        ],
+        "bothFullWeight": false
+      },
+      {
+        "label": "ICD-10 კოდები",
+        "occurrences": 2,
+        "selectors": [
+          "div._fieldGrid_1i3r3_460 > div._field_1i3r3_460._fieldFull_1i3r3_477 > div.emr-field-wrapper.size-md > label.emr-field-label",
+          "div._summaryCard_1i3r3_711 > div._summaryBody_1i3r3_719 > div._summarySection_1i3r3_822 > span._summarySectionLabel_1i3r3_828"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 18,
+      "tabs": 6,
+      "buttons": 3,
+      "rawCount": 18,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div._container_1i3r3_103 > div._layout_1i3r3_352 > aside._summaryColumn_1i3r3_698 > div._summaryCard_1i3r3_711",
+        "heightPx": 328,
+        "populatedSiblingMedianHeightPx": 282,
+        "ratio": 1.16
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "empty-state-parity",
+      "severity": "P2",
+      "evidence": "empty deck div._container_1i3r3_103 > div._layout_1i3r3_352 > aside._summaryColumn_1i3r3_698 > div._summaryCard_1i3r3_711 is 328px tall vs 282px for its populated siblings (1.16) — a quiet shift must look quieter",
+      "measured": 1.16,
+      "threshold": 0.75
+    },
+    {
+      "rule": "density-tier-overflow",
+      "severity": "P2",
+      "evidence": "18 actions above the fold (6 tabs + 3 buttons, repeated lists counted once) on a triage/scan screen — bounded primary data points, not completeness",
+      "measured": 18,
+      "threshold": 12
+    }
+  ]
+}

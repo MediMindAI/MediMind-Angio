@@ -1,0 +1,113 @@
+{
+ "schemaVersion": 1,
+ "runId": "angio-module-2026-11-12-phys",
+ "persona": "vascular-physician",
+ "taskId": "d45cf28e1a49",
+ "goal": "Reopen a sonographer's in-progress visit from the start page",
+ "startedAt": "2026-11-12T11:38:21.487Z",
+ "endedAt": "2026-11-12T11:39:06.959Z",
+ "viewport": {
+  "w": 1280,
+  "h": 720
+ },
+ "outcome": "COMPLETED",
+ "outcomeNote": "Expanded the collapsed in-progress card, scrolled past the sticky footer to Nino's row (5th of 5), clicked გაგრძელება; venous form opened with banner name '[UXWALK…] ნინო ბერიძე'. Study form opened already scrolled 300px down (inherited scroll).",
+ "attempts": 1,
+ "arrivedAtStep": 4,
+ "persistenceVerified": "not-applicable",
+ "routeQuality": "normal",
+ "routeQualityNote": null,
+ "steps": [
+  {
+   "n": 1,
+   "ts": "2026-11-12T11:38:21.521Z",
+   "do": "open /",
+   "playwright": "navigate \"http://localhost:3001/\"",
+   "kind": "navigate-entry",
+   "selector": null,
+   "labelText": null,
+   "selectorConfidence": "unique",
+   "fpBefore": "54b51eccb92c6d58",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "0f86e1525b61",
+   "paneKeyAfter": "cc398cd39426",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d45cf28e1a49-s01.png"
+  },
+  {
+   "n": 2,
+   "ts": "2026-11-12T11:38:35.103Z",
+   "do": "expand the in-progress visits card",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-toggle\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-toggle\"]",
+   "labelText": "IN PROGRESS მიმდინარე ვიზიტები ამ მოწყობილობაზე არის 5 ვიზიტი",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "cc398cd39426",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 0,
+   "screenshot": null
+  },
+  {
+   "n": 3,
+   "ts": "2026-11-12T11:38:49.160Z",
+   "do": "scroll to see the last in-progress visit row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"wheel\" \"640\" \"400\" \"300\"",
+   "kind": "scroll",
+   "selector": "640",
+   "labelText": null,
+   "selectorConfidence": "name-anchored",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "0c011901ab55582b",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "19b6947cf236",
+   "transition": "no-visible-change",
+   "scrollDeltaY": 300,
+   "screenshot": null
+  },
+  {
+   "n": 4,
+   "ts": "2026-11-12T11:38:57.689Z",
+   "do": "click გაგრძელება on Nino's visit row",
+   "playwright": "npx tsx scripts/playwright/cmd.ts \"click\" \"[data-testid=\\\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\\\"]\"",
+   "kind": "activation",
+   "selector": "[data-testid=\"ongoing-visits-resume-c551e66a-6abf-412d-bc4a-50120671d02a\"]",
+   "labelText": "გაგრძელება",
+   "selectorConfidence": "unique",
+   "fpBefore": "0c011901ab55582b",
+   "fpAfter": "e11aa003f2df0a7b",
+   "paneKeyBefore": "19b6947cf236",
+   "paneKeyAfter": "4af608967093",
+   "transition": "route-change",
+   "scrollDeltaY": 0,
+   "screenshot": "shots/d45cf28e1a49-s04.png"
+  }
+ ],
+ "observations": [
+  {
+   "atStep": 1,
+   "type": "jargon",
+   "note": "Start page in-progress card eyebrow reads English 'IN PROGRESS' in the Georgian UI"
+  },
+  {
+   "atStep": 1,
+   "type": "duplicate-path",
+   "note": "Two ways to resume: the 'მიმდინარე ვიზიტები' card (5 visits) and a footer button 'მიმდინარე ვიზიტის გაგრძელება' that does not say which visit it continues"
+  },
+  {
+   "atStep": 2,
+   "type": "confusion",
+   "note": "The 5th row (target visit) sits under the sticky footer bar after expanding; must scroll to see who it is"
+  },
+  {
+   "atStep": 4,
+   "type": "jargon",
+   "note": "Row buttons mix languages: 'გაგრძელება' next to an English 'Edit'; banner age reads '7 y' (English unit) in the Georgian UI"
+  }
+ ],
+ "timeToUsableSec": 1.1
+}

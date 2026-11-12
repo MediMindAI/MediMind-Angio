@@ -1,0 +1,1529 @@
+{
+  "schemaVersion": 1,
+  "runId": "angio-module-2026-11-12",
+  "note": "Schema §3.8 plus additive keys: band, label (CONFIRMED/HYPOTHESIS), riskTier, fence, doneWhen, arithmetic, top10. Order follows contracts §3.6 + SKILL Phase 2: data-loss and clinical-safety moves sit above the ranking; then safetyClass > taskSeverity > clicksSavedPerShift. UX-ANGIO-021..027 are the cross-screen UI moves for the UI-X lane.",
+  "moves": [
+    {
+      "id": "UX-ANGIO-001",
+      "title": "Stop an open visit from silently erasing edits made in another tab",
+      "type": "remove",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [],
+        "priorFindings": [
+          "U-1003"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Medium. It touches the one place every save passes through. A freshness check that is too strict could refuse a legitimate save, so layer 2 only detects and warns before anything is blocked. Layer 1 on its own is low risk: it copies a guard that already runs on carotid and pelvic.",
+      "doNotTouch": [
+        "CLAUDE.md persistence rule: every mutation still persists immediately through `saveEncounter`. The loop fix compares state identity (the carotid `lastPersistedRef` pattern). It must not add a debounce or idle timer, and it removes the existing 500 ms one.",
+        "Dual-write stays: IndexedDB is the truth, localStorage is the sync read-cache, key prefix `encounter-<uuid>` is unchanged, and storage keys are read only through `src/constants/storage-keys.ts`.",
+        "No state library (CLAUDE.md): the stale flag lives in `EncounterContext`.",
+        "§4.6: no field-by-field merge in this move. The one policy is block and reload (orchestrator records it in decisions.md)."
+      ],
+      "staging": [
+        "L1 (W1-A, 1 file) `ArterialLEForm.tsx`: replace the self-re-arming mirror effect (:374-389) with the `lastPersistedRef` guard copied from `CarotidForm.tsx:386-406` (persist only when `state` changed by reference, no setTimeout). Proof: sample localStorage `updatedAt` on an idle arterial tab for 10 s, and it must not change.",
+        "L2 (W1-A, 2 files) `EncounterContext.tsx` + `encounterStore.ts`: remember the `updatedAt` this tab last loaded or wrote. In `persist()`, if the stored draft is newer (another tab wrote it), skip the write and set `staleFromOtherTab`. Subscribe to the window `storage` event for this encounter key (copy `mantineTheme.ts:205-210`) to raise the flag early. Ship detect-only first, behind a constant.",
+        "L3 (W1-B, 1 file) `FormActions.tsx`: when the flag is set, show a persistent Georgian notice (\"ეს ვიზიტი სხვა ფანჯარაში შეიცვალა — განაახლეთ გვერდი\") with a reload action. Keys go to W1-H. Then switch the L2 write block on."
+      ],
+      "affectedFiles": [
+        "src/components/studies/arterial-le/ArterialLEForm.tsx",
+        "src/contexts/EncounterContext.tsx",
+        "src/services/encounterStore.ts",
+        "src/components/form/FormActions.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo /Users/toko/Desktop/medimind-angio, fence W1-A (+ FormActions.tsx in W1-B for L3). Data-loss fix, two causes (source trace C4, C5, both CONFIRMED):\n1. `src/components/studies/arterial-le/ArterialLEForm.tsx:374-389`: the mirror effect re-arms itself because `setStudyState` returns a new `encounter`. An idle arterial tab rewrites the whole visit about every 520 ms. Replace it with the exact `lastPersistedRef` guard in `src/components/studies/carotid/CarotidForm.tsx:386-406` (no setTimeout: CLAUDE.md says every mutation persists immediately). Keep `setLastSavedAt` behaviour.\n2. `src/services/encounterStore.ts:139-146` + `src/contexts/EncounterContext.tsx:137-145`: whole-draft last-writer-wins. Track the updatedAt this tab last loaded or wrote. In persist(), if the stored record is newer, do NOT write and expose `staleFromOtherTab`. Add a `storage` event subscription for the encounter key (pattern: `src/styles/mantineTheme.ts:205-210`). Ship detect-only first.\n3. After 1-2 land: `src/components/form/FormActions.tsx` shows a persistent notice + reload action when stale. Send the ka/en/ru keys to the i18n fence; do not edit translation files yourself.\nRules: no new state library, no debounce, storage keys only via src/constants/storage-keys.ts, EMR wrappers + --emr-* tokens only. Prove in Georgian UI: idle arterial tab = 0 writes in 10 s; the two-tab repro from M-real-report.md no longer loses tab B's note. Name the Vitest files you added; do not run the full suite."
+      },
+      "band": "S1 data-loss (above the ranking)",
+      "label": "CONFIRMED (C4 live sample, C5 code)",
+      "riskTier": "medium",
+      "fence": "W1-A (L1, L2) · W1-B (L3)",
+      "doneWhen": "An idle arterial tab makes 0 writes in 10 s. With two tabs on one visit, tab B's carotid note survives tab A's edit, and tab A shows the reload notice instead of writing. The standing check \"Idempotency, two tabs\" passes. A Vitest case covers the freshness check.",
+      "arithmetic": "No walk task measures it (it is a standing-check failure). **0 clicks/shift** — this move sits above the ranking because it loses clinical data, not because it saves clicks.",
+      "sourceTrace": "C4 `ArterialLEForm.tsx:374-389` (live: localStorage updatedAt every ~520 ms with no input); C5 `encounterStore.ts:139-146` whole-draft last-writer-wins; the only `storage` listener in src is `mantineTheme.ts:205-210`. Standing check \"Idempotency, two tabs\" FAIL (M-real-report.md).",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-002",
+      "title": "Make the 'saved' line tell the truth, and show a failed save",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-default.png"
+        ],
+        "priorFindings": [
+          "U-1017",
+          "U-1036",
+          "critic save-dot status-colour (venous, arterial, carotid, iliac)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Low. One shared bar (4 callers) reads two values the context already has. The old props stay accepted during layers 1-2, so each step can be reverted on its own.",
+      "doNotTouch": [
+        "§4.1 Command style: the dot uses existing tokens only: neutral `--emr-text-secondary` when clean, `--emr-primary` when changes are pending, `--emr-warning` only for a real save failure. No new colour.",
+        "`EncounterContext.persist` stays the single write funnel. Forms stop computing save state; they do not start writing differently.",
+        "Standing check \"Instant confirmation\": saving never blocks the form, and a failure never clears answers."
+      ],
+      "staging": [
+        "L1 (W1-A, 2 files) `EncounterContext.tsx` + `encounterStore.ts`: expose `{ lastSavedAt: encounter.updatedAt, saveError }`. The `persist()` catch and the localStorage quota path set `saveError` (keep the console.warn).",
+        "L2 (W1-B, 2 files) `FormActions.tsx` + `FormActions.module.css`: read `lastSavedAt` and `saveError` from the context instead of props. Use the dot colours above. A failure shows a persistent Georgian warning. Old props are accepted and ignored.",
+        "L3a (W2-venous, W2-arterial; 1 file each) `VenousLEForm.tsx`, `ArterialLEForm.tsx`: delete the local lastSavedAt/dirty pairs (this ends the venous effect-order bug).",
+        "L3b (W2-carotid, W2-iliac; 1 file each) `CarotidForm.tsx`, `IliacPelvicVenousForm.tsx`: delete the hard-coded `hasUnsavedChanges={false}` and the local lastSavedAt."
+      ],
+      "affectedFiles": [
+        "src/contexts/EncounterContext.tsx",
+        "src/services/encounterStore.ts",
+        "src/components/form/FormActions.tsx",
+        "src/components/form/FormActions.module.css",
+        "src/components/studies/venous-le/VenousLEForm.tsx",
+        "src/components/studies/arterial-le/ArterialLEForm.tsx",
+        "src/components/studies/carotid/CarotidForm.tsx",
+        "src/components/studies/iliac-pelvic-venous/IliacPelvicVenousForm.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fences W1-A (context) then W1-B (FormActions), then one layer per study fence. Source trace C3 (CONFIRMED). One save indicator, four separate defects:\n- `src/components/form/FormActions.tsx:536` dot: dirty = `--emr-warning` red (`FormActions.module.css:52-56`), clean = green.\n- Venous effect order (`VenousLEForm.tsx:776-789` then `:836-843`) leaves it dirty forever.\n- Carotid/iliac pass `hasUnsavedChanges={false}` (`CarotidForm.tsx:796`, `IliacPelvicVenousForm.tsx:645`).\n- After a reload every form starts `lastSavedAt = null`, so it shows `venousLE.actions.neverSaved`.\n- Save failures only console.warn (`EncounterContext.tsx:141-143`, `encounterStore.ts:100-102`).\nDo: (1) EncounterContext exposes `lastSavedAt` (= encounter.updatedAt) and `saveError`. (2) FormActions reads both from context: neutral dot when clean, --emr-primary when pending, --emr-warning only on saveError, plus a persistent Georgian failure message. (3) Per study, delete the local save-state pairs. Keys go to the i18n fence. Prove in ka: reload shows the real time; a forced IDB reject shows the warning and keeps the answers."
+      },
+      "band": "S1 data-loss (above the ranking)",
+      "label": "CONFIRMED (C3)",
+      "riskTier": "low",
+      "fence": "W1-A (L1) · W1-B (L2) · W2-<study> (L3)",
+      "doneWhen": "After a reload every study shows the stored save time. A forced IndexedDB failure shows the warning and keeps every answer. The dot is never red unless a save failed. The standing checks \"Draft persistence\" and \"Instant confirmation\" pass.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because a failed save is invisible (standing check \"Instant confirmation\" FAIL).",
+      "sourceTrace": "C3: `FormActions.tsx:536` dot; `.dotDirty` = `--emr-warning` red (`FormActions.module.css:52-56`); venous effect order `VenousLEForm.tsx:776-843`; hard-coded `hasUnsavedChanges={false}` `CarotidForm.tsx:796`, `IliacPelvicVenousForm.tsx:645`; `useState<Date|null>(null)` in all 4 forms; failure only `console.warn` `EncounterContext.tsx:141-143`, LS quota `encounterStore.ts:100-102`.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-003",
+      "title": "The venous report prints every finding the clinician recorded",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "2b116c3dbda9"
+        ],
+        "eventIds": [],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/pdfs/t9-download.pdf",
+          "documentation/level-up/runs/angio-module-2026-11-12/pdf/m-real-combined-4studies.pdf"
+        ],
+        "priorFindings": [
+          "U-1033",
+          "U-1011"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Medium. It touches the printed deliverable and the exported data. The label strings already exist. Choosing which columns print is a clinical call (S4), and the data-export layer waits for the perforator decision (UX-ANGIO-007).",
+      "doNotTouch": [
+        "§4.3: print the existing labels (`buildReportLabels.ts:142-146`). No new clinical wording. Which columns print is sign-off S4 in decisions.md, not an agent's call.",
+        "§4.4: `npm run validate:fhir` stays green, and the PDF and the screen show the same findings (diagram unchanged).",
+        "The FHIR layer waits for UX-ANGIO-007. Exporting `competencyOverride` today would publish 'inconclusive' for what the clinician picked as 'perforator'.",
+        "`buildReportLabels.ts` carries uncommitted clinician-feedback WIP: build on top of it, never revert it."
+      ],
+      "staging": [
+        "L0 Sign-off S4 answered (who, what, date, source in decisions.md): which categorical values print, and in which columns.",
+        "L1 (W1-C, 1-2 files) `FindingsTable.tsx`: count categorical fields in the row filter (:128-133) and add the signed-off columns, rendering the existing labels the way `IliacPelvicVenousFindingsTable.tsx:102-121,196-204` does. Touch `buildReportLabels.ts` only if a label is not yet exposed.",
+        "L2 (W1-C, 1 file, blocked on UX-ANGIO-007) `observations/venous.ts`: emit a competency Observation for `competencyOverride`, copying `observations/iliac.ts:180-185`. `npm run validate:fhir`.",
+        "L3 Unit test with a categorical-only row (GSV reflux override, CFV partial compressibility). Re-export the walk's PDF and compare it with `t9-download.pdf`."
+      ],
+      "affectedFiles": [
+        "src/components/pdf/sections/FindingsTable.tsx",
+        "src/components/pdf/buildReportLabels.ts",
+        "src/services/fhirBuilder/observations/venous.ts"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-C. Clinical-safety: the venous PDF table drops recorded categorical findings (source trace C6/C7, CONFIRMED).\n- `src/components/pdf/sections/FindingsTable.tsx:128-133` skips rows with no numeric value. Columns (`:171-204`) are Segment / Reflux s / AP / Depth only.\n- Copy the categorical-column pattern from `src/components/pdf/sections/IliacPelvicVenousFindingsTable.tsx:102-121, 196-204` (hasData counts categorical fields; vlabel(ns, value)). Labels exist at `src/components/pdf/buildReportLabels.ts:142-146`.\n- WAIT for sign-off S4 (decisions.md) for the exact column set. Do not invent wording.\n- FHIR (`src/services/fhirBuilder/observations/venous.ts`, pattern `observations/iliac.ts:180-185`) is a separate layer, blocked until UX-ANGIO-007 (perforator code) is decided.\nbuildReportLabels.ts has uncommitted WIP: build on top. Prove by exporting a venous PDF with GSV reflux + CFV partial compressibility; both must print as text. Run `npm run validate:fhir` if you touch FHIR. Name your Vitest files."
+      },
+      "band": "S2 clinical-safety (above the ranking)",
+      "label": "CONFIRMED (C6 PDF table, C7 FHIR); which columns print = sign-off S4",
+      "riskTier": "medium",
+      "fence": "W1-C (L1, L3) · W3-perforator (L2, after UX-ANGIO-007)",
+      "doneWhen": "The GSV reflux override and the CFV partial compressibility appear as text in the venous PDF table, and the diagram is unchanged. S4 is signed. After UX-ANGIO-007: a competency Observation is in the Bundle and validate:fhir is green.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because the deliverable under-reports a recorded clot or reflux finding.",
+      "sourceTrace": "C6 `pdf/sections/FindingsTable.tsx:128-133` drops categorical-only rows; columns `:171-204` are numeric only. C7 `fhirBuilder/observations/venous.ts:59-130` never emits `competencyOverride`. Sibling: `IliacPelvicVenousFindingsTable.tsx:102-121,196-204`; FHIR sibling `observations/iliac.ts:180-185`.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-004",
+      "title": "Every segment row shows its leg and its name, right side first",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "acfa2ced1941",
+          "ad9b03d7d7d3",
+          "802d04f6063d",
+          "51f8fdd2aebb"
+        ],
+        "eventIds": [
+          "674658059cad"
+        ],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-768.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-375.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/iliac-pelvic-venous-768.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-default.png"
+        ],
+        "priorFindings": [
+          "U-1022 (S layer)",
+          "U-1037",
+          "U-1023",
+          "X-TABLE (iliac side part)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. Every layer shows markup that already exists, or reorders two columns. Georgian side words need room, so each layer gets a 375 re-shoot.",
+      "doNotTouch": [
+        "§4.3: segment names and abbreviations are unchanged. Only their visibility changes.",
+        "§4.5: Georgian side words (მარჯვენა / მარცხენა) must not clip at 375. Give the label column room (the arterial 180px / carotid 200px precedent); never shrink the type.",
+        "Aria labels already carry the full id (`ReflexTimeTable.tsx:218`, `IliacCavalTable.tsx:98-99`). Keep them."
+      ],
+      "staging": [
+        "L1 (W1-C, 2 files) `ReflexTimeTable.tsx` + `ReflexTimeTable.module.css`: below the lg breakpoint, render the existing segment label + R/L badge (:205-214) even when `headless`.",
+        "L2 (W1-C, 1 file) `SegmentTable.module.css:108`: widen the 88px label column, or put the badge before the label (:168-182), so the badge is never painted over.",
+        "L3 (W1-F, 1 file) `IliacCavalTable.tsx:103`: render `fullLabel` (built at :98-99) as the visible cell label.",
+        "L4 (W1-F, 1-2 files) `arterial-le/SegmentalPressureTable.tsx:108-143` (+ its `.module.css` if the grid is order-bound): R column first, matching the PDF table."
+      ],
+      "affectedFiles": [
+        "src/components/form/ReflexTimeTable.tsx",
+        "src/components/form/ReflexTimeTable.module.css",
+        "src/components/form/SegmentTable.module.css",
+        "src/components/studies/iliac-pelvic-venous/IliacCavalTable.tsx",
+        "src/components/studies/arterial-le/SegmentalPressureTable.tsx",
+        "src/components/studies/arterial-le/SegmentalPressureTable.module.css"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo. Laterality safety, four S layers (source trace C8, C9, C10, C21, all CONFIRMED). Each layer un-hides existing markup:\nL1 (fence W1-C) `src/components/form/ReflexTimeTable.tsx:205-214`: the segment label + R/L badge render only when `!headless`. Below Mantine lg (1200px) the tables stack, so render it there too (media query in `ReflexTimeTable.module.css`).\nL2 (W1-C) `src/components/form/SegmentTable.module.css:108` (`88px` label column) + `:168-182` (nowrap): the badge overflows into the next cell. Widen the column or put the badge before the label.\nL3 (W1-F) `src/components/studies/iliac-pelvic-venous/IliacCavalTable.tsx:103`: show `fullLabel` (built at :98-99) instead of `segLabel`.\nL4 (W1-F) `src/components/studies/arterial-le/SegmentalPressureTable.tsx:108-143`: columns are hard-coded L, R. Make them R, L like the PDF (`components/pdf/sections/SegmentalPressureTable.tsx:219`).\nNever rename segments. Georgian side words must not clip at 375. Prove each layer with ka screenshots at 1440/768/375."
+      },
+      "band": "S2 clinical-safety (above the ranking)",
+      "label": "CONFIRMED (C8 venous cards, C9 venous badge, C10 iliac side, C21 arterial order)",
+      "riskTier": "low",
+      "fence": "W1-C (L1, L2) · W1-F (L3, L4)",
+      "doneWhen": "At 768 and 375 every venous numeric card shows its segment and side. At 1440 the GSV rows show an unobstructed R/L badge. Every pelvic card title carries its side. Arterial pressures read R then L. The design-critic re-shoot shows no anonymous card.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because it prevents wrong-side or wrong-segment entry.",
+      "sourceTrace": "C8 `SegmentAssessmentCard.tsx:206-235` + `ReflexTimeTable.tsx:205-214` (`headless` hides the label); C9 `SegmentTable.module.css:108, 168-182` (88px column); C10 `IliacCavalTable.tsx:103` (fullLabel with side built at :98-99, aria only); C21 `arterial-le/SegmentalPressureTable.tsx:108-143` (PDF sibling is R-first at :219).",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-005",
+      "title": "The in-form 'new study' button says it clears the form, and looks like it",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "a93706776962",
+          "d5c84bc79cf3"
+        ],
+        "eventIds": [
+          "2bc06216a2b6",
+          "e922a6029c88"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/d5c84bc79cf3-s08.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/d5c84bc79cf3-s09.png"
+        ],
+        "priorFindings": [
+          "U-1031"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. Wording plus a quieter style. The reset capability stays.",
+      "doNotTouch": [
+        "§4.8: the reset capability stays reachable. Only its label and weight change.",
+        "§4.1: use the existing ghost/secondary EMRButton variant. The red confirm appears only once UX-ANGIO-021 lands (`ConfirmDialog.tsx:89` already passes `danger`).",
+        "Product call for the orchestrator (decisions.md): the label. Suggested: 'ფორმის გასუფთავება' (clear this form). The action is a RESET of the current study, so 'new patient' (the finding's suggestion) would mislabel it too. The dialog title must not reuse the Cancel word (გაუქმება)."
+      ],
+      "staging": [
+        "L1 (W1-H, locale files only) New values for `venousLE.actions.newCase` and the arterial and carotid equivalents: no literal '+', wording from decisions.md, and a dialog title that differs from Cancel.",
+        "L2 (W2-venous / W2-arterial / W2-carotid, 2 files each) `<Study>Form.tsx` + `<Study>Form.module.css`: remove `IconPlus` and make the `newCaseButton` style quiet. Verify `destructive` is passed to the confirm (venous does at :1301; check arterial and carotid).",
+        "L3 (same fences) The confirm body names the patient and the study (key via W1-H)."
+      ],
+      "affectedFiles": [
+        "src/components/studies/venous-le/VenousLEForm.tsx",
+        "src/components/studies/venous-le/VenousLEForm.module.css",
+        "src/components/studies/arterial-le/ArterialLEForm.tsx",
+        "src/components/studies/arterial-le/ArterialLEForm.module.css",
+        "src/components/studies/carotid/CarotidForm.tsx",
+        "src/components/studies/carotid/CarotidForm.module.css",
+        "src/translations/venous-le/ka.json",
+        "src/translations/arterial-le/ka.json",
+        "src/translations/carotid/ka.json"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, one study fence at a time (W2-venous, W2-arterial, W2-carotid). Translation values come from the i18n fence. Source trace C17 (CONFIRMED): '+ ახალი კვლევა' (`VenousLEForm.tsx:1188-1197`, copies at `ArterialLEForm.tsx:760`, `CarotidForm.tsx:711`) triggers RESET of the current study (`VenousLEForm.tsx:1120-1127`) but is styled as an additive gradient button (`VenousLEForm.module.css:82`) with a doubled plus.\nDo: remove IconPlus, restyle `newCaseButton` as the existing secondary/ghost EMRButton look (no new styles), make sure ConfirmDialog gets `destructive`, and have the confirm text name the patient. Label = decisions.md entry for U-1031. Keep the capability. Prove in ka at 1440: the button is quiet; the confirm shows the patient name (and is red once the stylesheet-order move lands)."
+      },
+      "band": "S1 data-loss (above the ranking)",
+      "label": "CONFIRMED (C17 wording); the red confirm depends on UX-ANGIO-021",
+      "riskTier": "low",
+      "fence": "W1-H (L1) · W2-venous / W2-arterial / W2-carotid (L2, L3)",
+      "doneWhen": "No '+' on the reset button, and its weight is quiet. The confirm names the patient and is red (after UX-ANGIO-021). A re-walk of a93706776962 logs no duplicate-path between 'add study' and the reset.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because one confirm stands between an add-looking button and erasing a study.",
+      "sourceTrace": "C17 `VenousLEForm.tsx:1188-1197` (RESET at :1120-1127), copies `ArterialLEForm.tsx:760`, `CarotidForm.tsx:711`; gradient `VenousLEForm.module.css:82`; `ConfirmDialog.tsx:89` danger already wired, hidden by C1.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-006",
+      "title": "Grade the toe-brachial index on its own scale (after clinical sign-off S6)",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "9acf2a952037"
+        ],
+        "eventIds": [],
+        "screenshots": [],
+        "priorFindings": [
+          "U-1026",
+          "decisions.md S6"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Medium (clinical), low (code). The risk is choosing the wrong cut-off, and that choice is not an agent decision.",
+      "doNotTouch": [
+        "§4.3: no agent picks the TBI cut-off. S6 does, recorded with who, what, date and source.",
+        "ABI bands are unchanged.",
+        "If the band is exported, FHIR interpretation codes stay valid (`npm run validate:fhir`)."
+      ],
+      "staging": [
+        "L0 S6 answered in decisions.md.",
+        "L1 (W1-F, 1 file + test) `abiCalculator.ts`: a separate TBI band function with the signed cut-offs, with unit tests at each boundary.",
+        "L2 (W1-F, 1 file) `arterial-le/templates.ts:103-116`: change the toe values only if S6 says the template is wrong rather than the bands."
+      ],
+      "affectedFiles": [
+        "src/components/studies/arterial-le/abiCalculator.ts",
+        "src/components/studies/arterial-le/templates.ts"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-F. BLOCKED until sign-off S6 (decisions.md) gives the TBI cut-offs. Source trace C20 (CONFIRMED): `src/components/studies/arterial-le/abiCalculator.ts:96-97` grades TBI with `bandForRatio` (ABI bands), so the 'normal' template TBI 0.846 (`templates.ts:103-116`) reads mild PAD. Add a TBI-specific band function using exactly the S6 values. Leave ABI bands untouched. Add boundary unit tests. Change template values only if S6 says so. Name the test file; run validate:fhir if the band reaches FHIR."
+      },
+      "band": "S2 clinical-safety (above the ranking) — gated on S6",
+      "label": "CONFIRMED (C20); cut-off = sign-off S6",
+      "riskTier": "medium",
+      "fence": "W1-F",
+      "doneWhen": "S6 is signed. TBI uses its own bands under unit test. The arterial 'normal' template grades normal.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because it is a clinical grading error on the deliverable.",
+      "sourceTrace": "C20 `arterial-le/abiCalculator.ts:28-30, 96-97` (`band: bandForRatio(tbi)`); template `arterial-le/templates.ts:103-116` (toe 110 / brachial 130 = 0.846).",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-007",
+      "title": "The 'perforator' option stores what it says (after clinical sign-off)",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "ad9b03d7d7d3"
+        ],
+        "eventIds": [],
+        "screenshots": [],
+        "priorFindings": [
+          "U-1027",
+          "critic: Tailwind-blue perforator colour"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Medium. A new value touches config, table, legend, colour, translations, PDF and FHIR, and existing drafts must be mapped (since 2026-10-07, every stored \"inconclusive\" means perforator).",
+      "doNotTouch": [
+        "§4.3: the clinician decides (orchestrator adds S7 to the sign-off list). No agent invents a code.",
+        "§4.4: validate:fhir green. The PDF legend and the screen legend change together.",
+        "`theme-colors.ts` carries today's clinician-feedback colour WIP: build on top."
+      ],
+      "staging": [
+        "L0 S7 answered: 'perforator' as its own value, or restore 'inconclusive' wording.",
+        "L1 (W3-perforator, ≤3 files) `venous-le/config.ts` enum + `theme-colors.ts` + venous-le locale keys (via W1-H), with a draft read-time mapping of old values.",
+        "L2 (≤3 files) `SegmentTable.tsx:47`, `AnatomyLegend.tsx:42`, PDF label.",
+        "L3 (≤2 files) `fhir-systems.ts:375` code list + `observations/venous.ts`, together with UX-ANGIO-003 L2."
+      ],
+      "affectedFiles": [
+        "src/components/studies/venous-le/config.ts",
+        "src/constants/theme-colors.ts",
+        "src/components/form/SegmentTable.tsx",
+        "src/components/anatomy/AnatomyLegend.tsx",
+        "src/constants/fhir-systems.ts",
+        "src/services/fhirBuilder/observations/venous.ts"
+      ],
+      "handoff": {
+        "tool": "speckit",
+        "prompt": "Spec seed — Venous competency: 'perforator' label vs stored 'inconclusive' code (angio, run angio-module-2026-11-12).\nProblem: since 2026-10-07 the venous competency option labelled 'პერფორანტი' is stored and coded as `inconclusive` (`venous-le/config.ts:294-296`, FHIR code list `src/constants/fhir-systems.ts:375`). Venous does not export competencyOverride yet, so nothing wrong has been published. UX-ANGIO-003 will start exporting it, and from then on every perforator would be published as 'inconclusive'.\nDecision needed first (S7, clinician): is 'perforator' a competency value of its own, or should the label go back to 'inconclusive'?\nSuccess criteria: one value = one meaning in the form, table, legend (`AnatomyLegend.tsx:42`), PDF and FHIR; drafts saved since 2026-10-07 reopen with the clinician's original meaning; `npm run validate:fhir` green; no other study changed (partial plugin pattern)."
+      },
+      "band": "S2 clinical-safety (above the ranking) — gated on a new sign-off item (proposed S7)",
+      "label": "CONFIRMED (C19)",
+      "riskTier": "medium",
+      "fence": "W3-perforator (after W1-C and W1-G release their files)",
+      "doneWhen": "S7 is signed. The stored code equals the label everywhere: screen, PDF, FHIR. Old drafts open with the same meaning.",
+      "arithmetic": "No click cost. **0 clicks/shift.** It sits above the ranking because the stored code contradicts the clinician's choice.",
+      "sourceTrace": "C19 `venous-le/config.ts:294-296` (deliberate relabel 2026-10-07), enum `:81, 94`, `SegmentTable.tsx:47`, `AnatomyLegend.tsx:42`, FHIR code list `fhir-systems.ts:375`, colour `theme-colors.ts:118`.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-008",
+      "title": "Download a finished study's report while another study in the visit is still empty",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "3088c351aa84"
+        ],
+        "eventIds": [
+          "eec519062b89",
+          "773b88b701a8",
+          "d7b755b1d547",
+          "bf01972457d4",
+          "9bc22a40764e"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/3088c351aa84-s04.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/3088c351aa84-s09.png"
+        ],
+        "priorFindings": [
+          "U-1002",
+          "U-1004 (tooltip key)"
+        ]
+      },
+      "estClicksAfter": {
+        "3088c351aa84": 3
+      },
+      "clicksSavedPerShift": 6,
+      "effort": "S",
+      "risk": "Low. It uses the existing single-study renderer. The combined report keeps its all-complete rule.",
+      "doNotTouch": [
+        "§4.4: the per-study PDF is the existing renderer (same anatomy SVGs, same findings). The FHIR bundle is unchanged.",
+        "An empty study is never printed as normal. Option (b) below must never silently drop a study.",
+        "Keep the Mantine loading guard (one download per double-click; M-real PASS).",
+        "Product call for the orchestrator (decisions.md). Recommended: (a) when the visit is not all complete and the active study is complete, both buttons export the active study. Rejected: (b) a combined PDF filtered to the complete studies, which hides an omitted study."
+      ],
+      "staging": [
+        "L1 (W1-B, 1 file) `FormActions.tsx:288-297, 493`: in a multi-study visit where the active study is complete, route preview and download through the non-unified branch. Replace the English tooltip with an inline Georgian line naming the unfinished study (key via W1-H).",
+        "L2 Vitest for the gate (complete+empty → single export enabled; all complete → combined)."
+      ],
+      "affectedFiles": [
+        "src/components/form/FormActions.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-B (`src/components/form/FormActions.tsx` only). Source trace C24 (CONFIRMED): any visit with ≥2 studies forces the combined PDF and gates it on every study being complete (`:288-297`, `:493`). Walk 3088c351aa84 (high-alert) is FAILED_BLOCKED at CRITICAL. The single-study renderer `renderSingleStudyPdfBlob` (`:327`) is already used by the non-unified branch (`:406-408, :453-455`).\nDo (option (a), per decisions.md): when unified && !allComplete && the active study is complete, enable preview and download for the active study via the existing single-study path. Show a Georgian inline note naming the unfinished study (send the key to the i18n fence) instead of the English `formActions.completeAllFirst` tooltip. Keep the loading guard. Add a Vitest for the gate. Prove in ka: venous complete + carotid empty → the venous PDF downloads."
+      },
+      "band": "high-alert · CRITICAL (safety floor applied)",
+      "label": "CONFIRMED (C24)",
+      "riskTier": "low",
+      "fence": "W1-B",
+      "doneWhen": "A re-walk of 3088c351aa84 is COMPLETED in ≤4 clicks. The combined PDF still requires every study complete. No English string remains on the bar.",
+      "arithmetic": "`3088c351aa84` (6 − 3) × 2 = 6 → **6 clicks/shift**. After = toggle, resume, download. The real gain is from \"impossible\" to 3 clicks.",
+      "sourceTrace": "C24 `FormActions.tsx:288-297, 493` all-or-nothing gate; `renderSingleStudyPdfBlob` exists at `:327`, used by the non-unified branch `:406-408, 453-455`; TODO escape hatch `:500-502`.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-009",
+      "title": "Get back into an open visit in one click",
+      "type": "promote-default",
+      "evidence": {
+        "taskIds": [
+          "2b116c3dbda9",
+          "3088c351aa84",
+          "42d763c1e133",
+          "4694a7f74e68",
+          "4f1b689e4374",
+          "51f8fdd2aebb",
+          "6c8627b00e20",
+          "7ddfddbf4c8b",
+          "7f498505079c",
+          "802d04f6063d",
+          "84c9daf274e4",
+          "acfa2ced1941",
+          "afc608e3416b",
+          "b349de748732",
+          "b9b131e672b8",
+          "c2ca3d94fcb2",
+          "c4a29c48523e",
+          "d14d2d29a594",
+          "d238785449bc",
+          "d45cf28e1a49",
+          "e54837a93442",
+          "eac7013f7172",
+          "f0a93328734a",
+          "0a46facacdbc",
+          "17e266d15e6a",
+          "332f579ec7b3",
+          "3a68650e893d",
+          "3f161856f938",
+          "454da3f3a800",
+          "4c683280f693",
+          "5cb8f72c92e1",
+          "6d7af6f56e93",
+          "8b62e94cf890",
+          "bcbf7f5b50f1"
+        ],
+        "eventIds": [
+          "5160fff884bb",
+          "350961671844",
+          "e524b63df22a",
+          "dc6225db3f65",
+          "01bc564a7b8b"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/2b116c3dbda9-s01.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/2b116c3dbda9-s03.png"
+        ],
+        "priorFindings": [
+          "U-1016",
+          "U-1035 (folded list, re-ordering, Edit scroll)",
+          "U-1014 (intake half, C12: the same button breaks 375)"
+        ]
+      },
+      "estClicksAfter": {
+        "2b116c3dbda9": 2,
+        "3088c351aa84": 5,
+        "42d763c1e133": 2,
+        "4694a7f74e68": 1,
+        "4f1b689e4374": 9,
+        "51f8fdd2aebb": 1,
+        "6c8627b00e20": 1,
+        "7ddfddbf4c8b": 2,
+        "7f498505079c": 2,
+        "802d04f6063d": 1,
+        "84c9daf274e4": 2,
+        "acfa2ced1941": 2,
+        "afc608e3416b": 2,
+        "b349de748732": 2,
+        "b9b131e672b8": 9,
+        "c2ca3d94fcb2": 1,
+        "c4a29c48523e": 3,
+        "d14d2d29a594": 2,
+        "d238785449bc": 2,
+        "d45cf28e1a49": 1,
+        "e54837a93442": 3,
+        "eac7013f7172": 3,
+        "f0a93328734a": 2,
+        "0a46facacdbc": 2,
+        "17e266d15e6a": 7,
+        "332f579ec7b3": 1,
+        "3a68650e893d": 2,
+        "3f161856f938": 2,
+        "454da3f3a800": 7,
+        "4c683280f693": 5,
+        "5cb8f72c92e1": 3,
+        "6d7af6f56e93": 2,
+        "8b62e94cf890": 2,
+        "bcbf7f5b50f1": 2
+      },
+      "clicksSavedPerShift": 175,
+      "effort": "S",
+      "risk": "Low. The footer reuses the panel's working resume logic. The fold stays the default for a clinician who never opens the list, which honours the deliberate comment in the code.",
+      "doNotTouch": [
+        "§4.2: `/` stays the front door. Resume navigates to the existing `/encounter/:id/:studyType` route. No new route.",
+        "The default stays folded on a fresh device (the deliberate comment at `OngoingVisitsPanel.tsx:96-99`). The remembered state is stored via `src/constants/storage-keys.ts`, never raw localStorage.",
+        "§4.5: the long Georgian resume label wraps, never clips. The C12 fix ships in the same layer.",
+        "Do not change `listEncounters` ordering (W1-A owns encounterStore.ts). Stable order is a local sort in the panel."
+      ],
+      "staging": [
+        "L1 (W1-D, 2 files) `EncounterIntake.tsx:467-469`: handleResume opens the newest encounter's first study (copy `OngoingVisitsPanel.tsx:121-131`), and is hidden when nothing is in progress. `EncounterIntake.module.css:1003-1012, 1039-1040`: add flex-wrap and let the resume button shrink and wrap (also clears the 375 CTA clip).",
+        "L2 (W1-D, 2 files) `OngoingVisitsPanel.tsx:100` + `storage-keys.ts`: remember expanded/folded per device.",
+        "L3 (W1-D, 1 file) `OngoingVisitsPanel.tsx`: stable row order by `createdAt` (local sort). Edit scrolls the intake form into view (shared with UX-ANGIO-017 L2)."
+      ],
+      "affectedFiles": [
+        "src/components/layout/EncounterIntake.tsx",
+        "src/components/layout/EncounterIntake.module.css",
+        "src/components/layout/OngoingVisitsPanel.tsx",
+        "src/constants/storage-keys.ts"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-D. Two causes, both on the start page:\n1. Source trace C26 (CONFIRMED): the footer 'მიმდინარე ვიზიტის გაგრძელება' calls `navigate('/')` while already on `/` (`src/components/layout/EncounterIntake.tsx:467-469`). Make it open the newest in-progress encounter's first study, using the same logic as `OngoingVisitsPanel.tsx:121-131` (listEncounters is newest-first). Hide it when nothing is in progress. In the same layer fix C12: `EncounterIntake.module.css:1003-1012` add flex-wrap, and `:1039-1040` let the resume button shrink and wrap so the 375 CTA is not pushed off-screen.\n2. `OngoingVisitsPanel.tsx:100` `useState(false)`: keep folded as the default, but remember the clinician's last expanded/folded choice per device via a key in `src/constants/storage-keys.ts` (no raw localStorage).\n3. Stable row order by createdAt (sort locally; do not touch encounterStore.ts). On Edit, scroll the intake form into view.\nProve in ka at 1280 and 375: footer = 1 click into the newest visit; after opening the list once and reloading, it is still open."
+      },
+      "band": "high-alert · MEDIUM",
+      "label": "CONFIRMED (C26 dead footer button); panel fold = architect code read `OngoingVisitsPanel.tsx:96-100` (deliberate default)",
+      "riskTier": "low",
+      "fence": "W1-D",
+      "doneWhen": "Re-walk: d45cf28e1a49 = 1 click and 332f579ec7b3 = 1 click. The PDF tasks (2b116c3dbda9 etc.) = 2 clicks. At 375 the intake CTA is fully on screen. The list keeps its order across visits.",
+      "arithmetic": "Σ (clicksNow − clicksAfter) × frequencyPerShift over 34 tasks = 175 (table in architect-moves.md)",
+      "sourceTrace": "C26 `EncounterIntake.tsx:467-469` `navigate('/')` while on `/`; working sibling `OngoingVisitsPanel.tsx:121-131`; list newest-first `encounterStore.ts:280-297`; C12 `EncounterIntake.module.css:1003-1012, 1039-1040`.",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-010",
+      "title": "Discarding a visit names the patient, and the button says 'discard'",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "3f161856f938",
+          "d238785449bc",
+          "0a46facacdbc"
+        ],
+        "eventIds": [
+          "dc6cd84881ea",
+          "bb55dc5c75c1",
+          "7b421424cbf1"
+        ],
+        "screenshots": [],
+        "priorFindings": [
+          "U-1035 (discard part)",
+          "U-1031 (title = Cancel word pattern)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. Wording and accessible names only.",
+      "doNotTouch": [
+        "The two-step confirm stays. No undo, no auto-delete.",
+        "§4.5: a long Georgian patient name wraps inside the dialog.",
+        "Keys go to W1-H. This fence does not edit translation files."
+      ],
+      "staging": [
+        "L1 (W1-D, 1 file) `OngoingVisitsPanel.tsx`: the trash button's aria-label and tooltip key mean 'discard visit'. The confirm body interpolates the patient name and visit date.",
+        "L2 Verify the discard confirm passes `destructive` to ConfirmDialog (red after UX-ANGIO-021)."
+      ],
+      "affectedFiles": [
+        "src/components/layout/OngoingVisitsPanel.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-D, `src/components/layout/OngoingVisitsPanel.tsx`. The trash button's accessible name is 'გაუქმება' (cancel), the same word as the dialog's Cancel, and the discard confirm does not name the patient (walk events 7b421424cbf1, dc6cd84881ea, bb55dc5c75c1; U-1035). Set the button's name and tooltip to 'discard visit' and interpolate the patient name and visit date in the confirm body. Send the ka/en/ru keys to the i18n fence. Confirm `destructive` is passed. Prove in ka with a screen-reader name check (enumerate accessibleName)."
+      },
+      "band": "high-alert · MEDIUM",
+      "label": "CONFIRMED (walker observation + U-1035; wording sibling `StudyPicker.tsx:390, 402`)",
+      "riskTier": "low",
+      "fence": "W1-D",
+      "doneWhen": "Re-walk 3f161856f938 and d238785449bc to the threshold: the confirm shows the patient's name, and the button is announced as discard.",
+      "arithmetic": "No click change. **0 clicks/shift.** Ranked inside high-alert because the action is irreversible.",
+      "sourceTrace": "Discard dialogs that name the action: `OngoingVisitsPanel.tsx:322, 334`, `StudyPicker.tsx:390, 402` (source trace U-1031 sibling).",
+      "top10": true
+    },
+    {
+      "id": "UX-ANGIO-011",
+      "title": "A normal pelvic study in one action, like venous",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "85025cca62ba"
+        ],
+        "eventIds": [
+          "1e5c76f1a5b8",
+          "13598459d7fb",
+          "ba45f1a594c6",
+          "c2a6696f97ff",
+          "929f76f2ee91"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/85025cca62ba-s06.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/85025cca62ba-s09.png"
+        ],
+        "priorFindings": [
+          "U-1030",
+          "U-1025 (fixed)"
+        ]
+      },
+      "estClicksAfter": {
+        "85025cca62ba": 6
+      },
+      "clicksSavedPerShift": 13,
+      "effort": "S",
+      "risk": "Low. It copies a working reducer case. The values are the S5 template values.",
+      "doNotTouch": [
+        "§4.3: the normal values are the S5 template values (patent / full / competent, phasicity left blank). S5 is still pending, and the button inherits whatever S5 decides.",
+        "§4.7: copy the venous reducer case. Do not generalise a shared bulk-normal plugin.",
+        "The capability to enter each row by hand stays."
+      ],
+      "staging": [
+        "L1 (verification first, no code) Re-walk 85025cca62ba via the template. If it completes within budget, record it. L2 then remains a consistency move (same gesture as venous), not a rescue.",
+        "L2 (W2-iliac, 3 files) `templates.ts`: export `NORMAL_CAVAL`. `IliacCavalTable.tsx`: an 'ყველა ნორმაში' button (testid `iliac-bulk-set-all-normal`) through a callback. `IliacPelvicVenousForm.tsx`: a `SET_ALL_NORMAL` case copied from `VenousLEForm.tsx:300-315`."
+      ],
+      "affectedFiles": [
+        "src/components/studies/iliac-pelvic-venous/templates.ts",
+        "src/components/studies/iliac-pelvic-venous/IliacCavalTable.tsx",
+        "src/components/studies/iliac-pelvic-venous/IliacPelvicVenousForm.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W2-iliac. First re-walk task 85025cca62ba (normal pelvic study) via the template; record the clicks. Then add the venous-style bulk action (source trace C18, CONFIRMED):\n- export `NORMAL_CAVAL` from `src/components/studies/iliac-pelvic-venous/templates.ts:21-22`\n- `IliacCavalTable.tsx`: 'ყველა ნორმაში' button, testid `iliac-bulk-set-all-normal`, calling a prop callback\n- `IliacPelvicVenousForm.tsx`: reducer case `SET_ALL_NORMAL`, copied from `src/components/studies/venous-le/VenousLEForm.tsx:300-315` (handler pattern `:898-900`).\nValues = template values (S5 pending, phasicity stays blank). Translation key goes to the i18n fence. Prove in ka: one click → 21 rows normal; the PDF prints them."
+      },
+      "band": "routine · HIGH",
+      "label": "CONFIRMED (C18: normal values built, no bulk action). HYPOTHESIS (source trace): the U-1025 template fix already lets the task pass",
+      "riskTier": "low",
+      "fence": "W2-iliac",
+      "doneWhen": "A re-walk of 85025cca62ba is COMPLETED in ≤15 clicks (target 6). All 21 rows read normal, and the conclusion matches the table.",
+      "arithmetic": "`85025cca62ba` (19 − 6) × 1 = 13 → **13 clicks/shift**. Basis for 6: the venous sibling task 03a18f254204 measured 6 clicks with its bulk action. The real \"now\" is about 84 (21 rows × 4), because the walk stopped at 19.",
+      "sourceTrace": "C18 `iliac-pelvic-venous/templates.ts:21-22` `NORMAL_CAVAL` (not exported); no bulk action in `IliacCavalTable.tsx` / `IliacPelvicVenousForm.tsx`; sibling `VenousLEForm.tsx:300-315` + `:898-900` + testid `bulk-set-all-normal`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-012",
+      "title": "Add a one-leg venous study from the banner, and choose the leg at intake",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "d5c84bc79cf3",
+          "17e266d15e6a"
+        ],
+        "eventIds": [
+          "b54524c8c95e",
+          "320e85257934",
+          "e922a6029c88",
+          "1f58b5690bd5",
+          "f77ed177df03"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/d5c84bc79cf3-s09.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/d5c84bc79cf3-s12.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/17e266d15e6a-s03.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/17e266d15e6a-s06.png"
+        ],
+        "priorFindings": [
+          "U-1028"
+        ]
+      },
+      "estClicksAfter": {
+        "d5c84bc79cf3": 3,
+        "17e266d15e6a": 4
+      },
+      "clicksSavedPerShift": 8,
+      "effort": "M",
+      "risk": "Medium for L4 (the venous form must honour the route's study type; the hypothesis must be checked first). L1-L2 are low.",
+      "doNotTouch": [
+        "§4.2: the right/left routes are already in the `EncounterStudyWrapper` allow-list. No new route. The bare-route redirects are untouched.",
+        "§4.4: CPT 93971 and the FHIR codes are already wired. validate:fhir with a single-leg bundle.",
+        "§4.7: the venous form reads its study type from the route. No generic plugin signature.",
+        "No empty bilateral study may be left behind (it would keep the combined export shut, U-1002)."
+      ],
+      "staging": [
+        "L1 (W1-E, 2 files) `EncounterContextBanner.tsx:267-292` → Mantine `Menu` (portals, sibling `IliacPelvicVenousForm.tsx:445-458`), or drop `overflow: hidden` at `EncounterContextBanner.module.css:34`.",
+        "L2 (W1-E + W1-H) Distinct translation keys for right / left / bilateral at `EncounterContextBanner.tsx:48-62`.",
+        "L3 (verification, no code) Kill criterion from the source trace: add venousLERight, enter one finding, inspect `encounter.studies`. If a `venousLERight` key holds it, L4 shrinks to nothing.",
+        "L4 (W2-venous, 1 file) `VenousLEForm.tsx:151, 783`: take the study type from the route instead of the hard-coded STUDY_ID. Only if L3 confirms the hypothesis.",
+        "L5 (W1-D, after L4) Intake venous card: a right / left / both choice mapped to the existing study types (product call recorded in decisions.md)."
+      ],
+      "affectedFiles": [
+        "src/components/layout/EncounterContextBanner.tsx",
+        "src/components/layout/EncounterContextBanner.module.css",
+        "src/components/studies/venous-le/VenousLEForm.tsx",
+        "src/components/layout/EncounterIntake.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo. Layered; one fence per layer.\nL1 (W1-E) Source trace C15 (CONFIRMED): `src/components/layout/EncounterContextBanner.module.css:34` `overflow: hidden` clips the absolutely positioned add-study menu (`EncounterContextBanner.tsx:267-292`). Switch it to Mantine `<Menu>` (it portals; see `IliacPelvicVenousForm.tsx:445-458`) using the EMR wrapper conventions.\nL2 (W1-E) The three venous entries share `studies.venousLE.short` (`:48-62`). Give right / left / bilateral distinct keys (send them to the i18n fence).\nL3 Verify the HYPOTHESIS before any form change: add venousLERight, enter one finding, inspect encounter.studies.\nL4 (W2-venous, only if L3 shows the bilateral slot is written) `VenousLEForm.tsx:151, 783`: use the route's study type.\nProve in ka: menu options visible and clickable at 1280; right and left distinguishable; single-leg bundle passes validate:fhir."
+      },
+      "band": "routine · HIGH",
+      "label": "CONFIRMED (C15 clipped menu, C16 identical labels). HYPOTHESIS (source trace C16): a right-leg study mounts the bilateral form and writes into the bilateral slot",
+      "riskTier": "medium",
+      "fence": "W1-E (L1, L2) · W2-venous (L4) · W1-D (L5)",
+      "doneWhen": "Re-walk: d5c84bc79cf3 COMPLETED in ≤3 clicks, 17e266d15e6a in ≤4. The single-leg study holds its findings in its own slot and exports with CPT 93971. validate:fhir is green.",
+      "arithmetic": "`d5c84bc79cf3` (7 − 3) × 1 = 4 + `17e266d15e6a` (8 − 4) × 1 = 4 → **8 clicks/shift**. d5c84bc79cf3 after = card + leg + start (needs L5). With L1-L4 only it is 4 clicks, and it leaves an empty bilateral study that blocks the combined export. 17e266d15e6a after = toggle, resume, add-study, option.",
+      "sourceTrace": "C15 `EncounterContextBanner.module.css:34` `overflow: hidden` around the in-flow menu (`:305-309`, JSX `EncounterContextBanner.tsx:267-292`); C16 one key `studies.venousLE.short` for all three entries (`:48-62`); `VenousLEForm.tsx:151, 783` hard-codes `venousLEBilateral`. Already plumbed: `types/study.ts:34-35`, `EncounterStudyWrapper.tsx:54-55, 73-74`, `vascular-cpt.ts:123-124`, `fhir-systems.ts:108-112`. Sibling for the menu: `IliacPelvicVenousForm.tsx:445-458` (Mantine Menu portals).",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-013",
+      "title": "Both legs normal in one action when the both-legs view is open",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "03a18f254204"
+        ],
+        "eventIds": [
+          "f5364d801169",
+          "9053a7590943"
+        ],
+        "screenshots": [],
+        "priorFindings": []
+      },
+      "estClicksAfter": {
+        "03a18f254204": 4
+      },
+      "clicksSavedPerShift": 6,
+      "effort": "S",
+      "risk": "Low. It reuses the same reducer action for two sides. Competency stays blank, as today.",
+      "doNotTouch": [
+        "§4.3: the bulk action still leaves competency blank (it deliberately does not assume competency). The values are exactly today's per-leg normal values.",
+        "The per-leg button stays."
+      ],
+      "staging": [
+        "L1 (verification) Confirm the reducer side parameter (HYPOTHESIS).",
+        "L2 (W2-venous, 2 files) `VenousLEForm.tsx` + `SegmentAssessmentCard.tsx`: in the bilateral view, dispatch for both sides. Tooltip key 'ორივე კიდური' via W1-H."
+      ],
+      "affectedFiles": [
+        "src/components/studies/venous-le/VenousLEForm.tsx",
+        "src/components/form/SegmentAssessmentCard.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W2-venous. Walk 03a18f254204: 'ყველა ნორმაში' fills only the active leg tab (tooltip 'ამ ჩანართის'), so a normal bilateral study needs bulk, tab switch, bulk. First verify how `SET_ALL_NORMAL` (`src/components/studies/venous-le/VenousLEForm.tsx:300-315`, handler `:898-900`) picks its side. Then, when the bilateral view is active, fill both sides in one press (button lives in `src/components/form/SegmentAssessmentCard.tsx`, testid bulk-all-normal). Keep competency blank and keep the per-leg behaviour. Tooltip key goes to the i18n fence. Prove in ka: bilateral view → one press → 38/38 rows normal."
+      },
+      "band": "routine · HIGH (as scored; see label)",
+      "label": "CONFIRMED (walker observation s8: 'all normal' fills only the active leg tab; tooltip says 'this tab'). HYPOTHESIS (architect, not traced): `SET_ALL_NORMAL` (`VenousLEForm.tsx:300-315`) takes the active side. NOTE: the task's HIGH severity comes from step-1 carry-over event 15bf88a468d8 (Method notes); its own events are LOW",
+      "riskTier": "low",
+      "fence": "W2-venous",
+      "doneWhen": "A re-walk of 03a18f254204 is COMPLETED in 4 clicks with 38/38 rows normal on both legs.",
+      "arithmetic": "`03a18f254204` (6 − 4) × 3 = 6 → **6 clicks/shift**. Now = card, start, all-normal, left tab, all-normal, both view. After = card, start, both view, all-normal.",
+      "sourceTrace": "Walker observations (03a18f254204 s8, s18). Architect read: handler `VenousLEForm.tsx:898-900`, reducer `:300-315`, button in `SegmentAssessmentCard.tsx` (testid `bulk-all-normal`).",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-014",
+      "title": "Print the report in one click",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "7ddfddbf4c8b"
+        ],
+        "eventIds": [
+          "bbe4636adb29",
+          "8f2a5a601e7e"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/7ddfddbf4c8b-s03.png"
+        ],
+        "priorFindings": [
+          "U-1034"
+        ]
+      },
+      "estClicksAfter": {
+        "7ddfddbf4c8b": 3
+      },
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. A secondary button that reuses the renderer the preview already uses.",
+      "doNotTouch": [
+        "§4.4: print the same blob the preview renders. No second layout.",
+        "The PDF engine stays lazy-loaded (performance standing check). `src/styles/print.css` is untouched.",
+        "One primary button per screen: print is secondary weight."
+      ],
+      "staging": [
+        "L0 (human, no code) Preview → viewer print. Record whether it works.",
+        "L1 (W1-B, 1 file) `FormActions.tsx`: a secondary 'ბეჭდვა' button that renders the same blob into a hidden iframe and calls print(), falling back to opening the preview. Key via W1-H.",
+        "L2 e2e or unit check that print uses the preview blob."
+      ],
+      "affectedFiles": [
+        "src/components/form/FormActions.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-B, `src/components/form/FormActions.tsx`. Walk 7ddfddbf4c8b (print the report) FAILED_BLOCKED: the footer offers save / preview / download only; printing depends on the browser viewer in a new tab. Add a secondary 'ბეჭდვა' button: render the same PDF blob the preview uses (existing renderers, lazy import kept), load it in a hidden iframe and call print(); fall back to opening the preview. Key goes to the i18n fence. Do not touch print.css. Prove in ka: the print dialog opens with the Georgian PDF."
+      },
+      "band": "routine · HIGH (FAILED_BLOCKED)",
+      "label": "CONFIRMED app-side fact: no print control on the study page (footer = save / preview / download). Walker measurement limit: a human must re-check the browser viewer first",
+      "riskTier": "low",
+      "fence": "W1-B",
+      "doneWhen": "A re-walk of 7ddfddbf4c8b reaches the print dialog in ≤3 clicks. The printed PDF is identical to the preview.",
+      "arithmetic": "`7ddfddbf4c8b` (3 − 3) × 8 = 0 → **0 clicks/shift**. The gain is a print pathway inside the app, not fewer clicks.",
+      "sourceTrace": "Walk outcomeNote (MEASUREMENT LIMIT stated by the walker). Footer actions in `FormActions.tsx`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-015",
+      "title": "The arterial table fits its card, so the occlusion boxes are on screen",
+      "type": "promote-default",
+      "evidence": {
+        "taskIds": [
+          "9acf2a952037",
+          "71f3dd3afb01",
+          "17e266d15e6a",
+          "4694a7f74e68",
+          "51f8fdd2aebb",
+          "7f498505079c"
+        ],
+        "eventIds": [
+          "6040998a19a6",
+          "43c5f78be158",
+          "05cf9da7e989",
+          "4b3965b2f8c4",
+          "179bd47bec66",
+          "bc6f477e5f74",
+          "fa8d4b75efb4",
+          "9003ea41e04d"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/screen-5d70410ebf9af7a1.png",
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/screen-2e840778fec71af9.png"
+        ],
+        "priorFindings": [
+          "U-1015"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. It is a layout change in one form. It pairs with the diagram move (UX-ANGIO-025) for arterial, in the same fence.",
+      "doNotTouch": [
+        "§4.5: do not trim the 180px label column (Georgian segment names would clip). Give the table room instead.",
+        "§4.3: no column is removed."
+      ],
+      "staging": [
+        "L1 (W2-arterial, 1 file) `ArterialLEForm.tsx:770-783`: the segment table takes the full row and the pressures deck becomes its own row (sibling `CarotidForm.tsx:721`).",
+        "L2 (W1-H) Georgian aria-label for the occlusion checkbox (today it ends in English 'occluded').",
+        "L3 (W2-arterial) Lands together with UX-ANGIO-025 arterial: the diagram goes in the space beside the 890px table at ≥1280px."
+      ],
+      "affectedFiles": [
+        "src/components/studies/arterial-le/ArterialLEForm.tsx",
+        "src/components/studies/arterial-le/ArterialSegmentTable.module.css"
+      ],
+      "handoff": {
+        "tool": "ui-upgrade",
+        "prompt": "/ui-upgrade /encounter/<id>/arterialLE (create the encounter through the intake first; fence W2-arterial). Problem (source trace C27, CONFIRMED): `ArterialSegmentTable.module.css:66-69` min-width 890px sits in the `lg:7` column of `ArterialLEForm.tsx:770-783` (~777px), so the 60px occlusion column (34 checkboxes) scrolls out of the card at 1280/1440. Give the table the full row (like `CarotidForm.tsx:721`), put the pressures deck in its own row, and leave room for the diagram beside the table at ≥1280 (UX-ANGIO-025). Do not shrink the 180px label column. Verify in ka at 1280×720 that no control is horizontally clipped."
+      },
+      "band": "routine · HIGH",
+      "label": "CONFIRMED (C27). HYPOTHESIS (source trace) on the 3 non-arterial tasks carrying the event: the architect ran its kill-criterion and it survived; the mechanism is step-1 carry-over (Method notes)",
+      "riskTier": "low",
+      "fence": "W2-arterial",
+      "doneWhen": "At 1280×720 the screens row for the arterial form records horizontallyClippedControls = 0, and the occlusion column is visible without scrolling the card.",
+      "arithmetic": "No click change (the cost is horizontal scrolling inside the card). **0 clicks/shift.**",
+      "sourceTrace": "C27 `ArterialSegmentTable.module.css:66-69` (`min-width: 890px`) inside the `lg:7` column `ArterialLEForm.tsx:777` (~720-777px). Sibling: full-width `CarotidForm.tsx:721`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-016",
+      "title": "CEAP opens on the first click anywhere on its header",
+      "type": "one-click-action",
+      "evidence": {
+        "taskIds": [
+          "b9b131e672b8"
+        ],
+        "eventIds": [
+          "b29ecdc3af06",
+          "250687f42cf5"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-phys/walks/vascular-physician/shots/b9b131e672b8-s03.png"
+        ],
+        "priorFindings": []
+      },
+      "estClicksAfter": {
+        "b9b131e672b8": 9
+      },
+      "clicksSavedPerShift": 5,
+      "effort": "S",
+      "risk": "Low. One shared collapsible header (CEAP, SVP and others) must keep interactive right-side controls from toggling.",
+      "doNotTouch": [
+        "§4.3: CEAP 2020 axes and the r/s/a/n modifiers are unchanged.",
+        "`EMRCollapsibleSection` is shared: clicks on interactive rightSection controls must still not toggle the section."
+      ],
+      "staging": [
+        "L0 (verification) Click the CEAP badge: does aria-expanded stay false? If the badge click toggles, kill this cause and re-trace.",
+        "L1 (W1-G, 1 file) `EMRCollapsibleSection.tsx`: stop propagation only for interactive rightSection content, so a passive badge passes the click to the header.",
+        "L2 (W1-G, 1 file) `CEAPPicker.tsx`: open by default when any axis already has a value."
+      ],
+      "affectedFiles": [
+        "src/components/common/EMRCollapsibleSection.tsx",
+        "src/components/form/CEAPPicker.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-G. Walk b9b131e672b8: the first click on the CEAP header (near the 'CEAP: C0,En,An,Pn' badge) did not expand it. HYPOTHESIS (architect read): `src/components/common/EMRCollapsibleSection.tsx:189` wraps `rightSection` in a Box with `onClick={(e) => e.stopPropagation()}`. Verify first (click the badge; check aria-expanded). If confirmed: only stop propagation when the right section is interactive, so a passive badge toggles the header. Then in `src/components/form/CEAPPicker.tsx:173` open by default when any CEAP axis has a value. Check SVP and the other collapsible users still behave. Prove in ka."
+      },
+      "band": "routine · MEDIUM",
+      "label": "HYPOTHESIS (architect code read, not traced live): `EMRCollapsibleSection.tsx:189` wraps rightSection (the CEAP summary badge) in a Box that calls stopPropagation, so a click near the badge never toggles; `CEAPPicker.tsx:173` `defaultOpen={false}`",
+      "riskTier": "low",
+      "fence": "W1-G",
+      "doneWhen": "A re-walk of b9b131e672b8 has no dead click on the CEAP header. A saved CEAP opens expanded.",
+      "arithmetic": "`b9b131e672b8` (10 − 9) × 5 = 5 → **5 clicks/shift**. Only the dead header click is counted. The walker's own reload slip (step 19) is not credited to this move.",
+      "sourceTrace": "Walker observations s11 (dead-end: aria-expanded stayed false), s21 (collapsed on every visit). Architect read of `EMRCollapsibleSection.tsx:162-190`, `CEAPPicker.tsx:169-176`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-017",
+      "title": "Study pages open at the top",
+      "type": "promote-default",
+      "evidence": {
+        "taskIds": [
+          "831ea4f62f94",
+          "17e266d15e6a",
+          "eac7013f7172"
+        ],
+        "eventIds": [],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/17e266d15e6a-s10.png"
+        ],
+        "priorFindings": [
+          "U-1029",
+          "U-1035 (Edit scroll half)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. A tiny listener outside the route list.",
+      "doNotTouch": [
+        "§4.2: App.tsx's bare study-route redirects (audit Part-03 HIGH) are not edited. The listener sits outside the `<Routes>` list.",
+        "§4.1: instant scroll (no animation over 200 ms)."
+      ],
+      "staging": [
+        "L1 (W1-D, 1 file) `App.tsx`: a small component that calls window.scrollTo(0, 0) on pathname change, rendered outside `<Routes>`.",
+        "L2 (W1-D, 1 file) `EncounterIntake.tsx`: on `?edit=` load, scroll the form into view (same pathname, so L1 does not cover it)."
+      ],
+      "affectedFiles": [
+        "src/App.tsx",
+        "src/components/layout/EncounterIntake.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-D. Source trace C25 (CONFIRMED): no scroll reset exists; the app uses BrowserRouter (`src/main.tsx:3`) so ScrollRestoration is unavailable. Add a tiny component in `src/App.tsx` (outside the `<Routes>` list; do NOT edit the bare-route redirects, audit Part-03 HIGH) that scrolls to top on `location.pathname` change. In `src/components/layout/EncounterIntake.tsx`, when loaded with `?edit=`, scroll the form into view (pattern `src/components/common/EMRFormErrorSummary.tsx:60`). Prove in ka: start a study from the bottom of the intake → the form opens at the top."
+      },
+      "band": "routine · MEDIUM",
+      "label": "CONFIRMED (C25)",
+      "riskTier": "low",
+      "fence": "W1-D",
+      "doneWhen": "In a re-walk the first screen after intake-start is at scrollY 0 with the banner visible. Edit lands on the form.",
+      "arithmetic": "No click change. The cost is scrolling: the walk notes say \"landed mid-table; scrolled up\" (831ea4f62f94) and \"scrollY=1200 again\" (17e266d15e6a obs s10). **0 clicks/shift.**",
+      "sourceTrace": "C25: no scroll reset anywhere in src; `EncounterIntake.tsx:437, 446` navigate after the user scrolled to the CTA; `BrowserRouter` (`main.tsx:3`), so `<ScrollRestoration>` is unavailable; Edit-scroll sibling `EMRFormErrorSummary.tsx:60`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-018",
+      "title": "Section titles become real headings",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "03a18f254204",
+          "71f3dd3afb01",
+          "831ea4f62f94",
+          "85025cca62ba"
+        ],
+        "eventIds": [
+          "f5b62004ab8c",
+          "44a6609d31e4",
+          "f2a7cec89e5b"
+        ],
+        "screenshots": [],
+        "priorFindings": [
+          "scorer worstScreens: arterial 449 controls / 0 headings, venous 363 / 0, carotid 362 / 0"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. Same styles, a different element.",
+      "doNotTouch": [
+        "§4.1: no visual change. Same size and weight tokens.",
+        "Note for the next run: the screen fingerprint uses visible h1-h3 text, so study-screen fingerprints change once. Clicks are unaffected; record it in the comparability note."
+      ],
+      "staging": [
+        "L1 (W1-G, 1 file) `EMRContentSection.tsx`: the title Text renders as `component=\"h2\"` with unchanged styles.",
+        "L2 (W1-G, 1 file) `EMRCollapsibleSection.tsx`: the same, as h2 or h3."
+      ],
+      "affectedFiles": [
+        "src/components/common/EMRContentSection.tsx",
+        "src/components/common/EMRCollapsibleSection.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-G. Every study screen has 0 headings (scorer worstScreens, no-document-structure ×71). Section titles render as Mantine Text: `src/components/common/EMRContentSection.tsx:285-295` and `src/components/common/EMRCollapsibleSection.tsx:183`. Render them as headings (`component=\"h2\"`, or h3 for nested collapsibles) with identical visual styles, so nothing visibly changes. Check heading order on one study page with an accessibility tree dump. Prove: a ka screenshot before and after looks the same."
+      },
+      "band": "routine · MEDIUM",
+      "label": "CONFIRMED (architect code read: `EMRContentSection.tsx:285` and `EMRCollapsibleSection.tsx:183` render titles as Text; the scorer records headingCount 0 on every study screen)",
+      "riskTier": "low",
+      "fence": "W1-G",
+      "doneWhen": "On a re-walk, every study screen records headingCount ≥ 5 and no no-document-structure event fires. Screenshots are pixel-identical apart from reflow.",
+      "arithmetic": "No click change. **0 clicks/shift.** Covers the 71 no-document-structure events.",
+      "sourceTrace": "Architect read only (not in the source trace): `EMRContentSection.tsx:285-295` `<Text fw={600} size=\"md\">{title}</Text>`; `EMRCollapsibleSection.tsx:183` `<Text className={classes.sectionTitle}>`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-019",
+      "title": "Drawing tools say what they are, and text labels stay inside the diagram",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "454da3f3a800",
+          "4c683280f693"
+        ],
+        "eventIds": [
+          "a7dcd139d8ab",
+          "103be95dd0f1",
+          "ee5cff6dedd3",
+          "22d4eea730ea",
+          "88de43043eef",
+          "b62253c5ce45"
+        ],
+        "screenshots": [
+          "qa-reports/ux/runs/angio-module-2026-11-12-sono/walks/vascular-sonographer/shots/454da3f3a800-s14.png"
+        ],
+        "priorFindings": []
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. Names, a clamp and a token choice.",
+      "doNotTouch": [
+        "Drawings persist in `drawings[]` and print in the PDF (`DrawingStroke.text`). The data shape is unchanged.",
+        "The draw-mode toggle is part of the ratified budget warrant (angio-annotate, D6). Keep it.",
+        "`DrawingToolbar.tsx` and `types/drawing.ts` carry uncommitted WIP: build on top.",
+        "AnatomyView's react/no-danger exception is untouched."
+      ],
+      "staging": [
+        "L1 (W1-I, 1 file) `DrawingToolbar.tsx`: accessible names and tooltips for pen, eraser, text and undo (undo is named 'cancel' today). Keys via W1-H.",
+        "L2 (W1-I, 1 file) `DrawingCanvas.tsx`: clamp a text label inside the viewBox (verify the cause first).",
+        "L3 (W1-I) Default ink = a token distinct from the normal-vessel slate (token choice checked by the UI-X lane)."
+      ],
+      "affectedFiles": [
+        "src/components/anatomy/DrawingToolbar.tsx",
+        "src/components/anatomy/DrawingCanvas.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-I (`src/components/anatomy/DrawingToolbar.tsx`, `DrawingCanvas.tsx`; both may carry uncommitted WIP, build on top). Walks 454da3f3a800 / 4c683280f693: pen, eraser and 'T' have no accessible name or tooltip, undo is named 'გაუქმება' (cancel); a text label placed right of centre is clipped at the diagram edge; default ink = normal-vessel slate. Add names + tooltips (keys to the i18n fence), clamp text labels inside the drawing area (find the cause first), and pick a distinct existing token for the default ink. Keep the draw-mode toggle and the drawings[] data shape. Prove on screen and in the exported PDF."
+      },
+      "band": "routine · MEDIUM",
+      "label": "CONFIRMED (walker observations 454da3f3a800 s7, s12; 4c683280f693 s19). Cause of the clipping not traced → HYPOTHESIS location `DrawingCanvas.tsx`",
+      "riskTier": "low",
+      "fence": "W1-I",
+      "doneWhen": "Every toolbar control has a Georgian accessible name. A label placed at the right edge is fully visible on screen and in the PDF. The default ink differs from the normal-vessel colour.",
+      "arithmetic": "**0 clicks/shift** (the click count is not the problem). Breakdown from the walk steps: `454da3f3a800` 9 = 2 re-entry (toggle, resume) + 4 annotate (draw, T, place, Enter) + 3 persistence check (back, toggle, resume). `4c683280f693` 7 = 2 + 2 (draw, stroke) + 3. Against the ratified 3-click annotate budget the annotation itself is 4 and 2. UX-ANGIO-009 removes the toggle clicks.",
+      "sourceTrace": "Walk observations only.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-020",
+      "title": "Georgian everywhere: missing words, dates and screen-reader names",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "f7d966f9347f",
+          "d45cf28e1a49",
+          "264f943ebf15",
+          "831ea4f62f94",
+          "51f8fdd2aebb",
+          "7f498505079c",
+          "afc608e3416b",
+          "d14d2d29a594",
+          "eac7013f7172"
+        ],
+        "eventIds": [
+          "a0868bfb9c8d",
+          "11243fc1ae74",
+          "23ac17f13a32",
+          "8c0da8eda1da",
+          "144e7ad73ac9",
+          "0137b1539e20",
+          "450c035c6575",
+          "368976798430",
+          "0dd70398fd53",
+          "397bb7425c51"
+        ],
+        "screenshots": [],
+        "priorFindings": [
+          "U-1004",
+          "U-1005",
+          "U-1006",
+          "U-1007",
+          "U-1015 (aria part)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Low. Strings, one checker rule and one date helper. Georgian strings run long, so re-shoot 375.",
+      "doNotTouch": [
+        "§4.3: clinical abbreviations (GSV, SPJ, CCA, ICA, NASCET grades) are not translated by an agent (see the do-not-do list).",
+        "§4.5: re-shoot 375 for any longer Georgian string.",
+        "Translations have a single owner. This fence owns every `src/translations/**.json`. Other fences hand their keys here, and the orchestrator merges them at wave end.",
+        "Dates: use `services/dateHelpers.ts` (Tbilisi trap, CLAUDE.md). Never `toISOString().slice(0,10)` for display."
+      ],
+      "staging": [
+        "L1 (W1-H, ≤3 files per step) Add the missing keys, one ka/en/ru triplet per step (root, then per-study), plus the venous PDF section labels (U-1005).",
+        "L2 (W1-H, 1 file) `scripts/check-i18n.ts`: fail on a literal `t('key')` used in src but absent from ka.",
+        "L3 (W1-H, 1 file) `NASCETPicker.tsx:151`: drop the English fallback chip when a translated label exists (also clears the critic carotid duplicate-primary-data finding).",
+        "L4 (W1-H, ≤3 files) Verify the date HYPOTHESIS (grep the PDF callers of formatIsoForDisplay for `lang`), then print dd.mm.yyyy in 24h in the report language. Calendar popup locale: trace first where EncounterIntake sets the dayjs locale.",
+        "L5 (W1-H, 2 files) `ArterialSegmentTable.tsx`: waveform pictograms get a visible tooltip with their existing names. `BackToStudiesButton.tsx`: the label says where it goes (it lands on visit details, walk 3088c351aa84 obs s7)."
+      ],
+      "affectedFiles": [
+        "src/translations/ka.json",
+        "src/translations/en.json",
+        "src/translations/ru.json",
+        "scripts/check-i18n.ts",
+        "src/components/studies/carotid/NASCETPicker.tsx",
+        "src/services/dateHelpers.ts",
+        "src/components/studies/arterial-le/ArterialSegmentTable.tsx",
+        "src/components/layout/BackToStudiesButton.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-H (owns every src/translations/**.json; other fences send you key lists). Source trace C28 (CONFIRMED): keys used in src are missing from every locale, so t() renders the English fallback, and `scripts/check-i18n.ts:4-9` only checks parity.\n1. Add, one ka/en/ru triplet per step: formActions.completeAllFirst, encounter.listPage.eyebrow, encounter.list.edit, encounter.banner.ageYears, anatomy.view.le-arterial-anterior, carotid.param.plaqueSurface, carotid.nascetSummary.rightIca/leftIca, the venous PDF section labels (U-1005), and every key handed over by other fences.\n2. check-i18n: fail when a literal t('key') in src is absent from ka.\n3. `NASCETPicker.tsx:151`: no English chip when a Georgian label exists.\n4. HYPOTHESIS: `src/services/dateHelpers.ts:82` defaults lang to 'en'; verify the PDF callers, then print dd.mm.yyyy 24h. Find where the intake calendar gets its locale before changing it.\n5. Waveform pictograms (`ArterialSegmentTable.tsx`) get visible tooltips; `BackToStudiesButton.tsx` label says where it goes.\nNever translate clinical abbreviations. Re-shoot 375. Run npm run i18n:check."
+      },
+      "band": "routine · MEDIUM",
+      "label": "CONFIRMED (C28: keys missing in every locale; checker is parity-only). HYPOTHESIS (architect code read): report dates print US-style because `formatIsoForDisplay` defaults to `lang 'en'` (`dateHelpers.ts:82`) and the PDF callers omit `lang`",
+      "riskTier": "low",
+      "fence": "W1-H (owns all src/translations/**)",
+      "doneWhen": "In a ka walk of every in-scope screen and PDF, no English chrome remains apart from the clinical abbreviations. `npm run i18n:check` fails on a planted missing key. PDF dates read 12.11.2026.",
+      "arithmetic": "No click change. **0 clicks/shift.** Covers 10 of the 15 jargon events. The rest route elsewhere: bf906d5e5019 and 9bc22a40764e → UX-ANGIO-008 (tooltip), 7b421424cbf1 → UX-ANGIO-010, 39f333a8fa95 → UX-ANGIO-027, 674658059cad (clinical abbreviations) → do-not-do.",
+      "sourceTrace": "C28: keys absent everywhere (`formActions.completeAllFirst`, `encounter.listPage.eyebrow`, `encounter.list.edit`, `encounter.banner.ageYears`, `anatomy.view.le-arterial-anterior`, `carotid.param.plaqueSurface`, `carotid.nascetSummary.rightIca`); `scripts/check-i18n.ts:4-9` parity only; NASCET chip fallback `NASCETPicker.tsx:151`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-021",
+      "title": "Quiet buttons render quiet: fix the stylesheet order",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/iliac-pelvic-venous-default.png"
+        ],
+        "priorFindings": [
+          "critic X-BTN (4 study screens × 4 variants)",
+          "U-1031 (colour part)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Medium blast radius: 77 EMRButton call sites in 31 files, and possibly other wrappers, start rendering as designed. Re-shoot all 20 variants.",
+      "doNotTouch": [
+        "§4.1: tokens unchanged. Exactly one gradient primary per screen (PDF download), per DESIGN-DIRECTION.",
+        "Keep `theme.css` and `print.css` after `import App`, so theme overrides keep winning. Only the three `@mantine/*` imports move.",
+        "HYPOTHESIS (source trace): other wrappers, such as the empty-MultiSelect \"input inside an input\", may change too. Check them in L2."
+      ],
+      "staging": [
+        "L1 (W1-G, 1 file) `main.tsx`: move the three `@mantine/*.css` imports above `import App`.",
+        "L2 (UI-X) Re-shoot all 20 variants and run the design-critic.",
+        "L3 (W1-G, optional, 1 file) `EMRButton.tsx:395-419`: pass a variant to Mantine Button, so `filled` never sits underneath."
+      ],
+      "affectedFiles": [
+        "src/main.tsx",
+        "src/components/common/EMRButton.tsx"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, fence W1-G. Source trace C1 (CONFIRMED by live rule trace): `src/main.tsx:4` imports App (evaluating every component CSS module) before `@mantine/core/styles.css` (`:8`), so Mantine's `.m_77c9d27d` filled background beats EMRButton's secondary/ghost/danger classes on equal specificity. Move ONLY the three @mantine/* CSS imports above `import App`; keep theme.css and print.css where they are. Then re-shoot intake + 4 study screens (ka, 1440 light/dark, 768, 375) and confirm: one gradient primary per screen, danger confirm red. Optional second layer: `src/components/common/EMRButton.tsx:395-419` pass a Mantine variant. Report every screen whose look changed beyond buttons."
+      },
+      "band": "UI-X lane · prerequisite of UX-ANGIO-005 and -010",
+      "label": "CONFIRMED (C1, live rule trace)",
+      "riskTier": "medium",
+      "fence": "W1-G",
+      "doneWhen": "The design-critic counts 1 gradient primary per study screen. The destructive confirm computes to the danger colour, not rgb(43,108,176).",
+      "arithmetic": "Composition move. **0 clicks/shift.**",
+      "sourceTrace": "C1 `src/main.tsx:4` (`import App`, which evaluates every component stylesheet) before `:8` (`@mantine/core/styles.css`); live DOM: EMRButton sheet index 1, Mantine 74; `.m_77c9d27d` filled background wins. Amplifier `EMRButton.tsx:395-419` passes no variant.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-022",
+      "title": "Dark mode: unchosen studies show no tick, and diagram labels stay readable",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/intake-dark.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-dark.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-dark.png"
+        ],
+        "priorFindings": [
+          "U-1021",
+          "U-1024"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low if scoped. Deleting the global dark icon rule would have a large blast radius, so the fix stays scoped.",
+      "doNotTouch": [
+        "AnatomyView's `dangerouslySetInnerHTML` / react/no-danger exception stays exactly as it is. Only the string-rewrite list grows.",
+        "Don't delete the global dark `.tabler-icon` rule. Scope the fix.",
+        "The same anatomy SVG still feeds the PDF (`anatomyToPdfSvg.ts`); the PDF is light, so the rewrite applies to the screen only."
+      ],
+      "staging": [
+        "L1 (W1-D, 1 file) `EncounterIntake.tsx:884-890`: render the tick only when the card is checked.",
+        "L2 (W1-G, 1 file) `AnatomyView.tsx:180-183`: extend the existing regex rewrite (sibling `:189-198`) to the silhouette fill.",
+        "L3 (W1-G, 1 file) `AnatomyLegend.tsx`: hairline border on black swatches. Then test the stepper/moon HYPOTHESIS (disable the rule in DevTools)."
+      ],
+      "affectedFiles": [
+        "src/components/layout/EncounterIntake.tsx",
+        "src/components/anatomy/AnatomyView.tsx",
+        "src/components/anatomy/AnatomyLegend.tsx"
+      ],
+      "handoff": {
+        "tool": "ui-upgrade",
+        "prompt": "/ui-upgrade / and /encounter/<id>/venousLEBilateral in dark mode (fences W1-D for the intake tick, W1-G for AnatomyView/AnatomyLegend). Source trace C22/C23 (CONFIRMED): the global `theme.css:3728-3734` dark `.tabler-icon` rule makes the hidden-by-colour tick visible (`EncounterIntake.tsx:884-890`); render the tick only when checked instead of touching the global rule. `AnatomyView.tsx:180-183` rewrites only the silhouette stroke; extend the existing regex rewrite (`:189-198`) to the fill, without touching the dangerouslySetInnerHTML pattern. Hairline on black legend swatches. Verify ka dark at 1440."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C22 for the tick, C23 silhouette). HYPOTHESIS (source trace): the same global icon rule inverts the stepper and hides the moon icon",
+      "riskTier": "low",
+      "fence": "W1-D (L1) · W1-G (L2, L3)",
+      "doneWhen": "Intake dark at 1440: unchosen cards show an empty circle. Venous and arterial dark: R/L labels and the occlusion swatch are visible. The critic passes the dark variants.",
+      "arithmetic": "Composition/legibility move. **0 clicks/shift.**",
+      "sourceTrace": "C22 `theme.css:3728-3734` `.tabler-icon { color:#fff !important }` defeats `.studyCardCheck { color: transparent }` (`EncounterIntake.module.css:643-655`); icon always rendered (`EncounterIntake.tsx:884-890`). C23 `AnatomyView.tsx:180-183` rewrites only the silhouette stroke; the SVGs ship `fill=\"#f7fafc\"`; side labels rewritten to `--emr-text-primary` (`:195-198`).",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-023",
+      "title": "Page and cards are different shades again (page token)",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/intake-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-768.png"
+        ],
+        "priorFindings": [
+          "critic elevation-contrast (11 findings, all 5 screens, light variants)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low to medium: 46 uses of `--emr-bg-page` outside theme.css; some inset fills turn grey and need a visual pass.",
+      "doNotTouch": [
+        "Dark values unchanged (`theme.css:1569-1570` already differ).",
+        "§4.1: the value comes from the reference file. No new token name."
+      ],
+      "staging": [
+        "L1 (W1-G, 1 file) `theme.css:149`: `--emr-bg-page` set to the reference page value.",
+        "L2 (W1-G, ≤3 files) `ImpressionBlock.module.css`, `StudyHeader.module.css` (and `RecommendationsBlock.module.css` together with UX-ANGIO-027): the deck style of `EMRContentSection.module.css:26-30`.",
+        "L3 (W1-G) Visual pass of the inset uses (`CEAPPicker.module.css:161,249`, `SVPPicker.module.css:100,125`, `ImpressionBlock.module.css:91`, `DrawingToolbar.module.css:16`)."
+      ],
+      "affectedFiles": [
+        "src/styles/theme.css",
+        "src/components/form/ImpressionBlock.module.css",
+        "src/components/form/StudyHeader.module.css",
+        "src/components/form/CEAPPicker.module.css",
+        "src/components/form/SVPPicker.module.css",
+        "src/components/anatomy/DrawingToolbar.module.css"
+      ],
+      "handoff": {
+        "tool": "ui-upgrade",
+        "prompt": "/ui-upgrade (all 5 in-scope screens, light; fence W1-G). Source trace C2 (CONFIRMED): `src/styles/theme.css:149-150` sets --emr-bg-page = --emr-bg-card = #ffffff. Set the page value from `src/styles/reference-screenshots/deep-dive.html:67` (--paper). Move the older decks (ImpressionBlock, StudyHeader) to the EMRContentSection deck style (`EMRContentSection.module.css:26-30`: card bg, no border, --emr-shadow-card). Then check the inset uses listed in the move. Dark unchanged. Re-run composition-metrics for elevation-contrast."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C2)",
+      "riskTier": "low",
+      "fence": "W1-G",
+      "doneWhen": "Metrics pageBg ≠ cardBg with a contrast ratio ≥ 1.05 on all 5 light screens. The critic clears elevation-contrast.",
+      "arithmetic": "Composition move. **0 clicks/shift.**",
+      "sourceTrace": "C2 `theme.css:149-150` page = card = #ffffff; reference `deep-dive.html:67-68` (`--paper:#e7ebf1`); amplifiers `RecommendationsBlock.module.css:9-12`, `ImpressionBlock.module.css:11-14`, `StudyHeader.module.css:4-7`; deck sibling `EMRContentSection.module.css:26-30`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-024",
+      "title": "Action bars wrap on a phone instead of pushing the page sideways",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-375.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/intake-375.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/iliac-pelvic-venous-375.png"
+        ],
+        "priorFindings": [
+          "U-1014",
+          "critic 375 overflow (venous, arterial, carotid, iliac)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. One declaration per bar.",
+      "doNotTouch": [
+        "§4.5: Georgian button labels wrap inside the button; they never truncate.",
+        "The bar stays sticky."
+      ],
+      "staging": [
+        "L1 (W1-B, 1 file) `FormActions.module.css:73`: `flex-shrink: 1; min-width: 0` (sibling `.inner` :16-25).",
+        "L2 (W1-D) Intake footer: shipped inside UX-ANGIO-009 L1 (same button).",
+        "L3 (W2-venous, 1 file) `SegmentAssessmentCard.tsx` header Group allows wrap."
+      ],
+      "affectedFiles": [
+        "src/components/form/FormActions.module.css",
+        "src/components/layout/EncounterIntake.module.css",
+        "src/components/form/SegmentAssessmentCard.tsx"
+      ],
+      "handoff": {
+        "tool": "ui-upgrade",
+        "prompt": "/ui-upgrade at 375×812, ka (fence W1-B for FormActions.module.css). Source trace C11 (CONFIRMED live): `src/components/form/FormActions.module.css:69-76` `.buttons { flex-shrink: 0; flex-wrap: wrap }`, so the group is max-content (544px) and widens the page to 556-580px. Make it shrinkable (flex-shrink: 1; min-width: 0) so its own wrap takes effect. The intake footer half ships with UX-ANGIO-009; the SegmentAssessmentCard header nowrap is a later W2-venous layer. Verify scrollWidth = 375 on all 4 study pages."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C11 study bar, C12 intake footer; live widths)",
+      "riskTier": "low",
+      "fence": "W1-B (L1) · W1-D (L2) · W2-venous (L3)",
+      "doneWhen": "At 375 `document.documentElement.scrollWidth` = 375 on the intake and all 4 study pages, and the PDF buttons are on screen.",
+      "arithmetic": "Layout move. **0 clicks/shift.**",
+      "sourceTrace": "C11 `FormActions.module.css:69-76` `flex-shrink: 0` on `.buttons` (live 544px group); minor second root: the `SegmentAssessmentCard` header `Group wrap=\"nowrap\"` (498px). C12 `EncounterIntake.module.css:1003-1012, 1039-1040`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-025",
+      "title": "The anatomy diagram sits beside the table it explains",
+      "type": "merge-surfaces",
+      "evidence": {
+        "taskIds": [
+          "4c683280f693",
+          "454da3f3a800",
+          "b9b131e672b8",
+          "03a18f254204"
+        ],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/iliac-pelvic-venous-default.png"
+        ],
+        "priorFindings": [
+          "critic density-tier \"ONE focal element\" on venous, arterial, carotid, iliac"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "M",
+      "risk": "Medium: 4 per-form layout edits. Arterial is closest to S (it shares a layer with UX-ANGIO-015).",
+      "doNotTouch": [
+        "`AnatomyDiagramSection` is shared and unchanged. Only each form's layout changes.",
+        "AnatomyView's react/no-danger exception is untouched.",
+        "§4.4: screen-only layout. The PDF layout is unchanged.",
+        "Sticky only at ≥1280px; below that, the stacked order stays. No animation over 200 ms."
+      ],
+      "staging": [
+        "L1 (W2-arterial, 1-2 files) Arterial: diagram beside the full-width table (with UX-ANGIO-015).",
+        "L2 (W2-venous, 1-2 files) Venous: build the header-comment layout.",
+        "L3 (W2-carotid, 1-2 files) Carotid: diagram in the ~35% empty right width; NASCET under it.",
+        "L4 (W2-iliac, 1-2 files) Iliac: diagram in the ~380 px dead right rail."
+      ],
+      "affectedFiles": [
+        "src/components/studies/arterial-le/ArterialLEForm.tsx",
+        "src/components/studies/arterial-le/ArterialLEForm.module.css",
+        "src/components/studies/venous-le/VenousLEForm.tsx",
+        "src/components/studies/venous-le/VenousLEForm.module.css",
+        "src/components/studies/carotid/CarotidForm.tsx",
+        "src/components/studies/carotid/CarotidForm.module.css",
+        "src/components/studies/iliac-pelvic-venous/IliacPelvicVenousForm.tsx",
+        "src/components/studies/iliac-pelvic-venous/IliacPelvicVenousForm.module.css"
+      ],
+      "handoff": {
+        "tool": "frontend-designer",
+        "prompt": "Angio repo, one study fence at a time (W2-arterial first, then venous, carotid, iliac). Source trace C13 (CONFIRMED): each form stacks `AnatomyDiagramSection` after its segment table (`VenousLEForm.tsx:1200-1247`, `ArterialLEForm.tsx:770-841`, `CarotidForm.tsx:721-743`, iliac likewise). The venous header comment (`VenousLEForm.tsx:9-12`) specifies `AnatomyView │ SegmentTable` side by side. At ≥1280px place the diagram in a sticky column beside the table (reference `src/styles/reference-screenshots/deep-dive.html`); below 1280 keep the stack. Do not change AnatomyDiagramSection or AnatomyView. Arterial: do it with UX-ANGIO-015 (table full row + diagram beside). Prove at 1440×900 in ka: the abnormal row and the coloured segment are visible together."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C13; specified in the venous header comment and never built)",
+      "riskTier": "medium",
+      "fence": "W2-arterial · W2-venous · W2-carotid · W2-iliac (one layer each)",
+      "doneWhen": "At 1440×900, on all 4 study screens, the first abnormal table row and its diagram segment are in the viewport together. The critic clears \"ONE focal element\".",
+      "arithmetic": "Scrolling, not clicks. **0 clicks/shift.**",
+      "sourceTrace": "C13 `VenousLEForm.tsx:1200-1247` (planned layout in the header comment `:9-12`), `ArterialLEForm.tsx:770-841`, `CarotidForm.tsx:721-743`, iliac likewise; `AnatomyDiagramSection` is shared (4 callers) and needs no change. Walk notes: diagram ~3,000 px down (4c683280f693 obs s19), ~2,400 px (03a18f254204 obs s18), CEAP ~4,600 px down (b9b131e672b8 obs s21).",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-026",
+      "title": "One named card per segment below desktop, and empty rows stay compact",
+      "type": "merge-surfaces",
+      "evidence": {
+        "taskIds": [],
+        "eventIds": [],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-768.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-768.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/iliac-pelvic-venous-768.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-768.png"
+        ],
+        "priorFindings": [
+          "U-1022 (M layer; the S safety layer is UX-ANGIO-004 L1)",
+          "X-TABLE (compaction)",
+          "critic empty-state-parity / density-tiers at 768/375"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "L",
+      "risk": "Medium. Merging the venous two-table record is the structural part. Compaction is per-copy CSS.",
+      "doNotTouch": [
+        "§4.8: every field stays reachable. An empty row compacts and never disappears.",
+        "§4.3: segment lists and order unchanged.",
+        "§4.7: no shared generic segment-table component is required. Copy the arterial/carotid shape per study.",
+        "Verify the EMRTable HYPOTHESIS before adopting it (kill criterion: no cell-renderer slot for editable controls)."
+      ],
+      "staging": [
+        "L1 (W2-venous, ≤3 files) Venous: one row/card per segment carrying the categorical and numeric fields (the arterial/carotid shape) in `SegmentAssessmentCard.tsx`, with `SegmentTable`/`ReflexTimeTable` behind a flag.",
+        "L2 (W2-arterial, 1 file) `ArterialSegmentTable.module.css:205-234`: compact empty rows below 992px.",
+        "L3 (W2-carotid, 1 file) `CarotidSegmentTable.module.css:154-182`: the same.",
+        "L4 (W2-iliac, 1-2 files) `IliacCavalTable.module.css:106-155`: the same, plus a sticky side group header."
+      ],
+      "affectedFiles": [
+        "src/components/form/SegmentAssessmentCard.tsx",
+        "src/components/studies/arterial-le/ArterialSegmentTable.module.css",
+        "src/components/studies/carotid/CarotidSegmentTable.module.css",
+        "src/components/studies/iliac-pelvic-venous/IliacCavalTable.module.css"
+      ],
+      "handoff": {
+        "tool": "speckit",
+        "prompt": "Spec seed — Segment entry below desktop (angio, run angio-module-2026-11-12).\nProblem: below 1200px the venous form shows one segment as two cards in two separate stacks (`SegmentAssessmentCard.tsx:206-235` puts SegmentTable and a headless ReflexTimeTable side by side), and arterial, carotid and pelvic collapse 21-34 rows into full-size cards whether empty or not (`ArterialSegmentTable.module.css:205-234`, `CarotidSegmentTable.module.css:154-182`, `IliacCavalTable.module.css:106-155`). Measured: pelvic 768 = 13,848 px tall, carotid 24 cards × ~560 px, venous 768/375 critic P0 (an anonymous abnormal 1.8 s card).\nSuccess criteria: one named, sided card per segment on every study; an empty row is one line until touched; the pelvic side header stays pinned; a normal study at 768 is ≤6 viewports tall; every field is still reachable; FHIR and PDF are unchanged; thin layers, one study per layer, ≤3 files per step. Venous first (the arterial/carotid one-row shape is the precedent). The EMRTable reuse is a hypothesis to test, not a requirement."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C8 venous split record, C10 card collapse ×3 copies). HYPOTHESIS (source trace): `EMRTable` sticky-left columns can host the inline inputs",
+      "riskTier": "medium",
+      "fence": "W2-venous · W2-arterial · W2-carotid · W2-iliac (one layer each)",
+      "doneWhen": "At 768 a normal study of each type is ≤6 viewports tall (today 13-15). Every card carries its segment and side. Critic P0/P1 density findings clear.",
+      "arithmetic": "Scrolling, not clicks. **0 clicks/shift.**",
+      "sourceTrace": "C8 `SegmentAssessmentCard.tsx:206-235` (two tables side by side); arterial/carotid one-row shape `ArterialSegmentTable.tsx:186`, `CarotidSegmentTable.tsx:185`; card collapse copies `ArterialSegmentTable.module.css:205-234`, `CarotidSegmentTable.module.css:154-182`, `IliacCavalTable.module.css:106-155`.",
+      "top10": false
+    },
+    {
+      "id": "UX-ANGIO-027",
+      "title": "An empty Recommendations section becomes one quiet row",
+      "type": "relabel",
+      "evidence": {
+        "taskIds": [
+          "42d763c1e133"
+        ],
+        "eventIds": [
+          "39f333a8fa95"
+        ],
+        "screenshots": [
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/venous-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/arterial-le-default.png",
+          "documentation/level-up/runs/angio-module-2026-11-12/screens/carotid-default.png"
+        ],
+        "priorFindings": [
+          "critic empty-state-parity (venous, arterial, carotid, all variants)"
+        ]
+      },
+      "estClicksAfter": {},
+      "clicksSavedPerShift": 0,
+      "effort": "S",
+      "risk": "Low. One shared component, 3 callers.",
+      "doNotTouch": [
+        "The add-recommendation capability and its data shape are unchanged.",
+        "§4.1: secondary button variant, existing deck style."
+      ],
+      "staging": [
+        "L1 (W1-G, 2 files) `RecommendationsBlock.tsx` + `.module.css`: drop the ribbon and the dashed block; the empty state is one header row with a secondary add button and one muted line (deck style shared with UX-ANGIO-023 L2).",
+        "L2 (W1-G, 1 file) The trash button's accessible name means 'delete' (key via W1-H)."
+      ],
+      "affectedFiles": [
+        "src/components/form/RecommendationsBlock.tsx",
+        "src/components/form/RecommendationsBlock.module.css"
+      ],
+      "handoff": {
+        "tool": "ui-upgrade",
+        "prompt": "/ui-upgrade on the Recommendations deck (venous, arterial, carotid; fence W1-G, `src/components/form/RecommendationsBlock.tsx` + `.module.css`). Source trace C14 (CONFIRMED): pre-Command empty state (3px gradient ribbon `.card::before` :22-28, padded dashed empty block :94-100, primary add button :82-90) makes the empty deck 223px vs 137px populated. Collapse the empty state to one slim header row (4×15 tick + title), a secondary add button and one muted line; use the EMRContentSection deck style. Rename the row trash button's accessible name to 'delete' (key to the i18n fence). Verify in ka at 1440 and 768."
+      },
+      "band": "UI-X lane",
+      "label": "CONFIRMED (C14)",
+      "riskTier": "low",
+      "fence": "W1-G",
+      "doneWhen": "Empty deck height ≤ populated deck height on venous, arterial and carotid. The critic clears empty-state-parity. The trash button is announced as delete.",
+      "arithmetic": "Composition move. **0 clicks/shift.**",
+      "sourceTrace": "C14 `RecommendationsBlock.tsx:82-103` (primary add button, padded empty block), `RecommendationsBlock.module.css:22-28` (ribbon), `:94-100`; sibling `EMRContentSection` with `showAccent={false}` (`VenousLEForm.tsx:1218-1222`).",
+      "top10": false
+    }
+  ]
+}

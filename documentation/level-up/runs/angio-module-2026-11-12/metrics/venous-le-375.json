@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-12T11:27:27.522Z",
+  "route": "/encounter/fb54cedb-e90c-45c4-9c58-786b611f82a2/venousLEBilateral",
+  "slug": "venous-le",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "colorScheme": "light",
+  "locale": "ka",
+  "densityTier": "deep-dive",
+  "scopeSelector": "body",
+  "scopeFallback": true,
+  "measurementSane": true,
+  "metrics": {
+    "elevationContrast": {
+      "pageBg": "rgb(255, 255, 255)",
+      "cardBg": "rgb(255, 255, 255)",
+      "contrastRatio": 1,
+      "cardsWithShadow": 0,
+      "cardsTotal": 45
+    },
+    "severityColorUsage": [
+      {
+        "color": "rgb(229, 62, 62)",
+        "occurrences": 5,
+        "distinctContexts": [
+          "border",
+          "icon"
+        ],
+        "sampleSelectors": [
+          "div.m_96bdd299.mantine-Grid-col > div._tableCol_1cnhr_91 > div._tableWrap_13sdo_81._tableWrapHeadless_13sdo_87 > div._row_13sdo_92._rowAbnormal_13sdo_123",
+          "div.m_e2f5cd4e.m_46b77525 > div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon",
+          "div.m_e2f5cd4e.m_46b77525 > div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon",
+          "div.m_6c018570.mantine-Input-wrapper > div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon > svg.tabler-icon.tabler-icon-alert-triangle",
+          "div.m_82577fc2.mantine-Input-section > span.emr-input-warning-icon > svg.tabler-icon.tabler-icon-alert-triangle > path"
+        ]
+      }
+    ],
+    "duplicateLabels": [
+      {
+        "label": "R",
+        "occurrences": 20,
+        "selectors": [
+          "div[data-testid=\"segment-row-cfv-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201",
+          "div[data-testid=\"segment-row-fv-prox-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201",
+          "div[data-testid=\"segment-row-fv-mid-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201",
+          "div[data-testid=\"segment-row-fv-dist-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201",
+          "div[data-testid=\"segment-row-pfv-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201",
+          "div[data-testid=\"segment-row-pop-ak-right\"] > div._cell_1v3hq_139._segmentCell_1v3hq_155 > button.mantine-focus-auto._segmentButton_1v3hq_168 > span._segmentSide_1v3hq_201"
+        ],
+        "bothFullWeight": false
+      }
+    ],
+    "aboveFoldActions": {
+      "count": 20,
+      "tabs": 7,
+      "buttons": 13,
+      "rawCount": 20,
+      "repeatedLists": 0
+    },
+    "emptyStates": [
+      {
+        "selector": "div._page_1dzo7_3 > div._container_1dzo7_127 > div.m_6d731127.mantine-Stack-root > section._card_192jr_8",
+        "heightPx": 212,
+        "populatedSiblingMedianHeightPx": 313,
+        "ratio": 0.68
+      }
+    ]
+  },
+  "hardFails": [
+    {
+      "rule": "elevation-contrast",
+      "severity": "P1",
+      "evidence": "card background rgb(255, 255, 255) vs page background rgb(255, 255, 255) = 1 contrast, and 0 of 45 decks carry a box-shadow — the decks are not separable from the surface",
+      "measured": 1,
+      "threshold": 1.05
+    }
+  ]
+}

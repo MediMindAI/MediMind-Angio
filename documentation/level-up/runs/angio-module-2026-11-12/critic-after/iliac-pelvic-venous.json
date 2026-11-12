@@ -1,0 +1,242 @@
+[
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "default-1440-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 1
+    },
+    "scoreDelta": {
+      "hierarchy": "+1",
+      "colorDiscipline": "+1",
+      "redundancy": "0",
+      "densityFit": "-1 (mechanical cap only, see finding 1)",
+      "restraint": "+1"
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div[data-testid=\"svp-section\"] is 69px tall vs 69px for its populated siblings (1) — a quiet shift must look quieter (measured 1, threshold 0.75). Critic note, which does not override the measurement: on screen the SVP and CEAP rows are already one-line collapsed rows with identical styling. The empty SVP row looks exactly like the CEAP row, so 'nothing recorded' does not read as quieter.",
+        "recommendation": "When SVP has nothing recorded, render its collapsed row in a compact empty form: drop the second subtitle line ('სიმპტომები · ვარიკოზი · პათოფიზიოლოგია (Meissner 2021)'), reduce vertical padding, and show a neutral-gray inline 'არ არის შევსებული' in place of a summary. Target is at most 52px (0.75 × 69). Keep the two-line form only once SVP holds data. Restyle only; no content moves."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Cards / surfaces (decks float on shadows, 12px radius) — reference spacing rhythm is theme-independent",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Decks still run flush to x=0 (clinical-context, veins table, gonadal, classification and conclusion decks) and x=1440 (diagram rail, classification, conclusion). The back button sits in the top-left corner and 'ახალი შემთხვევა' touches the right edge. deep-dive.png keeps about 20px page gutters so every deck floats with all four rounded corners. Between the encounter banner and the first deck there is also a roughly 90px gray band that holds only the two orphan buttons 'შაბლონები' / '+ ახალი შემთხვევა'.",
+        "recommendation": "Give the study page container horizontal padding equal to the reference gutter (the existing --emr spacing token that matches about 20px) so decks float. Move 'შაბლონები' and 'ახალი შემთხვევა' into the encounter banner's right-hand action cluster next to 'კვლევის დამატება', and remove the empty band. That is a relocation, not a restyle."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (Secondary: white deck + hairline border)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "'+ ახალი შემთხვევა' still shows a doubled plus: a + icon AND a literal '+' in the label. 'კვლევის დამატება' was fixed; this one was not.",
+        "recommendation": "Remove the literal '+' from the ka/en/ru label string for the new-case button and keep the icon."
+      },
+      {
+        "dimension": "densityFit",
+        "rule": "Density tiers (deep dive: ONE focal element, usually the anatomy diagram or the segment table)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The diagram now sits in a right rail beside the veins table, which matches the reference main+rail structure (a big improvement). But the rail deck ends at about y=1380, while the table runs to about y=2290. That leaves about 900px of empty page in the rail column, and the diagram scrolls away while the clinician enters the left-side (მარცხენა) segments it illustrates. In a full-page capture I cannot tell whether the rail is sticky.",
+        "recommendation": "Make the diagram rail deck sticky (top offset below the encounter banner) for the height of the veins-table deck, so the diagram stays in view during left-side entry. If it is already sticky, this finding is void."
+      }
+    ],
+    "reasoning": "I compared against deep-dive.png. Metrics colorScheme=light matches the screenshot. Density tier: deep-dive, as supplied. The fixed action bar mid-page is a capture artifact and was not scored. This repo's DESIGN-DIRECTION.md has no 'Content & layout' section, so I judged the Composition section plus the component rules. Big gains since the last run. The page is now --emr-bg-page gray (ratio 1.2) and decks read as surfaces. The diagram sits in a right rail next to the table. The SVP/CEAP gradient bands are now calm rows. Only one solid primary remains ('PDF ჩამოტვირთვა'), and the green 'not saved' dot is now neutral gray. The eye goes banner, then the context deck, then the veins table with its diagram, which is the right order. The table is the focal element but does not dominate decisively: 21 equal empty rows (hierarchy 2). No severity colour is borrowed. The drawing swatches are an ink picker, not a meaning claim, and solid navy appears only on checked states and the one primary (colorDiscipline 3). No duplicates (redundancy 3). The only thing blocking PASS is the mechanical empty-state-parity fail on the SVP row, which caps densityFit at 1. Visually I would score density 2. Highest-leverage fix: render the empty SVP collapsed row in a compact single-line form (at most 52px). That clears the hard-fail on all four variants at once. Oscillation: only one prior iteration, so there is nothing to check. densityFit 2→1 is a new cap, not an oscillation."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "768-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "scoreDelta": {
+      "hierarchy": "+1",
+      "colorDiscipline": "+1",
+      "redundancy": "+2",
+      "densityFit": "0 (cap reason changed: was 21 full-footprint cards, now only the SVP row)",
+      "restraint": "+1"
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div[data-testid=\"svp-section\"] is 65px tall vs 65px for its populated siblings (1) — a quiet shift must look quieter (measured 1, threshold 0.75).",
+        "recommendation": "Same fix as desktop: compact single-line empty form for the collapsed SVP row (drop the subtitle line, reduce padding, neutral 'არ არის შევსებული'), target at most 48px (0.75 × 65)."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Badges / status (soft/tinted badges for low-emphasis metadata are neutral gray) + Empty states collapse",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "Every one of the 20 collapsed segment rows carries the same tinted chip 'არ არის შევსებული'. The single recorded row (CIV პროქს. · მარცხენა) carries 'შევსებულია' in exactly the same tint, size and weight. The source uses EMRBadge variant=\"neutral\", but it renders light-blue rather than neutral gray. So 'filled' and 'empty' look identical, and the empty state is the louder of the two because it repeats 20 times. That is the 'every card badged' pattern. The rows themselves collapsing to one line is a large win: page height fell from 13,848px to 4,066px.",
+        "recommendation": "Invert the emphasis. Show nothing on empty rows, or at most a muted gray '—' in --emr-text-secondary, and show a chip only on recorded rows. Also make the neutral EMRBadge variant actually render the neutral-gray soft treatment, fixed once in the wrapper and not per page. Recorded rows then become the only badged items and scan at a glance."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Navigation chrome (active items white-on-navy) / Density tiers",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The study-tab strip in the encounter banner still wraps into a three-line oval pill (about 340×150px) with the active 'თეძო/მენჯი' tab stranded alone on the third line. It is the largest shape in the banner and reads as a malformed blob. The 'შაბლონები' / '+ ახალი შემთხვევა' orphan row and the doubled '+' remain, as on desktop.",
+        "recommendation": "Below about 900px, render the study tabs as a horizontally scrollable single row (or EMR segmented control with overflow scroll) rather than letting the pill wrap. Keep the pill's radius only for the single-row case. Move the two orphan buttons into the banner action cluster as on desktop."
+      }
+    ],
+    "reasoning": "I compared against deep-dive.png; the scheme matches (light). Density tier: deep-dive, as supplied. The fixed bar over the IVC rows is a capture artifact. The redesign landed. The 21 empty 535px cards are now one-line accordion rows. Each row title now carries the side ('CIV პროქს. · მარჯვენა'), which fixes the wrong-side ambiguity and clears all nine duplicate-primary-data fails (duplicateLabels is empty; redundancy 1→3). The recorded row expands in place to its fields, so a populated segment now visibly outweighs an empty one. The page is 4,066px instead of 13,848px. The eye now goes banner, then the context deck, then a scannable segment list grouped IVC / მარჯვენა / მარცხენა, then the diagram. The order is right, but nothing dominates, and the 20 identical chips flatten the list (hierarchy 2, restraint 2). No severity-colour borrows (colorDiscipline 3). What blocks PASS is the same mechanical SVP empty-state-parity fail, which caps densityFit at 1. Highest-leverage fix: the compact empty SVP row. Next is dropping the chip from empty segment rows so only recorded rows carry a badge."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "375-light",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 1,
+      "colorDiscipline": 2,
+      "redundancy": 1,
+      "densityFit": 1,
+      "restraint": 1
+    },
+    "scoreDelta": {
+      "hierarchy": "+1",
+      "colorDiscipline": "+1",
+      "redundancy": "+2",
+      "densityFit": "0 (cap reason changed: was 21 full-footprint cards, now only the SVP row)",
+      "restraint": "+1"
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div[data-testid=\"svp-section\"] is 59px tall vs 59px for its populated siblings (1) — a quiet shift must look quieter (measured 1, threshold 0.75).",
+        "recommendation": "Same fix as desktop: compact single-line empty form for the collapsed SVP row, target at most 44px (0.75 × 59)."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "No duplicate primary data (side must make each bilateral segment distinct) + Badges / status",
+        "severity": "P2",
+        "mechanical": false,
+        "evidence": "At 375px the wide 'არ არის შევსებული' chip squeezes the row title. 5 of the 9 right-side titles truncate the side: 'CIV პროქს. · მარჯ…', 'CIV დისტ. · მარჯ…', 'EIV პროქს. · მარჯ…', 'EIV დისტ. · მარჯ…', and the same pattern on the left side. The side suffix is exactly what this iteration added to fix wrong-side ambiguity, and on a phone it is the part that gets cut. The group header pill (მარჯვენა / მარცხენა) still helps, but it scrolls away.",
+        "recommendation": "Remove the chip from empty rows (see the 768 finding). That alone frees about 140px and the titles fit. If a chip must stay, put the side first ('მარჯვ. · CIV პროქს.') so truncation eats the segment qualifier, not the side, or let the title wrap to two lines instead of using an ellipsis."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Buttons (one primary) + Density tiers",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "The horizontal overflow is fixed: the capture is 375px wide (it was 556px), and the action bar now wraps to two rows with 'PDF ჩამოტვირთვა' fully on screen as the single primary. But the sticky bar is now about 150px tall, roughly 18% of an 812px viewport, permanently covering form content. The study tabs still wrap into a three-line oval pill, and the 20 identical row chips repeat as at 768.",
+        "recommendation": "On phones, keep 'PDF ჩამოტვირთვა' (primary) and 'მონახაზის შენახვა' visible in the sticky bar. Collapse 'PDF ნახვა' and 'ბეჭდვა' into a single overflow menu button so the bar returns to one row. Render study tabs as a horizontally scrolling single row."
+      }
+    ],
+    "reasoning": "I compared against deep-dive.png; the scheme matches (light). Density tier: deep-dive, as supplied. The sticky bar over the context deck is a capture artifact. The capture is now exactly 375px wide, so the previous horizontal-overflow defect is gone. The page fell from 14,266px to 4,802px because segments collapsed to one-line rows. The single recorded segment expands in place, so a filled segment now visibly outweighs empty ones, which fixes the real readability problem behind the old cap. Duplicate-label fails are gone (redundancy 3). The eye goes banner, then context, then a grouped segment list, then the diagram, which is correct. Two things hold hierarchy at 2: nothing dominates, and the empty-row chip now truncates the side suffix on more than half the rows. That is the one place this iteration's own fix regresses at phone width. No severity-colour borrows (colorDiscipline 3). PASS is blocked only by the mechanical SVP empty-state-parity cap on densityFit. Highest-leverage fix: drop the chip from empty rows. That restores the side labels at 375 and quiets the list at every width. Then the compact empty SVP row clears the hard-fail."
+  },
+  {
+    "schemaVersion": 1,
+    "route": "/encounter/71e32c26-80e8-4a8b-950f-9e0be36fc95b/iliacPelvicVenous",
+    "slug": "iliac-pelvic-venous",
+    "variant": "dark-1440",
+    "densityTier": "deep-dive",
+    "referenceUsed": true,
+    "verdict": "NEEDS-REWORK",
+    "confidence": 0.85,
+    "scores": {
+      "hierarchy": 2,
+      "colorDiscipline": 3,
+      "redundancy": 3,
+      "densityFit": 1,
+      "restraint": 2
+    },
+    "priorScores": {
+      "hierarchy": 2,
+      "colorDiscipline": 2,
+      "redundancy": 3,
+      "densityFit": 2,
+      "restraint": 2
+    },
+    "scoreDelta": {
+      "hierarchy": "0",
+      "colorDiscipline": "+1",
+      "redundancy": "0",
+      "densityFit": "-1 (new mechanical cap; the visual layout improved)",
+      "restraint": "0"
+    },
+    "findings": [
+      {
+        "dimension": "densityFit",
+        "rule": "empty-state-parity",
+        "severity": "P2",
+        "mechanical": true,
+        "evidence": "empty deck div[data-testid=\"svp-section\"] is 69px tall vs 69px for its populated siblings (1) — a quiet shift must look quieter (measured 1, threshold 0.75). This fail is new since the prior PASS: the SVP row now carries a 'SVP: S0 V0 P_' summary chip at the same size and weight as the CEAP row's 'CEAP: C0,En,An,Pn' chip, so the empty classification looks identical to a filled one.",
+        "recommendation": "Same compact empty form as light (at most 52px). Also suppress the summary chip when SVP holds only defaults or placeholders ('S0 V0 P_'), and show neutral 'არ არის შევსებული' text instead. Note: the light capture shows no summary chips on these rows while dark does. Confirm both themes render the same content."
+      },
+      {
+        "dimension": "restraint",
+        "rule": "Cards / surfaces ('no outer border' on primary content cards) + Section headers (4×15px gradient tick bar)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Still present from the prior run. Dark decks separate from the page correctly (rgb(15,23,42) vs rgb(30,41,59), ratio 1.22) but each also draws an outer hairline border. The section tick bars render flat gray, not the brand gradient they show in light mode. The active study tab 'თეძო/მენჯი' and the active 'დაჭერა' tool are gray-filled where light uses solid navy. Decks also run edge to edge with no page gutter, which is theme-independent and the same as light. Tick treatment and gutters do not depend on theme, so the differences from deep-dive-dark.png are real.",
+        "recommendation": "In the dark token set, remove the outer deck border (keep only inner row hairlines), render the section tick with --emr-gradient-primary as in light, and give active tab and tool states the dark-mode --emr-primary solid fill used for checked states. Fix these in the theme tokens and wrappers once. Apply the same page gutter as light."
+      },
+      {
+        "dimension": "hierarchy",
+        "rule": "Forms (inputs: --emr-bg-input fill, hairline border)",
+        "severity": "P3",
+        "mechanical": false,
+        "evidence": "Still present from the prior run. The empty multiselects (სიმპტომები, თანმხლები დაავადებები, გამოყენებული მიდგომები, პაციენტის პოზიციები) show a second, darker rectangle nested inside the input fill: the multiselect's inner search field painting its own background. It reads as an input inside an input. Single selects (სქესი) do not show it.",
+        "recommendation": "In the EMR multiselect wrapper's dark styling, make the inner search input background transparent so only the outer --emr-bg-input fill shows."
+      }
+    ],
+    "reasoning": "I compared against deep-dive-dark.png; the scheme matches. Metrics colorScheme=dark matches the screenshot. The sticky bar mid-page is a capture artifact. The layout is the same as light: diagram in a right rail beside the veins table, calm classification rows, and one bright primary ('PDF ჩამოტვირთვა'). Decks separate cleanly. The green 'not saved' dot is now neutral, so colorDiscipline rises to 3. The script lists rgb(43,108,176) on the drawing pen/size buttons and download-pdf. That is the documented solid-primary checked state plus the primary action, not a severity borrow, and it is not a hard-fail. The eye goes banner, then context deck, then veins table with diagram. The order is right, but the table of 21 equal rows does not dominate (hierarchy 2). No duplicates (redundancy 3). The prior PASS cannot carry over: a new mechanical empty-state-parity fail on the SVP row caps densityFit at 1. Visually the screen is no worse than before; the classification rows now carry summary chips that make the empty SVP look as full as CEAP. Highest-leverage fix: compact empty SVP row with no placeholder chip. The remaining dark polish (outer borders, gray tick bars, nested multiselect bar) is token-level. Oscillation: densityFit 2→1 is a single move, not an oscillation."
+  }
+]
